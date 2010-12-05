@@ -34,7 +34,7 @@
 
 struct SYSTICK_DRIVER_INFO
 {
-	DRIVER_INFO_Type info;
+	DRIVER_INFO_Type info;				//!< standard driver info
 	unsigned int OS_QUANTUM_PERIOD;		//!< quantum [ms] used from the kernel
 };
 

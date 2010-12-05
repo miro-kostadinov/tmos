@@ -13,19 +13,17 @@
 #include <cmsis_cpp.h>
 #include <pmc_drv.h>
 
-
+/** SYSTICK DCR
+ *
+ * @param drv_info
+ * @param reason
+ * @param param
+ */
 void SYSTICK_DCR(SYSTICK_INFO drv_info, unsigned int reason, void* param)
 {
 	switch(reason)
 	{
 	case DCR_RESET:
-		/*
-			hw_base->CTRL = NVIC_ST_CTRL_CLK_SRC;
-			HWREG(NVIC_ST_CTRL) = NVIC_ST_CTRL_CLK_SRC;
-		    HWREG(NVIC_ST_RELOAD) = (SysCtlClockGet()/1000)*OS_QUANTUM_PERIOD - 1;
-		    HWREG(NVIC_ST_CURRENT) = 0;
-		    HWREG(NVIC_ST_CTRL) |= NVIC_ST_CTRL_CLK_SRC | NVIC_ST_CTRL_ENABLE|NVIC_ST_CTRL_INTEN;
-		    */
 		unsigned int ticks;
 		SysTick->CTRL = NVIC_ST_CTRL_CLK_SRC;
 		ticks = (sysdrv_clock_frequency/1000)*drv_info->OS_QUANTUM_PERIOD - 1;

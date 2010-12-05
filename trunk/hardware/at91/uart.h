@@ -77,7 +77,7 @@ typedef struct {
   RoReg UART_RHR;      //!< (Uart Offset: 0x0018) Receive Holding Register */
   WoReg UART_THR;      //!< (Uart Offset: 0x001C) Transmit Holding Register */
   RwReg UART_BRGR;     //!< (Uart Offset: 0x0020) Baud Rate Generator Register */
-  RwReg Reserved1[55];
+  RwReg Reserved1[55]; //!< doc!
   RwReg UART_RPR;      //!< (Uart Offset: 0x100) Receive Pointer Register */
   RwReg UART_RCR;      //!< (Uart Offset: 0x104) Receive Counter Register */
   RwReg UART_TPR;      //!< (Uart Offset: 0x108) Transmit Pointer Register */
@@ -99,14 +99,14 @@ typedef struct {
 #define UART_CR_TXDIS (0x1u << 7) //!< (UART_CR) Transmitter Disable */
 #define UART_CR_RSTSTA (0x1u << 8) //!< (UART_CR) Reset Status Bits */
 /* -------- UART_MR : (UART Offset: 0x0004) Mode Register -------- */
-#define UART_MR_PAR_Pos 9
+#define UART_MR_PAR_Pos 9 //!< doc!
 #define UART_MR_PAR_Msk (0x7u << UART_MR_PAR_Pos) //!< (UART_MR) Parity Type */
 #define   UART_MR_PAR_EVEN (0x0u << 9) //!< (UART_MR) Even parity */
 #define   UART_MR_PAR_ODD (0x1u << 9) //!< (UART_MR) Odd parity */
 #define   UART_MR_PAR_SPACE (0x2u << 9) //!< (UART_MR) Space: parity forced to 0 */
 #define   UART_MR_PAR_MARK (0x3u << 9) //!< (UART_MR) Mark: parity forced to 1 */
 #define   UART_MR_PAR_NO (0x4u << 9) //!< (UART_MR) No parity */
-#define UART_MR_CHMODE_Pos 14
+#define UART_MR_CHMODE_Pos 14 //!< doc!
 #define UART_MR_CHMODE_Msk (0x3u << UART_MR_CHMODE_Pos) //!< (UART_MR) Channel Mode */
 #define   UART_MR_CHMODE_NORMAL (0x0u << 14) //!< (UART_MR) Normal Mode */
 #define   UART_MR_CHMODE_AUTOMATIC (0x1u << 14) //!< (UART_MR) Automatic Echo */
@@ -157,48 +157,48 @@ typedef struct {
 #define UART_SR_TXBUFE (0x1u << 11) //!< (UART_SR) Transmission Buffer Empty */
 #define UART_SR_RXBUFF (0x1u << 12) //!< (UART_SR) Receive Buffer Full */
 /* -------- UART_RHR : (UART Offset: 0x0018) Receive Holding Register -------- */
-#define UART_RHR_RXCHR_Pos 0
+#define UART_RHR_RXCHR_Pos 0 //!< doc!
 #define UART_RHR_RXCHR_Msk (0xffu << UART_RHR_RXCHR_Pos) //!< (UART_RHR) Received Character */
 /* -------- UART_THR : (UART Offset: 0x001C) Transmit Holding Register -------- */
-#define UART_THR_TXCHR_Pos 0
+#define UART_THR_TXCHR_Pos 0 //!< doc!
 #define UART_THR_TXCHR_Msk (0xffu << UART_THR_TXCHR_Pos) //!< (UART_THR) Character to be Transmitted */
-#define UART_THR_TXCHR(value) ((UART_THR_TXCHR_Msk & ((value) << UART_THR_TXCHR_Pos)))
+#define UART_THR_TXCHR(value) ((UART_THR_TXCHR_Msk & ((value) << UART_THR_TXCHR_Pos))) //!< doc!
 /* -------- UART_BRGR : (UART Offset: 0x0020) Baud Rate Generator Register -------- */
-#define UART_BRGR_CD_Pos 0
+#define UART_BRGR_CD_Pos 0 //!< doc!
 #define UART_BRGR_CD_Msk (0xffffu << UART_BRGR_CD_Pos) //!< (UART_BRGR) Clock Divisor */
-#define UART_BRGR_CD(value) ((UART_BRGR_CD_Msk & ((value) << UART_BRGR_CD_Pos)))
+#define UART_BRGR_CD(value) ((UART_BRGR_CD_Msk & ((value) << UART_BRGR_CD_Pos))) //!< doc!
 /* -------- UART_RPR : (UART Offset: 0x100) Receive Pointer Register -------- */
-#define UART_RPR_RXPTR_Pos 0
+#define UART_RPR_RXPTR_Pos 0 //!< doc!
 #define UART_RPR_RXPTR_Msk (0xffffffffu << UART_RPR_RXPTR_Pos) //!< (UART_RPR) Receive Pointer Register */
-#define UART_RPR_RXPTR(value) ((UART_RPR_RXPTR_Msk & ((value) << UART_RPR_RXPTR_Pos)))
+#define UART_RPR_RXPTR(value) ((UART_RPR_RXPTR_Msk & ((value) << UART_RPR_RXPTR_Pos))) //!< doc!
 /* -------- UART_RCR : (UART Offset: 0x104) Receive Counter Register -------- */
-#define UART_RCR_RXCTR_Pos 0
+#define UART_RCR_RXCTR_Pos 0 //!< doc!
 #define UART_RCR_RXCTR_Msk (0xffffu << UART_RCR_RXCTR_Pos) //!< (UART_RCR) Receive Counter Register */
-#define UART_RCR_RXCTR(value) ((UART_RCR_RXCTR_Msk & ((value) << UART_RCR_RXCTR_Pos)))
+#define UART_RCR_RXCTR(value) ((UART_RCR_RXCTR_Msk & ((value) << UART_RCR_RXCTR_Pos))) //!< doc!
 /* -------- UART_TPR : (UART Offset: 0x108) Transmit Pointer Register -------- */
-#define UART_TPR_TXPTR_Pos 0
+#define UART_TPR_TXPTR_Pos 0 //!< doc!
 #define UART_TPR_TXPTR_Msk (0xffffffffu << UART_TPR_TXPTR_Pos) //!< (UART_TPR) Transmit Counter Register */
-#define UART_TPR_TXPTR(value) ((UART_TPR_TXPTR_Msk & ((value) << UART_TPR_TXPTR_Pos)))
+#define UART_TPR_TXPTR(value) ((UART_TPR_TXPTR_Msk & ((value) << UART_TPR_TXPTR_Pos))) //!< doc!
 /* -------- UART_TCR : (UART Offset: 0x10C) Transmit Counter Register -------- */
-#define UART_TCR_TXCTR_Pos 0
+#define UART_TCR_TXCTR_Pos 0 //!< doc!
 #define UART_TCR_TXCTR_Msk (0xffffu << UART_TCR_TXCTR_Pos) //!< (UART_TCR) Transmit Counter Register */
-#define UART_TCR_TXCTR(value) ((UART_TCR_TXCTR_Msk & ((value) << UART_TCR_TXCTR_Pos)))
+#define UART_TCR_TXCTR(value) ((UART_TCR_TXCTR_Msk & ((value) << UART_TCR_TXCTR_Pos))) //!< doc!
 /* -------- UART_RNPR : (UART Offset: 0x110) Receive Next Pointer Register -------- */
-#define UART_RNPR_RXNPTR_Pos 0
+#define UART_RNPR_RXNPTR_Pos 0 //!< doc!
 #define UART_RNPR_RXNPTR_Msk (0xffffffffu << UART_RNPR_RXNPTR_Pos) //!< (UART_RNPR) Receive Next Pointer */
-#define UART_RNPR_RXNPTR(value) ((UART_RNPR_RXNPTR_Msk & ((value) << UART_RNPR_RXNPTR_Pos)))
+#define UART_RNPR_RXNPTR(value) ((UART_RNPR_RXNPTR_Msk & ((value) << UART_RNPR_RXNPTR_Pos))) //!< doc!
 /* -------- UART_RNCR : (UART Offset: 0x114) Receive Next Counter Register -------- */
-#define UART_RNCR_RXNCTR_Pos 0
+#define UART_RNCR_RXNCTR_Pos 0 //!< doc!
 #define UART_RNCR_RXNCTR_Msk (0xffffu << UART_RNCR_RXNCTR_Pos) //!< (UART_RNCR) Receive Next Counter */
-#define UART_RNCR_RXNCTR(value) ((UART_RNCR_RXNCTR_Msk & ((value) << UART_RNCR_RXNCTR_Pos)))
+#define UART_RNCR_RXNCTR(value) ((UART_RNCR_RXNCTR_Msk & ((value) << UART_RNCR_RXNCTR_Pos))) //!< doc!
 /* -------- UART_TNPR : (UART Offset: 0x118) Transmit Next Pointer Register -------- */
-#define UART_TNPR_TXNPTR_Pos 0
+#define UART_TNPR_TXNPTR_Pos 0 //!< doc!
 #define UART_TNPR_TXNPTR_Msk (0xffffffffu << UART_TNPR_TXNPTR_Pos) //!< (UART_TNPR) Transmit Next Pointer */
-#define UART_TNPR_TXNPTR(value) ((UART_TNPR_TXNPTR_Msk & ((value) << UART_TNPR_TXNPTR_Pos)))
+#define UART_TNPR_TXNPTR(value) ((UART_TNPR_TXNPTR_Msk & ((value) << UART_TNPR_TXNPTR_Pos))) //!< doc!
 /* -------- UART_TNCR : (UART Offset: 0x11C) Transmit Next Counter Register -------- */
-#define UART_TNCR_TXNCTR_Pos 0
+#define UART_TNCR_TXNCTR_Pos 0 //!< doc!
 #define UART_TNCR_TXNCTR_Msk (0xffffu << UART_TNCR_TXNCTR_Pos) //!< (UART_TNCR) Transmit Counter Next */
-#define UART_TNCR_TXNCTR(value) ((UART_TNCR_TXNCTR_Msk & ((value) << UART_TNCR_TXNCTR_Pos)))
+#define UART_TNCR_TXNCTR(value) ((UART_TNCR_TXNCTR_Msk & ((value) << UART_TNCR_TXNCTR_Pos))) //!< doc!
 /* -------- UART_PTCR : (UART Offset: 0x120) Transfer Control Register -------- */
 #define UART_PTCR_RXTEN (0x1u << 0) //!< (UART_PTCR) Receiver Transfer Enable */
 #define UART_PTCR_RXTDIS (0x1u << 1) //!< (UART_PTCR) Receiver Transfer Disable */
