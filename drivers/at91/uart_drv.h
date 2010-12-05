@@ -43,17 +43,17 @@
 
 struct UART_DRIVER_DATA_STRU
 {
-    unsigned short	cnt;		//signal flags for pending hanles (low-byte is oldest)
-    unsigned char 	state;
-    unsigned char	drv_indx;
-    HANDLE			hnd_rcv;
-    HANDLE			hnd_snd;
-    unsigned int 	mode;
-    unsigned int 	baudrate;
-    unsigned int  	rtout;
-    unsigned char * rx_ptr;
-    unsigned char	rx_buf[];
+    unsigned char	cnt;		//!< number of open handles
+    HANDLE			hnd_rcv;	//!< Receive queue
+    HANDLE			hnd_snd;	//!< Send queue
+    unsigned int 	mode;		//!< Current UART mode
+    unsigned int 	baudrate;	//!< Current baudrate
+    unsigned int  	rtout;		//!< Receive timeout counter
+    unsigned char * rx_ptr;		//!< Pointer to the current read position in rx_buf
+    unsigned char	rx_buf[];	//!< Buffer to store received symbols (while
+    							//!< there are no handles pending)
 };
+/** UART DRIVER DATA pointer type */
 typedef UART_DRIVER_DATA_STRU* UART_DRIVER_DATA;
 
 #ifdef __cplusplus
@@ -63,19 +63,20 @@ typedef UART_DRIVER_DATA_STRU* UART_DRIVER_DATA;
 
 struct DRV_UART_MODE_STRU
 {
-    unsigned int	baudrate;
-    unsigned int	mode;
-    unsigned short  rtout;
-    unsigned short  ttgr;
+    unsigned int	baudrate;	//!< baudrate for the mode
+    unsigned int	mode;		//!< UART_MR register value
+    unsigned short  rtout;		//!< receive timeout
+    unsigned short  ttgr;		//!< transmit timeout (not supported?)
 };
+/** UART Mode */
 typedef const DRV_UART_MODE_STRU * DRV_UART_MODE;
 
 struct UART_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info
 	Uart *				hw_base;		//!< pointer to the hardware peripheral
-	UART_DRIVER_DATA 	drv_data;
-	size_t				buf_size;
+	UART_DRIVER_DATA 	drv_data;		//!< pointer to the driver data
+	size_t				buf_size;		//!< size of the rx_buf
 };
 /** UART Driver Info */
 typedef const UART_DRIVER_INFO* UART_INFO;

@@ -15,8 +15,11 @@
 //*			Portable
 //*----------------------------------------------------------------------------
 
-
-void UART_OFF(Uart* pUart)
+/**
+ * Turn off the UART
+ * @param pUart
+ */
+static void UART_OFF(Uart* pUart)
 {
     //* Disable all interrupts
     pUart->UART_IDR = UART_IDR_RXRDY | UART_IDR_TXRDY | UART_IDR_ENDRX
@@ -45,6 +48,11 @@ void UART_OFF(Uart* pUart)
 
 }
 
+/** Turn On the UART
+ *
+ * @param pUart
+ * @param pMode
+ */
 void UART_CFG(Uart* pUart, DRV_UART_MODE pMode)
 {
     pUart->UART_CR = UART_CR_TXEN | UART_CR_RXEN;
@@ -62,11 +70,18 @@ void UART_CFG(Uart* pUart, DRV_UART_MODE pMode)
     pUart->UART_IER = UART_IER_ENDRX ;
 
 }
-
+/** STOP the receiver */
 #define STOP_RX(pUart) 		pUart->UART_PTCR = UART_PTCR_RXTDIS
+/** STOP the transmitter */
 #define STOP_TX(pUart) 		pUart->UART_PTCR = UART_PTCR_TXTDIS
+/** Resume the receiving */
 #define RESUME_RX(pUart) 	pUart->UART_PTCR = UART_PTCR_RXTEN
 
+/** Start receiving to rx_buf
+ *
+ * @param pUart
+ * @param drv_data
+ */
 static void START_RX_BUF(Uart*	pUart, UART_DRIVER_DATA drv_data)
 {
 	pUart->UART_RPR = (unsigned int)drv_data->rx_buf;
@@ -75,6 +90,12 @@ static void START_RX_BUF(Uart*	pUart, UART_DRIVER_DATA drv_data)
 	pUart->UART_PTCR = UART_PTCR_RXTEN ;
 }
 
+/** Start receiving to hnd
+ *
+ * @param pUart
+ * @param drv_data
+ * @param hnd
+ */
 static void START_RX_HND(Uart*	pUart, UART_DRIVER_DATA drv_data, HANDLE hnd)
 {
 	pUart->UART_RPR = hnd->dst.as_int;
@@ -83,6 +104,12 @@ static void START_RX_HND(Uart*	pUart, UART_DRIVER_DATA drv_data, HANDLE hnd)
     drv_data->rtout = ((DRV_UART_MODE)(hnd->mode.as_voidptr))->rtout;
 }
 
+/** Stop receiving hnd
+ *
+ * @param pUart
+ * @param drv_data
+ * @param hnd
+ */
 static void STOP_RX_HND(Uart*	pUart, UART_DRIVER_DATA drv_data, HANDLE hnd)
 {
 	STOP_RX(pUart);
@@ -96,6 +123,12 @@ static void STOP_RX_HND(Uart*	pUart, UART_DRIVER_DATA drv_data, HANDLE hnd)
 		START_RX_BUF(pUart, drv_data);
 }
 
+
+/** Start transmit hnd
+ *
+ * @param pUart
+ * @param hnd
+ */
 static void START_TX_HND(Uart*	pUart, HANDLE hnd)
 {
 	pUart->UART_TPR = hnd->src.as_int;
@@ -112,6 +145,12 @@ static void START_TX_HND(Uart*	pUart, HANDLE hnd)
 //*----------------------------------------------------------------------------
 //*			DCR function
 //*----------------------------------------------------------------------------
+/** UART DCR
+ *
+ * @param drv_info
+ * @param reason
+ * @param param
+ */
 void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
 {
     UART_DRIVER_DATA drv_data = drv_info->drv_data;
@@ -218,6 +257,11 @@ void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
 //*----------------------------------------------------------------------------
 //*			DSR function
 //*----------------------------------------------------------------------------
+/**
+ * UART DSR
+ * @param drv_info
+ * @param hnd
+ */
 void UART_DSR(UART_INFO drv_info, HANDLE hnd)
 {
     UART_DRIVER_DATA drv_data = drv_info->drv_data;
@@ -302,6 +346,13 @@ void UART_DSR(UART_INFO drv_info, HANDLE hnd)
 //*----------------------------------------------------------------------------
 //*			ISR function
 //*----------------------------------------------------------------------------
+/**
+ * UART ISR
+ * For SAM7 this is called from the system driver
+ * For SAM3 this is a normal IRQ, but it may also be called for timeouts (to do)
+ *
+ * @param drv_info
+ */
 void UART_ISR(UART_INFO drv_info )
 {
     HANDLE hnd;

@@ -13,8 +13,17 @@
 #include <mcu_cpp.h>
 #include <eefc.h>
 
+/**
+ * sysdrv_clock_frequency is gloabal variable and shows the current clock
+ * frequency
+ */
 volatile __no_init unsigned int sysdrv_clock_frequency;
 
+/**
+ * Set the main clock source (RC or XT oscillator)
+ * @param pPMC
+ * @param val - CKGR_MOR value
+ */
 void sys_SetMainClock(Pmc* pPMC, unsigned int val)
 {
 	unsigned int old, temp;
@@ -59,9 +68,9 @@ void sys_SetMainClock(Pmc* pPMC, unsigned int val)
 /**
  * Set new system clock
  *
+ * @param drv_info - PMC driver info
  * @param new_clk - clock, encodded as follow:
- *  - bit [1:0] - clock source (MCKR_CSS) for SAM7, SAM3U
- *  - bit [2:0] - clock source (MCKR_CSS) for SAM3S
+ *  - bit [1:0] - clock source (MCKR_CSS)
  *
  * Details:
  *
@@ -184,9 +193,18 @@ void sys_SetNewClock(PMC_INFO drv_info, unsigned int new_clk)
     sysdrv_clock_frequency = temp;
 
 }
-
+/**
+ * PMC driver info. The application must declare before the linkage.
+ */
 extern "C" PMC_DRIVER_INFO pmc_driver;
 
+/**
+ * LowLevelInit is the first function called after reset
+ *
+ * This is the default implementation for AT91/Cortex-M3. It changes the system
+ * clock so the boot can pass faster. The application may provide custom
+ * implementation for LowLevelInit().
+ */
 extern "C" __attribute__ ((weak)) void LowLevelInit( void )
 {
 	sys_SetNewClock(&pmc_driver, pmc_driver.CFG_BOOT_CLK);
