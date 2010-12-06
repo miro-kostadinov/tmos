@@ -46,6 +46,10 @@
 			storage.ram->len = 0;
 			storage.ram->buf[0] = 0;
 		}
+		else
+		{
+			ASSERT(storage.ram);
+		}
 	}
 
 	/**
@@ -81,6 +85,10 @@
 				storage.ram->len = len;
 				strcpy(storage.ram->buf, str);
 			}
+			else
+			{
+				ASSERT(storage.ram);
+			}
 		}
 	}
 
@@ -98,6 +106,10 @@
 			storage.ram->len = len;
 			memcpy(storage.ram->buf, str, len);
 			storage.ram->buf[len]=0;
+		}
+		else
+		{
+			ASSERT(storage.ram);
 		}
 	}
 
@@ -192,8 +204,13 @@
 					storage.ram->refs = 1;
 					storage.ram->len = len;
 				}
+				else
+				{
+					ASSERT(storage.ram);
+				}
 				return *this;
 			}
+			s="";
 		}
 
 		if(RAM_ADR(storage.adr))
@@ -280,6 +297,10 @@
 							tmp->len = current_len;
 							tmp->refs = 1;
 						}
+						else
+						{
+							ASSERT(tmp);
+						}
 						storage.ram = tmp;
 
 					} else
@@ -297,6 +318,10 @@
 								tmp->len = storage.ram->len;
 								tmp->refs = 1;
 							}
+							else
+							{
+								ASSERT(tmp);
+							}
 							if(locked_dec_short(&storage.ram->refs) <= 0)
 								str_free(storage.ram);	//oops someone released the storage
 							storage.ram = tmp;
@@ -308,6 +333,7 @@
 							{
 								//but it is too small -> realloc
 								storage_realloc(len + STR_MIN_SIZE);
+								ASSERT(storage.ram);
 							}
 						}
 					}
@@ -318,6 +344,10 @@
 					{
 						storage.ram->len = 0;
 						storage.ram->refs = 1;
+					}
+					else
+					{
+						ASSERT(storage.ram);
 					}
 				}
 
@@ -363,6 +393,10 @@
 							tmp->len = current_len;
 							tmp->refs = 1;
 						}
+						else
+						{
+							ASSERT(tmp);
+						}
 						storage.ram = tmp;
 
 					} else
@@ -380,6 +414,10 @@
 								tmp->len = storage.ram->len;
 								tmp->refs = 1;
 							}
+							else
+							{
+								ASSERT(tmp);
+							}
 							if(locked_dec_short(&storage.ram->refs) <= 0)
 								str_free(storage.ram);	//oops someone released the storage
 							storage.ram = tmp;
@@ -391,6 +429,7 @@
 							{
 								//but it is too small -> realloc
 								storage_realloc(len + STR_MIN_SIZE);
+								ASSERT(storage.ram);
 							}
 						}
 					}
@@ -401,6 +440,10 @@
 					{
 						storage.ram->len = 0;
 						storage.ram->refs = 1;
+					}
+					else
+					{
+						ASSERT(storage.ram);
 					}
 				}
 
@@ -443,6 +486,10 @@
 						strcpy(tmp->buf, storage.rom);
 						tmp->refs = 1;
 					}
+					else
+					{
+						ASSERT(tmp);
+					}
 					storage.ram = tmp;
 
 				} else
@@ -459,6 +506,10 @@
 							strcpy(tmp->buf, storage.ram->buf);
 							tmp->refs = 1;
 						}
+						else
+						{
+							ASSERT(tmp);
+						}
 						if(locked_dec_short(&storage.ram->refs) <= 0)
 							str_free(storage.ram);	//oops someone released the storage
 						storage.ram = tmp;
@@ -470,6 +521,7 @@
 						{
 							//but it is too small -> realloc
 							storage_realloc(len + STR_MIN_SIZE);
+							ASSERT(storage.ram);
 						}
 					}
 				}
@@ -480,6 +532,10 @@
 					storage.ram->len = 0;
 					storage.ram->refs = 1;
 					len = 1;
+				}
+				else
+				{
+					ASSERT(storage.ram);
 				}
 			}
 
@@ -802,6 +858,10 @@
 					tmp->len = storage.ram->len;
 					tmp->refs = 1;
 				}
+				else
+				{
+					ASSERT(tmp);
+				}
 				if(locked_dec_short(&storage.ram->refs) <= 0)
 					str_free(storage.ram);	//oops someone released the storage
 				storage.ram = tmp;
@@ -813,6 +873,7 @@
 				{
 					//but it is too small -> realloc
 					storage_realloc(size + STR_MIN_SIZE);
+					ASSERT(storage.ram);
 				}
 			}
 
@@ -833,6 +894,10 @@
 					tmp->len = current_len;
 					tmp->refs = 1;
 				}
+				else
+				{
+					ASSERT(tmp);
+				}
 				storage.ram = tmp;
 			} else
 			{
@@ -841,6 +906,10 @@
 					storage.ram->refs = 1;
 					storage.ram->len = 0;
 					storage.ram->buf[0] = 0;
+				}
+				else
+				{
+					ASSERT(storage.ram);
 				}
 			}
 		}
@@ -945,6 +1014,10 @@
 					tmp->len = storage.ram->len;
 					tmp->refs = 1;
 				}
+				else
+				{
+					ASSERT(tmp);
+				}
 				if(locked_dec_short(&storage.ram->refs) <= 0)
 					str_free(storage.ram);	//oops someone released the storage
 				storage.ram = tmp;
@@ -1023,14 +1096,14 @@ unsigned int CSTRING::find_in_list(STR_LIST sl, unsigned int* dwRead) const
 		pos=0;
 		while(1)
 		{
-			if(sl[pos] != buf[pos])
-				break;
 			if(!sl[pos])
 			{
 				if(dwRead)
 					*dwRead += pos;
 				return index;
 			}
+			if(sl[pos] != buf[pos])
+				break;
 			pos++;
 		}
 		while(sl[pos])
@@ -1042,5 +1115,43 @@ unsigned int CSTRING::find_in_list(STR_LIST sl, unsigned int* dwRead) const
 
 }
 
-/** @} ingroup lib_cstring  */
+/**
+ * [] operator
+ * @param index
+ * @return
+ */
+char& CSTRING::operator[]( unsigned int index )
+{
+	ASSERT(storage.adr);
+	if(RAM_ADR(storage.adr))
+	{
+		ASSERT(index <= storage.ram->len);
+		return storage.ram->buf[index];
+	}
+	return dummy_char;
+}
 
+/**
+ * [] operator
+ * @param index
+ * @return
+ */
+const char& CSTRING::operator[]( unsigned int index ) const
+{
+	if(RAM_ADR(storage.adr))
+	{
+		ASSERT(index <= storage.ram->len);
+		return storage.ram->buf[index];
+	} else
+	{
+		if(storage.adr)
+		{
+			return storage.rom[index];
+		}
+	}
+	ASSERT(storage.adr);
+	return dummy_char;
+}
+
+
+/** @} ingroup lib_cstring  */
