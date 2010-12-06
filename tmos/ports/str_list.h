@@ -12,6 +12,9 @@
 #ifndef STR_LIST_H_
 #define STR_LIST_H_
 
+#include <tmos.h>
+#include <trace.h>
+
 /**
  * @brief String list
  *	The string list is a list of non-empty strings terminated by empty string.
@@ -20,7 +23,7 @@
  *	 -	0, 0  - empty list ("")
  *	 -	'h', 'e', 'l', 'l', 'o', 0, 0 - list with one element ("hello", "")
  */
-typedef char * STR_LIST;
+typedef const char* STR_LIST;
 
 
 /**
@@ -160,40 +163,8 @@ public:
     int compare( const char* str, unsigned int len ) const;
     bool find(unsigned int& pos, char val) const;
 
-    /**
-     * [] operator
-     * @param index
-     * @return
-     */
-	char& operator[]( unsigned int index )
-	{
-		if(RAM_ADR(storage.adr))
-		{
-			return storage.ram->buf[index];
-		}
-		return dummy_char;
-	}
-
-	/**
-	 * [] operator
-	 * @param index
-	 * @return
-	 */
-	const char& operator[]( unsigned int index ) const
-	{
-		if(RAM_ADR(storage.adr))
-		{
-			return storage.ram->buf[index];
-		} else
-		{
-			if(storage.adr)
-			{
-				return storage.rom[index];
-			}
-		}
-		return dummy_char;
-	}
-
+	char& operator[]( unsigned int index );
+	const char& operator[]( unsigned int index ) const;
 
 	const char* c_str() const;
 	unsigned int capacity() const;
