@@ -56,17 +56,11 @@ USE_TIME		?=n
 # sprintf() scanf() 
 USE_TMOS_STDIO	?=y
 
-
-
-
 #CalculateCRC32()
-USE_CRC32		?=n
+USE_CRC32		?=y
 
 # class CCache
-USE_CACHE		?=n
-
-# classes obj_item obj_pair obj_list
-USE_OBJ_LIST	?=n
+USE_CACHE		?=y
 
 
 

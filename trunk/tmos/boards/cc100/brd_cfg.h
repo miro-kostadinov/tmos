@@ -19,5 +19,7 @@
 #define USE_TMOS_STDLIB		1
 #define USE_TIME			0
 #define USE_TMOS_STDIO		1
+#define USE_CRC32			1
+#define USE_CACHE			1
 
 #endif /* BRD_CFG_H_ */
