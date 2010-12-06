@@ -14,7 +14,10 @@ local_c_src-y 	:=
 
 local_cpp_src-y	:=   
 
+local_c_src-$(USE_CRC32)		+= crc32.c
+
 local_cpp_src-$(USE_CSTRING)	+= str_list.cpp
+local_cpp_src-$(USE_CACHE)		+= cache.cpp
 
 local_h_src-y 	:=tmos.h tmos_cfg.h tmos_inc.h str_list.h tmos_types.h
 
