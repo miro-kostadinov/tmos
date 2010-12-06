@@ -345,7 +345,6 @@ FUNC(	strncmp		)
 				beq				1b
 2:
 				subs			r0, r12, r3
-				mov				r4, r12
   				bx				lr
 
 3:
