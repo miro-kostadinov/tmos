@@ -1,0 +1,107 @@
+   1              		.syntax unified
+   2              		.file	"main.cpp"
+   3              	@ GNU C++ (GCC) version 4.4.2 (arm-elf)
+   4              	@	compiled by GNU C version 3.4.5 (mingw-vista special r3), GMP version 4.3.1, MPFR version 2.4.1.
+   5              	@ GGC heuristics: --param ggc-min-expand=99 --param ggc-min-heapsize=129981
+   6              	@ options passed:  -Itargets/default/ -I../tmos/out/ron200/include
+   7              	@ -imultilib thumb/thumb2 -iprefix
+   8              	@ c:\progra~1\yagarto2009\bin\../lib/gcc/arm-elf/4.4.2/ -MD
+   9              	@ out/app/main_cpp.d -MF out/app/main_cpp.o.dep -MP -MQ out/app/main_cpp.o
+  10              	@ -D__USES_INITFINI__ app/main.cpp -mcpu=cortex-m3 -mthumb -auxbase-strip
+  11              	@ out/app/main_cpp.o -g -g3 -O0 -Wall -Wcast-align -Wimplicit
+  12              	@ -Wpointer-arith -Wswitch -Wredundant-decls -Wreturn-type -Wshadow
+  13              	@ -Wunused -std=c++0x -fomit-frame-pointer -fverbose-asm
+  14              	@ -ffunction-sections -fdata-sections -fno-dwarf2-cfi-asm -fno-rtti
+  15              	@ -fno-exceptions -fno-use-cxa-atexit
+  16              	@ options enabled:  -falign-loops -fargument-alias -fauto-inc-dec
+  17              	@ -fbranch-count-reg -fcommon -fdata-sections -fearly-inlining
+  18              	@ -feliminate-unused-debug-types -ffunction-cse -ffunction-sections
+  19              	@ -fgcse-lm -fident -finline-functions-called-once -fira-share-save-slots
+  20              	@ -fira-share-spill-slots -fivopts -fkeep-static-consts
+  21              	@ -fleading-underscore -fmath-errno -fmerge-debug-strings
+  22              	@ -fmove-loop-invariants -fomit-frame-pointer -fpeephole
+  23              	@ -freg-struct-return -fsched-interblock -fsched-spec
+  24              	@ -fsched-stalled-insns-dep -fsigned-zeros -fsplit-ivs-in-unroller
+  25              	@ -ftrapping-math -ftree-cselim -ftree-loop-im -ftree-loop-ivcanon
+  26              	@ -ftree-loop-optimize -ftree-parallelize-loops= -ftree-reassoc
+  27              	@ -ftree-scev-cprop -ftree-switch-conversion -ftree-vect-loop-version
+  28              	@ -funit-at-a-time -fverbose-asm -fzero-initialized-in-bss
+  29              	@ -mfix-cortex-m3-ldrd -mlittle-endian -msched-prolog -mthumb
+  30              	
+  40              	.Ltext0:
+  41              		.file 1 "app/main.cpp"
+ 1256              		.align	2
+ 1259              	main_task:
+ 1260 0000 00000000 		.space	72
+ 1260      00000000 
+ 1260      00000000 
+ 1260      00000000 
+ 1260      00000000 
+ 1261              		.global	main_task_stack
+ 1262              		.section	.task.main_task.tstack,"aw",%progbits
+ 1263              		.align	2
+ 1266              	main_task_stack:
+ 1267 0000 00000000 		.space	624
+ 1267      00000000 
+ 1267      00000000 
+ 1267      00000000 
+ 1267      00000000 
+ 1268              		.global	main_task_desc
+ 1269              		.section	.rominitsec,"a",%progbits
+ 1270              		.align	2
+ 1273              	main_task_desc:
+ 1274              	@ tsk:
+ 1275 0000 00000000 		.word	main_task
+ 1276              	@ stack:
+ 1277 0004 4C020000 		.word	main_task_stack+588
+ 1278              	@ func:
+ 1279 0008 00000000 		.word	main
+ 1280              	@ priority:
+ 1281 000c 00       		.byte	0
+ 1282              	@ name:
+ 1283 000d 4D41494E 		.ascii	"MAIN\000"
+ 1283      00
+ 1284 0012 000000   		.space	3
+ 1285 0015 000000   		.space	3
+ 1286              		.section	.text.main,"ax",%progbits
+ 1287              		.align	2
+ 1288              		.global	main
+ 1289              		.thumb
+ 1290              		.thumb_func
+ 1292              	main:
+ 1293              	.LFB50:
+   0:app/main.cpp  **** #include <tmos.h>
+   1:app/main.cpp  **** 
+   2:app/main.cpp  **** 
+   3:app/main.cpp  **** int main(void);
+   4:app/main.cpp  **** TASK_DECLARE_STATIC(main_task, "MAIN", (void (*)(void))main, 0, 20+TRACE_SIZE);
+   5:app/main.cpp  **** 
+   6:app/main.cpp  **** 
+   7:app/main.cpp  **** 
+   8:app/main.cpp  **** int main(void)
+   9:app/main.cpp  **** {
+ 1294              		.loc 1 10 0
+ 1295              		@ args = 0, pretend = 0, frame = 0
+ 1296              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1297              		@ link register save eliminated.
+ 1298              	.L2:
+  10:app/main.cpp  **** 
+  11:app/main.cpp  **** 
+  12:app/main.cpp  **** 	for(;;)
+ 1299              		.loc 1 13 0
+ 1300 0000 FEE7     		b	.L2	@
+ 1301              	.LFE50:
+ 1327              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.cpp
+C:\DOCUME~1\Diado\LOCALS~1\Temp\ccnEEsok.s:1259   .task.main_task.tcb:00000000 main_task
+C:\DOCUME~1\Diado\LOCALS~1\Temp\ccnEEsok.s:1256   .task.main_task.tcb:00000000 $d
+C:\DOCUME~1\Diado\LOCALS~1\Temp\ccnEEsok.s:1266   .task.main_task.tstack:00000000 main_task_stack
+C:\DOCUME~1\Diado\LOCALS~1\Temp\ccnEEsok.s:1263   .task.main_task.tstack:00000000 $d
+C:\DOCUME~1\Diado\LOCALS~1\Temp\ccnEEsok.s:1273   .rominitsec:00000000 main_task_desc
+C:\DOCUME~1\Diado\LOCALS~1\Temp\ccnEEsok.s:1270   .rominitsec:00000000 $d
+C:\DOCUME~1\Diado\LOCALS~1\Temp\ccnEEsok.s:1292   .text.main:00000000 main
+C:\DOCUME~1\Diado\LOCALS~1\Temp\ccnEEsok.s:1287   .text.main:00000000 $t
+C:\DOCUME~1\Diado\LOCALS~1\Temp\ccnEEsok.s:1316   .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS
