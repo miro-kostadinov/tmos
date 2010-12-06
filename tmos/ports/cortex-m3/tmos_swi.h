@@ -237,7 +237,7 @@ inline static void* usr_malloc(unsigned int volatile size)
 	asm volatile ("swi %1"
 	  : "=r"(_size)
 	  : "I" (malloc_swi), "0"(_size)
-	  : "");
+	  : "r3");
 	return (void*)_size;
 }
 #endif
@@ -250,7 +250,7 @@ inline static void usr_free(void* volatile ptr)
 	asm volatile ("swi %1"
 	  : "=r"(_ptr)
 	  : "I" (free_swi), "0"(_ptr)
-	  : "");
+	  : "r3");
 }
 #endif
 
@@ -263,7 +263,7 @@ inline static void* usr_realloc(void* volatile ptr, unsigned int volatile size)
 	asm volatile ("swi %1"
 	  : "=r"(_ptr)
 	  : "I" (realloc_swi), "0"(_ptr), "r"(_size)
-	  : "");
+	  : "r3");
 	return (void*)_ptr;
 }
 #endif
