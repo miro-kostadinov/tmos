@@ -5,7 +5,7 @@
  * @version  V3.00
  * @date     28. November 2010
  * @author	 Miroslav Kostadinov
- * test
+ *
  *
  * @defgroup drivers Drivers
  * This module contains TMOS drivers for various peripherals
