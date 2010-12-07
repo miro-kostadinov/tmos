@@ -19,7 +19,7 @@
 //
 //========================================================================
 #include "port_asm.h"
-#include "port_inc.h"
+#include "swi_tab.h"
 
 #define PAD_RIGHT 1
 #define PAD_ZERO 2
