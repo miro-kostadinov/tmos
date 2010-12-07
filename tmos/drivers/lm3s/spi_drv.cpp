@@ -8,10 +8,11 @@
  *
  */
 
-#include <drivers.h>
+#include <tmos.h>
 
 #include "spi_drv.h"
-
+#include <hardware_cpp.h>
+#include <gpio_drv.h>
 
 //*----------------------------------------------------------------------------
 //*			Portable

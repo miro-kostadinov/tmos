@@ -8,7 +8,8 @@
 #ifndef UART_DRIVER_H_
 #define UART_DRIVER_H_
 
-#include "gpio_drv.h"
+//#include "gpio_drv.h"
+#include <uart_lm3s.h>
 
 #define UART_LIST_ALL_PINS 0
 #define RTS_PIN	0
