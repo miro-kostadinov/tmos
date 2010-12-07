@@ -30,7 +30,8 @@
 #define DCR_PARAMS			0x09	//!< set driver parameters
 #define DCR_ISR				0x0a	//!< can be used when ISR needs to call DCR
 #define DCR_HANDLE			0x0b	//!< DCR call with a handle
-#define DCR_BAUDRATE		0x10	//!< Baudrate change request
+#define DCR_BAUDRATE		0x0c	//!< Baudrate change request
+#define DCR_STOP			0x0d	//!< Request to stop some driver function
 
 
 #endif /* TMOS_INC_H_ */
