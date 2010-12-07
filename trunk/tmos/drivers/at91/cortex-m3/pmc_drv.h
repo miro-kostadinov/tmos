@@ -41,7 +41,7 @@ void PMC_DCR(PMC_INFO drv_info, unsigned int reason, HANDLE hnd);
 void PMC_DSR(PMC_INFO drv_info, HANDLE hnd);
 void PMC_ISR(PMC_INFO drv_info );
 
-extern volatile __no_init unsigned int sysdrv_clock_frequency;
+void sys_SetNewClock(PMC_INFO drv_info, unsigned int new_clk);
 
 #ifdef __cplusplus
 }
