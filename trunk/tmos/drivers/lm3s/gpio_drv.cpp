@@ -4,7 +4,21 @@
  *  Created on: 2010-4-22
  *      Author: stanly
  */
-#include <drivers.h>
+#include <tmos.h>
+#include <gpio_drv.h>
+#include <hardware_cpp.h>
+#include <spi_drv.h>
+
+/* TODO: This driver needs to be rewritten from the scratch!
+ * I'll do some dirty patches now just to compile it...
+ *
+ */
+extern const GPIO_DRIVER_INFO * const GPIO_DRVS[PORTS];
+
+
+
+
+
 GPIO_Type * PIO_Base(PIN_DESC Pin)
 {
 	if(Pin.port_num == PORT_V)
@@ -75,17 +89,13 @@ void PIO_Cfg_List(PIN_DESC * list )
 	}
 }
 
-//FIXME:
-// Driver code should NOT BE dependent from the board!
+/** this is the SPI mode to reach extended pins
+ * should be declared somewhere (usually in the application)
+ */
+extern const SPI_DRIVER_MODE sreg_mode_stru;
 
-#if HW_VER_11
-const SPI_DRIVER_MODE sreg_mode_stru =
-{
-	IO_CS,
-    SSI_CR0_SPH | SSI_CR0_SPO | SSI_CR0_FRF_MOTO | SSI_CR0_DSS_8 | (2 << 8)		// clock rate
-//    SPI_CLOCK_DIV(2) |	SPI_MODE_1		//	0x00000200
-};
-#endif
+/** bad implementation! */
+extern GPIO_DRIVER_DATA gpio_data;
 
 void PIO_Write(PIN_DESC Pin, unsigned char val )
 {
@@ -95,7 +105,6 @@ void PIO_Write(PIN_DESC Pin, unsigned char val )
 	    ASSERT(SYSCTL->RCGC2&(1<<Pin.port_num));
 		Port_Base->DATA_Bits[Pin.pin_pattern] = val;
 	}
-#if HW_VER_11
 	else
 	{
 		CHandle sreg;
@@ -103,7 +112,6 @@ void PIO_Write(PIN_DESC Pin, unsigned char val )
 		gpio_data.sreg_val = (gpio_data.sreg_val & (~Pin.pin_pattern))|(val & Pin.pin_pattern);
 		sreg.tsk_write(&gpio_data.sreg_val, 1 );
 	}
-#endif
 }
 
 unsigned char PIO_Read(PIN_DESC Pin)
@@ -326,6 +334,7 @@ void dsr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, HANDLE hnd)
 	}
 }
 
+/*
 unsigned check_uart_cts(unsigned int port_num, unsigned char status, DRIVER_INDEX drv_index)
 {
 	UART_DRIVER_INFO * drv_info = (UART_DRIVER_INFO *)(void*)(DRV_TABLE[drv_index]-1);
@@ -342,15 +351,19 @@ unsigned check_uart_cts(unsigned int port_num, unsigned char status, DRIVER_INDE
 	}
 	return false;
 }
-
+*/
 void isr_GPIO_driver(GPIO_DRIVER_INFO* drv_info )
 {
 	unsigned int status = drv_info->hw_base->GPIOPinIntStatus(true);
 	drv_info->hw_base->GPIOPinIntClear(status);
+
+/*
 #ifdef HW_VER_10
 	if( !check_uart_cts(drv_info->port_num, status, UART0_IRQn) &&
 		!check_uart_cts(drv_info->port_num, status, UART2_IRQn) )
 		drv_info->hw_base->GPIOPinIntDisable(status);
 #endif
+
+*/
 	usr_drv_icontrol(drv_info->info.drv_index, DCR_ISR, (void *)status);
 }

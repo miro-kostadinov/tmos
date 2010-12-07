@@ -8,7 +8,10 @@
 #ifndef GPIO_DRV_H_
 #define GPIO_DRV_H_
 
+#include <gpio_lm3s.h>
+
 #define PORTS		9
+
 
 struct GPIO_DRIVER_DATA
 {

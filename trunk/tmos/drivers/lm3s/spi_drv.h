@@ -8,6 +8,8 @@
 #ifndef SPI_DRV_H_
 #define SPI_DRV_H_
 
+#include <ssi_lm3s.h>
+
 struct SPI_DRIVER_MODE
 {
     unsigned int	cs_pin;		//!< doc!

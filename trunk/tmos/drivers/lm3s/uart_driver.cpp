@@ -4,7 +4,10 @@
  *  Created on: 2010-3-19
  *
  */
-#include <drivers.h>
+#include <tmos.h>
+#include <uart_driver.h>
+#include <hardware_cpp.h>
+#include <gpio_drv.h>
 
 void ConfigureUart(UART_DRIVER_INFO * drv_info, UART_DRIVER_DATA * drv_data, UART_DRIVER_MODE * uart_mode)
 {
