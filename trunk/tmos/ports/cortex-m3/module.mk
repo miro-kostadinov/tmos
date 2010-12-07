@@ -8,20 +8,21 @@
 ################################################################################
 
 # local sources
-local_as_src-y	:= exceptions.S services.S 
- 
-local_c_src-y 	:= 
+local_as_src-y	:=
+local_c_src-y 	:=
+local_cpp_src-y	:=
+local_h_src-y 	:=
 
-local_cpp_src-y	:= kernel.cpp handle.cpp   
-
+local_as_src-y	+= exceptions.S services.S 
 local_as_src-$(USE_TMOS_STRING)	+= tmos_string.S 
 local_as_src-$(USE_TMOS_STDLIB)	+= tmos_stdlib.S 
 local_as_src-$(USE_TMOS_STDIO)	+= tmos_stdio.S 
 
+local_cpp_src-y	+= kernel.cpp handle.cpp   
 local_cpp_src-$(USE_TMOS_STDLIB)+= tmos_stdlib.cpp
 
-local_h_src-y 	:= port_cpp.h port_inc.h tmos_string.h tmos_stdlib.h tasks.h 
-local_h_src-y 	+= services.h tmos_swi.h handle.h tmos_stdio.h
+local_h_src-y 	+= port_cpp.h port_inc.h tmos_string.h tmos_stdlib.h tasks.h 
+local_h_src-y 	+= services.h tmos_swi.h handle.h tmos_stdio.h port_asm.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
