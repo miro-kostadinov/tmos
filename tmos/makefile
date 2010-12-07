@@ -303,8 +303,8 @@ sizebefore:
 
 sizeafter:
 	@if [ -f $(PROJECT).elf ]; then echo; echo Size after:; $(ELFSIZE); echo; fi
-	@if [ -f $(PROJECT).hex ]; then echo; echo Size before:; $(HEXSIZE); echo; fi
-	@if [ -f $(LIBNAME).a ]; then echo; echo Size before:; $(LIBSIZE); echo; fi
+	@if [ -f $(PROJECT).hex ]; then echo; echo Size after:; $(HEXSIZE); echo; fi
+	@if [ -f $(LIBNAME).a ]; then echo; echo Size after:; $(LIBSIZE); echo; fi
 
 # ======= Assemble: create object files from assembler source files. ARM/Thumb
 $(as_objects) : $(OUT_DIR)%_S.o :  %.S
