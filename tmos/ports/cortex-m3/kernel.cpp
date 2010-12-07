@@ -21,7 +21,9 @@
 
 
 #include <tmos.h>
-#include <drivers.h>
+#include <tmos.h>
+#include <cmsis_cpp.h>
+
 #if USE_TIME
 #include "time.h"
 #endif
@@ -29,6 +31,12 @@
 extern TASK_STRU main_task;
 extern TASK_DESCRIPTION main_task_desc;
 // main task declaration
+
+/**
+ * sysdrv_clock_frequency is gloabal variable and shows the current clock
+ * frequency
+ */
+volatile __no_init unsigned int sysdrv_clock_frequency;
 
 
 
@@ -54,7 +62,29 @@ extern "C" void HardFaultIsr(void)
     while(i){}
 }
 
+/**
+ *  First reset Table with drivers that must be initialized first
+ *
+ *  The table can be declared in the application, that's why we use it here as
+ *  extern linker symbol. The table must be terminated with INALID_DRV_INDX
+ */
+extern signed char const DRV_RESET_FIRST_TABLE[];
 
+/**
+ *  DRV_TABLE - extern linker symbol
+ */
+extern char* const DRV_TABLE[];
+
+static bool is_first_reset(int index)
+{
+	for(int i=0; DRV_RESET_FIRST_TABLE[i] < INALID_DRV_INDX; i++ )
+	{
+		if(index == DRV_RESET_FIRST_TABLE[i])
+			return true;
+	}
+
+	return false;
+}
 
 //*----------------------------------------------------------------------------
 //*     sys_kernel_init
@@ -70,7 +100,7 @@ extern "C" void sys_kernel_init( void)
 {
     DRIVER_INFO drv_info;
     char *ptr;
-    int i, j;
+    int i;
 
 
     //--------------- Start trace -----------------------------//
@@ -95,11 +125,6 @@ extern "C" void sys_kernel_init( void)
 	//------------- initialize dynamic memory  ---------------//
 	svc_pool_init(&end, (void*)(SRAM_BASE + RAM_SIZE));
 
-
-//	SysCtlPeripheralEnable(SYSCTL_PERIPH_UDMA);
-//	UDMA->uDMAEnable();
-//	UDMA->uDMAControlBaseSet(UDMATable);
-
     // initialize main task
     usr_task_init_static(&main_task_desc, false);
     //extra initialization needed for main_task
@@ -108,25 +133,23 @@ extern "C" void sys_kernel_init( void)
 #if USE_TIME
     usr_task_init_static(&time_task_desc, true);
 #endif
-    // call sysclock and gpio drivers DCRs with DCR_RESET first
-    for(i=0; i < (signed)sizeof(DRV_RESET_FIRST_TABLE); i++)
+
+    // Reset the drivers in DRV_RESET_FIRST_TABLE
+    for (i = 0; (ptr =DRV_TABLE[DRV_RESET_FIRST_TABLE[i]]) ; i++)
     {
-    	ptr =DRV_TABLE[DRV_RESET_FIRST_TABLE[i]];
     	drv_info = (DRIVER_INFO)(void*)(ptr-1);
         drv_info->dcr(drv_info, DCR_RESET, NULL);
     }
-    // call all drivers DCRs with DCR_RESET
-    i=SysTick_IRQn; j=0;
-    while( (ptr =DRV_TABLE[i++]) )
-    {
-    	if( i ==  DRV_RESET_FIRST_TABLE[j]+1)
-    	{
-    		j++;
-    		continue;
-    	}
-    	drv_info = (DRIVER_INFO)(void*)(ptr-1);
-        drv_info->dcr(drv_info, DCR_RESET, NULL);
 
+    // Reset the remaining drivers
+    for (i = SysTick_IRQn; i < INALID_DRV_INDX; i++)
+    {
+    	if(!is_first_reset(i))
+    	{
+    		ptr =DRV_TABLE[i];
+        	drv_info = (DRIVER_INFO)(void*)(ptr-1);
+            drv_info->dcr(drv_info, DCR_RESET, NULL);
+    	}
     }
 
 
