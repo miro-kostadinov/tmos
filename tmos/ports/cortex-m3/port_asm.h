@@ -23,6 +23,12 @@
 #ifndef CPU_ASM_H_
 #define CPU_ASM_H_
 
+#ifdef __ASSEMBLER__
+#ifndef __ASSEMBLY__
+#define __ASSEMBLY__ __ASSEMBLER__
+#endif
+#endif
+
 .syntax unified		// Put the assembler into the correct configuration.
 .thumb
 
