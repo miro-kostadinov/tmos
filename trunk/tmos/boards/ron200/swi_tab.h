@@ -39,8 +39,12 @@
 #define free_swi					17
 #define realloc_swi					18
 
+
+#ifndef __ASSEMBLY__
+
 typedef void (* SWI_FUNC)(void);
 extern SWI_FUNC const SWI_TABLE[];
 
+#endif
 
 
