@@ -7,13 +7,13 @@
 ################################################################################
 
 # local sources
-local_as_src-y	:=  
+local_as_src-y	:=
  
-local_c_src-y 	:= lowlevel.c
+local_c_src-y 	:=
 
-local_cpp_src-y	:=    
+local_cpp_src-y	:= lowlevel.cpp
 
-local_h_src-y 	:=  
+local_h_src-y 	:=
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -25,7 +25,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 #inc_dirs += $(subdirectory) 
 
 #submodules
-local_modules-y :=  
+local_modules-y :=
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
