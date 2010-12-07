@@ -10,9 +10,9 @@
 # local sources
 local_as_src-y	:=
  
-local_c_src-y 	:= 
+local_c_src-y 	:=
 
-local_cpp_src-y	:=   clock_drv.cpp gpio_drv.cpp spi_drv.cpp uart_driver.cpp
+local_cpp_src-y	:= gpio_drv.cpp spi_drv.cpp uart_driver.cpp
 
 
 #updating global variables
@@ -25,7 +25,7 @@ cpp_sources += $(call changepath,$(local_cpp_src-y))
 inc_dirs += $(subdirectory) 
 
 #submodules
-local_modules-y :=  
+local_modules-y :=
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
