@@ -14,15 +14,17 @@ local_c_src-y 	:=
 
 local_cpp_src-y	:=   
 
+ifeq ($(CFG_CORE), cortex-m3)
+local_cpp_src-y	+= systick_drv.cpp
+endif
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
 c_sources  	+= $(call changepath,$(local_c_src-y))
 cpp_sources += $(call changepath,$(local_cpp_src-y))
 
-
 #add current directory to include path
-#inc_dirs += $(subdirectory) 
+inc_dirs += $(subdirectory) 
 
 #submodules
 local_modules-y := $(CFG_FAMILY) 
