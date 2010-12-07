@@ -71,7 +71,7 @@ local_as_src-y	:=
  
 local_c_src-y 	:= 
 
-local_cpp_src-y	:= drivers.cpp  
+local_cpp_src-y	:= 
 
 local_h_src-y 	:= brd_cfg.h brd_cpp.h swi_tab.h trace.h
 
