@@ -32,10 +32,10 @@
 #ifdef __cplusplus
 extern "C"
 {
-	extern volatile __no_init unsigned int sysdrv_clock_frequency;
+	extern volatile __no_init unsigned int system_clock_frequency;
 }
 #else
-extern volatile __no_init unsigned int sysdrv_clock_frequency;
+extern volatile __no_init unsigned int system_clock_frequency;
 #endif
 
 #ifdef __cplusplus

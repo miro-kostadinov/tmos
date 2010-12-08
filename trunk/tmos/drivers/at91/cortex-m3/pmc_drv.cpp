@@ -184,7 +184,7 @@ void sys_SetNewClock(PMC_INFO drv_info, unsigned int new_clk)
     new_clk=pPMC->PMC_MCKR;
 	temp = drv_info->CFG_FREQUENCIES[new_clk & PMC_MCKR_CSS_Msk];
 	temp >>= (new_clk & PMC_MCKR_PRES_Msk) >> 2;
-    sysdrv_clock_frequency = temp;
+    system_clock_frequency = temp;
 
 }
 

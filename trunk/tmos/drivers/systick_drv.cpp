@@ -25,7 +25,7 @@ void SYSTICK_DCR(SYSTICK_INFO drv_info, unsigned int reason, void* param)
 	case DCR_RESET:
 		unsigned int ticks;
 		SysTick->CTRL = NVIC_ST_CTRL_CLK_SRC;
-		ticks = (sysdrv_clock_frequency/1000)*drv_info->OS_QUANTUM_PERIOD - 1;
+		ticks = (system_clock_frequency/1000)*drv_info->OS_QUANTUM_PERIOD - 1;
 		SysTick->SysTick_Config(ticks);
 		NVIC->NVIC_SetPriority (SysTick_IRQn, 0);  /* SYSTICK MUST HAVE THE HIGHEST PRIORITY !!!! */
 
