@@ -29,10 +29,10 @@ extern TASK_DESCRIPTION main_task_desc;
 // main task declaration
 
 /**
- * sysdrv_clock_frequency is gloabal variable and shows the current clock
+ * system_clock_frequency is gloabal variable and shows the current clock
  * frequency
  */
-volatile __no_init unsigned int sysdrv_clock_frequency;
+volatile __no_init unsigned int system_clock_frequency;
 
 
 
@@ -82,7 +82,10 @@ static bool is_first_reset(int index)
 	return false;
 }
 
-extern "C" void app_init(void);
+extern "C" __attribute__ ((weak)) void app_init(void)
+{
+
+}
 
 //*----------------------------------------------------------------------------
 //*     sys_kernel_init

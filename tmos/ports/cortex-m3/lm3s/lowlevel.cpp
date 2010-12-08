@@ -17,5 +17,5 @@ extern "C" __attribute__ ((weak)) void LowLevelInit( void )
 {
 	SYSCTL->SysCtlClockSet(SYSCTL_XTAL_16MHZ | SYSCTL_OSC_MAIN | SYSCTL_USE_OSC
 			| SYSCTL_SYSDIV_2);
-	sysdrv_clock_frequency = SYSCTL->SysCtlClockGet();
+	system_clock_frequency = SYSCTL->SysCtlClockGet();
 }
