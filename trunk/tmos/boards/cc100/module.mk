@@ -51,7 +51,7 @@ USE_CSTRING		?=y
 USE_TMOS_STDLIB	?=y
 
 # class CTime
-USE_TIME		?=n
+USE_TIME		?=y
 
 # sprintf() scanf() 
 USE_TMOS_STDIO	?=y
