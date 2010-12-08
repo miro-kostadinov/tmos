@@ -25,6 +25,7 @@
 
 
 .section .ExceptionVectors,"ax"
+				.extern SWI_TABLE
 //------------------------------------------------------------------------------
 //  Exception Vectors
 //  This section can be placed in Flash or RAM, depending on the linker script
@@ -41,8 +42,8 @@ ENTRY(	VECTOR_TABLE	)
     .word			sys_mpu_handler				// The MPU fault handler
     .word			sys_bus_fault_handler		// The bus fault handler
     .word			sys_usage_fault_handler		// The usage fault handler
-    .word			0							// Reserved
-    .word			0							// Reserved
+    .word			SWI_TABLE					// Reserved	use it to avoid optimization of SWI_TABLE
+    .word			DRV_TABLE					// Reserved
     .word			0							// Reserved
     .word			0							// Reserved
     .word			sys_svc_handler				// SVCall handler
