@@ -24,10 +24,6 @@
 #include <tmos.h>
 #include <cmsis_cpp.h>
 
-#if USE_TIME
-#include "time.h"
-#endif
-
 extern TASK_STRU main_task;
 extern TASK_DESCRIPTION main_task_desc;
 // main task declaration
@@ -86,6 +82,8 @@ static bool is_first_reset(int index)
 	return false;
 }
 
+extern "C" void app_init(void);
+
 //*----------------------------------------------------------------------------
 //*     sys_kernel_init
 //*
@@ -130,9 +128,6 @@ extern "C" void sys_kernel_init( void)
     //extra initialization needed for main_task
     main_task.time = 0;								// current time is 000000000
     main_task.state = TSKSTATE_READY;				// leave it suspend ???
-#if USE_TIME
-    usr_task_init_static(&time_task_desc, true);
-#endif
 
     // Reset the drivers in DRV_RESET_FIRST_TABLE
     for (i = 0; (ptr =DRV_TABLE[DRV_RESET_FIRST_TABLE[i]]) ; i++)
@@ -152,7 +147,8 @@ extern "C" void sys_kernel_init( void)
     	}
     }
 
-
+    // Application level init
+    app_init();
 }
 
 //*----------------------------------------------------------------------------
