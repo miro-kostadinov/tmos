@@ -12,6 +12,7 @@
 #include "pmc_drv.h"
 #include <mcu_cpp.h>
 #include <eefc.h>
+#include <cmsis_cpp.h>
 
 /**
  * Set the main clock source (RC or XT oscillator)
@@ -187,6 +188,28 @@ void sys_SetNewClock(PMC_INFO drv_info, unsigned int new_clk)
     system_clock_frequency = temp;
 
 }
+
+void drv_isr_enable(DRIVER_INFO drv_info)
+{
+	NVIC->NVIC_SetPriority(drv_info->drv_index, drv_info->isr_priority);
+	NVIC->NVIC_EnableIRQ(drv_info->drv_index);
+}
+
+void drv_isr_disable(DRIVER_INFO drv_info)
+{
+	NVIC->NVIC_DisableIRQ(drv_info->drv_index);
+}
+
+void drv_pmc_enable(DRIVER_INFO drv_info)
+{
+	PMC_EnablePeripheral(drv_info->drv_index);
+}
+
+void drv_pmc_disable(DRIVER_INFO drv_info)
+{
+	PMC_DisablePeripheral(drv_info->drv_index);
+}
+
 
 /**
  * DCR

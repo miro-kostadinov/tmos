@@ -15,5 +15,6 @@
 #ifndef PLATFORM_DRV_H_
 #define PLATFORM_DRV_H_
 
+#include <pmc_drv.h>
 
 #endif /* PLATFORM_DRV_H_ */
