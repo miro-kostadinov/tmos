@@ -40,9 +40,11 @@
 
 #include <tmos.h>
 #include <uart.h>
+#include <pio_drv.h>
 
 struct UART_DRIVER_DATA_STRU
 {
+	unsigned short	buf_size;	//!< size of the rx_buf
     unsigned char	cnt;		//!< number of open handles
     HANDLE			hnd_rcv;	//!< Receive queue
     HANDLE			hnd_snd;	//!< Send queue
@@ -76,7 +78,8 @@ struct UART_DRIVER_INFO
 	DRIVER_INFO_Type 	info;			//!< standard driver info
 	Uart *				hw_base;		//!< pointer to the hardware peripheral
 	UART_DRIVER_DATA 	drv_data;		//!< pointer to the driver data
-	size_t				buf_size;		//!< size of the rx_buf
+	GPIO_STRU			pins;			//!< RX/TX pins
+	unsigned short		buf_size;		//!< size of the rx_buf
 };
 /** UART Driver Info */
 typedef const UART_DRIVER_INFO* UART_INFO;
