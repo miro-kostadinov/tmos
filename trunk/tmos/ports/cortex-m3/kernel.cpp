@@ -180,16 +180,16 @@ void sys_task_return(void)
  * @param desc
  * @param bStart
  */
-void usr_task_init_static(TASK_DESCRIPTION const *  desc, int bStart)
+void usr_task_init_static(TASK_DESCRIPTION const * desc, int bStart)
 {
 	Task *task;
 	TASK_STACKED_CTX ctx;
 
-	ctx = (TASK_STACKED_CTX)desc->stack;
+	ctx = (TASK_STACKED_CTX) desc->stack;
 	ctx--;
-	ctx->psr.as_int = 0x01000000;	//thumb mode
-	ctx->pc.as_voidptr = (void*)desc->func;
-	ctx->lr.as_voidptr = (void*)sys_task_return;
+	ctx->psr.as_int = 0x01000000; //thumb mode
+	ctx->pc.as_voidptr = (void*) desc->func;
+	ctx->lr.as_voidptr = (void*) sys_task_return;
 
 	task = desc->tsk;
 	task->sp = ctx;
@@ -199,28 +199,46 @@ void usr_task_init_static(TASK_DESCRIPTION const *  desc, int bStart)
 	task->prev = task->next = task->tprev = task->tnext = task;
 	task->signals = 0;
 	task->aloc_sig = 0;
-    task->state = TSKSTATE_SUSPEND;
-    for(int i=0; ; i++)
-    {
-        if(! (task->name[i] = desc->name[i]))
-        	break;
-    }
+	task->state = TSKSTATE_SUSPEND;
+	for (int i = 0;; i++)
+	{
+		if (!(task->name[i] = desc->name[i]))
+			break;
+	}
 
+	if (bStart)
+	{
+		if (__get_CONTROL() & 2)
 
-    if(bStart)
-    {
-        if(__get_CONTROL() & 2)
+			usr_task_schedule(task);
 
-        	usr_task_schedule(task);
-
-        else
-        	svc_task_schedule(task);
-
-    }
-
-
-
+		else
+			svc_task_schedule(task);
+	}
 }
 
+/**
+ * Allocates one signal (from 8 to 16)
+ * @return signal
+ */
+unsigned int tsk_signal_allocate(void)
+{
+	unsigned short signal;
+
+    signal = CURRENT_TASK->aloc_sig;
+    signal = (signal+256) & ~signal;
+	CURRENT_TASK->aloc_sig |= signal;
+
+	return signal;
+}
+
+/** release signal
+ *
+ * @param signal
+ */
+void tsk_signal_release(unsigned int signal)
+{
+	CURRENT_TASK->aloc_sig &= ~signal;
+}
 
 
