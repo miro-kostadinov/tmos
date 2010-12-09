@@ -429,6 +429,15 @@ FUNC(	svc_drv_service		)
 
 ENDF(	svc_drv_service		)
 
+//------------------------------------------------------------------------------
+//void isr_control(DRIVER_INFO drv_info, unsigned int reason, void *param);
+FUNC(	sys_isr_contol		)
+
+                ldr				r3, [r0, #DRV_INFO_DCR]
+                bx				r3			//DCR(r0-info, r1-reason, r2-param)
+
+ENDF(	sys_isr_contol		)
+
 #define TRACE_PORT 0
 //------------------------------------------------------------------------------
 //void usr_trace_str(const char *buf);

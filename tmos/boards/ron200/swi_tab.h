@@ -38,7 +38,7 @@
 #define malloc_swi					16
 #define free_swi					17
 #define realloc_swi					18
-
+#define isr_contol_swi				19
 
 #ifndef __ASSEMBLY__
 

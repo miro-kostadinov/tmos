@@ -19,6 +19,7 @@ void sys_resume_wait_signal(void);
 void sys_drv_service_wait(void);
 void sys_malloc(void);
 void sys_realloc(void);
+void sys_isr_contol(void);
 
 //void svc_HND_SET_STATUS(HANDLE hnd, RES_CODE result);
 //RES_CODE drv_hcontrol(HANDLE hnd, unsigned int reason);
@@ -105,6 +106,10 @@ SWI_FUNC const SWI_TABLE[] __attribute__ ((section (".SWIHandler")))  =
 
 #ifdef realloc_swi
 	[realloc_swi]					= sys_realloc,
+#endif
+
+#ifdef isr_contol_swi
+	[isr_contol_swi]				= sys_isr_contol,
 #endif
 
 	NULL
