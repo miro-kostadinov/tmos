@@ -211,17 +211,17 @@ inline static   void usr_drv_icontrol(DRIVER_INDEX volatile drv_index, unsigned 
 
 
 #ifdef isr_contol_swi
-inline static   RES_CODE isr_contol(DRIVER_INFO volatile drv_info, unsigned int volatile reason, void* volatile param)
+typedef const struct DRIVER_INFO_Type * DRIVER_INFO;
+inline static void isr_contol(DRIVER_INFO volatile drv_info, unsigned int volatile reason, void* volatile param)
 {
 	register DRIVER_INFO _drv_info asm("r0") = drv_info;
 	register unsigned int _reason asm("r1") = reason;
 	register void * _param asm("r2") = param;
 
-	asm volatile ("swi %3"
-	  : "=r"(_drv_info), "=r"(_reason), "=r"(_param)
-	  : "I" (isr_contol_swi), "0"(_drv_info), "1"(_reason), "2"(_param)
-	  : "r3", "r12", "r14");
-	return (RES_CODE)_drv_info;
+	asm volatile ("swi %0"
+	  :
+	  : "I" (isr_contol_swi), "r"(_drv_info), "r"(_reason), "r"(_param)
+	  : "r3");
 }
 #endif
 
