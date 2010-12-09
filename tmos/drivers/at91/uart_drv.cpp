@@ -20,8 +20,10 @@
  * Turn off the UART
  * @param pUart
  */
-static void UART_OFF(Uart* pUart)
+static void UART_OFF(UART_INFO drv_info)
 {
+	Uart* pUart= drv_info->hw_base;
+
     //* Disable all interrupts
     pUart->UART_IDR = UART_IDR_RXRDY | UART_IDR_TXRDY | UART_IDR_ENDRX
     		| UART_IDR_ENDTX | UART_IDR_OVRE | UART_IDR_FRAME | UART_IDR_PARE
@@ -45,7 +47,7 @@ static void UART_OFF(Uart* pUart)
     pUart->UART_CR = UART_CR_TXDIS | UART_CR_RXDIS | UART_CR_RSTTX | UART_CR_RSTRX;
 
 	//RTS =1 (not ready)
-    PIO_CfgPeriph(DRXD_PIN | DTXD_PIN);
+    GPIO_CfgPeriph(&drv_info->pins);
 
 }
 
@@ -59,7 +61,7 @@ void UART_CFG(Uart* pUart, DRV_UART_MODE pMode)
     pUart->UART_CR = UART_CR_TXEN | UART_CR_RXEN;
 
   	//* Define the baud rate divisor register
-	pUart->UART_BRGR = SYSDRV_GetDiv(pMode->baudrate);
+	pUart->UART_BRGR = AT91_GetDiv(pMode->baudrate);
 
     //* Enable PDC
 	pUart->UART_PTCR = UART_PTCR_RXTEN ;
@@ -87,7 +89,7 @@ static void START_RX_BUF(Uart*	pUart, UART_DRIVER_DATA drv_data)
 {
 	pUart->UART_RPR = (unsigned int)drv_data->rx_buf;
 	drv_data->rx_ptr = drv_data->rx_buf;
-	pUart->UART_RCR = UART_RX_BUF_SIZE;
+	pUart->UART_RCR = drv_data->buf_size;
 	pUart->UART_PTCR = UART_PTCR_RXTEN ;
 }
 
@@ -162,7 +164,8 @@ void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
     {
 
         case DCR_RESET:
-          	UART_OFF((Uart*)param);
+        	drv_data->buf_size = drv_info->buf_size;
+          	UART_OFF(drv_info);
             break;
 
         case DCR_OPEN:
@@ -193,7 +196,7 @@ void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
     	case DCR_CLOSE:
         	if(drv_data->cnt)
 				if(!--drv_data->cnt)
-					UART_OFF(drv_info->hw_base);
+					UART_OFF(drv_info);
     		break;
 
     	case DCR_CANCEL:
