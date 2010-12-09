@@ -10,6 +10,7 @@
 
 #include <tmos.h>
 #include <uart_drv.h>
+#include <fam_cpp.h>
 
 //*----------------------------------------------------------------------------
 //*			Portable
@@ -248,7 +249,7 @@ void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
 
     	case DCR_CLOCK:
         	if(drv_data->cnt)
-        		drv_info->hw_base->UART_BRGR = SYSDRV_GetDiv(drv_data->baudrate);
+        		drv_info->hw_base->UART_BRGR = AT91_GetDiv(drv_data->baudrate);
     		break;
     }
 }

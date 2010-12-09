@@ -25,5 +25,11 @@
 #include "ssc.h"
 #include "uart.h"
 
+#ifndef __ASSEMBLY__
+
+extern "C" unsigned int AT91_GetDiv(unsigned int baudrate);
+
+#endif
+
 #endif /* FAM_CPP_H_ */
 /** @} ingroup hardware_at91 */
