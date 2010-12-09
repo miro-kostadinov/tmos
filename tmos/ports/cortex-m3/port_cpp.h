@@ -127,4 +127,16 @@ void usr_task_init_static(TASK_DESCRIPTION const * desc, int bStart);
 #define tsk_test_signal(sig) (CURRENT_TASK->signals & sig)
 
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif	/* end C++ */
+
+unsigned int tsk_signal_allocate(void);
+void tsk_signal_release(unsigned int signal);
+
+#ifdef __cplusplus
+}
+#endif	/* end C++ */
+
 #endif /* PORT_CPP_H_ */
