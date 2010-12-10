@@ -38,7 +38,7 @@
  */
 
 
-#include "sha1.h"
+#include "sha_1.h"
 
 /*  
  *  SHA1
@@ -75,6 +75,7 @@ SHA1::SHA1()
  *  Comments:
  *
  */
+
 SHA1::~SHA1()
 {
     // The destructor does nothing
@@ -153,6 +154,32 @@ bool SHA1::Result(unsigned *message_digest_array)
     return true;
 }
 
+bool SHA1::Result(CSTRING& message_digest)
+{
+    int i;                                  // Counter
+
+    message_digest.clear();
+    if (Corrupted)
+    {
+        return false;
+    }
+
+    if (!Computed)
+    {
+        PadMessage();
+        Computed = true;
+    }
+
+    for(i = 0; i < 5; i++)
+    {
+    	char buf[10];
+        tmos_sprintf(buf,"%0x",H[i]);
+        message_digest += buf;
+    }
+
+    return true;
+}
+
 /*  
  *  Input
  *
@@ -171,6 +198,7 @@ bool SHA1::Result(unsigned *message_digest_array)
  *  Comments:
  *
  */
+
 void SHA1::Input(   const unsigned char *message_array,
                     unsigned            length)
 {
@@ -235,160 +263,11 @@ void SHA1::Input(   const char  *message_array,
 {
     Input((unsigned char *) message_array, length);
 }
-
-/*  
- *  Input
- *
- *  Description:
- *      This function accepts a single octets as the next message element.
- *
- *  Parameters:
- *      message_element: [in]
- *          The next octet in the message.
- *
- *  Returns:
- *      Nothing.
- *
- *  Comments:
- *
- */
-void SHA1::Input(unsigned char message_element)
+void SHA1::Input(CSTRING& message)
 {
-    Input(&message_element, 1);
+	Input(message.c_str(), message.length());
 }
-
-/*  
- *  Input
- *
- *  Description:
- *      This function accepts a single octet as the next message element.
- *
- *  Parameters:
- *      message_element: [in]
- *          The next octet in the message.
- *
- *  Returns:
- *      Nothing.
- *
- *  Comments:
- *
- */
-void SHA1::Input(char message_element)
-{
-    Input((unsigned char *) &message_element, 1);
-}
-
-/*  
- *  operator<<
- *
- *  Description:
- *      This operator makes it convenient to provide character strings to
- *      the SHA1 object for processing.
- *
- *  Parameters:
- *      message_array: [in]
- *          The character array to take as input.
- *
- *  Returns:
- *      A reference to the SHA1 object.
- *
- *  Comments:
- *      Each character is assumed to hold 8 bits of information.
- *
- */
-SHA1& SHA1::operator<<(const char *message_array)
-{
-    const char *p = message_array;
-
-    while(*p)
-    {
-        Input(*p);
-        p++;
-    }
-
-    return *this;
-}
-
-/*  
- *  operator<<
- *
- *  Description:
- *      This operator makes it convenient to provide character strings to
- *      the SHA1 object for processing.
- *
- *  Parameters:
- *      message_array: [in]
- *          The character array to take as input.
- *
- *  Returns:
- *      A reference to the SHA1 object.
- *
- *  Comments:
- *      Each character is assumed to hold 8 bits of information.
- *
- */
-SHA1& SHA1::operator<<(const unsigned char *message_array)
-{
-    const unsigned char *p = message_array;
-
-    while(*p)
-    {
-        Input(*p);
-        p++;
-    }
-
-    return *this;
-}
-
-/*  
- *  operator<<
- *
- *  Description:
- *      This function provides the next octet in the message.
- *
- *  Parameters:
- *      message_element: [in]
- *          The next octet in the message
- *
- *  Returns:
- *      A reference to the SHA1 object.
- *
- *  Comments:
- *      The character is assumed to hold 8 bits of information.
- *
- */
-SHA1& SHA1::operator<<(const char message_element)
-{
-    Input((unsigned char *) &message_element, 1);
-
-    return *this;
-}
-
-/*  
- *  operator<<
- *
- *  Description:
- *      This function provides the next octet in the message.
- *
- *  Parameters:
- *      message_element: [in]
- *          The next octet in the message
- *
- *  Returns:
- *      A reference to the SHA1 object.
- *
- *  Comments:
- *      The character is assumed to hold 8 bits of information.
- *
- */
-SHA1& SHA1::operator<<(const unsigned char message_element)
-{
-    Input(&message_element, 1);
-
-    return *this;
-}
-
-/*  
+/*
  *  ProcessMessageBlock
  *
  *  Description:
