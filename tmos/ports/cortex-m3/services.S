@@ -628,4 +628,24 @@ FUNC(	locked_dec_int		)
 				bx				lr
 ENDF(	locked_dec_int		)
 
+//------------------------------------------------------------------------------
+//void*  locked_set_if_null(void* pointer, void* value);
+//set a pointer variable if it is NULL
+//returns the initial pointer value (NULL for success)
+FUNC(	locked_set_if_null		)
+
+				mov				r2, r0
+1:
+				ldrex			r0, [r2]
+				cbnz			r0, 2f
+				strex			r0, r1, [r2]
+				cmp				r0, #0
+				bne				1b
+				bx				lr
+2:
+				clrex
+				bx				lr
+
+ENDF(	locked_set_if_null		)
+
 .end
