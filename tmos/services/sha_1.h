@@ -36,8 +36,12 @@
  *
  */
 
-#ifndef _SHA1_H_
-#define _SHA1_H_
+
+#ifndef SHA_1_H_
+#define SHA_1_H_
+
+#include <tmos.h>
+#include <str_list.h>
 
 class SHA1
 {
@@ -57,6 +61,8 @@ class SHA1
          */
         bool Result(unsigned *message_digest_array);
 
+        bool Result(CSTRING& message_digest);
+
         /*
          *  Provide input to SHA1
          */
@@ -64,12 +70,7 @@ class SHA1
                     unsigned            length);
         void Input( const char  *message_array,
                     unsigned    length);
-        void Input(unsigned char message_element);
-        void Input(char message_element);
-        SHA1& operator<<(const char *message_array);
-        SHA1& operator<<(const unsigned char *message_array);
-        SHA1& operator<<(const char message_element);
-        SHA1& operator<<(const unsigned char message_element);
+        void Input(CSTRING& message);
 
     private:
 
@@ -98,7 +99,7 @@ class SHA1
 
         bool Computed;                      // Is the digest computed?
         bool Corrupted;                     // Is the message digest corruped?
-    
+        
 };
 
-#endif
+#endif /* SHA_1_H_ */
