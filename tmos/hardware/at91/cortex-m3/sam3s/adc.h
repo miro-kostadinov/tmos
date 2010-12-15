@@ -83,6 +83,8 @@
 
 //#include <assert.h>
 //#include <stdint.h>
+#include <at91_types.h>
+
 
 /*------------------------------------------------------------------------------
  *         Definitions
