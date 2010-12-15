@@ -85,6 +85,7 @@ void* tsk_malloc_clear(unsigned int size)
 	return ptr;
 }
 
+extern char end;
 
 void  tsk_free(void* ptr)
 {
@@ -132,6 +133,7 @@ void* tsk_realloc(void* ptr, unsigned int size)
 	{
 		allocated_size += dyn_sizeof(ptr);
 		allocated_count++;
+		TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, allocated_count, allocated_size);
 	} else
 	{
 		if(size)
