@@ -14,6 +14,7 @@
 #include <rtt_drv.h>
 #include <wdt_drv.h>
 #include <pmc_drv.h>
+#include <uart_drv.h>
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //		 DEFAULT DRIVER
@@ -185,9 +186,36 @@ extern "C" const PMC_DRIVER_INFO pmc_driver =
 	PMC_MCKR_CSS_MAIN_CLK | PMC_MCKR_PRES_CLK
 };
 
-signed char const DRV_RESET_FIRST_TABLE[1] =
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 UART1 DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define CFG_UART1_BUF_SIZE 16
+int uart1_data[(sizeof(UART_DRIVER_DATA_STRU)+CFG_UART1_BUF_SIZE +3)/4];
+
+const UART_DRIVER_INFO uart1_driver =
 {
-	SysTick_IRQn
+	{
+		DRIVER_INFO_STUB,
+		(DRV_ISR)UART_ISR,
+		(DRV_DCR)UART_DCR,
+		(DRV_DSR)UART_DSR,
+		UART1_IRQn,
+		DRV_PRIORITY_KERNEL,
+		ID_UART1
+	},
+	UART1,
+	(UART_DRIVER_DATA)uart1_data,
+	{ //GPIO_STRU
+		PIO_PA22A_TXD1 | PIO_PA21A_RXD1,
+		PIOA
+	},
+	CFG_UART1_BUF_SIZE
+};
+
+
+signed char const DRV_RESET_FIRST_TABLE[] =
+{
+	SysTick_IRQn, INALID_DRV_INDX
 };
 
 //=================== DRV_TABLE ==========================================
@@ -204,7 +232,7 @@ char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".ExceptionVe
 	1+ (char * const)&pmc_driver,	 // 5
 	1+ (char * const)&DefaultDriver, // 6
 	1+ (char * const)&DefaultDriver, // 7
-	1+ (char * const)&DefaultDriver, // 8
+	1+ (char * const)&uart1_driver,  // 8
 	1+ (char * const)&DefaultDriver, // 9
 	1+ (char * const)&DefaultDriver, // 10
 	1+ (char * const)&DefaultDriver, // 11
