@@ -11,6 +11,8 @@
 #include <tmos.h>
 #include <uart_drv.h>
 #include <fam_cpp.h>
+#include <platform_drv.h>
+
 
 //*----------------------------------------------------------------------------
 //*			Portable
@@ -25,6 +27,8 @@ static void UART_OFF(UART_INFO drv_info)
 	Uart* pUart= drv_info->hw_base;
 
     //* Disable all interrupts
+   	drv_isr_disable(&drv_info->info);
+    drv_pmc_enable(&drv_info->info);
     pUart->UART_IDR = UART_IDR_RXRDY | UART_IDR_TXRDY | UART_IDR_ENDRX
     		| UART_IDR_ENDTX | UART_IDR_OVRE | UART_IDR_FRAME | UART_IDR_PARE
     		| UART_IDR_TXEMPTY | UART_IDR_TXBUFE | UART_IDR_RXBUFF;
@@ -47,7 +51,8 @@ static void UART_OFF(UART_INFO drv_info)
     pUart->UART_CR = UART_CR_TXDIS | UART_CR_RXDIS | UART_CR_RSTTX | UART_CR_RSTRX;
 
 	//RTS =1 (not ready)
-    GPIO_CfgPeriph(&drv_info->pins);
+    GPIO_CfgInput(&drv_info->pins);
+   	drv_isr_enable(&drv_info->info);
 
 }
 
@@ -56,8 +61,11 @@ static void UART_OFF(UART_INFO drv_info)
  * @param pUart
  * @param pMode
  */
-void UART_CFG(Uart* pUart, DRV_UART_MODE pMode)
+void UART_CFG(UART_INFO drv_info, DRV_UART_MODE pMode)
 {
+	Uart* pUart =drv_info->hw_base;
+
+    drv_pmc_enable(&drv_info->info);
     pUart->UART_CR = UART_CR_TXEN | UART_CR_RXEN;
 
   	//* Define the baud rate divisor register
@@ -71,8 +79,10 @@ void UART_CFG(Uart* pUart, DRV_UART_MODE pMode)
     pUart->UART_MR = pMode->mode;
 
     pUart->UART_IER = UART_IER_ENDRX ;
-
+   	drv_isr_enable(&drv_info->info);
+    GPIO_CfgPeriph(&drv_info->pins);
 }
+
 /** STOP the receiver */
 #define STOP_RX(pUart) 		pUart->UART_PTCR = UART_PTCR_RXTDIS
 /** STOP the transmitter */
@@ -184,7 +194,7 @@ void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
 					{
 						drv_data->mode = pMode->mode;
 						drv_data->baudrate =pMode->baudrate;
-						UART_CFG(drv_info->hw_base, pMode);
+						UART_CFG(drv_info, pMode);
 						START_RX_BUF(drv_info->hw_base, drv_data);
 					}
 					drv_data->cnt++;
