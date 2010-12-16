@@ -15,6 +15,8 @@ local_h_src-y 	:=
 
 local_cpp_src-y	+= uart_drv.cpp pio_drv.cpp
 
+local_h_src-y 	+= uart_drv.h pio_drv.h
+
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
 c_sources  	+= $(call changepath,$(local_c_src-y))
