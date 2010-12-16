@@ -87,6 +87,8 @@ void sys_SetNewClock(PMC_INFO drv_info, unsigned int new_clk)
 	unsigned int	temp;
 	Pmc* pPMC = drv_info->hw_base;
 
+	pPMC->PMC_WPMR = PMC_WPMR_WPKEY(0x504D43);
+
 // STEP 1: If new source != old source => switch to slow clock
 
 	temp = pPMC->PMC_MCKR;
