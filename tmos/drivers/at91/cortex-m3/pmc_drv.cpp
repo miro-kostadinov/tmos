@@ -204,7 +204,7 @@ void drv_isr_disable(DRIVER_INFO drv_info)
 
 void drv_pmc_enable(DRIVER_INFO drv_info)
 {
-	PMC_EnablePeripheral(drv_info->drv_index);
+	PMC_EnablePeripheral(drv_info->peripheral_indx);
 }
 
 void drv_pmc_disable(DRIVER_INFO drv_info)
