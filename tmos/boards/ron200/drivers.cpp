@@ -224,38 +224,41 @@ signed char const DRV_RESET_FIRST_TABLE[] =
 // The driver index must match with the driver position in this table
 char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".ExceptionVectors")))  =
 {
-	1+ (char * const)&supc_driver, 	 // 0
-	1+ (char * const)&rstc_driver,	 // 1
-	1+ (char * const)&rtc_driver,	 // 2
-	1+ (char * const)&rtt_driver,	 // 3
-	1+ (char * const)&wdt_driver, 	 // 4
-	1+ (char * const)&pmc_driver,	 // 5
-	1+ (char * const)&DefaultDriver, // 6
-	1+ (char * const)&DefaultDriver, // 7
-	1+ (char * const)&uart1_driver,  // 8
-	1+ (char * const)&DefaultDriver, // 9
-	1+ (char * const)&DefaultDriver, // 10
-	1+ (char * const)&DefaultDriver, // 11
-	1+ (char * const)&DefaultDriver, // 12
-	1+ (char * const)&DefaultDriver, // 13
-	1+ (char * const)&DefaultDriver, // 14
-	1+ (char * const)&DefaultDriver, // 15
-	1+ (char * const)&DefaultDriver, // 16
-	1+ (char * const)&DefaultDriver, // 17
-	1+ (char * const)&DefaultDriver, // 18
-	1+ (char * const)&DefaultDriver, // 19
-	1+ (char * const)&DefaultDriver, // 20
-	1+ (char * const)&DefaultDriver, // 21
-	1+ (char * const)&DefaultDriver, // 22
-	1+ (char * const)&DefaultDriver, // 23
-	1+ (char * const)&DefaultDriver, // 24
-	1+ (char * const)&DefaultDriver, // 25
-	1+ (char * const)&DefaultDriver, // 26
-	1+ (char * const)&DefaultDriver, // 27
-	1+ (char * const)&DefaultDriver, // 28
-	1+ (char * const)&DefaultDriver, // 29
-	1+ (char * const)&DefaultDriver, // 30
-	1+ (char * const)&DefaultDriver, // 31
+	1+ (char * const)&supc_driver, 	 // 0 Supply Controller
+	1+ (char * const)&rstc_driver,	 // 1 Reset Controller
+	1+ (char * const)&rtc_driver,	 // 2 Real Time Clock
+	1+ (char * const)&rtt_driver,	 // 3 Real Time Timer
+	1+ (char * const)&wdt_driver, 	 // 4 Watchdog Timer
+	1+ (char * const)&pmc_driver,	 // 5 PMC
+	1+ (char * const)&DefaultDriver, // 6 EEFC
+	1+ (char * const)&DefaultDriver, // 7 Reserved
+	1+ (char * const)&DefaultDriver, // 8 UART0
+	1+ (char * const)&uart1_driver,  // 9 UART1
+	1+ (char * const)&DefaultDriver, // 10 SMC
+	1+ (char * const)&DefaultDriver, // 11 Parallel IO Controller A
+	1+ (char * const)&DefaultDriver, // 12 Parallel IO Controller B
+	1+ (char * const)&DefaultDriver, // 13 Parallel IO Controller C
+	1+ (char * const)&DefaultDriver, // 14 USART 0
+	1+ (char * const)&DefaultDriver, // 15 USART 1
+	1+ (char * const)&DefaultDriver, // 16 Reserved
+	1+ (char * const)&DefaultDriver, // 17 Reserved
+	1+ (char * const)&DefaultDriver, // 18 MCI
+	1+ (char * const)&DefaultDriver, // 19 TWI 0
+	1+ (char * const)&DefaultDriver, // 20 TWI 1
+	1+ (char * const)&DefaultDriver, // 21 SPI
+	1+ (char * const)&DefaultDriver, // 22 SSC
+	1+ (char * const)&DefaultDriver, // 23 Timer Counter 0
+	1+ (char * const)&DefaultDriver, // 24 Timer Counter 1
+	1+ (char * const)&DefaultDriver, // 25 Timer Counter 2
+	1+ (char * const)&DefaultDriver, // 26 Timer Counter 3
+	1+ (char * const)&DefaultDriver, // 27 Timer Counter 4
+	1+ (char * const)&DefaultDriver, // 28 Timer Counter 5
+	1+ (char * const)&DefaultDriver, // 29 ADC controller
+	1+ (char * const)&DefaultDriver, // 30 DAC controller
+	1+ (char * const)&DefaultDriver, // 31 PWM
+	1+ (char * const)&DefaultDriver, // 32 CRC Calculation Unit
+	1+ (char * const)&DefaultDriver, // 33 Analog Comparator
+	1+ (char * const)&DefaultDriver, // 34 USB Device Port
    NULL				//null terminated list
 };
 

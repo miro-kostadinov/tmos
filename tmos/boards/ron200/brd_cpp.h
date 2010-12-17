@@ -38,39 +38,39 @@ enum DRIVER_INDEX_t
     SysTick_IRQn            = -1,   /*!< 15 Cortex-M3 System Tick Interrupt  */
 
 /******  SAM3S Specific Interrupt Numbers *************************************/
-    SUPC_IRQn   			=  0,   /*!<  Supply Controller 				 */
-    RSTC_IRQn   	   		=  1,   /*!<  Reset Controller 					 */
-    RTC_IRQn           		=  2,   /*!<  Real Time Clock 					 */
-    RTT_IRQn            	=  3,   /*!<  Real Time Timer 					 */
-    WDT_IRQn            	=  4,   /*!<  Watchdog Timer 					 */
-    PMC_IRQn            	=  5,   /*!<  Power Management Controller 		 */
-    EFC_IRQn            	=  6,   /*!<  Enhanced Embedded Flash Controller */
-    UART0_IRQn         		=  7,   /*!<  UART 0 		 					 */
-    UART1_IRQn          	=  8,   /*!<  UART 1 							 */
-    SMC_IRQn            	=  9,   /*!<  Static Memory Controller 			 */
-    PIOA_IRQn           	= 10,   /*!<  Parallel I/O Controller A 		 */
-    PIOB_IRQn           	= 11,   /*!<  Parallel I/O Controller B 		 */
-    PIOC_IRQn           	= 12,   /*!<  Parallel I/O Controller C 		 */
-    USART0_IRQn         	= 13,   /*!<  USART 0 							 */
-    USART1_IRQn         	= 14,   /*!<  USART 1 							 */
-    HSMCI_IRQn          	= 15,   /*!<  Multimedia Card Interface 		 */
-    TWI0_IRQn           	= 16,   /*!<  Two Wire Interface 0 				 */
-    TWI1_IRQn           	= 17,   /*!<  Two Wire Interface 1 				 */
-    SPI_IRQn            	= 18,   /*!<  Serial Peripheral Interface 		 */
-    SSC_IRQn            	= 19,   /*!<  Synchronous Serial Controler 		 */
-    TC0_IRQn            	= 20,   /*!<  Timer/Counter 0 					 */
-    TC1_IRQn            	= 21,   /*!<  Timer/Counter 1 					 */
-    TC2_IRQn            	= 22,   /*!<  Timer/Counter 2 					 */
-    TC3_IRQn            	= 23,   /*!<  Timer/Counter 3 					 */
-    TC4_IRQn            	= 24,   /*!<  Timer/Counter 4 					 */
-    TC5_IRQn            	= 25,   /*!<  Timer/Counter 5 					 */
-    ADC_IRQn            	= 26,   /*!<  Analog To Digital Converter 		 */
-    DACC_IRQn           	= 27,   /*!<  Digital To Analog Converter 		 */
-    PWM_IRQn            	= 28,   /*!<  Pulse Width Modulation 			 */
-    CRCCU_IRQn          	= 29,   /*!<  CRC Calculation Unit 				 */
-    ACC_IRQn            	= 30,   /*!<  Analog Comparator 				 */
-    UDP_IRQn            	= 31,   /*!<  USB Device Port 					 */
-    INALID_DRV_INDX	                /*!<  invalid	                         */
+    SUPC_IRQn            =  0, /*!<  0 Supply Controller (SUPC) 			  */
+    RSTC_IRQn            =  1, /*!<  1 Reset Controller (RSTC)          	  */
+    RTC_IRQn             =  2, /*!<  2 Real Time Clock (RTC)            	  */
+    RTT_IRQn             =  3, /*!<  3 Real Time Timer (RTT)            	  */
+    WDT_IRQn             =  4, /*!<  4 Watchdog Timer (WDT)             	  */
+    PMC_IRQn             =  5, /*!<  5 Power Management Controller (PMC)	  */
+    EFC_IRQn             =  6, /*!<  6 Enhanced Embedded Flash Controller 	  */
+    UART0_IRQn           =  8, /*!<  8 UART 0 (UART0)                   	  */
+    UART1_IRQn           =  9, /*!<  9 UART 1 (UART1) 				  		  */
+    SMC_IRQn             = 10, /*!< 10 Static Memory Controller (SMC)   	  */
+    PIOA_IRQn            = 11, /*!< 11 Parallel I/O Controller A (PIOA) 	  */
+    PIOB_IRQn            = 12, /*!< 12 Parallel I/O Controller B (PIOB)   	  */
+    PIOC_IRQn            = 13, /*!< 13 Parallel I/O Controller C (PIOC) 	  */
+    USART0_IRQn          = 14, /*!< 14 USART 0 (USART0)     			  	  */
+    USART1_IRQn          = 15, /*!< 15 USART 1 (USART1) 				  	  */
+    HSMCI_IRQn           = 18, /*!< 18 Multimedia Card Interface (HSMCI)	  */
+    TWI0_IRQn            = 19, /*!< 19 Two Wire Interface 0 (TWI0) 	  		  */
+    TWI1_IRQn            = 20, /*!< 20 Two Wire Interface 1 (TWI1) 	  		  */
+    SPI_IRQn             = 21, /*!< 21 Serial Peripheral Interface (SPI)	  */
+    SSC_IRQn             = 22, /*!< 22 Synchronous Serial Controller(SSC)	  */
+    TC0_IRQn             = 23, /*!< 23 Timer/Counter 0 (TC0) 			  	  */
+    TC1_IRQn             = 24, /*!< 24 Timer/Counter 1 (TC1) 			  	  */
+    TC2_IRQn             = 25, /*!< 25 Timer/Counter 2 (TC2) 				  */
+    TC3_IRQn             = 26, /*!< 26 Timer/Counter 3 (TC3) 				  */
+    TC4_IRQn             = 27, /*!< 27 Timer/Counter 4 (TC4) 				  */
+    TC5_IRQn             = 28, /*!< 28 Timer/Counter 5 (TC5) 				  */
+    ADC_IRQn             = 29, /*!< 29 Analog To Digital Converter (ADC) 	  */
+    DACC_IRQn            = 30, /*!< 30 Digital To Analog Converter (DACC) 	  */
+    PWM_IRQn             = 31, /*!< 31 Pulse Width Modulation (PWM)    		  */
+    CRCCU_IRQn           = 32, /*!< 32 CRC Calculation Unit (CRCCU) 		  */
+    ACC_IRQn             = 33, /*!< 33 Analog Comparator (ACC) 				  */
+    UDP_IRQn             = 34, /*!< 34 USB Device Port (UDP) 				  */
+    INALID_DRV_INDX	           /*!<  invalid	                              */
 };
 
 
