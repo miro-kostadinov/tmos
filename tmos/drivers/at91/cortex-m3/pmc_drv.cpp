@@ -27,6 +27,7 @@ void sys_SetMainClock(Pmc* pPMC, unsigned int val)
 	old = pPMC->CKGR_MOR;
 	if((old ^ val)& CKGR_MOR_MOSCSEL)
 	{
+
 		if(old & CKGR_MOR_MOSCSEL)
 		{
 			//switch XT -> RC, so first enable RC
@@ -40,24 +41,23 @@ void sys_SetMainClock(Pmc* pPMC, unsigned int val)
 			temp |= old & (CKGR_MOR_MOSCRCEN | CKGR_MOR_MOSCRCF_Msk);
 			old = PMC_SR_MOSCXTS;
 		}
-	} else
-	{
-		if(old & CKGR_MOR_MOSCSEL)
-		{
-			old = PMC_SR_MOSCXTS;
 
-		} else
-		{
-			old = PMC_SR_MOSCRCS;
-		}
-		temp = val;
+		pPMC->CKGR_MOR = temp;
+
+		//check the osc is already stable
+		while(!(pPMC->PMC_SR & old));
+
+		pPMC->CKGR_MOR = temp ^ CKGR_MOR_MOSCSEL;
+
+		//wait for the switch
+		while(!(pPMC->PMC_SR & PMC_SR_MOSCSELS));
+
 	}
-	pPMC->CKGR_MOR = temp;
-
-	//check the osc is already stable
-	while(!(pPMC->PMC_SR & old));
 
 	pPMC->CKGR_MOR = val;
+
+	//wait for master clock
+	while(!(pPMC->PMC_SR & PMC_SR_MCKRDY));
 }
 
 /**
@@ -91,15 +91,15 @@ void sys_SetNewClock(PMC_INFO drv_info, unsigned int new_clk)
 
 // STEP 1: If new source != old source => switch to slow clock
 
+	//prepare main clock
+	sys_SetMainClock(pPMC, drv_info->CFG_CKGR_MOR);
+
 	temp = pPMC->PMC_MCKR;
 	if((new_clk ^ temp) & PMC_MCKR_CSS_Msk)
 	{
 		temp &= ~ PMC_MCKR_CSS_Msk;
 		if(new_clk & PMC_MCKR_CSS_Msk)
 		{
-			//prepare main clock
-			sys_SetMainClock(pPMC, drv_info->CFG_CKGR_MOR);
-
 			//switch to main clock
 			temp |= PMC_MCKR_CSS_MAIN_CLK;
 		} else
@@ -209,7 +209,7 @@ void drv_pmc_enable(DRIVER_INFO drv_info)
 
 void drv_pmc_disable(DRIVER_INFO drv_info)
 {
-	PMC_DisablePeripheral(drv_info->drv_index);
+	PMC_DisablePeripheral(drv_info->peripheral_indx);
 }
 
 
