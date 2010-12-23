@@ -14,7 +14,9 @@
 #include <rtt_drv.h>
 #include <wdt_drv.h>
 #include <pmc_drv.h>
-#include <uart_drv.h>
+#include <usart_drv.h>
+#include <adc_drv.h>
+#include <dacc_drv.h>
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //		 DEFAULT DRIVER
@@ -170,46 +172,103 @@ extern "C" const PMC_DRIVER_INFO pmc_driver =
 		ID_PMC
 	},
 	PMC,
-	CKGR_MOR_MOSCRCEN | CKGR_MOR_MOSCRCF_4MHZ | CKGR_MOR_KEY(0x37) |
-		CKGR_MOR_CFDEN,				//CFG_CKGR_MOR
-	//PCK = 12000000 * (15+1) / 3 = 64 MHz
+	CKGR_MOR_CFDEN | CKGR_MOR_MOSCSEL | CKGR_MOR_KEY(0x37) |
+	CKGR_MOR_MOSCXTST(255) |
+	CKGR_MOR_MOSCXTEN,				//CFG_CKGR_MOR
+
+//	CKGR_MOR_MOSCRCEN | CKGR_MOR_MOSCRCF_4MHZ | CKGR_MOR_KEY(0x37) |
+//		CKGR_MOR_CFDEN,				//CFG_CKGR_MOR
+
+
 	//PCK = 12000000 * (7+1) / 2  = 48 MHz
 	//PCK = 12000000 * (7+1) / 1  = 96 MHz
-	CKGR_PLLAR_STUCKTO1 | CKGR_PLLAR_MULA(7) | CKGR_PLLAR_PLLACOUNT(0x3f)
-		| CKGR_PLLAR_DIVA(1),
+//	CKGR_PLLAR_STUCKTO1 | CKGR_PLLAR_MULA(7) | CKGR_PLLAR_PLLACOUNT(0x3f)
+//		| CKGR_PLLAR_DIVA(1),
+
+
+	//PCK = 12000000 * (15+1) / 3 = 64 MHz
+	CKGR_PLLAR_STUCKTO1 | CKGR_PLLAR_MULA(15) | CKGR_PLLAR_PLLACOUNT(0x3f)
+		| CKGR_PLLAR_DIVA(3),
+
+
+
 	{
 		32768,		//freq for slow clk
-		MHz(4),		// freq for main clk
-		MHz(96),	//freq for PLLA
+		MHz(12),	// freq for main clk
+		MHz(64),	//freq for PLLA
 		MHz(96)		//freq for PLLB
 	},
+
+
 	PMC_MCKR_CSS_MAIN_CLK | PMC_MCKR_PRES_CLK
+//	PMC_MCKR_CSS_PLLA_CLK | PMC_MCKR_PRES_CLK
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// 		 UART1 DRIVER
+// 		 (15) USART1 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#define CFG_UART1_BUF_SIZE 16
-int uart1_data[(sizeof(UART_DRIVER_DATA_STRU)+CFG_UART1_BUF_SIZE +3)/4];
+#define CFG_USART1_BUF_SIZE 16
+int usart1_data[(sizeof(UART_DRIVER_DATA_STRU)+CFG_USART1_BUF_SIZE +3)/4];
 
-const UART_DRIVER_INFO uart1_driver =
+const USART_DRIVER_INFO usart1_driver =
 {
 	{
 		DRIVER_INFO_STUB,
-		(DRV_ISR)UART_ISR,
-		(DRV_DCR)UART_DCR,
-		(DRV_DSR)UART_DSR,
-		UART1_IRQn,
+		(DRV_ISR)USART_ISR,
+		(DRV_DCR)USART_DCR,
+		(DRV_DSR)USART_DSR,
+		USART1_IRQn,
 		DRV_PRIORITY_KERNEL,
-		ID_UART1
+		ID_USART1
 	},
-	UART1,
-	(UART_DRIVER_DATA)uart1_data,
+	USART1,
+	(UART_DRIVER_DATA)usart1_data,
 	{ //GPIO_STRU
 		PIO_PA22A_TXD1 | PIO_PA21A_RXD1,
 		PIOA
 	},
-	CFG_UART1_BUF_SIZE
+	CFG_USART1_BUF_SIZE
+};
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		(29) ADC DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ADC_DRIVER_DATA_STRU adc_driver_data;
+
+const ADC_DRIVER_INFO adc_driver =
+{
+	{
+		DRIVER_INFO_STUB,
+		(DRV_ISR)ADC_ISR,
+		(DRV_DCR)ADC_DCR,
+		(DRV_DSR)ADC_DSR,
+		ADC_IRQn,
+		DRV_PRIORITY_KERNEL,
+		ID_ADC
+	},
+	ADC,
+	&adc_driver_data,
+	ADC_MR_TRANSFER(1) | ADC_MR_TRACKTIM(7) | ADC_MR_SETTLING(3) | ADC_MR_STARTUP_SUT96//CFG_ADC_MR
+};
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		(30) DACC DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DACC_DRIVER_DATA_STRU dacc_driver_data;
+
+const DACC_DRIVER_INFO dacc_driver =
+{
+	{
+		DRIVER_INFO_STUB,
+		(DRV_ISR)DACC_ISR,
+		(DRV_DCR)DACC_DCR,
+		(DRV_DSR)DACC_DSR,
+		DACC_IRQn,
+		DRV_PRIORITY_KERNEL,
+		ID_DACC
+	},
+	DACC,
+	&dacc_driver_data
 };
 
 
@@ -233,13 +292,13 @@ char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".ExceptionVe
 	1+ (char * const)&DefaultDriver, // 6 EEFC
 	1+ (char * const)&DefaultDriver, // 7 Reserved
 	1+ (char * const)&DefaultDriver, // 8 UART0
-	1+ (char * const)&uart1_driver,  // 9 UART1
+	1+ (char * const)&DefaultDriver, // 9 UART1
 	1+ (char * const)&DefaultDriver, // 10 SMC
 	1+ (char * const)&DefaultDriver, // 11 Parallel IO Controller A
 	1+ (char * const)&DefaultDriver, // 12 Parallel IO Controller B
 	1+ (char * const)&DefaultDriver, // 13 Parallel IO Controller C
 	1+ (char * const)&DefaultDriver, // 14 USART 0
-	1+ (char * const)&DefaultDriver, // 15 USART 1
+	1+ (char * const)&usart1_driver, // 15 USART 1
 	1+ (char * const)&DefaultDriver, // 16 Reserved
 	1+ (char * const)&DefaultDriver, // 17 Reserved
 	1+ (char * const)&DefaultDriver, // 18 MCI
@@ -253,8 +312,8 @@ char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".ExceptionVe
 	1+ (char * const)&DefaultDriver, // 26 Timer Counter 3
 	1+ (char * const)&DefaultDriver, // 27 Timer Counter 4
 	1+ (char * const)&DefaultDriver, // 28 Timer Counter 5
-	1+ (char * const)&DefaultDriver, // 29 ADC controller
-	1+ (char * const)&DefaultDriver, // 30 DAC controller
+	1+ (char * const)&adc_driver,	 // 29 ADC controller
+	1+ (char * const)&dacc_driver,	 // 30 DAC controller
 	1+ (char * const)&DefaultDriver, // 31 PWM
 	1+ (char * const)&DefaultDriver, // 32 CRC Calculation Unit
 	1+ (char * const)&DefaultDriver, // 33 Analog Comparator
