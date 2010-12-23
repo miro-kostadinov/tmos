@@ -93,6 +93,7 @@
  *         Headers
  *------------------------------------------------------------------------------*/
 #include <fam_inc.h>
+#include <at91_types.h>
 //#include "chip.h"
 //#include <stdint.h>
 
