@@ -15,7 +15,7 @@
 static void ADC_off(ADC_INFO drv_info)
 {
    	drv_isr_disable(&drv_info->info);
-	drv_info->hw_base->ADC_CHDR = 0xFF;
+	drv_info->hw_base->ADC_CHDR = 0xFFFF;
     drv_pmc_disable(&drv_info->info);
 }
 
@@ -28,7 +28,7 @@ static void ADC_on(ADC_INFO drv_info)
     pADC = drv_info->hw_base;
 	pADC->ADC_CR = ADC_CR_SWRST;
 
-       /* First Step: Set up by using ADC Mode register */
+    /* First Step: Set up by using ADC Mode register */
 
 	pADC->ADC_MR = drv_info->CFG_ADC_MR;
 
@@ -62,8 +62,8 @@ void ADC_DCR(ADC_INFO drv_info, unsigned int reason, HANDLE param)
             if (drv_data->pending == param)
             {
                 drv_data->pending = NULL;
-				drv_info->hw_base->ADC_CHDR = 0xFF;
-				//??
+				drv_info->hw_base->ADC_CHDR = 0xFFFF;
+		    	svc_HND_SET_STATUS(param, RES_SIG_IDLE);
 
             } else
             	param->svc_list_cancel(drv_data->waiting);
@@ -90,7 +90,7 @@ void ADC_DSR(ADC_INFO drv_info, HANDLE hnd)
 		    drv_info->hw_base->ADC_CR = ADC_CR_START;
 		}
     }else
-    	svc_HND_SET_STATUS(hnd, RES_ERROR);
+    	svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 }
 
 void ADC_ISR(ADC_INFO drv_info )
@@ -110,8 +110,8 @@ void ADC_ISR(ADC_INFO drv_info )
             if(!--hnd->len)
             {
                 drv_data->pending = NULL;
-				pADC->ADC_CHDR = 0xFF;
-                usr_HND_SET_STATUS(hnd, RES_OK);
+				pADC->ADC_CHDR = 0xFFFF;
+                usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 				if(drv_data->pending)
                     return;
 				if((hnd = drv_data->waiting))
@@ -126,6 +126,6 @@ void ADC_ISR(ADC_INFO drv_info )
 		if(hnd)
 			pADC->ADC_CR = ADC_CR_START;
         else
-			pADC->ADC_CHDR = 0xFF;
+			pADC->ADC_CHDR = 0xFFFF;
     }
 }
