@@ -1,181 +1,186 @@
 /**************************************************************************//**
- * @file     uart_drv.cpp
- * @ingroup  DRV_AT91_UART
- * @brief    UART driver implementation
+ * @file     usart_drv.cpp
+ * @ingroup  DRV_AT91_USART
+ * @brief    USART driver implementation
  * @version  V3.00
- * @date     02. December 2010
+ * @date     17. December 2010
  * @author	 Miroslav Kostadinov
  *
  ******************************************************************************/
 
 #include <tmos.h>
-#include <uart_drv.h>
+#include <usart_drv.h>
 #include <fam_cpp.h>
 #include <platform_drv.h>
-
 
 //*----------------------------------------------------------------------------
 //*			Portable
 //*----------------------------------------------------------------------------
 
 /**
- * Turn off the UART
+ * Turn off the USART
  * @param drv_info
  */
-static void UART_OFF(UART_INFO drv_info)
+static void USART_OFF(USART_INFO drv_info)
 {
-	Uart* pUart= drv_info->hw_base;
+	Usart* pUsart= drv_info->hw_base;
 
     //* Disable all interrupts
    	drv_isr_disable(&drv_info->info);
     drv_pmc_enable(&drv_info->info);
-    pUart->UART_IDR = UART_IDR_RXRDY | UART_IDR_TXRDY | UART_IDR_ENDRX
-    		| UART_IDR_ENDTX | UART_IDR_OVRE | UART_IDR_FRAME | UART_IDR_PARE
-    		| UART_IDR_TXEMPTY | UART_IDR_TXBUFE | UART_IDR_RXBUFF;
+    pUsart->US_WPMR = US_WPMR_WPKEY(0x555341);
+
+    pUsart->US_IDR = 0xFFFFFFFF;
 
     //* Reset the baud rate divisor register
-    pUart->UART_BRGR = 0 ;
+    pUsart->US_BRGR = 0 ;
 
     //* Reset the USART mode
-    pUart->UART_MR = 0  ;
+    pUsart->US_MR = 0  ;
 
     //* Abort the Peripheral Data Transfers
-	pUart->UART_PTCR =UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
-	pUart->UART_RNCR = 0;
-	pUart->UART_TNCR = 0;
-	pUart->UART_RCR = 0;
-	pUart->UART_TCR = 0;
+	pUsart->US_PTCR =US_PTCR_RXTDIS | US_PTCR_TXTDIS;
+	pUsart->US_RNCR = 0;
+	pUsart->US_TNCR = 0;
+	pUsart->US_RCR = 0;
+	pUsart->US_TCR = 0;
 
 
     //* Disable receiver and transmitter and stop any activity immediately
-    pUart->UART_CR = UART_CR_TXDIS | UART_CR_RXDIS | UART_CR_RSTTX | UART_CR_RSTRX;
+    pUsart->US_CR = US_CR_TXDIS | US_CR_RXDIS | US_CR_RSTTX | US_CR_RSTRX | US_CR_RSTSTA;
 
 	//RTS =1 (not ready)
     GPIO_CfgInput(&drv_info->pins);
    	drv_pmc_disable(&drv_info->info);
-
 }
 
-/** Turn On the UART
+/** Turn On the USART
  *
  * @param drv_info
  * @param pMode
  */
-void UART_CFG(UART_INFO drv_info, DRV_UART_MODE pMode)
+void USART_CFG(USART_INFO drv_info, DRV_UART_MODE pMode)
 {
-	Uart* pUart =drv_info->hw_base;
+	Usart* pUsart =drv_info->hw_base;
 
     drv_pmc_enable(&drv_info->info);
-    pUart->UART_CR = UART_CR_TXEN | UART_CR_RXEN;
+    pUsart->US_WPMR = US_WPMR_WPKEY(0x555341);
+
+    //* Reset receiver and transmitter
+    pUsart->US_CR = US_CR_RSTRX | US_CR_RSTTX | US_CR_RXDIS | US_CR_TXDIS;
 
   	//* Define the baud rate divisor register
-	pUart->UART_BRGR = AT91_GetDiv(pMode->baudrate);
+	pUsart->US_BRGR = AT91_GetDiv(pMode->baudrate);
 
-    //* Enable PDC
-	pUart->UART_PTCR = UART_PTCR_RXTEN ;
-	pUart->UART_PTCR = UART_PTCR_TXTEN;
+	//* Write the Timeguard Register
+    pUsart->US_TTGR = 3 ;
+    pUsart->US_RTOR = pMode->rtout;
 
     //* Define the USART mode
-    pUart->UART_MR = pMode->mode;
+    pUsart->US_MR = pMode->mode;
 
-    pUart->UART_IER = UART_IER_ENDRX ;
+    //* Clear Transmit and Receive Counters
+    pUsart->US_TNCR = 0;
+	pUsart->US_TCR = 0;
+	pUsart->US_RNCR = 0;
+	pUsart->US_RCR = 0;
+	pUsart->US_PTCR = US_PTCR_RXTEN | US_PTCR_TXTEN;
+
+   	// Enable Usart
+    pUsart->US_CR = US_CR_TXEN | US_CR_RXEN | US_CR_STTTO;
+
+    pUsart->US_IER = US_IER_ENDRX | US_IER_TIMEOUT;
    	drv_isr_enable(&drv_info->info);
     GPIO_CfgPeriph(&drv_info->pins);
 }
 
 /** STOP the receiver */
-#define STOP_RX(pUart) 		pUart->UART_PTCR = UART_PTCR_RXTDIS
+#define STOP_RX(pUsart) 	pUsart->US_PTCR = US_PTCR_RXTDIS
 /** STOP the transmitter */
-#define STOP_TX(pUart) 		pUart->UART_PTCR = UART_PTCR_TXTDIS
+#define STOP_TX(pUsart) 	pUsart->US_PTCR = US_PTCR_TXTDIS
 /** Resume the receiving */
-#define RESUME_RX(pUart) 	pUart->UART_PTCR = UART_PTCR_RXTEN
+#define RESUME_RX(pUsart) 	pUsart->US_PTCR = US_PTCR_RXTEN
 
 /** Start receiving to rx_buf
  *
  * @param pUart
  * @param drv_data
  */
-static void START_RX_BUF(Uart*	pUart, UART_DRIVER_DATA drv_data)
+static void START_RX_BUF(Usart*	pUsart, UART_DRIVER_DATA drv_data)
 {
-	pUart->UART_RPR = (unsigned int)drv_data->rx_buf;
+	pUsart->US_RPR = (unsigned int)drv_data->rx_buf;
 	drv_data->rx_ptr = drv_data->rx_buf;
-	pUart->UART_RCR = drv_data->buf_size;
-	pUart->UART_PTCR = UART_PTCR_RXTEN ;
+	pUsart->US_RCR = drv_data->buf_size;
+	pUsart->US_PTCR = US_PTCR_RXTEN ;
 }
 
 /** Start receiving to hnd
  *
- * @param pUart
+ * @param pUsart
  * @param drv_data
  * @param hnd
  */
-static void START_RX_HND(Uart*	pUart, UART_DRIVER_DATA drv_data, HANDLE hnd)
+static void START_RX_HND(Usart*	pUsart, UART_DRIVER_DATA drv_data, HANDLE hnd)
 {
-	pUart->UART_RPR = hnd->dst.as_int;
-	pUart->UART_RCR = hnd->len;
-	pUart->UART_PTCR = UART_PTCR_RXTEN ;
+	pUsart->US_RPR = hnd->dst.as_int;
+	pUsart->US_RCR = hnd->len;
+	pUsart->US_PTCR = US_PTCR_RXTEN ;
     drv_data->rtout = ((DRV_UART_MODE)(hnd->mode.as_voidptr))->rtout;
 }
 
 /** Stop receiving hnd
  *
- * @param pUart
+ * @param pUsart
  * @param drv_data
  * @param hnd
  */
-static void STOP_RX_HND(Uart*	pUart, UART_DRIVER_DATA drv_data, HANDLE hnd)
+static void STOP_RX_HND(Usart*	pUsart, UART_DRIVER_DATA drv_data, HANDLE hnd)
 {
-	STOP_RX(pUart);
+	STOP_RX(pUsart);
 	drv_data->hnd_rcv = hnd->next;
-	hnd->len =pUart->UART_RCR;
-	hnd->dst.as_int = pUart->UART_RPR;
+	hnd->len =pUsart->US_RCR;
+	hnd->dst.as_int = pUsart->US_RPR;
 	usr_HND_SET_STATUS(hnd, RES_SIG_OK);
   	if( (hnd=drv_data->hnd_rcv) )
-      	START_RX_HND(pUart, drv_data, hnd);
+      	START_RX_HND(pUsart, drv_data, hnd);
   	else
-		START_RX_BUF(pUart, drv_data);
+		START_RX_BUF(pUsart, drv_data);
 }
 
 
 /** Start transmit hnd
  *
- * @param pUart
+ * @param pUsart
  * @param hnd
  */
-static void START_TX_HND(Uart*	pUart, HANDLE hnd)
+static void START_TX_HND(Usart*	pUsart, HANDLE hnd)
 {
-	pUart->UART_TPR = hnd->src.as_int;
-	pUart->UART_TCR = hnd->len;
-	pUart->UART_PTCR = UART_PTCR_RXTEN ;
-    pUart->UART_IER = UART_IER_TXBUFE;
+	pUsart->US_TPR = hnd->src.as_int;
+	pUsart->US_TCR = hnd->len;
+	pUsart->US_PTCR = US_PTCR_RXTEN ;
+    pUsart->US_IER = US_IER_TXBUFE;
 }
-
-//*----------------------------------------------------------------------------
-
-
-
 
 //*----------------------------------------------------------------------------
 //*			DCR function
 //*----------------------------------------------------------------------------
-/** UART DCR
+/** USART DCR
  *
  * @param drv_info
  * @param reason
  * @param param
  */
-void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
+void USART_DCR(USART_INFO drv_info, unsigned int reason, HANDLE param)
 {
     UART_DRIVER_DATA drv_data = drv_info->drv_data;
     unsigned int temp;
-
 
 	switch(reason)
     {
 
         case DCR_RESET:
         	drv_data->buf_size = drv_info->buf_size;
-          	UART_OFF(drv_info);
+          	USART_OFF(drv_info);
             break;
 
         case DCR_OPEN:
@@ -194,7 +199,7 @@ void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
 					{
 						drv_data->mode = pMode->mode;
 						drv_data->baudrate =pMode->baudrate;
-						UART_CFG(drv_info, pMode);
+						USART_CFG(drv_info, pMode);
 						START_RX_BUF(drv_info->hw_base, drv_data);
 					}
 					drv_data->cnt++;
@@ -206,7 +211,7 @@ void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
     	case DCR_CLOSE:
         	if(drv_data->cnt)
 				if(!--drv_data->cnt)
-					UART_OFF(drv_info);
+					USART_OFF(drv_info);
     		break;
 
     	case DCR_CANCEL:
@@ -216,11 +221,11 @@ void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
     			if(param == drv_data->hnd_rcv)
     			{
     				STOP_RX(drv_info->hw_base);
-    				temp = drv_info->hw_base->UART_RCR;
+    				temp = drv_info->hw_base->US_RCR;
     	      		if(param->len > temp)
     	      		{
     	      			param->len = temp;
-    	      			param->dst.as_int = drv_info->hw_base->UART_RPR;
+    	      			param->dst.as_int = drv_info->hw_base->US_RPR;
     	      			temp = RES_OK;
     	      		} else
     	      			temp = RES_SIG_IDLE;
@@ -239,11 +244,11 @@ void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
     			if(param == drv_data->hnd_snd)
     			{
     				STOP_TX(drv_info->hw_base);
-    				temp = drv_info->hw_base->UART_TCR;
+    				temp = drv_info->hw_base->US_TCR;
     	      		if(param->len > temp)
     	      		{
     	      			param->len = temp;
-    	      			param->src.as_int = drv_info->hw_base->UART_TPR;
+    	      			param->src.as_int = drv_info->hw_base->US_TPR;
     	      			temp = RES_OK;
     	      		} else
     	      			temp = RES_SIG_IDLE;
@@ -262,21 +267,20 @@ void UART_DCR(UART_INFO drv_info, unsigned int reason, HANDLE param)
 
     	case DCR_CLOCK:
         	if(drv_data->cnt)
-        		drv_info->hw_base->UART_BRGR = AT91_GetDiv(drv_data->baudrate);
+        		drv_info->hw_base->US_BRGR = AT91_GetDiv(drv_data->baudrate);
     		break;
     }
 }
-
 
 //*----------------------------------------------------------------------------
 //*			DSR function
 //*----------------------------------------------------------------------------
 /**
- * UART DSR
+ * USART DSR
  * @param drv_info
  * @param hnd
  */
-void UART_DSR(UART_INFO drv_info, HANDLE hnd)
+void USART_DSR(USART_INFO drv_info, HANDLE hnd)
 {
     UART_DRIVER_DATA drv_data = drv_info->drv_data;
 	unsigned char *ptr;
@@ -296,7 +300,7 @@ void UART_DSR(UART_INFO drv_info, HANDLE hnd)
 			STOP_RX(drv_info->hw_base);
 
 			//try to read from buffer
-	      	ptr = (unsigned char*) (drv_info->hw_base->UART_RPR);
+	      	ptr = (unsigned char*) (drv_info->hw_base->US_RPR);
 	      	if (ptr != drv_data->rx_ptr)
 	      	{
 	      		if (ptr < drv_data->rx_ptr)
@@ -355,69 +359,72 @@ void UART_DSR(UART_INFO drv_info, HANDLE hnd)
 
 }
 
-
-
 //*----------------------------------------------------------------------------
 //*			ISR function
 //*----------------------------------------------------------------------------
 /**
- * UART ISR
- * For SAM7 this is called from the system driver
- * For SAM3 this is a normal IRQ, but it may also be called for timeouts (to do)
+ * USART ISR
  *
  * @param drv_info
  */
-void UART_ISR(UART_INFO drv_info )
+void USART_ISR(USART_INFO drv_info )
 {
     HANDLE hnd;
     unsigned int status;
-    Uart* pUart;
+    Usart* pUsart;
 	UART_DRIVER_DATA drv_data;
 
 	drv_data = drv_info->drv_data;
-	pUart = drv_info->hw_base;
+	pUsart = drv_info->hw_base;
 
-	status = pUart->UART_SR;
-	status &=  pUart->UART_IMR;
+	status = pUsart->US_CSR;
+	status &=  pUsart->US_IMR;
 
 	// check the transmitter
-	if(status & UART_SR_TXBUFE)
+	if(status & US_CSR_TXBUFE)
 	{
-		pUart->UART_IDR = UART_IDR_TXBUFE;
+		pUsart->US_IDR = US_IDR_TXBUFE;
       	if( (hnd=drv_data->hnd_snd) )
       	{
       		drv_data->hnd_snd = hnd->next;
       		hnd->len = 0;
-  			hnd->src.as_int = pUart->UART_TPR;
+  			hnd->src.as_int = pUsart->US_TPR;
 			usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 	      	if( drv_data->hnd_snd )
-	          	START_TX_HND(pUart, drv_data->hnd_snd);
+	          	START_TX_HND(pUsart, drv_data->hnd_snd);
 
       	}
 	}
 
+	//check for timeout
+	if(status & US_CSR_TIMEOUT)
+	{
+		pUsart->US_CR = US_CR_STTTO;
+      	if( (hnd=drv_data->hnd_rcv) )
+      	{
+			STOP_RX_HND(pUsart, drv_data, hnd);
+      	}
+	}
+
 	//check the receiver
-	if(status & UART_SR_ENDRX)
+	if(status & US_CSR_ENDRX)
 	{
       	if( (hnd=drv_data->hnd_rcv) )
       	{
-			STOP_RX_HND(pUart, drv_data, hnd);
+    		pUsart->US_CR = US_CR_STTTO;
+			STOP_RX_HND(pUsart, drv_data, hnd);
 
       	} else
-			START_RX_BUF(pUart, drv_data);
+			START_RX_BUF(pUsart, drv_data);
 	} else
 	{
 		// process tout
       	if( (hnd=drv_data->hnd_rcv) )
-      		if(hnd->dst.as_int != pUart->UART_RPR)
+      		if(hnd->dst.as_int != pUsart->US_RPR)
       			if(drv_data->rtout)
           			if(!--drv_data->rtout)
           			{
-        				STOP_RX_HND(pUart, drv_data, hnd);
+        				STOP_RX_HND(pUsart, drv_data, hnd);
           			}
 	}
-
-
 }
-
-
