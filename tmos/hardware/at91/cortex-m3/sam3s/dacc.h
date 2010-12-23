@@ -82,6 +82,8 @@
 //#include "chip.h"
 //#include <stdint.h>
 //#include <assert.h>
+#include <at91_types.h>
+
 
 /*------------------------------------------------------------------------------
  *         Definitions
