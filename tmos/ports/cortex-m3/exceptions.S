@@ -59,8 +59,6 @@ END(	VECTOR_TABLE	)
 
 #define NVIC_CFG_CTRL_STKALIGN  0x00000200
 
-.section .text,"ax"
-
 //*----------------------------------------------------------------------------
 //*			RESET handler
 //*----------------------------------------------------------------------------
@@ -208,12 +206,10 @@ FUNC(	sys_usage_fault_handler		)
 ENDF(	sys_usage_fault_handler		)
 
 
-.section .SWIHandler,"ax"
-
 //*----------------------------------------------------------------------------
 //*			SVC handler
 //*----------------------------------------------------------------------------
-FUNC(	sys_svc_handler		)
+FUNC_SECT(	sys_svc_handler, .SWIHandler	)
 
 				tst			lr, #0x04				// Test EXC_RETURN number in LR bit 2
            		ITE         EQ                   	// if zero (equal) then
@@ -235,7 +231,6 @@ mos_switab:
 
 ENDF(	sys_svc_handler		)
 
-.section .text,"ax"
 
 //*----------------------------------------------------------------------------
 //*			Debug handler
