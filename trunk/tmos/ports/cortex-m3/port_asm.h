@@ -54,12 +54,24 @@
 #define END(name) 		\
   .size name, .-name
 
-#define FUNC(name) 		\
-.type   name, %function; \
-.global name; 			\
-.thumb_func;			\
-.func name;				\
-__ALIGN_SHORT; 			\
+#define FUNC(name) 			\
+.section .text.&&name, "ax";\
+__ALIGN_SHORT; 				\
+.type   name, %function; 	\
+.global name; 				\
+.thumb;						\
+.thumb_func;				\
+.func name;					\
+name:
+
+#define FUNC_SECT(name, sect)\
+.section sect, "ax";		\
+__ALIGN_SHORT; 				\
+.type   name, %function; 	\
+.global name; 				\
+.thumb;						\
+.thumb_func;				\
+.func name;					\
 name:
 
 #define ENDF(name)		\
