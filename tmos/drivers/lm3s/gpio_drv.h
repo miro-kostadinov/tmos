@@ -16,7 +16,6 @@
 struct GPIO_DRIVER_DATA
 {
 	HANDLE 			waiting;		//!< doc!
-	unsigned char   enable[PORTS];	//!< doc!
 	unsigned char	sreg_val;		//!< doc!
 };
 
