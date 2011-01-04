@@ -13,11 +13,19 @@
  * I'll do some dirty patches now just to compile it...
  *
  */
-extern const GPIO_DRIVER_INFO * const GPIO_DRVS[PORTS];
+extern 	 char* const DRV_TABLE[INALID_DRV_INDX+1];
 
-
-
-
+const DRIVER_INDEX GPIO_IRQ_INDX[] = {
+	GPIOPortA_IRQn,
+	GPIOPortB_IRQn,
+	GPIOPortC_IRQn,
+	GPIOPortD_IRQn,
+	GPIOPortE_IRQn,
+	GPIOPortF_IRQn,
+	GPIOPortG_IRQn,
+	GPIOPortH_IRQn,
+	GPIOPortJ_IRQn
+};
 
 GPIO_Type * PIO_Base(PIN_DESC Pin)
 {
@@ -33,7 +41,7 @@ GPIO_Type * PIO_Base(PIN_DESC Pin)
 #endif
 }
 
-unsigned int svc_PIN_CFG(PIN_DESC Pin)
+void PIO_Cfg(PIN_DESC Pin)
 {
 	unsigned int shift_num=0;
 	GPIO_Type *Port_Base = PIO_Base(Pin);
@@ -62,21 +70,7 @@ unsigned int svc_PIN_CFG(PIN_DESC Pin)
 			}
 			Port_Base->PCTL = ( (Port_Base->PCTL &~(0xf << shift_num)) | (Pin.pin_mux << shift_num) );
 		}
-		NVIC->NVIC_SetPriority(GPIO_DRVS[Pin.port_num]->info.drv_index, GPIO_DRVS[Pin.port_num]->info.isr_priority);
-		NVIC->NVIC_EnableIRQ(GPIO_DRVS[Pin.port_num]->info.drv_index);
-		if(Pin.state & PIN_INT_ENABLE)
-			GPIO_DRVS[Pin.port_num]->hw_base->GPIOPinIntEnable(Pin.pin_pattern);
-		GPIO_DRVS[Pin.port_num]->drv_data->enable[Pin.port_num]++;
 	}
-	return Pin.port_num;
-}
-
-void PIO_Cfg(PIN_DESC Pin)
-{
-	if(!(__get_CONTROL()&2))
-		svc_PIN_CFG(Pin);
-	else
-		usr_drv_icontrol(GPIOPortA_IRQn, DCR_PARAMS, (void *)&Pin.as_int);
 }
 
 
@@ -148,28 +142,14 @@ void PIO_ClrOutput(PIN_DESC Pin)
 	PIO_Write(Pin,0);
 }
 
-
-void svc_PIN_FREE(PIN_DESC Pin)
+void PIO_Free(PIN_DESC Pin)
 {
-	if(Pin.port_num == PORT_V)
-		return;
-	if(GPIO_DRVS[Pin.port_num]->drv_data->enable[Pin.port_num])
-		return;
-	if(!--GPIO_DRVS[Pin.port_num]->drv_data->enable[Pin.port_num])
+	unsigned int port_num = Pin.port_num;
+
+	if(port_num != PORT_V)
 	{
-		if(SYSCTL->RCGC2&(1<<Pin.port_num))
-		{
-			#ifdef USE_AHB_PERIPHERAL
-				SYSCTL->GPIOHBCTL &= ~(1 << Pin.port_num);
-			#endif
-			NVIC->NVIC_DisableIRQ(GPIO_DRVS[Pin.port_num]->info.drv_index);
-			SysCtlPeripheralReset(GPIO_DRVS[Pin.port_num]->info.peripheral_indx);
-			SysCtlPeripheralDisable(GPIO_DRVS[Pin.port_num]->info.peripheral_indx);
-		}
-	}
-	else
-	{
-		GPIO_Type * port = GPIO_DRVS[Pin.port_num]->hw_base;
+		GPIO_Type* port = PIO_Base(Pin);
+
 		unsigned char pattern = Pin.pin_pattern;
 		port->GPIOPinIntDisable(pattern);
 		port->AFSEL &=~pattern;
@@ -177,15 +157,19 @@ void svc_PIN_FREE(PIN_DESC Pin)
 		port->PDR &=~pattern;
 		port->PUR &=~pattern;
 		port->PCTL &=~pattern;
-	}
-}
 
-void PIO_Free(PIN_DESC Pin)
-{
-	if(!(__get_CONTROL()&2))
-		svc_PIN_FREE(Pin);
-	else
-		usr_drv_icontrol(GPIOPortA_IRQn, DCR_STOP, (void *)&Pin.as_int);
+		if(!port->IM)
+		{
+//			#ifdef USE_AHB_PERIPHERAL
+//				SYSCTL->GPIOHBCTL &= ~(1 << Pin.port_num);
+//			#endif
+
+			NVIC->NVIC_DisableIRQ(GPIO_IRQ_INDX[port_num]);
+			port_num += SYSCTL_PERIPH_GPIOA;	//convert to SYSCTL_PERIPH_GPIOx
+			SysCtlPeripheralReset(port_num);
+			SysCtlPeripheralDisable(port_num);
+		}
+	}
 }
 
 void PIO_Free_List(PIN_DESC * list )
@@ -202,7 +186,8 @@ static void read_handle(GPIO_DRIVER_DATA * drv_data, HANDLE hnd)
 	PIN_DESC * pin = (PIN_DESC *) hnd->mode.as_voidptr;
 	for(int i=0; i < hnd->len && pin->as_int; i++, pin++)
 	{
-		*(hnd->dst.as_byteptr +i)= GPIO_DRVS[pin->port_num]->hw_base->DATA_Bits[pin->pin_pattern];
+
+		*(hnd->dst.as_byteptr +i)= PIO_Base(*pin)->DATA_Bits[pin->pin_pattern];
 	}
 }
 
@@ -242,22 +227,25 @@ void dcr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, unsigned int reason, HANDLE hn
 			hnd->mode0=0;
 			while(pin->as_int)
 			{
-				svc_PIN_CFG(*pin);
+				PIO_Cfg(*pin);
+				if(pin->state & PIN_INT_ENABLE)
+				{
+					const GPIO_DRIVER_INFO* info;
+					int adr = (int)DRV_TABLE[GPIO_IRQ_INDX[pin->port_num]];
+
+					adr &= ~3;
+					info = (const GPIO_DRIVER_INFO*)adr;
+					if(info->info.isr == (DRV_ISR)isr_GPIO_driver)
+					{
+						NVIC->NVIC_SetPriority(info->info.drv_index, info->info.isr_priority);
+						NVIC->NVIC_EnableIRQ(info->info.drv_index);
+						info->hw_base->GPIOPinIntEnable(pin->pin_pattern);
+					}
+				}
 				pin++;
 			}
 			hnd->res = RES_OK;
 		}
-		break;
-
-		case DCR_PARAMS:
-		{
-			PIN_DESC * pin = (PIN_DESC *)hnd;
-			svc_PIN_CFG(*pin);
-		}
-		break;
-
-		case DCR_STOP:
-			svc_PIN_FREE(*((PIN_DESC *)hnd));
 		break;
 
 		case DCR_CLOSE:
@@ -265,7 +253,7 @@ void dcr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, unsigned int reason, HANDLE hn
 			PIN_DESC * pin = (PIN_DESC *)hnd->mode.as_voidptr;
 			while(pin->as_int)
 			{
-				svc_PIN_FREE(*pin);
+				PIO_Free(*pin);
 				pin++;
 			}
 			hnd->list_remove(drv_data->waiting);
@@ -285,10 +273,9 @@ void dcr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, unsigned int reason, HANDLE hn
 			NVIC->NVIC_DisableIRQ(drv_info->info.drv_index);
 			SysCtlPeripheralReset(drv_info->info.peripheral_indx);
 			SysCtlPeripheralDisable(drv_info->info.peripheral_indx); // turn off
-			hnd->res = RES_OK;
 			break;
 		default:
-			hnd->res = RES_ERROR;
+			break;
 	}
 }
 
@@ -305,7 +292,7 @@ void dsr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, HANDLE hnd)
 			if(!(SYSCTL->RCGC2 & (1<<pin->port_num)))
 				TRACELN("oops");
 			ASSERT(SYSCTL->RCGC2 & (1<<pin->port_num));
-			GPIO_DRVS[pin->port_num]->hw_base->DATA_Bits[pin->pin_pattern] = *hnd->src.as_byteptr;
+			PIO_Base(*pin)->DATA_Bits[pin->pin_pattern] = *hnd->src.as_byteptr;
 		}
 		svc_HND_SET_STATUS(hnd, RES_OK);
     }
@@ -334,36 +321,10 @@ void dsr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, HANDLE hnd)
 	}
 }
 
-/*
-unsigned check_uart_cts(unsigned int port_num, unsigned char status, DRIVER_INDEX drv_index)
-{
-	UART_DRIVER_INFO * drv_info = (UART_DRIVER_INFO *)(void*)(DRV_TABLE[drv_index]-1);
-	if(drv_info->info.drv_index != drv_index)
-		return false;
-	if(drv_info->drv_data->mode.hw_flow)
-	{
-		PIN_DESC cts = drv_info->uart_pins[CTS_PIN];
-		if( cts.port_num == port_num && (cts.pin_pattern&status))
-		{
-			usr_drv_icontrol(drv_index, DCR_ISR, (void *)(PIO_Read(cts)&status));
-			return true;
-		}
-	}
-	return false;
-}
-*/
 void isr_GPIO_driver(GPIO_DRIVER_INFO* drv_info )
 {
 	unsigned int status = drv_info->hw_base->GPIOPinIntStatus(true);
 	drv_info->hw_base->GPIOPinIntClear(status);
 
-/*
-#ifdef HW_VER_10
-	if( !check_uart_cts(drv_info->port_num, status, UART0_IRQn) &&
-		!check_uart_cts(drv_info->port_num, status, UART2_IRQn) )
-		drv_info->hw_base->GPIOPinIntDisable(status);
-#endif
-
-*/
 	usr_drv_icontrol(drv_info->info.drv_index, DCR_ISR, (void *)status);
 }
