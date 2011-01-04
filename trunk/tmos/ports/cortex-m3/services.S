@@ -285,6 +285,7 @@ FUNC(	sys_get_signal		)
 
                 movs			r0, #TSKSTATE_SIGNAL
 s_susp_task:
+ 				str				r2, [r3]				//REG_CTASK->sp early update, because IRQ may get serviced before task switch
                 strb			r0, [r3, #tsk_state]
 				m_RERemove		r3, r0, r1
 				m_RECleanup		r3
