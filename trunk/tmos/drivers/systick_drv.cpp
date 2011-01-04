@@ -28,7 +28,7 @@ void SYSTICK_DCR(SYSTICK_INFO drv_info, unsigned int reason, void* param)
 		ticks = (system_clock_frequency/1000)*drv_info->OS_QUANTUM_PERIOD - 1;
 		SysTick->SysTick_Config(ticks);
 		NVIC->NVIC_SetPriority (SysTick_IRQn, 0);  /* SYSTICK MUST HAVE THE HIGHEST PRIORITY !!!! */
-
+		NVIC->NVIC_SetPriority (PendSV_IRQn, -1);
 	}
 }
 
