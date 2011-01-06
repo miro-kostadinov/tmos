@@ -115,7 +115,7 @@ ENDF(	sys_realloc		)
 FUNC(	svc_malloc		)
 
 				ldr				r1, =end				//pool
-
+				b				svc_pool_malloc
 ENDF(	svc_malloc		)
 
 
@@ -213,6 +213,7 @@ ENDF(	svc_pool_malloc		)
 FUNC(	svc_free		)
 
 				ldr				r1, =end
+				b 				svc_pool_free
 
 ENDF(	svc_free		)
 
