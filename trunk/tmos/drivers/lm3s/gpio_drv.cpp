@@ -165,9 +165,9 @@ void PIO_Free(PIN_DESC Pin)
 //			#endif
 
 			NVIC->NVIC_DisableIRQ(GPIO_IRQ_INDX[port_num]);
-			port_num += SYSCTL_PERIPH_GPIOA;	//convert to SYSCTL_PERIPH_GPIOx
-			SysCtlPeripheralReset(port_num);
-			SysCtlPeripheralDisable(port_num);
+//			port_num += SYSCTL_PERIPH_GPIOA;	//convert to SYSCTL_PERIPH_GPIOx
+//			SysCtlPeripheralReset(port_num);
+//			SysCtlPeripheralDisable(port_num);
 		}
 	}
 }
