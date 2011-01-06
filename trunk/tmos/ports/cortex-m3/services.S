@@ -112,6 +112,7 @@ FUNC(	svc_send_signal		)
                 str				r3, [r2, #tsk_sp_r0]
                 bics			r1, r3
                 str				r1, [r0, #tsk_signal]
+                b				svc_task_schedule
 
 ENDF(	svc_send_signal		)
 
@@ -163,6 +164,7 @@ FUNC(	sys_sleep_rel	)
 				lsls			r0, r0, #1
                 bmi				_sys_return
                 lsrs			r0, r0, #1
+                b				sys_sleep
 
 ENDF(	sys_sleep_rel	)
 
@@ -268,6 +270,7 @@ FUNC(	sys_drv_service_wait  )
 				bl				svc_drv_service
 				pop				{r0,lr}
 				ldrb			r0, [r0, #HND_SIGNAL]
+				b				sys_get_signal
 
 ENDF(	svc_drv_service_wait  )
 
@@ -317,7 +320,8 @@ FUNC(	sys_resume_wait_signal	)
 				subs			r1, r1, r2							// Delay + t1 - t2
 				lsls			r1, r1, #1
                 bmi				sys_test_signal
-                lsrs				r1, r1, #1
+                lsrs			r1, r1, #1
+                b				sys_wait_signal
 
 ENDF(	sys_resume_wait_signal	)
 
@@ -399,6 +403,7 @@ FUNC(	svc_drv_hcontrol	)
 
 				mov				r2, r0
 				ldrb			r0, [r2, #HND_DRV_INDX]
+				b				svc_drv_icontrol
 
 ENDF(	svc_drv_hcontrol	)
 
@@ -491,6 +496,7 @@ ENDF(	usr_trace_char		)
 FUNC(	locked_inc_byte		)
 
 				movs			r1, #1
+				b				locked_add_byte
 
 ENDF(	locked_inc_byte		)
 
@@ -557,6 +563,7 @@ ENDF(	locked_clr_byte		)
 FUNC(	locked_inc_short		)
 
 				movs			r1, #1
+				b				locked_add_short
 
 ENDF(	locked_inc_short		)
 
@@ -596,6 +603,7 @@ ENDF(	locked_dec_short		)
 FUNC(	locked_inc_int		)
 
 				movs			r1, #1
+				b				locked_add_int
 
 ENDF(	locked_inc_int		)
 
