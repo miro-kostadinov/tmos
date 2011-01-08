@@ -8,6 +8,7 @@
 #ifndef MCU_INC_H_
 #define MCU_INC_H_
 
-#define RAM_SIZE 0x18000
+#define RAM_SIZE 			0x18000
+#define FLASH_PAGE_SIZE		0x400
 
 #endif /* MCU_INC_H_ */
