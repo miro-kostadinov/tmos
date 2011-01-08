@@ -23,6 +23,8 @@
 #include "adc.h"
 #include "dacc.h"
 
+#include "series_map.h"
+
 /* ************************************************************************** */
 /*   PIO DEFINITIONS FOR SAM3S */
 /* ************************************************************************** */
@@ -260,6 +262,11 @@
 #define PIO_PA23D_PIODCCLK   (1u << 23)  //!< Pioa signal: PIODCCLK */
 #define PIO_PA15D_PIODCEN1   (1u << 15)  //!< Pioa signal: PIODCEN1 */
 #define PIO_PA16D_PIODCEN2   (1u << 16)  //!< Pioa signal: PIODCEN2 */
+
+//====================  USBD ================================
+/** Number of USB endpoints */
+#define CHIP_USB_NUMENDPOINTS 8
+
 
 #endif /* SERIES_CPP_H_ */
 /** @} ingroup hardware_sam3s */
