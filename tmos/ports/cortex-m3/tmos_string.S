@@ -358,7 +358,7 @@ ENDF(	strncmp		)
 //*----------------------------------------------------------------------------
 //*	return:
 //*----------------------------------------------------------------------------
-FUNC(	strcasecmp		)
+FUNC_SECT(	strcasecmp, .text.casecmp	)
 
 				push			{r4, r5}
 				adr				r2, _char_2_type_
@@ -386,10 +386,10 @@ ENDF(	strcasecmp		)
 //*----------------------------------------------------------------------------
 //*	return:
 //*----------------------------------------------------------------------------
-FUNC(	strncasecmp		)
+FUNC_SECT(	strncasecmp,	.text.casecmp	)
 
 				cbz				r2, 3f
-				add				r3, _char_2_type_
+				adr				r3, _char_2_type_
 				push			{r4, r5, r6}
 1:
 				ldrb			r6, [r0], #1
@@ -420,7 +420,7 @@ ENDF(	strncasecmp		)
 //*----------------------------------------------------------------------------
 //*	return:
 //*----------------------------------------------------------------------------
-FUNC(	toupper		)
+FUNC_SECT(	toupper, .text.casecmp		)
 
 				adr				r2, _char_2_type_
 				ldrb			r1, [r0, r2]
@@ -435,7 +435,7 @@ ENDF(	toupper		)
 //*----------------------------------------------------------------------------
 //*	return:
 //*----------------------------------------------------------------------------
-FUNC(	tolower		)
+FUNC_SECT(	tolower, .text.casecmp		)
 
 				adr				r2, _char_2_type_
 				ldrb			r1, [r0, r2]
@@ -462,7 +462,7 @@ ENDF(	tolower		)
 #define	_B			0x02
 
 				.global G_char_2_type_
-.align 4
+.align 2
 G_char_2_type_:
 _char_2_type_:
 	.byte	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C									//00
