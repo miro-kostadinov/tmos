@@ -1074,22 +1074,11 @@ unsigned int CSTRING::atoi()
 	return res;
 }
 
-/**
- * Search for word from list
- *
- * @param sl - list of words
- * @param dwRead - start position (incremented with the found word length)
- * @return index+1 of the word that matches Or zero if nothing matches
- */
-unsigned int CSTRING::find_in_list(STR_LIST sl, unsigned int* dwRead) const
+unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead)
 {
-	const char * buf;
 	unsigned int pos;
 	unsigned int index=1;
 
-	buf = c_str();
-	if(dwRead)
-		buf += *dwRead;
 
 	while(*sl)
 	{
@@ -1102,7 +1091,7 @@ unsigned int CSTRING::find_in_list(STR_LIST sl, unsigned int* dwRead) const
 					*dwRead += pos;
 				return index;
 			}
-			if(sl[pos] != buf[pos])
+			if(sl[pos] != str[pos])
 				break;
 			pos++;
 		}
@@ -1112,7 +1101,22 @@ unsigned int CSTRING::find_in_list(STR_LIST sl, unsigned int* dwRead) const
 		index++;
 	}
 	return 0;
+}
 
+/**
+ * Search for word from list
+ *
+ * @param sl - list of words
+ * @param dwRead - start position (incremented with the found word length)
+ * @return index+1 of the word that matches Or zero if nothing matches
+ */
+unsigned int CSTRING::find_in_list(STR_LIST sl, unsigned int* dwRead) const
+{
+	const char * buf;
+	buf = c_str();
+	if(dwRead)
+		buf += *dwRead;
+	return ::find_in_list(buf, sl, dwRead);
 }
 
 /**
