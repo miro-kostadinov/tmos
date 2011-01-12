@@ -37,6 +37,8 @@ typedef const char* STR_LIST;
  * @endcode
  */
 #define SZ(item) # item "\0"
+unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead);
+
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 					 CString
