@@ -31,6 +31,34 @@
 #ifndef __HW_FLASH_H__
 #define __HW_FLASH_H__
 
+
+#ifdef __cplusplus
+#include <tmos_types.h>
+/*----------       FLASH controller            -----------*/
+struct FLASHC_Type
+{
+	__IO uint32_t FMA;		//!< (FMC Offset: 0x000 )Memory address register
+	__IO uint32_t FMD;  	//!< (FMC Offset: 0x004 )Memory data register
+	__IO uint32_t FMC;  	//!< (FMC Offset: 0x008 )Memory control register
+	__I  uint32_t FCRIS;  	//!< (FMC Offset: 0x00C )Raw interrupt status register
+	__IO uint32_t FCIM;  	//!< (FMC Offset: 0x010 )Interrupt mask register
+	__IO uint32_t FCMISC;  	//!< (FMC Offset: 0x014 )Interrupt status register
+	__I  uint32_t RSVD1[2]; //!< doc!
+	__IO uint32_t FMC2;  	//!< (FMC Offset: 0x020 )Flash Memory Control 2
+	__I  uint32_t RSVD2[3]; //!< doc!
+	__IO uint32_t FWBVAL;  	//!< (FMC Offset: 0x030 )Flash Write Buffer Valid
+	__I  uint32_t RSVD3[51];//!< doc!
+	__IO uint32_t FWBN[32];	//!< (FMC Offset: 0x100 )Flash Write Buffer Register n
+
+	void erase_page(unsigned long ulAddress);
+	void write(unsigned long ulDstAddr, const unsigned char *pucSrcData, unsigned long ulLength);
+	void fast_write(unsigned long ulDstAddr, const unsigned char *pucSrcData, unsigned long ulLength);
+};
+
+#define FLASHC		((FLASHC_Type*)0x400FD000)  //!< FLASH Controller base
+
+#endif
+
 //*****************************************************************************
 //
 // The following are defines for the FLASH register offsets.
