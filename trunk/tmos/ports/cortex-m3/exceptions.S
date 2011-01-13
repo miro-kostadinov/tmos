@@ -109,7 +109,7 @@ FUNC(	sys_reset_handler	)
 			    str			r1, [r0]
 
 			    /* Switch to process stack */
-				movs		r1, #3
+				movs		r1, #2
 				msr			CONTROL, r1
 
 			    /* Switch to main task */
