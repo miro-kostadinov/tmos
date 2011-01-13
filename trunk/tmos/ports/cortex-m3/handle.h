@@ -63,7 +63,7 @@ struct CHandle {
 		asm volatile ("swi %0"
 				:
 				: "I" (usr_drv_hcontrol_swi), "r"(_hnd), "r"(_reason)
-				: );
+				: "memory");
 	}
 
 	/**
@@ -89,7 +89,7 @@ struct CHandle {
 		asm volatile ("swi %0"
 				:
 				: "I" (usr_drv_hcontrol_swi), "r"(_hnd), "r"(_reason)
-				: );
+				: "memory");
 	}
 
 	/**
@@ -101,7 +101,7 @@ struct CHandle {
 		asm volatile ("swi %0"
 				:
 				: "I" (tsk_start_handle_swi), "r"(_hnd)
-				: );
+				: "memory");
 	}
 
 	/**
@@ -115,7 +115,7 @@ struct CHandle {
 		asm volatile ("swi %1"
 				: "=r"(_hnd)
 				: "I" (tsk_start_and_wait_swi), "0"(_hnd)
-				: "r1");
+				: "r1", "memory");
 
 		return res &= ~FLG_SIGNALED;
 	}
@@ -184,7 +184,7 @@ inline static void usr_HND_SET_STATUS(HANDLE volatile hnd, RES_CODE volatile res
 	asm volatile ("swi %0"
 			:
 			: "I" (usr_HND_SET_STATUS_swi), "r"(_hnd), "r"(_result)
-			: );
+			: "memory");
 }
 inline static void tsk_HND_SET_STATUS(HANDLE volatile hnd, RES_CODE volatile result)
 {
@@ -194,7 +194,7 @@ inline static void tsk_HND_SET_STATUS(HANDLE volatile hnd, RES_CODE volatile res
 	asm volatile ("swi %0"
 			:
 			: "I" (usr_HND_SET_STATUS_swi), "r"(_hnd), "r"(_result)
-			: );
+			: "memory");
 }
 #endif
 
