@@ -43,7 +43,7 @@ inline static   void usr_task_suspend(Task* volatile task)
 	asm volatile ("swi %1"
 	  : "=r"(_task)
 	  : "I" (usr_task_suspend_swi),  "0" (_task)
-	  : "r1", "r2", "r3", "r12", "r14");
+	  : "r1", "r2", "r3", "r12", "r14", "memory");
 }
 #endif
 
@@ -56,7 +56,7 @@ inline static   void usr_task_schedule(Task* volatile task)
 	asm volatile ("swi %1"
 	  : "=r"(_task)
 	  : "I" (usr_task_schedule_swi),  "0" (_task)
-	  : "r1", "r2", "r3", "r12", "r14");
+	  : "r1", "r2", "r3", "r12", "r14", "memory");
 }
 #endif
 
@@ -69,7 +69,7 @@ inline static   void tsk_sleep( unsigned int volatile time)
 	asm volatile ("swi %1"
 	  : "=r"(_time)
 	  : "I" (tsk_sleep_swi), "0" (_time)
-	  : "r1", "r2", "r3", "r12");
+	  : "r1", "r2", "r3", "r12", "memory");
 }
 #endif
 
@@ -82,7 +82,7 @@ inline static   void tsk_sleep_rel( unsigned int volatile time)
 	asm volatile ("swi %1"
 	  : "=r"(_time)
 	  : "I" (tsk_sleep_rel_swi), "0" (_time)
-	  : "r1", "r2", "r3", "r12");
+	  : "r1", "r2", "r3", "r12", "memory");
 }
 #endif
 
@@ -95,7 +95,7 @@ inline static   void tsk_sleep_until( unsigned int volatile time)
 	asm volatile ("swi %1"
 	  : "=r"(_time)
 	  : "I" (tsk_sleep_until_swi), "0" (_time)
-	  : "r1", "r2", "r3", "r12");
+	  : "r1", "r2", "r3", "r12", "memory");
 }
 #endif
 
@@ -108,7 +108,7 @@ inline static   void sys_increment_ticks(unsigned int volatile time)
 	asm volatile ("swi %1"
 	  : "=r"(_time)
 	  : "I" (sys_increment_ticks_swi), "0" (_time)
-	  : "r1", "r2", "r3", "r12", "r14");
+	  : "r1", "r2", "r3", "r12", "r14", "memory");
 }
 #endif
 
@@ -122,7 +122,7 @@ inline static   void usr_send_signal(Task* volatile task, unsigned int volatile 
 	asm volatile ("swi %2"
 	  : "=r" (_task), "=r"(_signal)
 	  : "I" (usr_send_signal_swi), "0" (_task), "1"(_signal)
-	  : "r2", "r3", "r12", "r14");
+	  : "r2", "r3", "r12", "r14", "memory");
 }
 inline static   void tsk_send_signal(Task* volatile task, unsigned int volatile signal)
 {
@@ -132,7 +132,7 @@ inline static   void tsk_send_signal(Task* volatile task, unsigned int volatile 
 	asm volatile ("swi %2"
 	  :  "=r" (_task), "=r"(_signal)
 	  : "I" (usr_send_signal_swi), "0" (_task), "1"(_signal)
-	  : "r2", "r3", "r12");
+	  : "r2", "r3", "r12", "memory");
 }
 #endif
 
@@ -145,7 +145,7 @@ inline static   unsigned int tsk_try_signal(unsigned int volatile signal)
 	asm volatile ("swi %1"
 	  : "=r"(_signal)
 	  : "I" (tsk_try_signal_swi), "0"(_signal)
-	  : "r1", "r2", "r3", "r12");
+	  : "r1", "r2", "r3", "r12", "memory");
 	return _signal;
 }
 #endif
@@ -159,7 +159,7 @@ inline static   unsigned int tsk_get_signal(unsigned int volatile signal)
 	asm volatile ("swi %1"
 	  : "=r"(_signal)
 	  : "I" (tsk_get_signal_swi), "0"(_signal)
-	  : "r1", "r2", "r3", "r12");
+	  : "r1", "r2", "r3", "r12", "memory");
 	return _signal;
 }
 #endif
@@ -174,7 +174,7 @@ inline static   unsigned int tsk_wait_signal(unsigned int volatile signal, unsig
 	asm volatile ("swi %2"
 	  : "=r"(_signal), "=r"(_time)
 	  : "I" (tsk_wait_signal_swi), "0"(_signal), "1"(_time)
-	  : "r2", "r3", "r12");
+	  : "r2", "r3", "r12", "memory");
 	return _signal;
 }
 #endif
@@ -188,7 +188,7 @@ inline static   unsigned int tsk_resume_wait_signal(unsigned int volatile signal
 	asm volatile ("swi %1"
 	  : "=r"(_signal)
 	  : "I" (tsk_resume_wait_signal_swi), "0"(_signal)
-	  : "r1", "r2", "r3", "r12");
+	  : "r1", "r2", "r3", "r12", "memory");
 	return _signal;
 }
 #endif
@@ -204,7 +204,7 @@ inline static   void usr_drv_icontrol(DRIVER_INDEX volatile drv_index, unsigned 
 	asm volatile ("swi %0"
 	  :
 	  : "I" (usr_drv_icontrol_swi), "r"(_drv_index), "r"(_reason), "r"(_param)
-	  : "r3");
+	  : "r3", "memory");
 }
 #define tsk_drv_icontrol(args...) usr_drv_icontrol(args)
 #endif
@@ -221,7 +221,7 @@ inline static void isr_contol(DRIVER_INFO volatile drv_info, unsigned int volati
 	asm volatile ("swi %0"
 	  :
 	  : "I" (isr_contol_swi), "r"(_drv_info), "r"(_reason), "r"(_param)
-	  : "r3");
+	  : "r3", "memory");
 }
 #endif
 
@@ -237,7 +237,7 @@ inline static void* usr_malloc(unsigned int volatile size)
 	asm volatile ("swi %1"
 	  : "=r"(_size)
 	  : "I" (malloc_swi), "0"(_size)
-	  : "r3");
+	  : "r3", "memory");
 	return (void*)_size;
 }
 #endif
@@ -250,7 +250,7 @@ inline static void usr_free(void* volatile ptr)
 	asm volatile ("swi %1"
 	  : "=r"(_ptr)
 	  : "I" (free_swi), "0"(_ptr)
-	  : "r3");
+	  : "r3", "memory");
 }
 #endif
 
@@ -263,7 +263,7 @@ inline static void* usr_realloc(void* volatile ptr, unsigned int volatile size)
 	asm volatile ("swi %1"
 	  : "=r"(_ptr)
 	  : "I" (realloc_swi), "0"(_ptr), "r"(_size)
-	  : "r3");
+	  : "r3", "memory");
 	return (void*)_ptr;
 }
 #endif
