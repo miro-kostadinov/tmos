@@ -249,7 +249,7 @@ headers: $(h_objects)
 %.elf:  $(objects) 
 	@echo
 	@echo Linking: $@
-	$(CC) -mthumb -mthumb-interwork $(GCCFLAGS) $(objects) --output $@ $(LDFLAGS)
+	$(CC) -mthumb-interwork $(GCCFLAGS) $(objects) --output $@ $(LDFLAGS)
 
 # Create final output file (.hex) from ELF output file.
 %.hex: %.elf
@@ -310,7 +310,7 @@ sizeafter:
 $(as_objects) : $(OUT_DIR)%_S.o :  %.S
 	@echo
 	@echo Assembling: $<
-	$(CC) -c -mthumb $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
+	$(CC) -c  $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
 #	$(OBJDUMP) -h $@
 
 $(as_a_objects) : $(OUT_DIR)%_S.o :  %.S
@@ -328,20 +328,20 @@ $(as_ai_objects) : $(OUT_DIR)%_S.o :  %.S
 $(as_t_objects) : $(OUT_DIR)%_S.o :  %.S
 	@echo
 	@echo Assembling: $<
-	$(CC) -c -mthumb $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
+	$(CC) -c $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
 #	$(OBJDUMP) -h $@
 
 $(as_ti_objects) : $(OUT_DIR)%_S.o :  %.S
 	@echo
 	@echo Assembling: $<
-	$(CC) -c -mthumb -mthumb-interwork $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
+	$(CC) -c -mthumb-interwork $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
 #	$(OBJDUMP) -h $@
 
 # ====-== Compile: create object files from C source files. ARM/Thumb
 $(c_objects) : $(OUT_DIR)%_c.o : %.c
 	@echo
 	@echo Compiling C: $<
-	$(CC) -c -mthumb $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS)  $< -o $@ 
+	$(CC) -c $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS)  $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 $(c_a_objects) : $(OUT_DIR)%_c.o : %.c
@@ -359,13 +359,13 @@ $(c_ai_objects) : $(OUT_DIR)%_c.o : %.c
 $(c_t_objects) : $(OUT_DIR)%_c.o : %.c
 	@echo
 	@echo Compiling C: $<
-	$(CC) -c -mthumb $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS)  $< -o $@ 
+	$(CC) -c $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS)  $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 $(c_ti_objects) : $(OUT_DIR)%_c.o : %.c
 	@echo
 	@echo Compiling C: $<
-	$(CC) -c -mthumb -mthumb-interwork $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS) $< -o $@ 
+	$(CC) -c -mthumb-interwork $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS) $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 
@@ -374,7 +374,7 @@ $(c_ti_objects) : $(OUT_DIR)%_c.o : %.c
 $(cpp_objects) : $(OUT_DIR)%_cpp.o : %.cpp
 	@echo
 	@echo Compiling C++: $<
-	$(CPP) -c -mthumb $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS)  $< -o $@ 
+	$(CPP) -c $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS)  $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 $(cpp_a_objects) : $(OUT_DIR)%_cpp.o : %.cpp
@@ -392,13 +392,13 @@ $(cpp_ai_objects) : $(OUT_DIR)%_cpp.o : %.cpp
 $(cpp_t_objects) : $(OUT_DIR)%_cpp.o : %.cpp
 	@echo
 	@echo Compiling C++: $<
-	$(CPP) -c -mthumb $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS)  $< -o $@ 
+	$(CPP) -c $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS)  $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 $(cpp_ti_objects) : $(OUT_DIR)%_cpp.o : %.cpp
 	@echo
 	@echo Compiling C++: $<
-	$(CPP) -c -mthumb -mthumb-interwork $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS) $< -o $@ 
+	$(CPP) -c -mthumb-interwork $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS) $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 #copy headers
