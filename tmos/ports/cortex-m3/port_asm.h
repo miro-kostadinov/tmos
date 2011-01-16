@@ -62,7 +62,8 @@ __ALIGN_SHORT; 				\
 .thumb;						\
 .thumb_func;				\
 .func name;					\
-name:
+name:						\
+.fnstart
 
 #define FUNC_SECT(name, sect)\
 .section sect, "ax";		\
@@ -72,11 +73,13 @@ __ALIGN_SHORT; 				\
 .thumb;						\
 .thumb_func;				\
 .func name;					\
-name:
+name:						\
+.fnstart
 
 #define ENDF(name)		\
 .type name, STT_FUNC; 	\
 .size name, . - name;	\
+.fnend;					\
 .endfunc
 
 #endif /* CPU_ASM_H_ */
