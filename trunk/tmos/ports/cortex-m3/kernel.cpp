@@ -46,7 +46,7 @@ extern char end;
 extern "C" void HardFaultIsr(void)
 {
     unsigned status = SCB->CFSR;
-    unsigned int i=1;
+    volatile unsigned int i=1;
     TRACELN1("\r\nException ");
     if(status&0xFF)
     	TRACELN("MPU: %2.2x at %x ", status&0xFF, SCB->MMFAR );
@@ -167,6 +167,11 @@ extern "C" void __cxa_pure_virtual()
 {
 	TRACE_ERROR("\r\nERROR: pure virtual function is called!");
 }
+
+/* Dummy function to avoid linker complaints */
+extern "C" void __aeabi_unwind_cpp_pr0(void)
+{
+};
 
 /*-----------------------------------------------------------
  * TASK API
