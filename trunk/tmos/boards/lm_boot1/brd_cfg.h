@@ -22,5 +22,7 @@
 #define USE_CRC32			1
 #define USE_CACHE			0
 #define USE_SHA_1			0
+#define USE_POLARSSL		0
+#define USE_AES_TMOS		1
 
 #endif /* BRD_CFG_H_ */
