@@ -149,10 +149,6 @@ void dcr_SerialDriver(UART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hn
 					{
 						PIO_Cfg_List((PIN_DESC *)&drv_info->uart_pins[UART_LIST_ALL_PINS]);
 						ConfigureUart(drv_info, drv_data, uart_mode);
-#ifdef HW_VER_10
-						if(drv_info->info.drv_index != UART1_IRQn)
-							TX_CTS(drv_data, Uart, PIO_Read(drv_info->uart_pins[CTS_PIN]));
-#endif
 					}
 					else
 					{
@@ -180,17 +176,19 @@ void dcr_SerialDriver(UART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hn
     	    {
     			if(hnd == drv_data->hnd_rcv)
     			{
+    				RES_CODE res;
+
     				STOP_RX(Uart);
-    	      		if(hnd->len > drv_data->rx_remaining || hnd->mode0 )
+    	      		drv_data->hnd_rcv = hnd->next;
+
+    	      		res  = hnd->res ^ (FLG_SIGNALED | FLG_BUSY);
+    	      		if(hnd->len > drv_data->rx_remaining  )
     	      		{
     	      			hnd->len = drv_data->rx_remaining;
-    	      			hnd->res = RES_SIG_OK;
+    	      			res = RES_SIG_OK;
     	      		}
-    	      		else
-    	      			hnd->res = RES_SIG_IDLE;
 
-    	      		drv_data->hnd_rcv = hnd->next;
-    	      		svc_HND_SET_STATUS(hnd, hnd->res);
+    	      		svc_HND_SET_STATUS(hnd, res);
 
     		      	if( (hnd=drv_data->hnd_rcv) )
     		          	START_RX_HND(Uart, drv_info, hnd);
@@ -251,7 +249,7 @@ void dsr_SerialDriver(UART_DRIVER_INFO* drv_info, HANDLE hnd)
 	hnd->next = NULL;
 	if (hnd->cmd & FLAG_READ)
     {
-		hnd->mode0 = 0; // няма нищо прието в хендъла
+      	hnd->res = RES_BUSY; // няма нищо прието в хендъла
       	if(drv_data->hnd_rcv)
       	{
 			hnd->list_add(drv_data->hnd_rcv);
@@ -267,7 +265,7 @@ void dsr_SerialDriver(UART_DRIVER_INFO* drv_info, HANDLE hnd)
       		{
       			size =min(hnd->len, (unsigned int)(&drv_data->rx_buf[RX_BUF_SIZE]) - (unsigned int)drv_data->rx_ptr);
       			memcpy(hnd->dst.as_byteptr, drv_data->rx_ptr, size);
-      			hnd->mode0 = 1; // в хендъла е писано
+      	      	hnd->res = RES_BUSY | FLG_OK; // в хендъла е писано
       			hnd->len -= size;
       			hnd->dst.as_int += size;
       			drv_data->rx_ptr += size;
@@ -278,7 +276,7 @@ void dsr_SerialDriver(UART_DRIVER_INFO* drv_info, HANDLE hnd)
           	if( hnd->len && (ptr!= drv_data->rx_ptr) )
       		{
       			size =min(hnd->len, ptr - drv_data->rx_ptr);
-      			hnd->mode0 = 1; // в хендъла е писано
+      	      	hnd->res = RES_BUSY | FLG_OK; // в хендъла е писано
       			memcpy(hnd->dst.as_byteptr, drv_data->rx_ptr, size);
       			hnd->len -= size;
       			hnd->dst.as_int += size;
@@ -293,7 +291,6 @@ void dsr_SerialDriver(UART_DRIVER_INFO* drv_info, HANDLE hnd)
       	}
 
       	//receive directly
-      	hnd->res = RES_BUSY;
       	drv_data->hnd_rcv = hnd;
       	START_RX_HND(Uart, drv_info, hnd);
 		return;
@@ -365,28 +362,14 @@ void isr_SerilaDriver(UART_DRIVER_INFO* drv_info )
     {
     	while(Uart->UARTCharsAvail())
     	{
-    		drv_data->rx_remaining--;
     		*drv_data->rx_wrptr++ = Uart->DR;
-    		if(drv_data->hnd_rcv && !drv_data->hnd_rcv->mode0)
-    			drv_data->hnd_rcv->mode0 = 1;
-    		if(!drv_data->rx_remaining )
+    		if(!--drv_data->rx_remaining )
     		{
     	    	if( (hnd=drv_data->hnd_rcv) )
     				STOP_RX_HND(Uart, drv_info, hnd);
     	      	else
     				START_RX_BUF(Uart, drv_info, drv_data);
     		}
-#ifdef HW_VER_10
-    		else
-    		{
-    			if(drv_data->mode.hw_flow && drv_info->info.drv_index != UART1_IRQn)
-					if((!drv_data->hnd_rcv) && (drv_data->rx_remaining < (RX_BUF_SIZE/4)))
-					{
-						if(drv_info->uart_pins[RTS_PIN])
-							PIO_SetOutput(drv_info->uart_pins[RTS_PIN]);
-					}
-    		}
-#endif
     	}
     	if( (Status&UART_INT_RT) && drv_data->mode.rx_tout )
     	{
