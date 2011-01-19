@@ -47,9 +47,11 @@ LDSCRIPT	:= $(subdirectory)$(CFG_MCU).ld
 TMOS_PATH	?=../tmos/out/ron200/
 TMOS_PORT	?= ron200
 
-LDFLAGS += -Wl,-L$(TMOS_PATH) -Wl,-l$(TMOS_PORT) 
+LDFLAGS += -Wl,-L$(TMOS_PATH) -Wl,-l$(TMOS_PORT)
+local_lib := $(TMOS_PATH)lib$(TMOS_PORT).a
+libraries += $(local_lib)
+$(local_lib): 
 
-%.elf: $(TMOS_PATH)lib$(TMOS_PORT).a
 
 ##########################################################################
 
