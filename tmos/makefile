@@ -240,13 +240,13 @@ headers: $(h_objects)
 
 
 #make a
-%.a: $(objects)
+$(LIBNAME).a: $(objects)
 	@echo
 	@echo Archiving: $@
 	$(AR) $(ARFLAGS) $@ $(objects) 
 
 #make ELF
-%.elf:  $(objects) 
+%.elf:  $(objects) $(libraries) 
 	@echo
 	@echo Linking: $@
 	$(CC) -mthumb-interwork $(GCCFLAGS) $(objects) --output $@ $(LDFLAGS)
