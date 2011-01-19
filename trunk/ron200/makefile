@@ -106,7 +106,7 @@ NM      = $(TOOLCHAIN_PREFIX)nm
 SIZE   	= $(TOOLCHAIN_PREFIX)size
 HEXSIZE = $(SIZE) --target=ihex $(PROJECT).hex
 ELFSIZE = $(SIZE) -B -x -t $(PROJECT).elf
-LIBSIZE = $(SIZE) -B -x -t $(PROJECT).a
+LIBSIZE = $(SIZE) -B -x -t $(LIBNAME).a
 REMOVE  = rm -rf
 REMOVEDIR = rm -rf
 
@@ -146,7 +146,7 @@ GENDEPFLAGS = -MD -MP -MF $@.dep
 # Linker flags.
 LDFLAGS += -nostartfiles -nostdlib
 LDFLAGS += -Wl,-Map=$(PROJECT).map,--cref,--gc-sections
-#LDFLAGS += $(addprefix -Wl,-L$(lib_dirs))
+LDFLAGS += $(addprefix -L,$(lib_dirs))
 LDFLAGS += -T$(LDSCRIPT)
 
 # AR flags
@@ -186,7 +186,9 @@ include module.mk
 
 ifneq "$(MAKECMDGOALS)" "clean"
 _MKDIRS := $(shell mkdir $(OUT_DIR) 2>/dev/null)
-_MKDIRS := $(shell mkdir $(OUT_DIR)/include 2>/dev/null)
+ifeq ($(BUILD_LIB),y)
+_MKDIRS := $(shell mkdir $(OUT_DIR)include 2>/dev/null)
+endif
 _MKDIRS := $(shell for d in $(modules); \
 	do \
 		mkdir -p $(OUT_DIR)$$d; \
@@ -194,7 +196,8 @@ _MKDIRS := $(shell for d in $(modules); \
 endif
 
 # Project name used for the output files:
-PROJECT 	= $(OUT_DIR)$(OUT_NAME)
+PROJECT = $(OUT_DIR)$(OUT_NAME)
+LIBNAME = $(OUT_DIR)lib$(OUT_NAME)
 
 ###########################   rules    ############################################
 
@@ -227,7 +230,7 @@ ifeq ($(IMGEXT),)
 $(error "Nothing to build. Set BUILD_LIB, BUILD_HEX or BUILD_BIN")
 endif
 
-lib: $(PROJECT).a
+lib: $(LIBNAME).a
 bin: $(PROJECT).bin
 hex: $(PROJECT).hex
 elf: $(PROJECT).elf
@@ -237,16 +240,16 @@ headers: $(h_objects)
 
 
 #make a
-%a: $(objects)
+$(LIBNAME).a: $(objects)
 	@echo
 	@echo Archiving: $@
 	$(AR) $(ARFLAGS) $@ $(objects) 
 
 #make ELF
-%.elf:  $(objects) 
+%.elf:  $(objects) $(libraries) 
 	@echo
 	@echo Linking: $@
-	$(CC) -mthumb -mthumb-interwork $(GCCFLAGS) $(objects) --output $@ $(LDFLAGS)
+	$(CC) -mthumb-interwork $(GCCFLAGS) $(objects) --output $@ $(LDFLAGS)
 
 # Create final output file (.hex) from ELF output file.
 %.hex: %.elf
@@ -296,18 +299,18 @@ end:
 sizebefore:
 	@if [ -f $(PROJECT).elf ]; then echo; echo Size before:; $(ELFSIZE); echo; fi
 	@if [ -f $(PROJECT).hex ]; then echo; echo Size before:; $(HEXSIZE); echo; fi
-	@if [ -f $(PROJECT).a ]; then echo; echo Size before:; $(LIBSIZE); echo; fi
+	@if [ -f $(LIBNAME).a ]; then echo; echo Size before:; $(LIBSIZE); echo; fi
 
 sizeafter:
 	@if [ -f $(PROJECT).elf ]; then echo; echo Size after:; $(ELFSIZE); echo; fi
-	@if [ -f $(PROJECT).hex ]; then echo; echo Size before:; $(HEXSIZE); echo; fi
-	@if [ -f $(PROJECT).a ]; then echo; echo Size before:; $(LIBSIZE); echo; fi
+	@if [ -f $(PROJECT).hex ]; then echo; echo Size after:; $(HEXSIZE); echo; fi
+	@if [ -f $(LIBNAME).a ]; then echo; echo Size after:; $(LIBSIZE); echo; fi
 
 # ======= Assemble: create object files from assembler source files. ARM/Thumb
 $(as_objects) : $(OUT_DIR)%_S.o :  %.S
 	@echo
 	@echo Assembling: $<
-	$(CC) -c -mthumb $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
+	$(CC) -c  $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
 #	$(OBJDUMP) -h $@
 
 $(as_a_objects) : $(OUT_DIR)%_S.o :  %.S
@@ -325,20 +328,20 @@ $(as_ai_objects) : $(OUT_DIR)%_S.o :  %.S
 $(as_t_objects) : $(OUT_DIR)%_S.o :  %.S
 	@echo
 	@echo Assembling: $<
-	$(CC) -c -mthumb $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
+	$(CC) -c $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
 #	$(OBJDUMP) -h $@
 
 $(as_ti_objects) : $(OUT_DIR)%_S.o :  %.S
 	@echo
 	@echo Assembling: $<
-	$(CC) -c -mthumb -mthumb-interwork $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
+	$(CC) -c -mthumb-interwork $(GCCFLAGS) $(ASFLAGS) $(GENDEPFLAGS) $< -o $@
 #	$(OBJDUMP) -h $@
 
 # ====-== Compile: create object files from C source files. ARM/Thumb
 $(c_objects) : $(OUT_DIR)%_c.o : %.c
 	@echo
 	@echo Compiling C: $<
-	$(CC) -c -mthumb $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS)  $< -o $@ 
+	$(CC) -c $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS)  $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 $(c_a_objects) : $(OUT_DIR)%_c.o : %.c
@@ -356,13 +359,13 @@ $(c_ai_objects) : $(OUT_DIR)%_c.o : %.c
 $(c_t_objects) : $(OUT_DIR)%_c.o : %.c
 	@echo
 	@echo Compiling C: $<
-	$(CC) -c -mthumb $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS)  $< -o $@ 
+	$(CC) -c $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS)  $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 $(c_ti_objects) : $(OUT_DIR)%_c.o : %.c
 	@echo
 	@echo Compiling C: $<
-	$(CC) -c -mthumb -mthumb-interwork $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS) $< -o $@ 
+	$(CC) -c -mthumb-interwork $(GCCFLAGS) $(CFLAGS) $(CONLYFLAGS) $(GENDEPFLAGS) $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 
@@ -371,7 +374,7 @@ $(c_ti_objects) : $(OUT_DIR)%_c.o : %.c
 $(cpp_objects) : $(OUT_DIR)%_cpp.o : %.cpp
 	@echo
 	@echo Compiling C++: $<
-	$(CPP) -c -mthumb $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS)  $< -o $@ 
+	$(CPP) -c $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS)  $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 $(cpp_a_objects) : $(OUT_DIR)%_cpp.o : %.cpp
@@ -389,13 +392,13 @@ $(cpp_ai_objects) : $(OUT_DIR)%_cpp.o : %.cpp
 $(cpp_t_objects) : $(OUT_DIR)%_cpp.o : %.cpp
 	@echo
 	@echo Compiling C++: $<
-	$(CPP) -c -mthumb $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS)  $< -o $@ 
+	$(CPP) -c $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS)  $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 $(cpp_ti_objects) : $(OUT_DIR)%_cpp.o : %.cpp
 	@echo
 	@echo Compiling C++: $<
-	$(CPP) -c -mthumb -mthumb-interwork $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS) $< -o $@ 
+	$(CPP) -c -mthumb-interwork $(GCCFLAGS) $(CFLAGS) $(CPPFLAGS) $(GENDEPFLAGS) $< -o $@ 
 #	$(OBJDUMP) -h $@
 
 #copy headers
