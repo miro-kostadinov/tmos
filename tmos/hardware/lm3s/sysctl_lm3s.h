@@ -93,6 +93,13 @@ struct SYSCTL_Type
     __I  uint32_t DC9;              //!< Device capabilities register 9
          uint8_t  RESERVED16[12];	//!< doc!
     __I  uint32_t NVMSTAT;          //!< Non-Volatile Memory Information
+		 uint8_t  RESERVED17[44];	//!< doc!
+	__IO uint32_t BOOTCFG;			//!< Boot Configuration
+		 uint8_t  RESERVED18[12];	//!< doc!
+	__IO uint32_t USER_REG0;		//!< User Register 0
+	__IO uint32_t USER_REG1;		//!< User Register 1
+	__IO uint32_t USER_REG2;		//!< User Register 2
+	__IO uint32_t USER_REG3;		//!< User Register 3
 
     unsigned long SysCtlClockGet();
     unsigned long SysCtlSRAMSizeGet(void);
