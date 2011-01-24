@@ -11,7 +11,7 @@
 #ifndef BRD_CFG_H_
 #define BRD_CFG_H_
 
-#define HW_VER_11			1
+//#define HW_VER_11			1
 
 
 #define USE_TMOS_STRING		1
