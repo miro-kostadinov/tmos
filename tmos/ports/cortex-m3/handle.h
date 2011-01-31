@@ -49,6 +49,7 @@ struct CHandle {
 
 	//----------------------    ctors etc   ---------------------------//
 	CHandle();
+	CHandle(DRIVER_INDEX index, const void * m);
 	~CHandle();
 
 	//----------------------    common      ---------------------------//
