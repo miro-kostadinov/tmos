@@ -26,6 +26,19 @@ CHandle::CHandle(void)
 }
 
 /**
+ * CHandle constructor
+ */
+CHandle::CHandle(DRIVER_INDEX index, const void * m)
+{
+	if(this)
+	{
+		drv_index = index;
+		mode.as_voidptr = (void*)m;
+		res = RES_CLOSED;
+	}
+}
+
+/**
  * CCHandle destructor
  *
  */
