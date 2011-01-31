@@ -33,10 +33,25 @@
 extern "C"
 {
 	extern volatile __no_init unsigned int system_clock_frequency;
+
+	#if USE_EXCEPTION_RECORD
+	extern const char restart_on_exception;
+	typedef struct
+	{
+		unsigned int CFSR;	//!<  Configurable Fault Status Register
+		unsigned int MMFAR; //!< Mem Manage Address Register
+		unsigned int BFAR;  //!< Bus Fault Address Register
+		unsigned int cur_task;
+		unsigned int task_name;
+	} EXCEPTION_RECORD_STRU;
+	extern volatile EXCEPTION_RECORD_STRU exception_record;
+	#endif
 }
 #else
 extern volatile __no_init unsigned int system_clock_frequency;
 #endif
+
+
 
 #ifdef __cplusplus
 
@@ -132,8 +147,13 @@ extern "C"
 {
 #endif	/* end C++ */
 
+
 unsigned int tsk_signal_allocate(void);
 void tsk_signal_release(unsigned int signal);
+
+void LowLevelReset( void);
+void LowLevelReboot( void);
+unsigned int LowLevelResetCause(void);
 
 #ifdef __cplusplus
 }
