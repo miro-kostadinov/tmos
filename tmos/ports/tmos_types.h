@@ -12,6 +12,8 @@
 #define TMOS_TYPES_H_
 
 #define __no_init		__attribute__ ((section (".ramnoinitsec")))
+#define WEAK 			__attribute__ ((weak))
+#define WEAK_C 			extern "C" __attribute__ ((weak))
 
 typedef __SIZE_TYPE__ size_t;
 typedef unsigned int uint32_t;
