@@ -21,9 +21,37 @@ extern "C" PMC_DRIVER_INFO pmc_driver;
  * clock so the boot can pass faster. The application may provide custom
  * implementation for LowLevelInit().
  */
-extern "C" __attribute__ ((weak)) void LowLevelInit( void )
+WEAK_C void LowLevelInit( void )
 {
 	sys_SetNewClock(&pmc_driver, pmc_driver.CFG_BOOT_CLK);
 }
 
+/**
+ * Low level peripheral reset
+ * Can be replaced by app
+ */
+WEAK_C void LowLevelReset( void)
+{
+	RSTC->RSTC_CR = RSTC_CR_KEY(0xA5) | RSTC_CR_PERRST;
+}
 
+/**
+ * Reboots the device
+ * Can be replaced by app
+ */
+WEAK_C void LowLevelReboot( void)
+{
+	RSTC->RSTC_CR = RSTC_CR_KEY(0xA5) | RSTC_CR_PERRST | RSTC_CR_PROCRST;
+}
+
+/**
+ * Reset cause
+ * @return device specific value for the cause
+ */
+WEAK_C unsigned int LowLevelResetCause(void)
+{
+	unsigned int res;
+
+	res = (RSTC->RSTC_SR >> 8) & 0x7;
+	return res;
+}
