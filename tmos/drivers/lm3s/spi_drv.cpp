@@ -192,21 +192,35 @@ void dsr_SPI_driver(SPI_DRIVER_INFO* drv_info, HANDLE hnd)
 	    //enable interrupts (-enable + disable)
 		drv_info->hw_base->IM = SSI_TXFF + SSI_RXFF ; //SSI_RXTO + SSI_RXOR - SSI_TXFF - SSI_RXFF;
 
-		//then try to send up to 8 bytes (TX FIFO may have more space, but we do not want to overrun the RX FIFO)
 		if(hnd->cmd & FLAG_WRITE)
 		{
-			while(hnd->len && (drv_data->buffered < 8))
+			if((((SPI_DRIVER_MODE *)hnd->mode.as_voidptr)->cr0_reg & SSI_CR0_DSS_M) < 8 )
 			{
-				drv_info->hw_base->DR = *hnd->src.as_byteptr++;
-				//			TRACELN("que: %x", temp);
-				hnd->len--;
-				drv_data->buffered++;
+				//then try to send up to 8 bytes (TX FIFO may have more space, but we do not want to overrun the RX FIFO)
+				while(hnd->len && (drv_data->buffered < 8))
+				{
+					drv_info->hw_base->DR = *hnd->src.as_byteptr++;
+					//			TRACELN("que: %x", temp);
+					hnd->len--;
+					drv_data->buffered++;
+				}
+			}
+			else
+			{
+				//then try to send up to 8 short (TX FIFO may have more space, but we do not want to overrun the RX FIFO)
+				while(hnd->len && (drv_data->buffered < 8))
+				{
+					drv_info->hw_base->DR = *hnd->src.as_shortptr++;
+					//			TRACELN("que: %x", temp);
+					hnd->len--;
+					drv_data->buffered++;
+				}
 			}
 		} else
 		{
 			while(hnd->len && (drv_data->buffered < 8))
 			{
-				drv_info->hw_base->DR = 0xFF;
+				drv_info->hw_base->DR = 0xFFFF;
 	//			TRACELN("que: %x", temp);
 				hnd->len--;
 				drv_data->buffered++;
@@ -249,13 +263,26 @@ void isr_SPI_driver(SPI_DRIVER_INFO* drv_info )
 	{
 		if(hnd->cmd & FLAG_READ)
 		{
-			do
+			if((((SPI_DRIVER_MODE *)hnd->mode.as_voidptr)->cr0_reg & SSI_CR0_DSS_M) < 8 )
 			{
-				ASSERT(drv_data->buffered--);
+				do
+				{
+					ASSERT(drv_data->buffered--);
 
-				*hnd->dst.as_byteptr++ = pSPI->DR;
-	//			TRACELN("rcv: %x", temp);
-			} while(pSPI->SR & SSI_SR_RNE);
+					*hnd->dst.as_byteptr++ = pSPI->DR;
+		//			TRACELN("rcv: %x", temp);
+				} while(pSPI->SR & SSI_SR_RNE);
+			}
+			else
+			{
+				do
+				{
+					ASSERT(drv_data->buffered--);
+
+					*hnd->dst.as_shortptr++ = pSPI->DR;
+		//			TRACELN("rcv: %x", temp);
+				} while(pSPI->SR & SSI_SR_RNE);
+			}
 		} else
 		{
 			do
@@ -271,18 +298,31 @@ void isr_SPI_driver(SPI_DRIVER_INFO* drv_info )
 	//then try to send up to 8 bytes (TX FIFO may have more space, but we do not want to overrun the RX FIFO)
 	if(hnd->cmd & FLAG_WRITE)
 	{
-		while(hnd->len && (drv_data->buffered < 8))
+		if((((SPI_DRIVER_MODE *)hnd->mode.as_voidptr)->cr0_reg & SSI_CR0_DSS_M) < 8 )
 		{
-			pSPI->DR = *hnd->src.as_byteptr++;
-			//		TRACELN("snd: %x", temp);
-			hnd->len--;
-			drv_data->buffered++;
+			while(hnd->len && (drv_data->buffered < 8))
+			{
+				pSPI->DR = *hnd->src.as_byteptr++;
+				//		TRACELN("snd: %x", temp);
+				hnd->len--;
+				drv_data->buffered++;
+			}
+		}
+		else
+		{
+			while(hnd->len && (drv_data->buffered < 8))
+			{
+				pSPI->DR = *hnd->src.as_shortptr++;
+				//		TRACELN("snd: %x", temp);
+				hnd->len--;
+				drv_data->buffered++;
+			}
 		}
 	} else
 	{
 		while(hnd->len && (drv_data->buffered < 8))
 		{
-			pSPI->DR = 0xFF;
+			pSPI->DR = 0xFFFF;
 			//		TRACELN("snd: %x", temp);
 			hnd->len--;
 			drv_data->buffered++;
@@ -307,8 +347,12 @@ void isr_SPI_driver(SPI_DRIVER_INFO* drv_info )
 			unsigned int temp = pSPI->DR;
 //			TRACELN("rcv1: %x", temp);
 			if(hnd->cmd & FLAG_READ)
-				*hnd->dst.as_byteptr++ = temp;
-
+			{
+				if((((SPI_DRIVER_MODE *)hnd->mode.as_voidptr)->cr0_reg & SSI_CR0_DSS_M) < 8 )
+					*hnd->dst.as_byteptr++ = temp;
+				else
+					*hnd->dst.as_shortptr++ = temp;
+			}
 			drv_data->buffered--;
 		}
 		//noting to send, nothing to receive...
@@ -360,18 +404,31 @@ void isr_SPI_driver(SPI_DRIVER_INFO* drv_info )
 				//then try to send up to 8 bytes (TX FIFO may have more space, but we do not want to overrun the RX FIFO)
 				if(hnd->cmd & FLAG_WRITE)
 				{
-					while(hnd->len && (drv_data->buffered < 8))
+					if((((SPI_DRIVER_MODE *)hnd->mode.as_voidptr)->cr0_reg & SSI_CR0_DSS_M) < 8 )
 					{
-						drv_info->hw_base->DR = *hnd->src.as_byteptr++;
-						//			TRACELN("que: %x", temp);
-						hnd->len--;
-						drv_data->buffered++;
+						while(hnd->len && (drv_data->buffered < 8))
+						{
+							drv_info->hw_base->DR = *hnd->src.as_byteptr++;
+							//			TRACELN("que: %x", temp);
+							hnd->len--;
+							drv_data->buffered++;
+						}
+					}
+					else
+					{
+						while(hnd->len && (drv_data->buffered < 8))
+						{
+							drv_info->hw_base->DR = *hnd->src.as_shortptr++;
+							//			TRACELN("que: %x", temp);
+							hnd->len--;
+							drv_data->buffered++;
+						}
 					}
 				} else
 				{
 					while(hnd->len && (drv_data->buffered < 8))
 					{
-						drv_info->hw_base->DR = 0xFF;
+						drv_info->hw_base->DR = 0xFFFF;
 			//			TRACELN("que: %x", temp);
 						hnd->len--;
 						drv_data->buffered++;
