@@ -48,6 +48,7 @@ typedef union
 	unsigned char * as_string;		/**< as uchar *			*/
 	unsigned char * as_byteptr;		/**< as uchar *			*/
 	char * 			as_charptr;		/**< as char *			*/
+	unsigned short int * as_shortptr; /**< as short *			*/
 } word_reg;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
