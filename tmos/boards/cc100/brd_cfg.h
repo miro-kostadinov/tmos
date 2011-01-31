@@ -23,4 +23,6 @@
 #define USE_CACHE			1
 #define USE_SHA_1			1
 
+#define USE_EXCEPTION_RECORD 1
+
 #endif /* BRD_CFG_H_ */
