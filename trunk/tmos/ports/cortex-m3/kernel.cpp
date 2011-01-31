@@ -34,8 +34,9 @@ extern TASK_DESCRIPTION main_task_desc;
  */
 volatile __no_init unsigned int system_clock_frequency;
 
-
-
+#if USE_EXCEPTION_RECORD
+volatile __no_init EXCEPTION_RECORD_STRU exception_record;
+#endif
 
 //*----------------------------------------------------------------------------
 //*			Helper functions
@@ -46,15 +47,41 @@ extern char end;
 extern "C" void HardFaultIsr(void)
 {
     unsigned status = SCB->CFSR;
+    unsigned int mem_adr = SCB->MMFAR;
+    unsigned int bus_adr = SCB->BFAR;
     volatile unsigned int i=1;
+
     TRACELN1("\r\nException ");
     if(status&0xFF)
-    	TRACELN("MPU: %2.2x at %x ", status&0xFF, SCB->MMFAR );
+    	TRACELN("MPU: %2.2x at %x ", status&0xFF,  mem_adr);
     if(status&0xFF00)
-    	TRACELN("BUS: %2.2x at %x ", (status&0xFF00)>>8, SCB->BFAR);
+    	TRACELN("BUS: %2.2x at %x ", (status&0xFF00)>>8, bus_adr);
     if(status&0xFFFF0000)
     	TRACELN("USAGE: %4.4x",(status&0xFFFF0000)>>16);
     SCB->CFSR = status;
+
+#if USE_EXCEPTION_RECORD
+    exception_record.CFSR = status;
+    exception_record.MMFAR = mem_adr;
+    exception_record.BFAR = bus_adr;
+    exception_record.cur_task = (unsigned int)CURRENT_TASK;
+    if( ((unsigned int)CURRENT_TASK > SRAM_BASE) && ((char*)CURRENT_TASK < &end) )
+    {
+    	exception_record.task_name = *(unsigned int*)(void *)CURRENT_TASK->name;
+    } else
+    {
+    	exception_record.task_name = 0;
+    }
+#endif
+
+    if(restart_on_exception)
+    {
+    	// stop systick
+		SysTick->CTRL = 0;
+		LowLevelReboot();
+    }
+
+
     while(i){}
 }
 
@@ -82,7 +109,7 @@ static bool is_first_reset(int index)
 	return false;
 }
 
-extern "C" __attribute__ ((weak)) void app_init(void)
+WEAK_C void app_init(void)
 {
 
 }
