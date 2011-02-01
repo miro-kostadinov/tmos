@@ -34,8 +34,9 @@ extern "C"
 {
 	extern volatile __no_init unsigned int system_clock_frequency;
 
-	#if USE_EXCEPTION_RECORD
 	extern const char restart_on_exception;
+
+	#if USE_EXCEPTION_RECORD
 	typedef struct
 	{
 		unsigned int CFSR;	//!<  Configurable Fault Status Register

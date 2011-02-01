@@ -46,10 +46,12 @@ extern char end;
 
 extern "C" void HardFaultIsr(void)
 {
+    volatile unsigned int i=1;
     unsigned status = SCB->CFSR;
+
+#if (TRACE_IS != TRACE_DISABLED) || defined(USE_EXCEPTION_RECORD)
     unsigned int mem_adr = SCB->MMFAR;
     unsigned int bus_adr = SCB->BFAR;
-    volatile unsigned int i=1;
 
     TRACELN1("\r\nException ");
     if(status&0xFF)
@@ -58,6 +60,8 @@ extern "C" void HardFaultIsr(void)
     	TRACELN("BUS: %2.2x at %x ", (status&0xFF00)>>8, bus_adr);
     if(status&0xFFFF0000)
     	TRACELN("USAGE: %4.4x",(status&0xFFFF0000)>>16);
+#endif
+
     SCB->CFSR = status;
 
 #if USE_EXCEPTION_RECORD
