@@ -171,18 +171,12 @@ bool CHandle::tsk_start_read(void * buf, unsigned int l)
 {
 	while (res >= FLG_SIGNALED)
 	{
-		if(res & FLG_SIGNALED)
+		if(res & (FLG_SIGNALED | FLG_BUSY) )
 		{
 			tsk_get_signal(signal);
 	        res &= ~FLG_SIGNALED;
 	        continue;
 		}
-		if(res & FLG_BUSY)
-		{
-			tsk_cancel();
-	        continue;
-		}
-
 		//handle is closed or with error
 		return false;
 	}
@@ -361,15 +355,10 @@ bool CHandle::tsk_start_write(const void * buf, unsigned int l)
 {
 	while (res >= FLG_SIGNALED)
 	{
-		if(res & FLG_SIGNALED)
+		if(res & (FLG_SIGNALED | FLG_BUSY))
 		{
 			tsk_get_signal(signal);
 	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-		if(res & FLG_BUSY)
-		{
-			tsk_cancel();
 	        continue;
 		}
 
