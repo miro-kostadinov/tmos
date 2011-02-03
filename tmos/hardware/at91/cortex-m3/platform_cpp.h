@@ -22,6 +22,7 @@
 #include "rtc.h"
 #include "rtt.h"
 #include "wdt.h"
+#include <rstc.h>
 /*
 #include "async.h"
 #include "crccu.h"
