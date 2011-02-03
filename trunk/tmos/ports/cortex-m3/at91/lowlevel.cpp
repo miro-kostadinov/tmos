@@ -8,7 +8,7 @@
 
 #include <tmos.h>
 #include <pmc_drv.h>
-
+#include <platform_cpp.h>
 /**
  * PMC driver info. The application must declare before the linkage.
  */
