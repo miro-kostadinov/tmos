@@ -264,9 +264,37 @@
 #define PIO_PA16D_PIODCEN2   (1u << 16)  //!< Pioa signal: PIODCEN2 */
 
 //====================  USBD ================================
+
+/** Indicates chip has an UDP Full Speed. */
+#define CHIP_USB_UDP
+
+/** Indicates chip has an internal pull-up. */
+#define CHIP_USB_PULLUP_INTERNAL
+
 /** Number of USB endpoints */
 #define CHIP_USB_NUMENDPOINTS 8
 
+/** Endpoints max paxcket size */
+#define CHIP_USB_ENDPOINTS_MAXPACKETSIZE(i) \
+   ((i == 0) ? 64 : \
+   ((i == 1) ? 64 : \
+   ((i == 2) ? 64 : \
+   ((i == 3) ? 64 : \
+   ((i == 4) ? 512 : \
+   ((i == 5) ? 512 : \
+   ((i == 6) ? 64 : \
+   ((i == 7) ? 64 : 0 ))))))))
+
+/** Endpoints Number of Bank */
+#define CHIP_USB_ENDPOINTS_BANKS(i) \
+   ((i == 0) ? 1 : \
+   ((i == 1) ? 2 : \
+   ((i == 2) ? 2 : \
+   ((i == 3) ? 1 : \
+   ((i == 4) ? 2 : \
+   ((i == 5) ? 2 : \
+   ((i == 6) ? 2 : \
+   ((i == 7) ? 2 : 0 ))))))))
 
 #endif /* SERIES_CPP_H_ */
 /** @} ingroup hardware_sam3s */

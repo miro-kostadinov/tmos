@@ -17,6 +17,9 @@
 #include <usart_drv.h>
 #include <adc_drv.h>
 #include <dacc_drv.h>
+#include <usbd_drv.h>
+
+const char restart_on_exception =0;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //		 DEFAULT DRIVER
@@ -271,6 +274,25 @@ const DACC_DRIVER_INFO dacc_driver =
 	&dacc_driver_data
 };
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		(31) USB DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+USBD_DRIVER_DATA_STRU usb_driver_data;
+
+const USBD_DRIVER_INFO usb_driver =
+{
+	{
+		DRIVER_INFO_STUB,
+		(DRV_ISR)USBD_ISR,
+		(DRV_DCR)USBD_DCR,
+		(DRV_DSR)USBD_DSR,
+		UDP_IRQn,
+		DRV_PRIORITY_KERNEL,
+		ID_UDP
+	},
+	UDP,
+	&usb_driver_data
+};
 
 signed char const DRV_RESET_FIRST_TABLE[] =
 {

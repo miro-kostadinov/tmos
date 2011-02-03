@@ -28,7 +28,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 inc_dirs += $(subdirectory) 
 
 #submodules
-local_modules-y := $(CFG_CORE) 
+local_modules-y := $(CFG_CORE) usbd
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
