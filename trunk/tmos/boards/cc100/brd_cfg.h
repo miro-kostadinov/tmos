@@ -11,7 +11,45 @@
 #ifndef BRD_CFG_H_
 #define BRD_CFG_H_
 
-//#define HW_VER_11			1
+
+#define HW_VER_11			1
+
+#define HW_KEY_VER		    2
+
+
+
+
+#define KEY_DOWN_CODE		0x00
+#define KEY_REPEAT_CODE		0x80
+#define KEY_UP_CODE			0x40
+#define KEY_PRESREP_MASK	0x7F
+
+#define KEY_ON				0x00
+#define KEY_LEFT			0x00
+#define KEY_DOWN			0x02
+#define KEY_UP				0x01
+#define KEY_NO				0x03
+#define KEY_RIGHT			0x03
+
+#if HW_KEY_VER == 1
+#define KEY_OK				0x04
+#define KEY_C				0x05
+#endif
+
+#if HW_KEY_VER == 2
+#define KEY_OK				0x05
+#define KEY_C				0x04
+#endif
+
+#define ENABLE_INDEX		1
+#define DISABLE_INDEX		2
+#define MENU_INDEX			ENABLE_INDEX
+
+// GUI messages
+#define WM_USER				0x01
+#define WM_DRAW				0x02
+#define WM_KEY				0x03
+#define WM_INIT				0x04
 
 
 #define USE_TMOS_STRING		1
