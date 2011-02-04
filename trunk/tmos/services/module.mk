@@ -31,6 +31,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 local_modules-y := 
 
 local_modules-$(USE_POLARSSL)	+= PolarSSL
+local_modules-$(USE_GUI)		+= GUI
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
