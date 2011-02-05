@@ -57,7 +57,7 @@ struct TFT_CHECK
 {
 	const PIN_DESC* pins;
 
-	TFT_CHECK(PIN_DESC* p) : pins(p)
+	TFT_CHECK(const PIN_DESC* p) : pins(p)
 	{
 	}
 	;
