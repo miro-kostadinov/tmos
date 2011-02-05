@@ -11,12 +11,24 @@
 #ifndef BRD_CFG_H_
 #define BRD_CFG_H_
 
+#define KEY_DOWN_CODE		0x00
+#define KEY_REPEAT_CODE		0x80
+#define KEY_UP_CODE			0x40
+#define KEY_PRESREP_MASK	0x7F
+
+// GUI messages
+#define WM_USER				0x01
+#define WM_DRAW				0x02
+#define WM_KEY				0x03
+#define WM_INIT				0x04
+
 
 #define USE_TMOS_STRING		1
 #define USE_CSTRING			1
 #define USE_TMOS_STDLIB		1
 #define USE_TIME			0
 #define USE_TMOS_STDIO		1
+#define USE_GUI				1
 
 
 /*----------------------------------------------------------------------------*/
