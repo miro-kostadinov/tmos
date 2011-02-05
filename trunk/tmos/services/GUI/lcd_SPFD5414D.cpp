@@ -257,30 +257,29 @@ void TFT_CHECK::delay()
 void TFT_CHECK::tft_write( unsigned int value)
 {
 	//SET SDA to Port
-	SDA.pin_dir = DIR_OUT;
-	PIO_Cfg(SDA);
+	PIO_CfgOutput0(pins[SDA_PIN_INDX]);
 
 	//9 data bits
 	for (int i = 0; i < 9; i++)
 	{
-		PIO_ClrOutput(SCL);
+		PIO_ClrOutput(pins[SCL_PIN_INDX]);
 		delay();
 
 		//    TFT_SDA = nByte & Mask8[i] ? 1 : 0;//51 msec
 		if(value & 0x100)
 		{
-			PIO_SetOutput(SDA);
+			PIO_SetOutput(pins[SDA_PIN_INDX]);
 		} else
 		{
-			PIO_ClrOutput(SDA);
+			PIO_ClrOutput(pins[SDA_PIN_INDX]);
 		}
 		value <<= 1;
 		delay();
 
-		PIO_SetOutput(SCL);
+		PIO_SetOutput(pins[SCL_PIN_INDX]);
 		delay();
 	}
-	PIO_ClrOutput(SCL);
+	PIO_ClrOutput(pins[SCL_PIN_INDX]);
 	delay();
 }
 
@@ -288,24 +287,23 @@ unsigned int TFT_CHECK::tft_read( )
 {
 	unsigned int res = 0;
 
-	SDA.pin_dir = DIR_IN;
-	PIO_Cfg(SDA);
+	PIO_CfgInput(pins[SDA_PIN_INDX]);
 
 	//8 data bits
 	for (int i = 0; i < 8; i++)
 	{
-		PIO_ClrOutput(SCL);
+		PIO_ClrOutput(pins[SCL_PIN_INDX]);
 		delay();
 
 
 		res <<= 1;
-		if(PIO_Read(SDA))
+		if(PIO_Read(pins[SDA_PIN_INDX]))
 			res ++;
 
-		PIO_SetOutput(SCL);
+		PIO_SetOutput(pins[SCL_PIN_INDX]);
 		delay();
 	}
-	PIO_ClrOutput(SCL);
+	PIO_ClrOutput(pins[SCL_PIN_INDX]);
 	delay();
 	return res;
 }
@@ -314,12 +312,12 @@ unsigned int TFT_CHECK::read_id()
 {
 	unsigned int res =0;
 
-    PIO_CfgOutput0(RST);
+    PIO_CfgOutput0(pins[RST_PIN_INDX]);
 	delay();
-	PIO_SetOutput(RST);
+	PIO_SetOutput(pins[RST_PIN_INDX]);
 
-    PIO_CfgOutput0(SCL);
-	PIO_CfgOutput0(CSX);
+    PIO_CfgOutput0(pins[SCL_PIN_INDX]);
+	PIO_CfgOutput0(pins[CSX_PIN_INDX]);
 
 	tft_write(TFT_SLPOUT);
 	tft_write(TFT_RDDID);
@@ -328,7 +326,7 @@ unsigned int TFT_CHECK::read_id()
 	res |= tft_read(); //2A40
 	res <<= 8;
 	res |= tft_read(); //2A4033
-	PIO_SetOutput(CSX);
+	PIO_SetOutput(pins[CSX_PIN_INDX]);
 	return res;
 }
 

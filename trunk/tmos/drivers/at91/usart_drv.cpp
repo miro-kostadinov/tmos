@@ -50,7 +50,7 @@ static void USART_OFF(USART_INFO drv_info)
     pUsart->US_CR = US_CR_TXDIS | US_CR_RXDIS | US_CR_RSTTX | US_CR_RSTRX | US_CR_RSTSTA;
 
 	//RTS =1 (not ready)
-    GPIO_CfgInput(&drv_info->pins);
+    PIO_CfgInput(&drv_info->pins);
    	drv_pmc_disable(&drv_info->info);
 }
 
@@ -91,7 +91,7 @@ void USART_CFG(USART_INFO drv_info, DRV_UART_MODE pMode)
 
     pUsart->US_IER = US_IER_ENDRX | US_IER_TIMEOUT;
    	drv_isr_enable(&drv_info->info);
-    GPIO_CfgPeriph(&drv_info->pins);
+    PIO_CfgPeriph(&drv_info->pins);
 }
 
 /** STOP the receiver */

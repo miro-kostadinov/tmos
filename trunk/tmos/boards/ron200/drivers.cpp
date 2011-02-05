@@ -228,7 +228,8 @@ const USART_DRIVER_INFO usart1_driver =
 	(UART_DRIVER_DATA)usart1_data,
 	{ //GPIO_STRU
 		PIO_PA22A_TXD1 | PIO_PA21A_RXD1,
-		PIOA
+		PORT_A,
+		0
 	},
 	CFG_USART1_BUF_SIZE
 };

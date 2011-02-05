@@ -36,11 +36,8 @@
 #define PIX_YELLOW			PIX_RGB(0x1F, 0x3F, 0x00)
 #define PIX_WHITE			PIX_RGB(0x1F, 0x3F, 0x1F)
 
-struct LCD_PINS
-{
-	PIN_DESC bklt_pin;
-	PIN_DESC rst_pin;
-};
+#define BKLT_PIN_INDX	0
+#define RST_PIN_INDX	1
 
 struct LCD_MODULE
 {
@@ -55,9 +52,9 @@ struct LCD_MODULE
 	const RENDER_MODE* font;
 	unsigned int color;
 	HANDLE lcd_hnd;
-	const LCD_PINS* pins;
+	const PIN_DESC* pins;
 
-	LCD_MODULE(unsigned int x, unsigned int y, HANDLE hnd, const LCD_PINS* p) :
+	LCD_MODULE(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p) :
 		size_x(x), size_y(y), lcd_hnd(hnd), pins(p)
 	{
 	}

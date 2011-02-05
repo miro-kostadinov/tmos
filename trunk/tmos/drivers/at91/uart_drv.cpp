@@ -51,7 +51,7 @@ static void UART_OFF(UART_INFO drv_info)
     pUart->UART_CR = UART_CR_TXDIS | UART_CR_RXDIS | UART_CR_RSTTX | UART_CR_RSTRX;
 
 	//RTS =1 (not ready)
-    GPIO_CfgInput(&drv_info->pins);
+    PIO_CfgInput(&drv_info->pins);
    	drv_pmc_disable(&drv_info->info);
 
 }
@@ -80,7 +80,7 @@ void UART_CFG(UART_INFO drv_info, DRV_UART_MODE pMode)
 
     pUart->UART_IER = UART_IER_ENDRX ;
    	drv_isr_enable(&drv_info->info);
-    GPIO_CfgPeriph(&drv_info->pins);
+    PIO_CfgPeriph(&drv_info->pins);
 }
 
 /** STOP the receiver */

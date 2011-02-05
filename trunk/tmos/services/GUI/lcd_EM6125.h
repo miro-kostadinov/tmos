@@ -18,7 +18,7 @@ struct EM6125: public LCD_MODULE
 	unsigned int reset_timeout;
 	LCD_BUF_STRU lcd_buf;
 
-	EM6125(unsigned int x, unsigned int y, HANDLE hnd, const LCD_PINS* p) :
+	EM6125(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p) :
 		LCD_MODULE(x, y, hnd, p), reset_timeout(0)
 	{
 	}
