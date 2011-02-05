@@ -30,25 +30,12 @@
 #include <tmos.h>
 #include <pio.h>
 
-struct GPIO_STRU
-{
-	unsigned int 	mask;
-	Pio*			hw_base;
-};
-typedef const GPIO_STRU* GPIO;
+// port value
+#define	PORT_A			0
+#define	PORT_B			1
+#define	PORT_C			2
 
-void GPIO_CfgOutput(GPIO pins);
-void GPIO_CfgOutput0(GPIO pins);
-void GPIO_CfgOutput1(GPIO pins);
-void GPIO_CfgInput(GPIO pins);
-void GPIO_CfgInputPull(GPIO pins);
-void GPIO_CfgPeriph(GPIO pins);
-void GPIO_CfgPeriphB(GPIO pins);
-void GPIO_CfgOD(GPIO pins);
-void GPIO_SetOutput(GPIO pins);
-void GPIO_ClearOutput(GPIO pins);
-unsigned int GPIO_GetInput(GPIO pins);
-
+// pio mode
 #define PIOMODE_PER		0x01
 #define PIOMODE_OER		0x02
 #define PIOMODE_IFER	0x04
@@ -57,6 +44,27 @@ unsigned int GPIO_GetInput(GPIO pins);
 #define PIOMODE_MDER	0x20
 #define PIOMODE_PPUER	0x40
 #define PIOMODE_BSR		0x80
+
+struct GPIO_STRU
+{
+	unsigned int 	mask;
+	unsigned short 	mode;
+	unsigned char	port;
+};
+typedef const GPIO_STRU* PIN_DESC;
+
+void PIO_CfgOutput(PIN_DESC pins);
+void PIO_CfgOutput0(PIN_DESC pins);
+void PIO_CfgOutput1(PIN_DESC pins);
+void PIO_CfgInput(PIN_DESC pins);
+void PIO_CfgInputPull(PIN_DESC pins);
+void PIO_CfgPeriph(PIN_DESC pins);
+void PIO_CfgPeriphB(PIN_DESC pins);
+void PIO_CfgOD(PIN_DESC pins);
+void PIO_SetOutput(PIN_DESC pins);
+void PIO_ClrOutput(PIN_DESC pins);
+unsigned int PIO_Read(PIN_DESC pins);
+
 
 
 struct PIO_DRIVER_DATA_STRU

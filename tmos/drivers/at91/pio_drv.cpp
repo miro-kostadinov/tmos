@@ -15,9 +15,18 @@
 //*----------------------------------------------------------------------------
 //*		Helper functions - can be used without driver.
 //*----------------------------------------------------------------------------
-void GPIO_CfgOutput(GPIO pins)
+
+Pio* get_pio_base(PIN_DESC pins)
 {
-	Pio* pPio = pins->hw_base;
+	unsigned int res;
+
+	res = pins->port * ((unsigned)PIOB - (unsigned)PIOA);
+	return (Pio*)(res + (unsigned)PIOA);
+}
+
+void PIO_CfgOutput(PIN_DESC pins)
+{
+	Pio* pPio = get_pio_base(pins);
 	unsigned int mask = pins->mask;
 
 	pPio->PIO_PER = mask; 		// Set in PIO mode
@@ -25,9 +34,9 @@ void GPIO_CfgOutput(GPIO pins)
     pPio->PIO_PUDR = mask;		// disable pullup
 }
 
-void GPIO_CfgOutput0(GPIO pins)
+void PIO_CfgOutput0(PIN_DESC pins)
 {
-	Pio* pPio = pins->hw_base;
+	Pio* pPio = get_pio_base(pins);
 	unsigned int mask = pins->mask;
 
     pPio->PIO_PUDR = mask;		// disable pullup
@@ -36,9 +45,9 @@ void GPIO_CfgOutput0(GPIO pins)
 	pPio->PIO_OER = mask;		// Configure in Output
 }
 
-void GPIO_CfgOutput1(GPIO pins)
+void PIO_CfgOutput1(PIN_DESC pins)
 {
-	Pio* pPio = pins->hw_base;
+	Pio* pPio = get_pio_base(pins);
 	unsigned int mask = pins->mask;
 
 	pPio->PIO_SODR = mask;
@@ -47,9 +56,9 @@ void GPIO_CfgOutput1(GPIO pins)
     pPio->PIO_PUDR = mask;		// disable pullup
 }
 
-void GPIO_CfgInput(GPIO pins)
+void PIO_CfgInput(PIN_DESC pins)
 {
-	Pio* pPio = pins->hw_base;
+	Pio* pPio = get_pio_base(pins);
 	unsigned int mask = pins->mask;
 
     pPio->PIO_PUDR = mask;		// disable pullup
@@ -59,9 +68,9 @@ void GPIO_CfgInput(GPIO pins)
 	pPio->PIO_MDDR = mask; 		// Disable Multidrive
 }
 
-void GPIO_CfgInputPull(GPIO pins)
+void PIO_CfgInputPull(PIN_DESC pins)
 {
-	Pio* pPio = pins->hw_base;
+	Pio* pPio = get_pio_base(pins);
 	unsigned int mask = pins->mask;
 
 	pPio->PIO_ODR = mask;		// Disable Output
@@ -71,38 +80,38 @@ void GPIO_CfgInputPull(GPIO pins)
     pPio->PIO_PUER = mask;		// enable pullup
 }
 
-void GPIO_CfgPeriph(GPIO pins)
+void PIO_CfgPeriph(PIN_DESC pins)
 {
-	pins->hw_base->PIO_PDR = pins->mask;	// Set in PIO mode
+	get_pio_base(pins)->PIO_PDR = pins->mask;	// Set in PIO mode
 }
 
-void GPIO_CfgPeriphB(GPIO pins)
+void PIO_CfgPeriphB(PIN_DESC pins)
 {
-	Pio* pPio = pins->hw_base;
+	Pio* pPio = get_pio_base(pins);
 	unsigned int mask = pins->mask;
 
     pPio->PIO_ABCDSR[1] = mask;
 	pPio->PIO_PDR = mask; 		// Set in PIO mode
 }
 
-void GPIO_CfgOD(GPIO pins)
+void PIO_CfgOD(PIN_DESC pins)
 {
-    pins->hw_base->PIO_MDER = pins->mask; 		// Multidrive
+    get_pio_base(pins)->PIO_MDER = pins->mask; 		// Multidrive
 }
 
-void GPIO_SetOutput(GPIO pins)
+void PIO_SetOutput(PIN_DESC pins)
 {
-    pins->hw_base->PIO_SODR = pins->mask;
+    get_pio_base(pins)->PIO_SODR = pins->mask;
 }
 
-void GPIO_ClearOutput(GPIO pins)
+void PIO_ClrOutput(PIN_DESC pins)
 {
-    pins->hw_base->PIO_CODR = pins->mask;
+    get_pio_base(pins)->PIO_CODR = pins->mask;
 }
 
-unsigned int GPIO_GetInput(GPIO pins)
+unsigned int PIO_Read(PIN_DESC pins)
 {
-    return pins->hw_base->PIO_PDSR & pins->mask;
+    return get_pio_base(pins)->PIO_PDSR & pins->mask;
 }
 
 
@@ -157,7 +166,7 @@ void PIO_DCR(PIO_INFO drv_info, unsigned int reason, HANDLE param)
 
     	case DCR_OPEN:
             {
-                GPIO pins = (GPIO)param->mode.as_voidptr;
+            	PIN_DESC pins = (PIN_DESC)param->mode.as_voidptr;
             	param->list_add(drv_data->waiting);
             	param->res = RES_OK;
                 reason = param->mode0;

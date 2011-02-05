@@ -122,15 +122,24 @@ unsigned char PIO_Read(PIN_DESC Pin)
 
 void PIO_CfgOutput1(PIN_DESC Pin)
 {
+	Pin.pin_dir = DIR_OUT;
 	PIO_Cfg(Pin);
 	PIO_Write(Pin,Pin.pin_pattern);
 }
 
 void PIO_CfgOutput0(PIN_DESC Pin)
 {
+	Pin.pin_dir = DIR_OUT;
 	PIO_Cfg(Pin);
 	PIO_Write(Pin,0);
 }
+
+void PIO_CfgInput(PIN_DESC Pin)
+{
+	Pin.pin_dir = DIR_IN;
+	PIO_Cfg(Pin);
+}
+
 
 void PIO_SetOutput(PIN_DESC Pin)
 {

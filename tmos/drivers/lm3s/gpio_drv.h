@@ -914,6 +914,7 @@ void PIO_Cfg(PIN_DESC Pin );
 void PIO_Cfg_List(PIN_DESC * list );
 void PIO_CfgOutput1(PIN_DESC Pin);
 void PIO_CfgOutput0(PIN_DESC Pin);
+void PIO_CfgInput(PIN_DESC Pin);
 void PIO_Free(PIN_DESC Pin);
 void PIO_Free_List(PIN_DESC * list );
 

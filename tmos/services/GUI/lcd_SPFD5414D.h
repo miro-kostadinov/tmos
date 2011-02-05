@@ -16,7 +16,7 @@ struct SPFD5414D: public LCD_MODULE
 	unsigned int* disp_buf;
     unsigned int video_buf[256];
 
-	SPFD5414D(unsigned int x, unsigned int y, HANDLE hnd, const LCD_PINS* p) :
+	SPFD5414D(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p) :
 		LCD_MODULE(x, y, hnd, p), reset_timeout(0)
 	{
 	}
@@ -37,6 +37,17 @@ struct SPFD5414D: public LCD_MODULE
 	void redraw_screen(WINDOW desktop);
 };
 
+#ifndef CSX_PIN_INDX
+#define CSX_PIN_INDX	2
+#endif
+#ifndef SCL_PIN_INDX
+#define SCL_PIN_INDX	3
+#endif
+#ifndef SDA_PIN_INDX
+#define SDA_PIN_INDX	4
+#endif
+
+
 /**
  * TFT_CHECK class can be used to detect the LCD MODULE installed.
  * It is using GPIOs only so it can be called from AppInit()
@@ -44,13 +55,9 @@ struct SPFD5414D: public LCD_MODULE
  */
 struct TFT_CHECK
 {
-	PIN_DESC SCL;
-	PIN_DESC SDA;
-	PIN_DESC CSX;
-	PIN_DESC RST;
+	const PIN_DESC* pins;
 
-	TFT_CHECK(int clk, int dat, int cs, unsigned rs) :
-		SCL(clk), SDA(dat), CSX(cs), RST(rs)
+	TFT_CHECK(PIN_DESC* p) : pins(p)
 	{
 	}
 	;

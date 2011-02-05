@@ -14,10 +14,10 @@ WEAK void backlight_thread(LCD_MODULE *lcd)
 {
     ALLOCATE_SIGNAL(SIG_BACKLIGHT_TASK);
 
-    PIO_CfgOutput1(lcd->pins->bklt_pin);
+    PIO_CfgOutput1(lcd->pins[BKLT_PIN_INDX]);
     while(1)
     {
-     	PIO_SetOutput(lcd->pins->bklt_pin);
+     	PIO_SetOutput(lcd->pins[BKLT_PIN_INDX]);
      	if(tsk_wait_signal(SIG_BACKLIGHT_TASK, backlight_time ))
      		continue;
 
@@ -25,9 +25,9 @@ WEAK void backlight_thread(LCD_MODULE *lcd)
      	{
      		if(tsk_test_signal(SIG_BACKLIGHT_TASK))
      			break;
-         	PIO_SetOutput(lcd->pins->bklt_pin);
+         	PIO_SetOutput(lcd->pins[BKLT_PIN_INDX]);
            	tsk_sleep(20 - t);
-           	PIO_ClrOutput(lcd->pins->bklt_pin);
+           	PIO_ClrOutput(lcd->pins[BKLT_PIN_INDX]);
          	tsk_sleep(t);
      	}
        	tsk_get_signal(SIG_BACKLIGHT_TASK);
@@ -44,9 +44,9 @@ void LCD_MODULE::lcd_init(GUI_CB splash)
 	usr_task_init_static(&backlight_task_desc, true);
 	backlight_task.sp->r0.as_voidptr = this;
 
-    PIO_CfgOutput0(pins->rst_pin);
+    PIO_CfgOutput0(pins[RST_PIN_INDX]);
 	tsk_sleep(20);
-	PIO_SetOutput(pins->rst_pin);
+	PIO_SetOutput(pins[RST_PIN_INDX]);
     tsk_sleep(20);
 
 
