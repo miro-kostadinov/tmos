@@ -73,7 +73,9 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	desktop->prev = desktop;
 
 	drv_info->lcd->lcd_init((GUI_CB)splashdlg_cb);
+#if USE_EXCEPTION_RECORD
 	if(!exception_record.CFSR)
+#endif
 		init_main_menu();
 
 
