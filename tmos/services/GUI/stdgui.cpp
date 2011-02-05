@@ -175,23 +175,32 @@ RES_CODE menu_cb(MENU_WINDOW menu_hnd, unsigned int param, unsigned int msg)
     {
         switch (param & KEY_PRESREP_MASK)
         {
+#ifdef KEY_UP
 	        case KEY_UP:
 	        	menu_hnd->text_offset = 0;
 				if(menu_hnd->pos)
 					menu_hnd->pos--;
 	    	    return FLG_BUSY;
+#endif
 
+#ifdef KEY_DOWN
 	        case KEY_DOWN:
 	        	menu_hnd->text_offset = 0;
 				if(menu_hnd->pos < ( menu_hnd->menu->count-1))
 					menu_hnd->pos++;
 		        return FLG_BUSY;
+#endif
 
+#ifdef KEY_OK
 	        case KEY_OK:
                 return RES_SIG_OK;
+#endif
 
+#ifdef KEY_C
         	case KEY_C:
                 return RES_SIG_IDLE;
+#endif
+
 #if MENU_INDEX == ENABLE_INDEX
         	default:
                 param = key_codes[param];
@@ -303,11 +312,15 @@ RES_CODE msgbox_cb(CMessageBox* msg_hnd, unsigned int param, unsigned int msg)
         switch (param /*& KEY_PRESREP_MASK*/)
         {
 
+#ifdef KEY_OK
 	        case KEY_OK:
                 return RES_SIG_OK;
+#endif
 
+#ifdef KEY_C
         	case KEY_C:
                 return RES_SIG_CANCEL;
+#endif
         }
     }
 
@@ -486,6 +499,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 			switch (param )
 			{
 
+#ifdef KEY_OK
 				case KEY_OK:
 				{
 					if(box->flags & TXT_FLAGS_CONST)
@@ -503,6 +517,9 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 					box->pos++;
 					return FLG_BUSY;
 				}
+#endif
+
+#ifdef KEY_C
 				case KEY_C:
 					if(box->flags & TXT_FLAGS_CONST)
 						return RES_SIG_CANCEL;
@@ -515,7 +532,9 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 						box->flags ^= TXT_FLAGS_EDIT;
 					box->flags &=~TXT_FLAGS_CURSOR;
 					return FLG_BUSY;
+#endif
 
+#ifdef KEY_RIGHT
 				case KEY_RIGHT:
 					if(box->flags & TXT_FLAGS_EDIT)
 					{
@@ -529,7 +548,9 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 							box->x=0;
 					}
 					return FLG_BUSY;
+#endif
 
+#ifdef KEY_LEFT
 				case KEY_LEFT:
 					if(box->flags & TXT_FLAGS_EDIT)
 					{
@@ -543,7 +564,9 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 							box->x=9;
 					}
 					return FLG_BUSY;
+#endif
 
+#ifdef KEY_UP
 				case KEY_UP:
 					if(box->flags & TXT_FLAGS_CONST)
 						return 0;
@@ -557,7 +580,9 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 							box->sy = 0;
 					}
 					return FLG_BUSY;
+#endif
 
+#ifdef KEY_DOWN
 				case KEY_DOWN:
 					if(box->flags & TXT_FLAGS_CONST)
 						return 0;
@@ -571,6 +596,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 							box->sy = TXT_SCREEN_LINES-1;
 					}
 					return FLG_BUSY;
+#endif
 			}
             return FLAG_WRITE;
         }
