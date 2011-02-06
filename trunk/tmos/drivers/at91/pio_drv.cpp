@@ -114,6 +114,11 @@ unsigned int PIO_Read(PIN_DESC pins)
     return get_pio_base(pins)->PIO_PDSR & pins->mask;
 }
 
+bool pio_open(HANDLE hnd, PIN_DESC pins)
+{
+	return hnd->tsk_open((DRIVER_INDEX)(PIOA_IRQn + pins->port), pins);
+}
+
 
 //*----------------------------------------------------------------------------
 //*			PIO driver
@@ -169,7 +174,7 @@ void PIO_DCR(PIO_INFO drv_info, unsigned int reason, HANDLE param)
             	PIN_DESC pins = (PIN_DESC)param->mode.as_voidptr;
             	param->list_add(drv_data->waiting);
             	param->res = RES_OK;
-                reason = param->mode0;
+                reason = pins->mode;
 
                 if(reason & PIOMODE_PER)
                 {

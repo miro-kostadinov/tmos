@@ -65,6 +65,7 @@ void PIO_SetOutput(PIN_DESC pins);
 void PIO_ClrOutput(PIN_DESC pins);
 unsigned int PIO_Read(PIN_DESC pins);
 
+bool pio_open(HANDLE hnd, PIN_DESC pins);
 
 
 struct PIO_DRIVER_DATA_STRU
