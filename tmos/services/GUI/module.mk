@@ -17,9 +17,10 @@ local_h_src-y 	:=
 local_as_src	+= rend_fun_ti.S
 
 local_cpp_src  	+= lcd_EM6125.cpp fonts.cpp gui_drv.cpp stdgui.cpp lcd.cpp
-local_cpp_src  	+= lcd_SPFD5414D.cpp
+local_cpp_src  	+= lcd_SPFD5414D.cpp lcd_ST7565S.cpp
 
 local_h_src-y 	+= gui_drv.h lcd.h fonts.h stdgui.h lcd_EM6125.h lcd_SPFD5414D.h
+local_h_src-y 	+= lcd_ST7565S.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src))
