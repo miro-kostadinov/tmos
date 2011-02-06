@@ -70,7 +70,7 @@ local_as_src-y	:=
  
 local_c_src-y 	:= swi_tab.c
 
-local_cpp_src-y	:= drivers.cpp  
+local_cpp_src-y	:= drivers.cpp key2_drv.cpp 
 
 local_h_src-y 	:= brd_cfg.h brd_cpp.h swi_tab.h trace.h
 

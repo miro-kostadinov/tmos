@@ -18,6 +18,7 @@
 #include <adc_drv.h>
 #include <dacc_drv.h>
 #include <usbd_drv.h>
+#include <key2_drv.h>
 
 const char restart_on_exception =0;
 
@@ -159,7 +160,7 @@ const WDT_DRIVER_INFO wdt_driver =
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// 		 PMC DRIVER
+// 		 (5) PMC DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #define MHz(x) (x * 1000000)
@@ -208,6 +209,46 @@ extern "C" const PMC_DRIVER_INFO pmc_driver =
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 (11) PIOA DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PIO_DRIVER_DATA_STRU pioA_driver_data;
+
+const PIO_DRIVER_INFO pioA_driver =
+{
+	{
+		DRIVER_INFO_STUB,
+		(DRV_ISR)PIO_ISR,
+		(DRV_DCR)PIO_DCR,
+		(DRV_DSR)PIO_DSR,
+		PIOA_IRQn,
+		DRV_PRIORITY_KERNEL,
+		ID_PIOA
+	},
+	PIOA,
+	&pioA_driver_data
+};
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 (12) PIOB DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PIO_DRIVER_DATA_STRU pioB_driver_data;
+
+const PIO_DRIVER_INFO pioB_driver =
+{
+	{
+		DRIVER_INFO_STUB,
+		(DRV_ISR)PIO_ISR,
+		(DRV_DCR)PIO_DCR,
+		(DRV_DSR)PIO_DSR,
+		PIOB_IRQn,
+		DRV_PRIORITY_KERNEL,
+		ID_PIOB
+	},
+	PIOB,
+	&pioB_driver_data
+};
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 (15) USART1 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #define CFG_USART1_BUF_SIZE 16
@@ -228,8 +269,8 @@ const USART_DRIVER_INFO usart1_driver =
 	(UART_DRIVER_DATA)usart1_data,
 	{ //GPIO_STRU
 		PIO_PA22A_TXD1 | PIO_PA21A_RXD1,
-		PORT_A,
-		0
+		0,
+		PORT_A
 	},
 	CFG_USART1_BUF_SIZE
 };
@@ -276,7 +317,7 @@ const DACC_DRIVER_INFO dacc_driver =
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// 		(31) USB DRIVER
+// 		(34) USB DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 USBD_DRIVER_DATA_STRU usb_driver_data;
 
@@ -294,6 +335,32 @@ const USBD_DRIVER_INFO usb_driver =
 	UDP,
 	&usb_driver_data
 };
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		(35) KEY2 DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+KEY2_DRIVER_DATA key2_driver_data;
+
+const KEY2_DRIVER_INFO key2_driver =
+{
+	{
+		DRIVER_INFO_STUB,
+		DEFAULT_DRIVER_ISR,
+		(DRV_DCR)KEY2_DCR,
+		(DRV_DSR)KEY2_DSR,
+		KEY_DRV_INDX,
+		DRV_PRIORITY_KERNEL,
+		ID_NO_PERIPHERAL
+	},
+	&key2_driver_data,
+	{ //GPIO_STRU
+		PIO_PA26 | PIO_PA25 | PIO_PA11,
+		PIOMODE_IER | PIOMODE_IFER,
+		PORT_A
+	},
+};
+
 
 signed char const DRV_RESET_FIRST_TABLE[] =
 {
@@ -317,8 +384,8 @@ char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".ExceptionVe
 	1+ (char * const)&DefaultDriver, // 8 UART0
 	1+ (char * const)&DefaultDriver, // 9 UART1
 	1+ (char * const)&DefaultDriver, // 10 SMC
-	1+ (char * const)&DefaultDriver, // 11 Parallel IO Controller A
-	1+ (char * const)&DefaultDriver, // 12 Parallel IO Controller B
+	1+ (char * const)&pioA_driver,	 // 11 Parallel IO Controller A
+	1+ (char * const)&pioB_driver,	 // 12 Parallel IO Controller B
 	1+ (char * const)&DefaultDriver, // 13 Parallel IO Controller C
 	1+ (char * const)&DefaultDriver, // 14 USART 0
 	1+ (char * const)&usart1_driver, // 15 USART 1
@@ -341,6 +408,7 @@ char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".ExceptionVe
 	1+ (char * const)&DefaultDriver, // 32 CRC Calculation Unit
 	1+ (char * const)&DefaultDriver, // 33 Analog Comparator
 	1+ (char * const)&DefaultDriver, // 34 USB Device Port
+	1+ (char * const)&key2_driver,	 // 35 Key2 driver
    NULL				//null terminated list
 };
 
