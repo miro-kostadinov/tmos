@@ -19,7 +19,13 @@
 
 
 
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 KEY DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define KEY_POLLING_TIME	10
+#define KEY_DEBOUNCE_TIME 	50 //30 //300
+#define KEY_REPEAT_TIME 	300//150 //1000
+#define KEY_COUNT		3
 
 
 extern   signed char const DRV_RESET_FIRST_TABLE[];
