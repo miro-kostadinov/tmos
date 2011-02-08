@@ -380,7 +380,7 @@ const char buttons[160] =
 		' ', ':', '/', ';', ' ', ' ', ' ', ' ', ' ', ' '	// 16
 };
 
-void DrawButtonsRow(unsigned int n, const char* btns, char sx, LCD_MODULE* lcd)
+void DrawButtonsRow(unsigned int n, const char* btns, signed char sx, LCD_MODULE* lcd)
 {
 	unsigned char y = 34 + n * 11;
 	unsigned char x;
