@@ -125,18 +125,6 @@ FUNC(	sys_reset_handler	)
 	// Low level init
                 svc			0
 
-				/* call Class constructors */
-
-				ldr			r4, =_ctors_start_
-				ldr			r5, =_ctors_end_
-				cmp			r4,r5
-				beq			5f
-4:
-				ldmdb		r5!, {r2}
-				blx			r2
-				cmp			r4,r5
-				blo			4b
-5:
 
       			/* Call main()	*/
       			blx			r6
@@ -149,10 +137,26 @@ FUNC(	sys_reset_handler	)
 
 p_main_task:
 				.word 		main_task  //Pointer for PEEDI thread suppport
+ENDF(	sys_call_static_ctors	)
+
+//*----------------------------------------------------------------------------
+//*			call Class constructors
+//*----------------------------------------------------------------------------
+FUNC(	sys_call_static_ctors	)
+				push		{r4, r5, lr}
+				ldr			r4, =_ctors_start_
+				ldr			r5, =_ctors_end_
+1:
+				cmp			r4,r5
+
+				IT			EQ
+				popeq		{r4, r5, pc}
+
+				ldmdb		r5!, {r2}
+				blx			r2
+				b			1b
+
 ENDF(	sys_reset_handler	)
-
-.ltorg
-
 
 //*----------------------------------------------------------------------------
 //*			NMI handler
