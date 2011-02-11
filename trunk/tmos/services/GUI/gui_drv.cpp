@@ -59,7 +59,8 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     CHandle gui_hnd;
 
     //wait for static constructors (lcd object)
-    tsk_sleep(10);
+    while(!drv_info->lcd)
+    	tsk_sleep(10);
 
     //prevent these signals not to be used from task handles
     ALLOCATE_SIGNAL(SIG_GUI_TASK);
