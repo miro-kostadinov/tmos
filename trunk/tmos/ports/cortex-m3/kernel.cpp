@@ -128,6 +128,8 @@ WEAK_C void app_init(void)
 //* 		is lower than JTAG clock
 //*----------------------------------------------------------------------------
 
+extern "C" void sys_call_static_ctors(void);
+
 extern "C" void sys_kernel_init( void)
 {
     DRIVER_INFO drv_info;
@@ -186,6 +188,8 @@ extern "C" void sys_kernel_init( void)
 
     // Application level init
     app_init();
+
+    sys_call_static_ctors();
 }
 
 //*----------------------------------------------------------------------------
