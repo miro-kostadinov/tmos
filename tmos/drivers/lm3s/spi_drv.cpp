@@ -128,6 +128,19 @@ void dcr_SPI_driver(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
         	}
         	break;
 
+        case DCR_PARAMS:
+        	//send handle's client to release the lock
+        	if(hnd == (HANDLE)drv_info->drv_data->locker)
+        	{
+        		drv_info->drv_data->locker = NULL;
+        		hnd = drv_info->drv_data->waiting;
+        		if(hnd)
+        		{
+        			drv_info->drv_data->waiting = hnd->next;
+        			dsr_SPI_driver(drv_info, hnd);
+        		}
+        	}
+        	break;
 
         case DCR_CLOCK:
         	SPI_SET_CLOCK(drv_info);
@@ -143,7 +156,6 @@ void dsr_SPI_driver(SPI_DRIVER_INFO* drv_info, HANDLE hnd)
 	Task* locker;
     SPI_DRIVER_DATA* drv_data = drv_info->drv_data;
 
-//	TRACELN("SHND: %x %x", hnd->cmd, hnd->len);
     if((locker = drv_data->locker))
 	{
         //the SPI is locked
@@ -164,7 +176,6 @@ void dsr_SPI_driver(SPI_DRIVER_INFO* drv_info, HANDLE hnd)
 		}
 
 		//start hnd
-
 	} else
     {
 		//the SPI is not locked
@@ -330,7 +341,6 @@ void isr_SPI_driver(SPI_DRIVER_INFO* drv_info )
 	}
 
 	if(!(pSPI->SR & SSI_SR_BSY))
-//	if(pSPI->MIS & SSI_TXFF)
 	{
 		if(hnd->len)
 		{
