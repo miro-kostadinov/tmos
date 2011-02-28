@@ -118,6 +118,7 @@ struct CMessageBox: CWindow
 #define TXT_FLAGS_CURSOR	0x01
 #define TXT_FLAGS_EDIT		0x02
 #define TXT_FLAGS_CONST		0x04
+#define TXT_FLAGS_RES		0x08
 
 struct CGetBox: CWindow
 {
