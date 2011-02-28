@@ -46,7 +46,7 @@ struct CHandle {
 	word_reg dst; /**< destination data pointer	*/
 	word_reg src; /**< source data pointer	*/
 	word_reg mode; /**< driver mode	*/
-
+	unsigned error; /**< driver error */
 	//----------------------    ctors etc   ---------------------------//
 	CHandle();
 	CHandle(DRIVER_INDEX index, const void * m);
@@ -153,6 +153,7 @@ struct CHandle {
 
 	RES_CODE tsk_read_write(void *dst, const void *src, unsigned int l);
 
+	bool tsk_start_command(void * c, void *ptr);
 	RES_CODE tsk_command(void * cmd, void *ptr);
 	RES_CODE tsk_command_locked(void * cmd, void *ptr);
 
