@@ -464,7 +464,14 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 				lcd->draw_vline(1+12, 1+12+15, 0);
 				lcd->draw_vline(1+12, 1+12+15, lcd->size_x-1);
 				lcd->draw_hline(0, lcd->size_x-1, 1+12+15);
+	    		lcd->set_xy_all(lcd->size_y -23, ALL_RIGHT);
+	    		if(box->flags & TXT_FLAGS_RES)
+	    			lcd->draw_text("CANCEL");
+	    		else
+	    			lcd->draw_text("DEL");
 			}
+    		lcd->set_xy_all(lcd->size_y -23, ALL_LEFT);
+    		lcd->draw_text("OK");
     	}
     	else
     	{
@@ -521,7 +528,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 
 #ifdef KEY_C
 				case KEY_C:
-					if(box->flags & TXT_FLAGS_CONST)
+					if(box->flags & (TXT_FLAGS_CONST|TXT_FLAGS_RES))
 						return RES_SIG_CANCEL;
 					if(box->flags & TXT_FLAGS_EDIT)
 					{
@@ -536,6 +543,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 
 #ifdef KEY_RIGHT
 				case KEY_RIGHT:
+					box->flags &=~TXT_FLAGS_RES;
 					if(box->flags & TXT_FLAGS_EDIT)
 					{
 						if(++box->pos > box->data.length())
@@ -552,6 +560,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 
 #ifdef KEY_LEFT
 				case KEY_LEFT:
+					box->flags &=~TXT_FLAGS_RES;
 					if(box->flags & TXT_FLAGS_EDIT)
 					{
 						if(box->pos-- == 0)
@@ -568,6 +577,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 
 #ifdef KEY_UP
 				case KEY_UP:
+					box->flags &=~TXT_FLAGS_RES;
 					if(box->flags & TXT_FLAGS_CONST)
 						return 0;
 					if(box->flags & TXT_FLAGS_EDIT)
@@ -584,6 +594,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 
 #ifdef KEY_DOWN
 				case KEY_DOWN:
+					box->flags &=~TXT_FLAGS_RES;
 					if(box->flags & TXT_FLAGS_CONST)
 						return 0;
 					if(box->flags & TXT_FLAGS_EDIT)
@@ -619,7 +630,7 @@ RES_CODE get_box(const char * title, CSTRING& data, bool constant)
 	box_hnd.title = title;
 	box_hnd.pos = data.length();
 	box_hnd.data += data;
-	box_hnd.flags = TXT_FLAGS_EDIT;
+	box_hnd.flags = TXT_FLAGS_EDIT|TXT_FLAGS_RES;
 	if(constant)
 	{
 		box_hnd.pos = 0;
@@ -629,7 +640,7 @@ RES_CODE get_box(const char * title, CSTRING& data, bool constant)
 	if(box_hnd.tsk_window_init((GUI_CB)getbox_cb))
 	{
 		res = box_hnd.tsk_window_showmodal();
-		if(constant == true )
+		if((constant == true) || (box_hnd.flags & TXT_FLAGS_RES) )
 			return res;
 		if(data != box_hnd.data)
 		{
@@ -638,7 +649,7 @@ RES_CODE get_box(const char * title, CSTRING& data, bool constant)
 				data = box_hnd.data;
 		}
 		else
-			res = RES_OK;
+			res = RES_IDLE;
 	}
 	return res;
 }
