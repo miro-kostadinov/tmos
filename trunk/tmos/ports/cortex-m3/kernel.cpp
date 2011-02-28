@@ -145,7 +145,7 @@ extern "C" void sys_kernel_init( void)
     *(volatile unsigned int*)(TPIU_BASE +0x0F0) = 0x01;	//Selected Pin Protocol Register
     *(volatile unsigned int*)(TPIU_BASE +0x304) = 0x00;	//Formatter and Flush Control Register
     *(volatile unsigned int*)(TPIU_BASE +0x004) = 0x08;	//Current Sync Port Size Register
-    *(volatile unsigned int*)(TPIU_BASE +0x010) = 0x02;	//Async Clock Prescaler Register
+    *(volatile unsigned int*)(TPIU_BASE +0x010) = 0x04;	//Async Clock Prescaler Register
 
     //ITM
 
