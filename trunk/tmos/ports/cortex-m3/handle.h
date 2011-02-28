@@ -140,7 +140,8 @@ struct CHandle {
 	 * @param buf
 	 * @return
 	 */
-	RES_CODE tsk_write(const char * buf) {
+	RES_CODE tsk_write(const char * buf)
+	{
 		return tsk_write(buf, strlen(buf));
 	}
 #if USE_CSTRING
@@ -152,6 +153,7 @@ struct CHandle {
 	RES_CODE tsk_resume_write(const void * buf, unsigned int l);
 
 	RES_CODE tsk_read_write(void *dst, const void *src, unsigned int l);
+	RES_CODE tsk_read_write_locked(void *dst, const void *src, unsigned int l);
 
 	bool tsk_start_command(void * c, void *ptr);
 	RES_CODE tsk_command(void * cmd, void *ptr);
