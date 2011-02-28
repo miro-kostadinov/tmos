@@ -560,6 +560,29 @@ RES_CODE CHandle::tsk_read_write(void *d, const void *s, unsigned int l)
 	return tsk_start_and_wait();
 }
 
+RES_CODE CHandle::tsk_read_write_locked(void *d, const void *s, unsigned int l)
+{
+	while (res >= FLG_SIGNALED)
+	{
+		if(res & (FLG_SIGNALED | FLG_BUSY) )
+		{
+			tsk_get_signal(signal);
+	        res &= ~FLG_SIGNALED;
+	        continue;
+		}
+
+		//handle is closed or with error
+		return res;
+	}
+
+	//handle is idle and open
+	len = l;
+	set_res_cmd(CMD_READ_WRITE|FLAG_LOCK);
+	dst.as_voidptr = d;
+	src.as_voidptr = (void*)s;
+	return tsk_start_and_wait();
+}
+
 /**
  * Start command
  * @param c
