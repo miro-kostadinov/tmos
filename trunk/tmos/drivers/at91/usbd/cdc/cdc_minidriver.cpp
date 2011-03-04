@@ -97,7 +97,7 @@ void cdc_thread(USBD_INFO drv_info, uint8_t bInterfaceNb)
 
     /* Initialize serial port function */
     CDCDSerialPort_Initialize(
-                      &cdcdSerialDriver, drv_info->usbdDriver,
+                      &cdcdSerialDriver, &drv_info->drv_data->usbdDriver,
                       (CDCDSerialPortEventHandler)CDCDSerial_EventHandler,
                       0,
                       bInterfaceNb, 2);
@@ -198,20 +198,13 @@ TASK_DECLARE_STATIC(cdc_task, "CDCT", (TASK_FUNCTION)cdc_thread, 130, 150); //mi
 */
 //CDCDSerialDriver cdcdSerialDriver;
 
-extern const USBDDriverDescriptors cdcdSerialDriverDescriptors;
 
-
-void usb_install_minidrv_cdc(USBD_INFO drv_info)
+WEAK_C void usb_install_minidrv(USBD_INFO drv_info)
 {
-   /* Initialize the standard driver */
-	USBDDriver_Initialize(drv_info->usbdDriver,
-			&cdcdSerialDriverDescriptors,
-					  0); /* Multiple settings for interfaces not supported */
 
 	//passing the parameters
+	usr_task_init_static(&cdc_task_desc, true);
 	cdc_task.sp->r0.as_voidptr = (void*)drv_info;
 	cdc_task.sp->r1.as_int	= CDCDSerialDriver_CC_INTERFACE;
-//	cdc_task.R[2].as_voidptr = (void*)&cdcdSerialDriverDescriptors;
-	usr_task_init_static(&cdc_task_desc, true);
 
 }
