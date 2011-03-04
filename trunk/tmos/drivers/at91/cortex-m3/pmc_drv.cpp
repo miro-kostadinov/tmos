@@ -115,7 +115,9 @@ void sys_SetNewClock(PMC_INFO drv_info, unsigned int new_clk)
 		while(!(pPMC->PMC_SR & PMC_SR_MCKRDY));
 
 		// we are now using main/slow source, so we can set the prescaler
-		pPMC->PMC_MCKR = new_clk & PMC_MCKR_PRES_Msk;
+		temp &= ~PMC_MCKR_PRES_Msk;
+		temp |= new_clk & PMC_MCKR_PRES_Msk;
+		pPMC->PMC_MCKR = temp;
 		//JTAG can get lost now...
 
 		//prescaller change may not be completed
