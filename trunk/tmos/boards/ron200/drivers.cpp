@@ -19,6 +19,10 @@
 #include <dacc_drv.h>
 #include <usbd_drv.h>
 #include <key2_drv.h>
+#include <ssc_drv.h>
+#include <gui_drv.h>
+#include <lcd_ST7565S.h>
+#include <cdc_descriptors.h>
 
 const char restart_on_exception =0;
 
@@ -186,26 +190,26 @@ extern "C" const PMC_DRIVER_INFO pmc_driver =
 
 	//PCK = 12000000 * (7+1) / 2  = 48 MHz
 	//PCK = 12000000 * (7+1) / 1  = 96 MHz
-//	CKGR_PLLAR_STUCKTO1 | CKGR_PLLAR_MULA(7) | CKGR_PLLAR_PLLACOUNT(0x3f)
-//		| CKGR_PLLAR_DIVA(1),
+	CKGR_PLLAR_STUCKTO1 | CKGR_PLLAR_MULA(7) | CKGR_PLLAR_PLLACOUNT(0x3f)
+		| CKGR_PLLAR_DIVA(2),
 
 
 	//PCK = 12000000 * (15+1) / 3 = 64 MHz
-	CKGR_PLLAR_STUCKTO1 | CKGR_PLLAR_MULA(15) | CKGR_PLLAR_PLLACOUNT(0x3f)
-		| CKGR_PLLAR_DIVA(3),
+//	CKGR_PLLAR_STUCKTO1 | CKGR_PLLAR_MULA(15) | CKGR_PLLAR_PLLACOUNT(0x3f)
+//		| CKGR_PLLAR_DIVA(3),
 
 
 
 	{
 		32768,		//freq for slow clk
 		MHz(12),	// freq for main clk
-		MHz(64),	//freq for PLLA
+		MHz(48),	//freq for PLLA
 		MHz(96)		//freq for PLLB
 	},
 
 
-	PMC_MCKR_CSS_MAIN_CLK | PMC_MCKR_PRES_CLK
-//	PMC_MCKR_CSS_PLLA_CLK | PMC_MCKR_PRES_CLK
+//	PMC_MCKR_CSS_MAIN_CLK | PMC_MCKR_PRES_CLK
+	PMC_MCKR_CSS_PLLA_CLK | PMC_MCKR_PRES_CLK
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -276,6 +280,31 @@ const USART_DRIVER_INFO usart1_driver =
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		(22) SSC DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SSC_DRIVER_DATA_STRU ssc_driver_data;
+
+const SSC_DRIVER_INFO ssc_driver =
+{
+	{
+		DRIVER_INFO_STUB,
+		(DRV_ISR)SSC_ISR,
+		(DRV_DCR)SSC_DCR,
+		(DRV_DSR)SSC_DSR,
+		SSC_IRQn,
+		DRV_PRIORITY_KERNEL,
+		ID_SSC
+	},
+	SSC,
+	&ssc_driver_data,
+	{ //GPIO_STRU		LCD_SCL LCD_SI
+		PIO_PA16 | PIO_PA17,
+		PIOMODE_PER,
+		PORT_A
+	},
+};
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		(29) ADC DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ADC_DRIVER_DATA_STRU adc_driver_data;
@@ -319,7 +348,7 @@ const DACC_DRIVER_INFO dacc_driver =
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		(34) USB DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-USBD_DRIVER_DATA_STRU usb_driver_data;
+USBD_DRIVER_DATA usb_driver_data;
 
 const USBD_DRIVER_INFO usb_driver =
 {
@@ -333,7 +362,8 @@ const USBD_DRIVER_INFO usb_driver =
 		ID_UDP
 	},
 	UDP,
-	&usb_driver_data
+	&usb_driver_data,
+	&cdcdSerialDriverDescriptors
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -359,8 +389,98 @@ const KEY2_DRIVER_INFO key2_driver =
 		PIOMODE_IER | PIOMODE_IFER,
 		PORT_A
 	},
+	{ //key codes
+		PIO_PA11,
+		PIO_PA25,
+		PIO_PA26
+	}
 };
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		(36) GUI DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+const GPIO_STRU PIN_BACKLIGHT =
+{
+	PIO_PA13,
+	PIOMODE_OER,
+	PORT_A
+};
+
+const GPIO_STRU PIN_LCD_RST =
+{
+	PIO_PA24,
+	PIOMODE_OER,
+	PORT_A
+};
+
+const GPIO_STRU PIN_BLCD_A0 =
+{
+	PIO_PA15,
+	PIOMODE_OER,
+	PORT_A
+};
+
+const GPIO_STRU PIN_LCD_CS =
+{
+	PIO_PA23,
+	PIOMODE_OER,
+	PORT_A
+};
+
+const GPIO_STRU PIN_LCD_SCL =
+{
+	PIO_PA16,
+	PIOMODE_OER,
+	PORT_A
+};
+
+const GPIO_STRU PIN_LCD_SI =
+{
+	PIO_PA17,
+	PIOMODE_OER,
+	PORT_A
+};
+
+PIN_DESC lcdpins[] =
+{
+	&PIN_BACKLIGHT,
+	&PIN_LCD_RST,
+	&PIN_BLCD_A0,
+	&PIN_LCD_CS,
+	&PIN_LCD_SCL,
+	&PIN_LCD_SI
+};
+
+const SSC_MODE_STRU lcd_mode_stru =
+{
+	{ //GPIO_STRU LCD_CS
+		PIO_PA23 ,
+		PIOMODE_OER,
+		PORT_A
+	},
+    2000000		//MHz
+};
+
+CHandle lcd_hnd(SSC_IRQn, &lcd_mode_stru);
+ST7565S lcd_module(128, 32, &lcd_hnd, lcdpins);
+
+GUI_DRIVER_DATA gui_drv_data;
+
+GUI_DRIVER_INFO gui_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			DEFAULT_DRIVER_ISR,
+			(DRV_DCR)GUI_DCR,
+			(DRV_DSR)GUI_DSR,
+			GUI_DRV_INDX,
+			DRV_PRIORITY_KERNEL,
+			0
+		},
+		&gui_drv_data,
+		&lcd_module
+};
 
 signed char const DRV_RESET_FIRST_TABLE[] =
 {
@@ -395,7 +515,7 @@ char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".ExceptionVe
 	1+ (char * const)&DefaultDriver, // 19 TWI 0
 	1+ (char * const)&DefaultDriver, // 20 TWI 1
 	1+ (char * const)&DefaultDriver, // 21 SPI
-	1+ (char * const)&DefaultDriver, // 22 SSC
+	1+ (char * const)&ssc_driver,	 // 22 SSC
 	1+ (char * const)&DefaultDriver, // 23 Timer Counter 0
 	1+ (char * const)&DefaultDriver, // 24 Timer Counter 1
 	1+ (char * const)&DefaultDriver, // 25 Timer Counter 2
@@ -407,8 +527,9 @@ char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".ExceptionVe
 	1+ (char * const)&DefaultDriver, // 31 PWM
 	1+ (char * const)&DefaultDriver, // 32 CRC Calculation Unit
 	1+ (char * const)&DefaultDriver, // 33 Analog Comparator
-	1+ (char * const)&DefaultDriver, // 34 USB Device Port
+	1+ (char * const)&usb_driver, 	 // 34 USB Device Port
 	1+ (char * const)&key2_driver,	 // 35 Key2 driver
+	1+ (char * const)&gui_driver,	 // 36 Key2 driver
    NULL				//null terminated list
 };
 
