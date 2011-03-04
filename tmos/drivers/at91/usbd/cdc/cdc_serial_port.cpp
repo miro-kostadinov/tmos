@@ -256,11 +256,20 @@ void CDCDSerialPort_Initialize(CDCDSerialPort * pCdcd,
     /* Initialize Abstract Control Model attributes */
     pCdcd->bControlLineState = 0;
     pCdcd->wSerialState      = 0;
-    CDCLineCoding_Initialize(&(pCdcd->lineCoding),
-                             115200,
-                             CDCLineCoding_ONESTOPBIT,
-                             CDCLineCoding_NOPARITY,
-                             8);
+
+
+//    CDCLineCoding_Initialize(&(pCdcd->lineCoding),
+//                             115200,
+//                             CDCLineCoding_ONESTOPBIT,
+//                             CDCLineCoding_NOPARITY,
+//                             8);
+
+    CDCLineCoding *lineCoding = &pCdcd->lineCoding;
+    lineCoding->dwDTERate = 115200;
+    lineCoding->bCharFormat = CDCLineCoding_ONESTOPBIT;
+    lineCoding->bParityType = CDCLineCoding_NOPARITY;
+    lineCoding->bDataBits = 8;
+
 }
 
 ///**

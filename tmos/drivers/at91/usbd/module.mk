@@ -15,7 +15,7 @@ local_h_src-y 	:=
 
 local_cpp_src-y	+= usbd_drv.cpp USBD_.cpp USBDDriver.cpp USBDescriptors.cpp
 
-local_h_src-y 	+= usbd_drv.h
+local_h_src-y 	+= usbd_drv.h USBDDriver.h USBRequests.h USBDescriptors.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

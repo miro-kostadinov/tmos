@@ -14,6 +14,7 @@
 #include <platform_drv.h>
 #include "USBRequests.h"
 #include <USBDescriptors.h>
+#include <cmsis_cpp.h>
 
 /** Bit mask for both banks of the UDP_CSR register. */
 #define UDP_CSR_RXDATA_BK      (UDP_CSR_RX_DATA_BK0 | UDP_CSR_RX_DATA_BK1)
@@ -174,7 +175,14 @@ static HANDLE UDP_EndOfTransfer(Endpoint *endpoint, unsigned int status)
 	{
 		TRACE1_USB_DEBUG("EoT ");
 		endpoint->pending = hnd->next;
-		usr_HND_SET_STATUS(hnd, status);
+		if (__get_CONTROL() & 2)
+		{
+			usr_HND_SET_STATUS(hnd, status);
+		}
+		else
+		{
+			svc_HND_SET_STATUS(hnd, status);
+		}
 	}
 
 	return hnd;
@@ -184,7 +192,7 @@ static HANDLE UDP_EndOfTransfer(Endpoint *endpoint, unsigned int status)
     Function: UDP_DisableEndpoints
         Disables all endpoints of the UDP peripheral except Control endpoint 0.
 */
-static void UDP_DisableEndpoints(USBD_DRIVER_DATA drv_data)
+static void UDP_DisableEndpoints(USBD_DRIVER_DATA* drv_data)
 {
     Endpoint *endpoint;
     unsigned int eptnum;
@@ -525,7 +533,7 @@ static void UDP_EndpointHandler(Udp* pUDP, Endpoint *pEndpoint, uint8_t bEndpoin
     Function: UDP_ResetEndpoints
         Resets all the endpoints of the UDP peripheral.
 */
-static void USBD_ResetEndpoints(USBD_DRIVER_DATA drv_data)
+static void USBD_ResetEndpoints(USBD_DRIVER_DATA* drv_data)
 {
     Endpoint *endpoint;
     unsigned int eptnum;
@@ -643,7 +651,7 @@ void USBD_Stall(HANDLE hnd)
 void USBD_SUSPEND(USBD_INFO drv_info)
 {
 	TRACE1_USB_DEBUG("\r\nSUSPEND!\r\n");
-    USBD_DRIVER_DATA drv_data = drv_info->drv_data;
+    USBD_DRIVER_DATA* drv_data = drv_info->drv_data;
 
     // Reset endpoint structures
     USBD_ResetEndpoints(drv_data);
@@ -753,7 +761,7 @@ static void USBD_HAL_Activate(USBD_INFO drv_info)
 
 void USBD_POWERON(USBD_INFO drv_info)
 {
-	USBD_DRIVER_DATA drv_data = drv_info->drv_data;
+	USBD_DRIVER_DATA* drv_data = drv_info->drv_data;
 
     TRACE1_USB_DEBUG("\r\nPOWERON!\r\n");
     if( drv_data->deviceState < USBD_STATE_POWERED)
@@ -777,7 +785,7 @@ void USBD_POWERON(USBD_INFO drv_info)
 	}
 }
 
-
+/*
 bool try_cancel_transfer(HANDLE * list, HANDLE hnd)
 {
 	HANDLE prev, next;
@@ -803,11 +811,11 @@ bool try_cancel_transfer(HANDLE * list, HANDLE hnd)
     }
     return 0;
 }
-
+*/
 
 void USBD_DCR(USBD_INFO drv_info, unsigned int reason, HANDLE param)
 {
-    USBD_DRIVER_DATA drv_data = drv_info->drv_data;
+    USBD_DRIVER_DATA* drv_data = drv_info->drv_data;
 	Udp* pUDP = drv_info->hw_base;
 
 	switch(reason)
@@ -831,6 +839,9 @@ void USBD_DCR(USBD_INFO drv_info, unsigned int reason, HANDLE param)
 
 		    // Configure the pull-up on D+ and disconnect it
 		    USB_PULLUP_DISABLE(drv_info);
+
+		    USBDDriver_Initialize(&drv_data->usbdDriver, drv_info->drv_descriptors, 0);
+		    usb_install_minidrv(drv_info);
 
             break;
 
@@ -1011,7 +1022,7 @@ void USBD_DSR(USBD_INFO drv_info, HANDLE hnd)
 	unsigned char eptnum;
     Endpoint *endpoint;
     HANDLE prev;
-    USBD_DRIVER_DATA drv_data = drv_info->drv_data;
+    USBD_DRIVER_DATA* drv_data = drv_info->drv_data;
 
 	hnd->next = NULL;
 	hnd->res = RES_BUSY;
@@ -1105,7 +1116,7 @@ void USBD_DSR(USBD_INFO drv_info, HANDLE hnd)
 void USBD_ISR(USBD_INFO drv_info)
 {
 	unsigned int status;
-    USBD_DRIVER_DATA drv_data = drv_info->drv_data;
+    USBD_DRIVER_DATA* drv_data = drv_info->drv_data;
 	Udp* pUDP = drv_info->hw_base;
 
     // Get interrupt status

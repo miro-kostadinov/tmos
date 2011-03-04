@@ -42,7 +42,7 @@
  *         Includes
  *----------------------------------------------------------------------------*/
 
-//#include <stdint.h>
+#include <USBDDriver.h>
 
 /*----------------------------------------------------------------------------
  *         Definitions
@@ -268,6 +268,8 @@ typedef struct _CDCAbstractControlManagementDescriptor {
 /*----------------------------------------------------------------------------
  *         Functions
  *----------------------------------------------------------------------------*/
+
+extern const USBDDriverDescriptors cdcdSerialDriverDescriptors;
 
 
 /**@}*/

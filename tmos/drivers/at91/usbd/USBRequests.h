@@ -291,6 +291,154 @@ typedef struct {
 #pragma pack()             /* IAR */
 #endif                     /* IAR */
 
+/**
+ * Returns the request code of the given request.
+ * \param request Pointer to a USBGenericRequest instance.
+ * \return Request code.
+ * \sa "USB Request Codes"
+ */
+//extern uint8_t USBGenericRequest_GetRequest(
+//    const USBGenericRequest *request);
+#define USBGenericRequest_GetRequest(r)  ((r)->bRequest)
+
+
+/**
+ * Returns the wValue field of the given request.
+ * \param request - Pointer to a USBGenericRequest instance.
+ * \return Request value.
+ */
+//extern uint16_t USBGenericRequest_GetValue(
+//    const USBGenericRequest *request);
+#define	USBGenericRequest_GetValue(r) 	((r)->wValue)
+
+
+/**
+ * Returns the expected length of the data phase following a request.
+ * \param request Pointer to a USBGenericRequest instance.
+ * \return Length of data phase.
+ */
+//extern uint16_t USBGenericRequest_GetLength(
+//    const USBGenericRequest *request);
+#define USBGenericRequest_GetLength(r) 	((r)->wLength)
+
+
+/**
+ * Returns the wIndex field of the given request.
+ * \param request Pointer to a USBGenericRequest instance.
+ * \return Request index;
+ */
+//extern uint16_t USBGenericRequest_GetIndex(
+//    const USBGenericRequest *request);
+#define USBGenericRequest_GetIndex(r)	((r)->wIndex)
+
+/**
+ * Returns the direction of the data transfer following the given request.
+ * \param request Pointer to a USBGenericRequest instance.
+ * \return Transfer direction.
+ * \sa "USB Request Directions"
+ */
+//extern uint8_t USBGenericRequest_GetDirection(
+//    const USBGenericRequest *request);
+#define USBGenericRequest_GetDirection(r) \
+	(((r)->bmRequestType & 0x80)?USBGenericRequest_IN:USBGenericRequest_OUT)
+
+
+/**
+ * Returns the type of the descriptor requested by the host given the
+ * corresponding GET_DESCRIPTOR request.
+ * \param request Pointer to a USBGenericDescriptor instance.
+ * \return Type of the requested descriptor.
+ */
+//extern uint8_t USBGetDescriptorRequest_GetDescriptorType(
+//    const USBGenericRequest *request);
+#define USBGetDescriptorRequest_GetDescriptorType(r) \
+	((USBGenericRequest_GetValue(r) >> 8) & 0xFF)
+
+
+/**
+ * Returns the index of the requested descriptor, given the corresponding
+ * GET_DESCRIPTOR request.
+ * \param request Pointer to a USBGenericDescriptor instance.
+ * \return Index of the requested descriptor.
+ */
+//extern uint8_t USBGetDescriptorRequest_GetDescriptorIndex(
+//    const USBGenericRequest *request);
+#define USBGetDescriptorRequest_GetDescriptorIndex(r) \
+	(USBGenericRequest_GetValue(r) & 0xFF)
+
+
+
+/**
+ * Indicates which interface is targetted by a GET_INTERFACE or
+ * SET_INTERFACE request.
+ * \param request Pointer to a USBGenericRequest instance.
+ * \return Interface number.
+ */
+//extern uint8_t USBInterfaceRequest_GetInterface(
+//    const USBGenericRequest *request);
+#define USBInterfaceRequest_GetInterface(r) \
+	((USBGenericRequest_GetIndex(r) & 0xFF))
+
+
+/**
+ * Indicates the new alternate setting that the interface targetted by a
+ * SET_INTERFACE request should use.
+ * \param request Pointer to a USBGenericRequest instance.
+ * \return New active setting for the interface.
+ */
+//extern uint8_t USBInterfaceRequest_GetAlternateSetting(
+//    const USBGenericRequest *request);
+#define USBInterfaceRequest_GetAlternateSetting(r) \
+	(USBGenericRequest_GetValue(r) & 0xFF)
+
+
+/**
+ * Returns the endpoint number targetted by a given request.
+ * \param request Pointer to a USBGenericRequest instance.
+ * \return Endpoint number.
+ */
+//extern uint8_t USBGenericRequest_GetEndpointNumber(
+//    const USBGenericRequest *request);
+#define USBGenericRequest_GetEndpointNumber(r) \
+	(USBGenericRequest_GetIndex(r) & 0xF)
+
+
+/**
+ * Returns the intended recipient of a given request.
+ * \param request Pointer to a USBGenericRequest instance.
+ * \return Request recipient.
+ * \sa "USB Request Recipients"
+ */
+//extern uint8_t USBGenericRequest_GetRecipient(
+//    const USBGenericRequest *request);
+#define USBGenericRequest_GetRecipient(r) \
+	((r)->bmRequestType & 0xF)
+
+
+/**
+ *  Returns the feature selector of a given CLEAR_FEATURE or SET_FEATURE
+ *  request.
+ *  \param request Pointer to a USBGenericRequest instance.
+ *  \return Feature selector.
+ */
+//extern uint8_t USBFeatureRequest_GetFeatureSelector(
+//    const USBGenericRequest *request);
+#define USBFeatureRequest_GetFeatureSelector(r) \
+	USBGenericRequest_GetValue(r)
+
+
+/**
+ * Returns the number of the configuration that should be set in response
+ * to the given SET_CONFIGURATION request.
+ * \param request Pointer to a USBGenericRequest instance.
+ * \return Number of the requested configuration.
+ */
+//extern uint8_t USBSetConfigurationRequest_GetConfiguration(
+//    const USBGenericRequest *request);
+#define USBSetConfigurationRequest_GetConfiguration(r) \
+	USBGenericRequest_GetValue(r)
+
+
 /*---------------------------------------------------------------------------
  *      Exported Functions
  *---------------------------------------------------------------------------*/
@@ -298,52 +446,10 @@ typedef struct {
 extern uint8_t USBGenericRequest_GetType(
     const USBGenericRequest *request);
 
-extern uint8_t USBGenericRequest_GetRequest(
-    const USBGenericRequest *request);
-
-extern uint16_t USBGenericRequest_GetValue(
-    const USBGenericRequest *request);
-
-extern uint16_t USBGenericRequest_GetIndex(
-    const USBGenericRequest *request);
-
-extern uint16_t USBGenericRequest_GetLength(
-    const USBGenericRequest *request);
-
-extern uint8_t USBGenericRequest_GetEndpointNumber(
-    const USBGenericRequest *request);
-
-extern uint8_t USBGenericRequest_GetRecipient(
-    const USBGenericRequest *request);
-
-extern uint8_t USBGenericRequest_GetDirection(
-    const USBGenericRequest *request);
-
-
-extern uint8_t USBGetDescriptorRequest_GetDescriptorType(
-    const USBGenericRequest *request);
-
-extern uint8_t USBGetDescriptorRequest_GetDescriptorIndex(
-    const USBGenericRequest *request);
-
 
 extern uint8_t USBSetAddressRequest_GetAddress(
     const USBGenericRequest *request);
 
-
-extern uint8_t USBSetConfigurationRequest_GetConfiguration(
-    const USBGenericRequest *request);
-
-
-extern uint8_t USBInterfaceRequest_GetInterface(
-    const USBGenericRequest *request);
-
-extern uint8_t USBInterfaceRequest_GetAlternateSetting(
-    const USBGenericRequest *request);
-
-
-extern uint8_t USBFeatureRequest_GetFeatureSelector(
-    const USBGenericRequest *request);
 
 extern uint8_t USBFeatureRequest_GetTestSelector(
     const USBGenericRequest *request);

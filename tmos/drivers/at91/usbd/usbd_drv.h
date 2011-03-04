@@ -2,6 +2,18 @@
  * @ingroup	 drv_at91
  * @defgroup DRV_AT91_USBD USB Device Port (UDP) Driver
  * Interface for USB Device Port (UDP) driver.
+ *
+ * AT91 initialization:
+ *
+ * main.c > CDCDSerialDriver_Initialize(&cdcdSerialDriverDescriptors);
+ *
+ * 	CDCDSerialDriver_Initialize(pDescriptors):
+ * 		USBDDriver_Initialize(pUsbd, pDescriptors, 0);
+ * 		CDCDSerial_Initialize(pUsbd, CDCDSerialDriver_CC_INTERFACE);
+ * 			 CDCDSerialPort_Initialize()
+ * 		USBD_Init();
+ *
+ *
  * @{
  *
  *
@@ -78,52 +90,49 @@ typedef enum _USBRC {
 #define USBD_STATE_CONFIGURED	5 //!< A valid configuration has been selected.
 
 
-extern "C"
+struct Endpoint
 {
-
-	struct Endpoint
-	{
-		unsigned char state;
-		unsigned char bank;
-		unsigned short size;
+	unsigned char state;
+	unsigned char bank;
+	unsigned short size;
 //		HANDLE receiving;
 //		HANDLE sending;
 //		HANDLE control;
-		HANDLE pending;
-	};
+	HANDLE pending;
+};
 
-	struct USBD_DRIVER_DATA_STRU
-	{
-	    unsigned char	deviceState;	//!< USBD_STATE_XXX
-	    unsigned char	previousDeviceState;
-	    Endpoint		endpoints[CHIP_USB_NUMENDPOINTS]; //!< Endpoint structures
-	};
-	/** USBD DRIVER DATA pointer type */
-	typedef USBD_DRIVER_DATA_STRU* USBD_DRIVER_DATA;
+struct USBD_DRIVER_DATA
+{
+	unsigned char	deviceState;	//!< USBD_STATE_XXX
+	unsigned char	previousDeviceState;
+	Endpoint		endpoints[CHIP_USB_NUMENDPOINTS]; //!< Endpoint structures
+	USBDDriver		usbdDriver;		//!< USBD driver
+};
 
-	struct DRV_USBD_MODE_STRU
-	{
-	    unsigned int	baudrate;	//!< baudrate for the mode
-	};
-	/** UART Mode */
-	typedef const DRV_USBD_MODE_STRU * DRV_USBD_MODE;
+struct DRV_USBD_MODE_STRU
+{
+	unsigned int	baudrate;	//!< baudrate for the mode
+};
+/** UART Mode */
+typedef const DRV_USBD_MODE_STRU * DRV_USBD_MODE;
 
-	struct USBD_DRIVER_INFO
-	{
-		DRIVER_INFO_Type 	info;		//!< standard driver info
-		Udp *				hw_base;	//!< pointer to the hardware peripheral
-		USBD_DRIVER_DATA 	drv_data;	//!< pointer to the driver data
-		USBDDriver*			usbdDriver;	//!< pointer to USBD driver
-	};
-	/** USART Driver Info */
-	typedef const USBD_DRIVER_INFO* USBD_INFO;
+struct USBD_DRIVER_INFO
+{
+	DRIVER_INFO_Type 	info;		//!< standard driver info
+	Udp *				hw_base;	//!< pointer to the hardware peripheral
+	USBD_DRIVER_DATA* 	drv_data;	//!< pointer to the driver data
+	const USBDDriverDescriptors * drv_descriptors;
+};
+/** USART Driver Info */
+typedef const USBD_DRIVER_INFO* USBD_INFO;
 
-	void USBD_DCR(USBD_INFO drv_info, unsigned int reason, HANDLE param);
-	void USBD_DSR(USBD_INFO drv_info, HANDLE hnd);
-	void USBD_ISR(USBD_INFO drv_info );
-
-}
+void USBD_DCR(USBD_INFO drv_info, unsigned int reason, HANDLE param);
+void USBD_DSR(USBD_INFO drv_info, HANDLE hnd);
+void USBD_ISR(USBD_INFO drv_info );
 
 void USBD_Stall(HANDLE hnd);
+
+extern "C" void usb_install_minidrv(USBD_INFO drv_info);
+
 
 #endif /* USB_DRV_H_ */

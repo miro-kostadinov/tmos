@@ -124,23 +124,22 @@ typedef struct _USBDDriver {
  *         Exported functions
  *------------------------------------------------------------------------------*/
 
-extern USBDDriver *USBD_GetDriver(void);
-extern void USBDDriver_Initialize(
-    USBDDriver *pDriver,
-    const USBDDriverDescriptors *pDescriptors,
-    uint8_t *pInterfaces);
-extern USBConfigurationDescriptor* USBDDriver_GetCfgDescriptors(
-    USBDDriver * pDriver,
-    uint8_t cfgNum);
-extern void USBDDriver_RequestHandler(
-    USBDDriver *pDriver,
-    const USBGenericRequest *pRequest, HANDLE hnd);
-extern uint8_t USBDDriver_IsRemoteWakeUpEnabled(const USBDDriver *pDriver);
-extern uint8_t USBDDriver_returnOTGFeatures(const USBDDriver *pDriver);
-extern void USBDDriver_clearOTGFeatures(USBDDriver *pDriver);
 
-extern void USBDDriverCallbacks_ConfigurationChanged(uint8_t cfgnum);
-extern void USBDDriverCallbacks_InterfaceSettingChanged(uint8_t interface, uint8_t setting);
+void USBDDriver_Initialize(USBDDriver *pDriver,
+		const USBDDriverDescriptors *pDescriptors, uint8_t *pInterfaces);
+
+USBConfigurationDescriptor* USBDDriver_GetCfgDescriptors(USBDDriver * pDriver,
+		uint8_t cfgNum);
+
+void USBDDriver_RequestHandler(USBDDriver *pDriver,
+		const USBGenericRequest *pRequest, HANDLE hnd);
+
+uint8_t USBDDriver_IsRemoteWakeUpEnabled(const USBDDriver *pDriver);
+uint8_t USBDDriver_returnOTGFeatures(const USBDDriver *pDriver);
+void USBDDriver_clearOTGFeatures(USBDDriver *pDriver);
+void USBDDriverCallbacks_ConfigurationChanged(uint8_t cfgnum);
+void USBDDriverCallbacks_InterfaceSettingChanged(uint8_t interface,
+		uint8_t setting);
 
 /**@}*/
 

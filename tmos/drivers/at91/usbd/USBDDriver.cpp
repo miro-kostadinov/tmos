@@ -41,6 +41,31 @@
 #include <USBDescriptors.h>
 #include <drivers.h>
 
+
+
+/**
+ * Indicates that the current configuration of the device has changed.
+ * \param cfgnum  New device configuration index.
+ */
+WEAK void USBDDriverCallbacks_ConfigurationChanged(uint8_t cfgnum)
+{
+	TRACE_USB("cfgChanged%d ", cfgnum);
+}
+
+/**
+ * Notifies of a change in the currently active setting of an interface.
+ * \param interface  Number of the interface whose setting has changed.
+ * \param setting  New interface setting.
+ */
+WEAK void USBDDriverCallbacks_InterfaceSettingChanged(
+    uint8_t interface,
+    uint8_t setting)
+{
+	TRACE_USB("ifSettingChanged%d.%d ", interface, setting);
+}
+
+
+
 /**
  * Configures the device by setting it into the Configured state and
  * initializing all endpoints.
@@ -408,8 +433,8 @@ void USBDDriver_RequestHandler(
     TRACE1_USB_DEBUG("Std ");
 
     /* Check request code */
-    switch (USBGenericRequest_GetRequest(pRequest)) {
-
+    switch (USBGenericRequest_GetRequest(pRequest))
+    {
         case USBGenericRequest_GETDESCRIPTOR:
         	TRACE1_USB_DEBUG("gDesc ");
 
@@ -580,4 +605,33 @@ void USBDDriver_RequestHandler(
                   USBGenericRequest_GetRequest(pRequest));
         USBD_Stall(hnd);
     }
+}
+
+/**
+ * Initializes a USBDDriver instance with a list of descriptors. If
+ * interfaces can have multiple alternate settings, an array to store the
+ * current setting for each interface must be provided.
+ * \param pDriver  Pointer to a USBDDriver instance.
+ * \param pDescriptors  Pointer to a USBDDriverDescriptors instance.
+ * \param pInterfaces  Pointer to an array for storing the current alternate
+ *                     setting of each interface (optional).
+ */
+void USBDDriver_Initialize(
+    USBDDriver *pDriver,
+    const USBDDriverDescriptors *pDescriptors,
+    uint8_t *pInterfaces)
+{
+
+    pDriver->cfgnum = 0;
+	pDriver->isRemoteWakeUpEnabled = 0;
+
+	pDriver->pDescriptors = pDescriptors;
+	pDriver->pInterfaces = pInterfaces;
+
+	/* Initialize interfaces array if not null */
+
+	if (pInterfaces != 0)
+	{
+		memclr(pInterfaces, sizeof(pInterfaces));
+	}
 }
