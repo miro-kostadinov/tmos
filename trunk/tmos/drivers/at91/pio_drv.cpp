@@ -129,8 +129,10 @@ bool pio_open(HANDLE hnd, PIN_DESC pins)
 
 static void piohnd_read(HANDLE hnd, Pio* pPio)
 {
+	PIN_DESC pins = (PIN_DESC)hnd->mode.as_voidptr;
+
 	hnd->mode1 = 0;
-	*hnd->dst.as_intptr = pPio->PIO_PDSR & hnd->mode.as_int;
+	*hnd->dst.as_intptr = pPio->PIO_PDSR & pins->mask;
 	svc_HND_SET_STATUS(hnd, RES_SIG_OK);
 }
 
@@ -154,7 +156,9 @@ void PIO_DCR(PIO_INFO drv_info, unsigned int reason, HANDLE param)
                 hnd = drv_data->waiting;
                 while(hnd)
                 {
-                    if((unsigned int)param & hnd->mode.as_int )
+                	PIN_DESC pins = (PIN_DESC)hnd->mode.as_voidptr;
+
+                    if((unsigned int)param & pins->mask)
                     {
                         if( hnd->mode1 & PIOHND_WAITING )
                         {
@@ -225,10 +229,12 @@ void PIO_DCR(PIO_INFO drv_info, unsigned int reason, HANDLE param)
 		  	break;
 
 	    case DCR_CANCEL:
+	    {
+        	PIN_DESC pins = (PIN_DESC)param->mode.as_voidptr;
 			((HANDLE)param)->mode1 = 0;
-			*((HANDLE)param)->dst.as_intptr = pPio->PIO_PDSR & ((HANDLE)param)->mode.as_int;
-//            piohnd_read((HANDLE)param, pPio);
-		  	break;
+			*((HANDLE)param)->dst.as_intptr = pPio->PIO_PDSR & pins->mask;
+	    }
+	    break;
 
 
 	    case DCR_PARAMS:
@@ -252,13 +258,14 @@ void PIO_DCR(PIO_INFO drv_info, unsigned int reason, HANDLE param)
 void PIO_DSR(PIO_INFO drv_info, HANDLE hnd)
 {
 	Pio* pPio = drv_info->hw_base;
+	PIN_DESC pins = (PIN_DESC)hnd->mode.as_voidptr;
 
     if(hnd->len == 4)
     {
         if(hnd->cmd & FLAG_WRITE)
         {
-            pPio->PIO_OWER = hnd->mode.as_int;
-            pPio->PIO_OWDR = ~hnd->mode.as_int;
+            pPio->PIO_OWER = pins->mask;
+            pPio->PIO_OWDR = ~pins->mask;
             pPio->PIO_ODSR = * hnd->src.as_intptr;
     		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
     		return;
@@ -270,7 +277,7 @@ void PIO_DSR(PIO_INFO drv_info, HANDLE hnd)
 				if(!(hnd->mode1 & PIOHND_INTPENDING))
 				{
 					hnd->mode1 = PIOHND_WAITING;
-					pPio->PIO_IER = hnd->mode.as_int;
+					pPio->PIO_IER = pins->mask;
 					hnd->res = RES_BUSY;
 					return;
 				}
