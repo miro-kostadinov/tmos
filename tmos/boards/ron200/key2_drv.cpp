@@ -73,7 +73,7 @@ void key_drv_thread(KEY2_DRIVER_INFO* drv_info)
         } while(new_keys ^ drv_info->pins.mask);
 
 		//wait for any key...
-        keyrd_hnd.tsk_read_locked(&new_keys, KEY_COUNT);
+        keyrd_hnd.tsk_read_locked(&new_keys, 4);
 
     }
 }

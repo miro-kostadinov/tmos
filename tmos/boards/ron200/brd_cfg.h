@@ -16,6 +16,10 @@
 #define KEY_UP_CODE			0x40
 #define KEY_PRESREP_MASK	0x7F
 
+#define KEY_OK				0x00
+#define KEY_UP				0x01
+#define KEY_DOWN			0x02
+
 // GUI messages
 #define WM_USER				0x01
 #define WM_DRAW				0x02
