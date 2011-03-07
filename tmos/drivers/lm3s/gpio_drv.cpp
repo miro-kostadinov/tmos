@@ -86,8 +86,9 @@ void PIO_Cfg_List(PIN_DESC * list )
 /** this is the SPI mode to reach extended pins
  * should be declared somewhere (usually in the application)
  */
+#if ( USE_GPIO_EXPANDER !=	0)
 extern const SPI_DRIVER_MODE sreg_mode_stru;
-
+#endif
 /** bad implementation! */
 extern GPIO_DRIVER_DATA gpio_data;
 
@@ -99,6 +100,7 @@ void PIO_Write(PIN_DESC Pin, unsigned char val )
 	    ASSERT(SYSCTL->RCGC2&(1<<Pin.port_num));
 		Port_Base->DATA_Bits[Pin.pin_pattern] = val;
 	}
+#if ( USE_GPIO_EXPANDER !=	0)
 	else
 	{
 		CHandle sreg;
@@ -106,6 +108,7 @@ void PIO_Write(PIN_DESC Pin, unsigned char val )
 		gpio_data.sreg_val = (gpio_data.sreg_val & (~Pin.pin_pattern))|(val & Pin.pin_pattern);
 		sreg.tsk_write(&gpio_data.sreg_val, 1 );
 	}
+#endif
 }
 
 unsigned char PIO_Read(PIN_DESC Pin)
