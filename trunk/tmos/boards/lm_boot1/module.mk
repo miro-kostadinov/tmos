@@ -71,6 +71,8 @@ USE_POLARSSL	?=n
 # AES TMOS
 USE_AES_TMOS	?=y
 
+# GPIO output expander (shift register)
+USE_GPIO_EXPANDER ?=y
 
 
 ##########################################################################

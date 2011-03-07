@@ -24,5 +24,6 @@
 #define USE_SHA_1			0
 #define USE_POLARSSL		0
 #define USE_AES_TMOS		1
+#define USE_GPIO_EXPANDER 	1
 
 #endif /* BRD_CFG_H_ */
