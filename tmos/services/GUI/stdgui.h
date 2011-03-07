@@ -1,5 +1,5 @@
-#ifndef MENUS_H
-#define MENUS_H
+#ifndef STDGUI_H
+#define STDGUI_H
 
 #ifndef GUI_LANGUAGES
 #define GUI_LANGUAGES	2
