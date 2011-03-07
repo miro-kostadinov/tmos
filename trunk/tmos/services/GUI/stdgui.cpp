@@ -465,13 +465,17 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 				lcd->draw_vline(1+12, 1+12+15, lcd->size_x-1);
 				lcd->draw_hline(0, lcd->size_x-1, 1+12+15);
 	    		lcd->set_xy_all(lcd->size_y -23, ALL_RIGHT);
+#ifdef KEY_C
 	    		if(box->flags & TXT_FLAGS_RES)
 	    			lcd->draw_text("CANCEL");
 	    		else
 	    			lcd->draw_text("DEL");
+#endif
 			}
+#ifdef KEY_OK
     		lcd->set_xy_all(lcd->size_y -23, ALL_LEFT);
     		lcd->draw_text("OK");
+#endif
     	}
     	else
     	{
