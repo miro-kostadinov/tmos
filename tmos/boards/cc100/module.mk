@@ -10,7 +10,7 @@ OUT_NAME	?= cc100
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].
-OPT			?= -O0
+OPT			?= -Os
 
 # Build library/binary/hex. can be [y, n]
 BUILD_LIB	?= y
@@ -68,6 +68,8 @@ USE_SHA_1		?=y
 # GUI
 USE_GUI			?=y
 
+# GPIO output expander (shift register)
+USE_GPIO_EXPANDER ?=y
 
 
 ##########################################################################
