@@ -58,9 +58,12 @@ void PIO_Cfg(PIN_DESC Pin)
 			Port_Base->CR = 0;
 			Port_Base->LOCK = 0;
 		}
-		Port_Base->GPIOPadConfigSet(Pin.pin_pattern,Pin.pad_strength,Pin.pad_type);
-		Port_Base->GPIODirModeSet(Pin.pin_pattern,Pin.pin_dir);
-		Port_Base->GPIOIntTypeSet(Pin.pin_pattern,Pin.pin_int);
+		if(Pin.pin_pattern)
+		{
+			Port_Base->GPIOPadConfigSet(Pin.pin_pattern,Pin.pad_strength,Pin.pad_type);
+			Port_Base->GPIODirModeSet(Pin.pin_pattern,Pin.pin_dir);
+			Port_Base->GPIOIntTypeSet(Pin.pin_pattern,Pin.pin_int);
+		}
 		if(Pin.pin_mux)
 		{
 			while(!(Pin.pin_pattern&1))
