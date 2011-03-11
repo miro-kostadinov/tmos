@@ -449,23 +449,19 @@ ENDF(	sys_isr_contol		)
 //void usr_trace_str(const char *buf);
 FUNC(	usr_trace_str		)
 
-				movs			r1, #ITM_BASE + (TRACE_PORT * 4)
-				ldrb			r2, [r0]
-				adds			r0, #1
-				cbz				r2, 2f
+				movs			r1, #ITM_BASE
 1:
-				ldrexb			r3, [r1]
-				cmp 			r3, #0
-				ITT				NE
-				strexbne		r3, r2, [r1]
-				cmpne			r3, #1
-				beq				1b
-				ldrb			r2, [r0]
-				adds			r0, #1
-				cmp				r2, #0
-				bne				1b
-
+				ldrb			r2, [r0], #1
+				cbz				r2, 4f
 2:
+				ldrexb			r3, [r1]
+				cbz				r3, 3f
+				strexb			r3, r2, [r1]
+				subs			r0, r3
+				b				1b
+3:
+				b				2b
+4:
 				bx				lr
 
 ENDF(	usr_trace_str		)
