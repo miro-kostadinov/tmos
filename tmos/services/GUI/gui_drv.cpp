@@ -114,6 +114,8 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			    obj = desktop;
                 do
                 {
+                	win->rect.x1 = drv_info->lcd->size_x;
+                	win->rect.y1 = drv_info->lcd->size_y;
                     win->prev = obj;
                     obj = win;
     				win->callback(NULL , WM_INIT);
@@ -215,8 +217,8 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 	    		// WINDOW objects
 				win->rect.x0 = 0;
 				win->rect.y0 = 0;
-				win->rect.x1 = drv_info->lcd->size_x;
-				win->rect.y1 = drv_info->lcd->size_y;
+//				win->rect.x1 = drv_info->lcd->size_x;
+//				win->rect.y1 = drv_info->lcd->size_y;
 	    	}
 	    	win->res = RES_OK;
 	    	break;
