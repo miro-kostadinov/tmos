@@ -138,6 +138,8 @@ CMessageBox* status_box_show(CSTRING& msg);
 
 RES_CODE msg_box(const char *msg);
 RES_CODE msg_box(CSTRING& msg);
+RES_CODE msg_error(CSTRING& msg, int err_code);
+RES_CODE msg_error(const char *msg, int err_code);
 RES_CODE get_box(const char * title, CSTRING& data, bool constant = false);
 RES_CODE get_box(CSTRING& title, CSTRING& data, bool constant = false);
 

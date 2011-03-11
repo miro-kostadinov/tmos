@@ -353,6 +353,16 @@ RES_CODE msg_box(CSTRING& msg)
     return RES_ERROR;
 }
 
+WEAK RES_CODE msg_error(CSTRING& msg, int err_code)
+{
+	return msg_box(msg);
+}
+
+WEAK RES_CODE msg_error(const char *msg, int err_code)
+{
+	return msg_box(msg);
+}
+
 //*----------------------------------------------------------------------------
 //*			get_box
 //*----------------------------------------------------------------------------
