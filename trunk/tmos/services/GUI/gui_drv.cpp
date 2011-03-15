@@ -72,8 +72,12 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	}
 	desktop->next = desktop;
 	desktop->prev = desktop;
+	desktop->rect.x1 = drv_info->lcd->size_x;
+	desktop->rect.y1 = drv_info->lcd->size_y;
 
 	drv_info->lcd->lcd_init((GUI_CB)splashdlg_cb);
+
+
 #if USE_EXCEPTION_RECORD
 	if(!exception_record.CFSR)
 #endif
