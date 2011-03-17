@@ -71,7 +71,7 @@ enum DRIVER_INDEX_t
     ACC_IRQn             = 33, /*!< 33 Analog Comparator (ACC) 				  */
     UDP_IRQn             = 34, /*!< 34 USB Device Port (UDP) 				  */
     KEY_DRV_INDX         = 35, /*!< 35 Key Driver			 				  */
-    GUI_DRV_INDX         = 36, /*!< 36 GUI Driver			 				  */
+//    GUI_DRV_INDX         = 36, /*!< 36 GUI Driver			 				  */
     INALID_DRV_INDX	           /*!<  invalid	                              */
 };
 

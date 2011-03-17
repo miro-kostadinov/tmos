@@ -20,8 +20,8 @@
 #include <usbd_drv.h>
 #include <key2_drv.h>
 #include <ssc_drv.h>
-#include <gui_drv.h>
-#include <lcd_ST7565S.h>
+//#include <gui_drv.h>
+//#include <lcd_ST7565S.h>
 #include <cdc_descriptors.h>
 
 const char restart_on_exception =0;
@@ -400,6 +400,7 @@ const KEY2_DRIVER_INFO key2_driver =
 // 		(36) GUI DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+/*
 const GPIO_STRU PIN_BACKLIGHT =
 {
 	PIO_PA13,
@@ -481,7 +482,7 @@ GUI_DRIVER_INFO gui_driver =
 		&gui_drv_data,
 		&lcd_module
 };
-
+*/
 signed char const DRV_RESET_FIRST_TABLE[] =
 {
 	SysTick_IRQn, INALID_DRV_INDX
@@ -491,7 +492,7 @@ signed char const DRV_RESET_FIRST_TABLE[] =
 // All drivers in the system must be listed in this table
 // To open a driver, only the driver index is required (defined in drivers.h)
 // The driver index must match with the driver position in this table
-char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".ExceptionVectors")))  =
+char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".DriverTable")))  =
 {
 	1+ (char * const)&supc_driver, 	 // 0 Supply Controller
 	1+ (char * const)&rstc_driver,	 // 1 Reset Controller
@@ -529,7 +530,7 @@ char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".ExceptionVe
 	1+ (char * const)&DefaultDriver, // 33 Analog Comparator
 	1+ (char * const)&usb_driver, 	 // 34 USB Device Port
 	1+ (char * const)&key2_driver,	 // 35 Key2 driver
-	1+ (char * const)&gui_driver,	 // 36 Key2 driver
+//	1+ (char * const)&gui_driver,	 // 36 Key2 driver
    NULL				//null terminated list
 };
 

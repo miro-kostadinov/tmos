@@ -32,7 +32,7 @@
 #define USE_TMOS_STDLIB		1
 #define USE_TIME			0
 #define USE_TMOS_STDIO		1
-#define USE_GUI				1
+#define USE_GUI				0
 
 
 /*----------------------------------------------------------------------------*/
