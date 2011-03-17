@@ -73,6 +73,7 @@ typedef enum _USBRC {
 #define UDP_ENDPOINT_IDLE           2 //!< Endpoint is idle (i.e. ready for transmission).
 #define UDP_ENDPOINT_SENDING        4 //!< Endpoint is sending data.
 #define UDP_ENDPOINT_RECEIVING      8 //!< Endpoint is receiving data.
+#define UDP_ENDPOINT_RECEIVING_OFF 16 //!< Endpoint is receiving data (rxfifo_cnt).
 #define UDP_ENDPOINT_BUSY		(UDP_ENDPOINT_SENDING | UDP_ENDPOINT_RECEIVING)
 
 /*   Constants: USB device API return values */
@@ -95,6 +96,7 @@ struct Endpoint
 	unsigned char state;
 	unsigned char bank;
 	unsigned short size;
+	unsigned int rxfifo_cnt;
 //		HANDLE receiving;
 //		HANDLE sending;
 //		HANDLE control;

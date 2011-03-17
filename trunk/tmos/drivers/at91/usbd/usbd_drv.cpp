@@ -269,7 +269,10 @@ static bool UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size)
     {
     	hnd = pEndpoint->pending;
     	if(!hnd)
+    	{
+    		pEndpoint->rxfifo_cnt = size;
     		return true;
+    	}
 
     	dwRead = size;
     	if(dwRead > hnd->len)
@@ -290,12 +293,53 @@ static bool UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size)
     	{
     		pEndpoint->pending = hnd->next;
 			usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+
     	}
     }
     return false;
 
 }
 
+static bool svc_UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size, HANDLE hnd)
+{
+	size_t dwRead;
+    unsigned char *dst;
+
+    TRACE_USB("%d ", size);
+
+
+    while(size)
+    {
+    	if(!hnd)
+    	{
+    		pEndpoint->rxfifo_cnt = size;
+    		return true;
+    	}
+
+    	dwRead = size;
+    	if(dwRead > hnd->len)
+    	{
+    		dwRead = hnd->len;
+    	}
+    	hnd->len -= dwRead;
+    	size -= dwRead;
+
+    	dst = hnd->dst.as_byteptr;
+    	while(dwRead--)
+    	{
+    	    *dst++ = *src;
+    	}
+    	hnd->dst.as_byteptr = dst;
+
+    	if(!hnd->len)
+    	{
+    		hnd=NULL;
+
+    	}
+    }
+    return false;
+
+}
 /**
  * Clears the correct reception flag (bank 0 or bank 1) of an endpoint
  * \param bEndpoint Index of endpoint
@@ -442,9 +486,10 @@ static void UDP_EndpointHandler(Udp* pUDP, Endpoint *pEndpoint, uint8_t bEndpoin
                 {
                     pUDP->UDP_IDR |= 1 << bEndpoint;
                 }
-                pEndpoint->state = UDP_ENDPOINT_IDLE;
+            	pEndpoint->state = UDP_ENDPOINT_RECEIVING_OFF;
             }
-	        UDP_ClearRxFlag(&pUDP->UDP_CSR[bEndpoint], pEndpoint, bEndpoint);
+            else
+               UDP_ClearRxFlag(&pUDP->UDP_CSR[bEndpoint], pEndpoint, bEndpoint);
         }
     }
 
@@ -1000,6 +1045,7 @@ void USBD_DCR(USBD_INFO drv_info, unsigned int reason, HANDLE param)
 
 			    if(!param->list_remove(endpoint->pending))
 					    	break;
+			    svc_HND_SET_STATUS(param, RES_SIG_IDLE);
 			    endpoint->state = UDP_ENDPOINT_IDLE;
 	        }
         	break;
@@ -1087,7 +1133,23 @@ void USBD_DSR(USBD_INFO drv_info, HANDLE hnd)
 	    // Return if the endpoint is not in IDLE state
 	    if (endpoint->state != UDP_ENDPOINT_IDLE)
 	    {
-			svc_HND_SET_STATUS(hnd, RES_ERROR);
+	    	if(endpoint->state == UDP_ENDPOINT_RECEIVING_OFF)
+	    	{
+	    		Udp* pUDP = drv_info->hw_base;
+	            if (svc_UDP_ReadPayload(endpoint, &pUDP->UDP_FDR[eptnum], endpoint->rxfifo_cnt, hnd))
+	            {
+	            	svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+	            }
+	            else
+	            {
+	                UDP_ClearRxFlag(&pUDP->UDP_CSR[eptnum], endpoint, eptnum);
+	            	endpoint->state = UDP_ENDPOINT_RECEIVING;
+	            	svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
+	            }
+
+	    	}
+	    	else
+	    		svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 			return;
 	    }
 
