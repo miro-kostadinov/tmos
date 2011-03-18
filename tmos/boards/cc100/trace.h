@@ -150,9 +150,13 @@
 #if TRACE_USB_LEVEL >= TRACE_LEVEL_DEBUG
 #	define TRACE_USB_DEBUG(...)		TRACE_DEBUG(__VA_ARGS__)
 #	define TRACE1_USB_DEBUG(str)	TRACE1_DEBUG(str)
+#	define TRACELN_USB(...)			TRACELN(__VA_ARGS__)
+#	define TRACELN1_USB(...)		TRACELN1(__VA_ARGS__)
 #else
 #	define TRACE_USB_DEBUG(...)
 #	define TRACE1_USB_DEBUG(str)
+#	define TRACELN_USB(str,...)
+#	define TRACELN1_USB(str)
 #endif
 
 #if TRACE_USB_LEVEL >= TRACE_LEVEL_WARNING
