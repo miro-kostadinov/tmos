@@ -1151,7 +1151,7 @@ void USBD_DSR(USBD_INFO drv_info, HANDLE hnd)
 	            else
 	            {
 	                UDP_ClearRxFlag(&pUDP->UDP_CSR[eptnum], endpoint, eptnum);
-	            	endpoint->state = UDP_ENDPOINT_RECEIVING;
+	            	endpoint->state = UDP_ENDPOINT_IDLE;
 	            	svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
 	            }
 
