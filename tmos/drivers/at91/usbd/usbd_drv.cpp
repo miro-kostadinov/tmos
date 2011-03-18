@@ -391,7 +391,7 @@ static void UDP_EndpointHandler(Udp* pUDP, Endpoint *pEndpoint, uint8_t bEndpoin
 
     status = pUDP->UDP_CSR[bEndpoint];
 
-    TRACE_USB("E%d ", bEndpoint);
+    TRACELN_USB("E%d ", bEndpoint);
     TRACE_USB("st:0x%X ", status);
 
     // Handle interrupts
@@ -457,20 +457,20 @@ static void UDP_EndpointHandler(Udp* pUDP, Endpoint *pEndpoint, uint8_t bEndpoin
                 && ((status & UDP_CSR_RXBYTECNT_Msk) == 0))
             {
                 // Acknowledge the data and finish the current transfer
-            	TRACE_USB("Ack ");
+            	TRACE1_USB("Ack ");
                 UDP_ClearRxFlag(&pUDP->UDP_CSR[bEndpoint], pEndpoint, bEndpoint);
             }
             // Check if the data has been STALLed
             else if ((status & UDP_CSR_FORCESTALL) != 0)
             {
                 // Discard STALLed data
-            	TRACE_USB("Disc ");
+            	TRACE1_USB("Disc ");
                 UDP_ClearRxFlag(&pUDP->UDP_CSR[bEndpoint], pEndpoint, bEndpoint);
             }
             // NAK the data
             else
             {
-            	TRACE_USB("Nak ");
+            	TRACE1_USB("Nak ");
                 pUDP->UDP_IDR |= 1 << bEndpoint;
             }
         }
@@ -485,11 +485,19 @@ static void UDP_EndpointHandler(Udp* pUDP, Endpoint *pEndpoint, uint8_t bEndpoin
                 if ((status & UDP_CSR_EPTYPE_Msk) != UDP_CSR_EPTYPE_CTRL)
                 {
                     pUDP->UDP_IDR |= 1 << bEndpoint;
+                	pEndpoint->state = UDP_ENDPOINT_RECEIVING_OFF;
                 }
-            	pEndpoint->state = UDP_ENDPOINT_RECEIVING_OFF;
+                else
+                {
+                    UDP_ClearRxFlag(&pUDP->UDP_CSR[bEndpoint], pEndpoint, bEndpoint);
+                    pEndpoint->state = UDP_ENDPOINT_IDLE;
+                }
             }
             else
-               UDP_ClearRxFlag(&pUDP->UDP_CSR[bEndpoint], pEndpoint, bEndpoint);
+            {
+            	pEndpoint->state = UDP_ENDPOINT_IDLE;
+            	UDP_ClearRxFlag(&pUDP->UDP_CSR[bEndpoint], pEndpoint, bEndpoint);
+            }
         }
     }
 
@@ -497,7 +505,7 @@ static void UDP_EndpointHandler(Udp* pUDP, Endpoint *pEndpoint, uint8_t bEndpoin
     // STALL sent
     if ((status & UDP_CSR_STALLSENTISOERROR) != 0)
     {
-    	TRACE_USB("Sta ");
+    	TRACE1_USB("Sta ");
 
         CLEAR_CSR(&pUDP->UDP_CSR[bEndpoint], UDP_CSR_STALLSENTISOERROR);
 
@@ -527,7 +535,7 @@ static void UDP_EndpointHandler(Udp* pUDP, Endpoint *pEndpoint, uint8_t bEndpoin
     // SETUP packet received
     if ((status & UDP_CSR_RXSETUP) != 0)
     {
-    	TRACE_USB("Stp ");
+    	TRACE1_USB("Stp ");
 
         // If a transfer was pending, complete it
         // Handles the case where during the status phase of a control write
@@ -1092,7 +1100,7 @@ void USBD_DSR(USBD_INFO drv_info, HANDLE hnd)
 	if (hnd->cmd & FLAG_WRITE)
     {
 		eptnum = hnd->mode0 = hnd->mode.as_int >>8;
-	    TRACE_USB("Write%d(%d) ", eptnum , hnd->len);
+	    TRACELN_USB("Write%d(%d) ", eptnum , hnd->len);
 		endpoint = &(drv_data->endpoints[eptnum]);
 	    if( (prev=endpoint->pending) )
 	    {
@@ -1153,7 +1161,7 @@ void USBD_DSR(USBD_INFO drv_info, HANDLE hnd)
 			return;
 	    }
 
-	    TRACE_USB("Read%d(%d) ", eptnum, hnd->len);
+	    TRACELN_USB("Read%d(%d) ", eptnum, hnd->len);
 
 	    // Endpoint enters Receiving state
 	    endpoint->state = UDP_ENDPOINT_RECEIVING;
@@ -1195,14 +1203,14 @@ void USBD_ISR(USBD_INFO drv_info)
     /* Return immediately if there is no interrupt to service */
     if (status == 0)
     {
-        TRACE_USB(".\n\r");
+        TRACE1_USB(".\n\r");
         return;
     }
 
     /* Resume (Wakeup) */
     if ((status & (UDP_ISR_WAKEUP | UDP_ISR_RXRSM)) != 0)
     {
-        TRACE_USB("Res ");
+        TRACELN1_USB("Res ");
         /* Clear and disable resume interrupts */
         pUDP->UDP_ICR = UDP_ICR_WAKEUP | UDP_ICR_RXRSM | UDP_ICR_RXSUSP;
         pUDP->UDP_IDR = UDP_IDR_WAKEUP | UDP_IDR_RXRSM;
@@ -1230,7 +1238,7 @@ void USBD_ISR(USBD_INFO drv_info)
     if (status == UDP_ISR_RXSUSP)
     {
 
-        TRACE_USB("Susp ");
+        TRACELN1_USB("Susp ");
         /* Enable wakeup */
         pUDP->UDP_IER = UDP_IER_WAKEUP | UDP_IER_RXRSM;
         /* Acknowledge interrupt */
@@ -1259,7 +1267,7 @@ void USBD_ISR(USBD_INFO drv_info)
     else if ((status & UDP_ISR_ENDBUSRES) != 0)
     {
 
-        TRACE_USB("EoBRes ");
+        TRACELN1_USB("EoBRes ");
         /* Flush and enable the Suspend interrupt */
         pUDP->UDP_ICR = UDP_ICR_WAKEUP | UDP_ICR_RXRSM | UDP_ICR_RXSUSP;
         pUDP->UDP_IER = UDP_IER_RXSUSP;
@@ -1297,7 +1305,7 @@ void USBD_ISR(USBD_INFO drv_info)
 
                 if (status != 0) {
 
-                	TRACE_USB("\n\r  - ");
+                	TRACE1_USB("\n\r  - ");
                 }
             }
             eptnum++;
