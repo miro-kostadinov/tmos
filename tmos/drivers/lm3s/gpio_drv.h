@@ -284,7 +284,7 @@ typedef PIN_DESC_u PIN_DESC;
 #define PD_USB_ANALOG					(PD_PAD_STRENGTH_2MA|PD_PAD_TYPE_ANALOG|PD_DIR_IN)
 #define PD_I2C_PIN						(PD_PAD_STRENGTH_2MA|PD_PAD_TYPE_OD_WPU|PD_DIR_HW)
 #define PD_PWM_PIN						(PD_PAD_STRENGTH_2MA|PD_PAD_TYPE_STD|PD_DIR_HW)
-#define PD_SSI_PIN						(PD_PAD_STRENGTH_2MA|PD_PAD_TYPE_STD|PD_DIR_HW)
+#define PD_SSI_PIN						(PD_PAD_STRENGTH_8MA_SC|PD_PAD_TYPE_STD|PD_DIR_HW)
 
 //*****************************************************************************
 //
