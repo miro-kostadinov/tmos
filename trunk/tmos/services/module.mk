@@ -32,6 +32,7 @@ local_modules-y :=
 
 local_modules-$(USE_POLARSSL)	+= PolarSSL
 local_modules-$(USE_GUI)		+= GUI
+local_modules-$(USE_LWIP_1_4)	+= lwip-1.4.0.rc1
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
