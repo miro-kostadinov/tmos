@@ -14,7 +14,7 @@ local_c_src-y 	:=
 
 local_cpp_src-y	:= eefc.cpp pmc.cpp rtc.cpp rtt.cpp wdt.cpp
 
-local_h_src-y 	:= platform_cpp.h platform_inc.h  
+local_h_src-y 	:= platform_cpp.h platform_inc.h pmc.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
