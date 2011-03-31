@@ -85,13 +85,51 @@ void PIO_CfgPeriph(PIN_DESC pins)
 	get_pio_base(pins)->PIO_PDR = pins->mask;	// Set in PIO mode
 }
 
-void PIO_CfgPeriphB(PIN_DESC pins)
+
+/**
+ * \brief Configures one or more pin(s) of a PIO controller as being controlled by
+ * peripheral A.
+ *
+ * \param pins  PIN DESCRIPTION
+ */
+void PIO_CfgPeriphA(PIN_DESC pins)
 {
-	Pio* pPio = get_pio_base(pins);
+	Pio* pio = get_pio_base(pins);
 	unsigned int mask = pins->mask;
 
-    pPio->PIO_ABCDSR[1] = mask;
-	pPio->PIO_PDR = mask; 		// Set in PIO mode
+    pio->PIO_ABCDSR[0] &= ~mask;
+    pio->PIO_ABCDSR[1] &= ~mask;
+    pio->PIO_PDR = mask;
+}
+
+void PIO_CfgPeriphB(PIN_DESC pins)
+{
+	Pio* pio = get_pio_base(pins);
+	unsigned int mask = pins->mask;
+
+    pio->PIO_ABCDSR[0] |= mask ;
+    pio->PIO_ABCDSR[1] &= ~mask;
+    pio->PIO_PDR = mask;
+}
+
+void PIO_CfgPeriphC(PIN_DESC pins)
+{
+	Pio* pio = get_pio_base(pins);
+	unsigned int mask = pins->mask;
+
+    pio->PIO_ABCDSR[0] &= ~mask;
+    pio->PIO_ABCDSR[1] |= mask;
+    pio->PIO_PDR = mask;
+}
+
+void PIO_CfgPeriphD(PIN_DESC pins)
+{
+	Pio* pio = get_pio_base(pins);
+	unsigned int mask = pins->mask;
+
+    pio->PIO_ABCDSR[0] |= mask;
+    pio->PIO_ABCDSR[1] |= mask;
+    pio->PIO_PDR = mask;
 }
 
 void PIO_CfgOD(PIN_DESC pins)
@@ -182,8 +220,19 @@ void PIO_DCR(PIO_INFO drv_info, unsigned int reason, HANDLE param)
 
                 if(reason & PIOMODE_PER)
                 {
-                    if(reason & PIOMODE_BSR)
-                        pPio->PIO_ABCDSR[1] = pins->mask;
+                    if(reason & PIOMODE_BSR1)
+                        pPio->PIO_ABCDSR[0] |= pins->mask;
+                    else
+                        pPio->PIO_ABCDSR[0] &= ~pins->mask;
+
+                    if(reason & PIOMODE_BSR2)
+                        pPio->PIO_ABCDSR[1] |= pins->mask;
+                    else
+                        pPio->PIO_ABCDSR[1] &= ~pins->mask;
+
+                    pPio->PIO_PDR = pins->mask;
+                } else
+                {
                     pPio->PIO_PER = pins->mask;
                 }
 

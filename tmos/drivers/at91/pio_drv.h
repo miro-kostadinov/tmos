@@ -43,7 +43,8 @@
 #define PIOMODE_IER		0x10
 #define PIOMODE_MDER	0x20
 #define PIOMODE_PPUER	0x40
-#define PIOMODE_BSR		0x80
+#define PIOMODE_BSR1	0x80
+#define PIOMODE_BSR2	0x100
 
 struct GPIO_STRU
 {
@@ -59,7 +60,10 @@ void PIO_CfgOutput1(PIN_DESC pins);
 void PIO_CfgInput(PIN_DESC pins);
 void PIO_CfgInputPull(PIN_DESC pins);
 void PIO_CfgPeriph(PIN_DESC pins);
+void PIO_CfgPeriphA(PIN_DESC pins);
 void PIO_CfgPeriphB(PIN_DESC pins);
+void PIO_CfgPeriphC(PIN_DESC pins);
+void PIO_CfgPeriphD(PIN_DESC pins);
 void PIO_CfgOD(PIN_DESC pins);
 void PIO_SetOutput(PIN_DESC pins);
 void PIO_ClrOutput(PIN_DESC pins);
