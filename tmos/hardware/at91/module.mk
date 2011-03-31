@@ -16,7 +16,8 @@ local_h_src-y 	:=
 local_cpp_src-y	+= pio.cpp spi.cpp usart.cpp ssc.cpp family.cpp
 
 local_h_src-y 	+= fam_cpp.h fam_inc.h pio.h uart.h at91_types.h usart.h usbd.h
- 
+local_h_src-y 	+= pwmc.h
+
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
 c_sources  	+= $(call changepath,$(local_c_src-y))
