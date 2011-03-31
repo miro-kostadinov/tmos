@@ -16,6 +16,7 @@ local_h_src-y 	:=
 local_cpp_src-y	+= acc.cpp adc.cpp
 
 local_h_src-y 	+= series_inc.h series_cpp.h series_map.h acc.h adc.h dacc.h
+local_h_src-y 	+= matrix.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
