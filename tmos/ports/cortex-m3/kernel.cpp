@@ -71,8 +71,10 @@ extern "C" void HardFaultIsr(void)
     exception_record.cur_task = (unsigned int)CURRENT_TASK;
     if( ((unsigned int)CURRENT_TASK > SRAM_BASE) && ((char*)CURRENT_TASK < &end) )
     {
-    	exception_record.task_name = *(unsigned int*)(void *)CURRENT_TASK->name;
-    } else
+    	exception_record.task_name = CURRENT_TASK->name[0]
+				+ (CURRENT_TASK->name[1] << 8) + (CURRENT_TASK->name[2] << 16)
+				+ (CURRENT_TASK->name[3] << 24);
+	} else
     {
     	exception_record.task_name = 0;
     }
