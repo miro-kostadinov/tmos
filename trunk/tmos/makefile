@@ -92,8 +92,8 @@ listings		=$(subst .o,.lst,$(objects))
 dependencies	=$(wildcard $(addsuffix .dep,$(objects)))
 
 #===============	1.D TOOLCHAIN COMMANDS  	===============#
-#TOOLCHAIN_PREFIX	= arm-none-eabi-
-TOOLCHAIN_PREFIX	= arm-elf-
+TOOLCHAIN_PREFIX	= arm-none-eabi-
+#TOOLCHAIN_PREFIX	= arm-elf-
 
 CC		= $(TOOLCHAIN_PREFIX)gcc
 AS		= $(TOOLCHAIN_PREFIX)as
@@ -120,7 +120,7 @@ GCCFLAGS +=-fno-dwarf2-cfi-asm
 
 CFLAGS +=$(addprefix -D,$(cdefines))
 CFLAGS +=$(addprefix -I,$(inc_dirs))
-CFLAGS +=-Wall -Wcast-align -Wimplicit 
+CFLAGS +=-Wall -Wcast-align  
 CFLAGS +=-Wpointer-arith -Wswitch
 CFLAGS +=-Wredundant-decls -Wreturn-type -Wshadow -Wunused
 CFLAGS +=-Wa,-adhlns=$(subst $(suffix $@),.lst,$@)
@@ -258,7 +258,7 @@ $(LIBNAME).a: $(objects)
 	$(OBJCOPY) -O -hex $< $@
 
 # Create final output file (.bin) from ELF output file.
-%.bin: %.elf
+$(PROJECT).bin: %.bin: %.elf
 	@echo
 	@echo Creating load file for Flash: $@
 	$(OBJCOPY) -O binary $< $@
