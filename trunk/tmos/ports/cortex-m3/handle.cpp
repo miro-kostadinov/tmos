@@ -90,7 +90,7 @@ bool CHandle::tsk_open(DRIVER_INDEX index, const void * m)
 	{
 		unsigned int sig;
 
-	    *(unsigned int *)(void*)&drv_index = index;
+	    drv_index = index;
 	    mode.as_voidptr = (void*)m;
 	    client.task = CURRENT_TASK;
 
