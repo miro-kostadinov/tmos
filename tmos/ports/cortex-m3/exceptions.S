@@ -137,7 +137,7 @@ FUNC(	sys_reset_handler	)
 
 p_main_task:
 				.word 		main_task  //Pointer for PEEDI thread suppport
-ENDF(	sys_call_static_ctors	)
+ENDF(	sys_reset_handler	)
 
 //*----------------------------------------------------------------------------
 //*			call Class constructors
@@ -156,7 +156,7 @@ FUNC(	sys_call_static_ctors	)
 				blx			r2
 				b			1b
 
-ENDF(	sys_reset_handler	)
+ENDF(	sys_call_static_ctors	)
 
 //*----------------------------------------------------------------------------
 //*			NMI handler
