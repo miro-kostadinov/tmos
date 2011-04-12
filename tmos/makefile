@@ -187,7 +187,11 @@ include module.mk
 ifneq "$(MAKECMDGOALS)" "clean"
 _MKDIRS := $(shell mkdir $(OUT_DIR) 2>/dev/null)
 ifeq ($(BUILD_LIB),y)
-_MKDIRS := $(shell mkdir $(OUT_DIR)include 2>/dev/null)
+#_MKDIRS := $(shell mkdir $(OUT_DIR)include 2>/dev/null)
+_MKDIRS := $(shell for d in $(dir $(h_objects)); \
+	do \
+		mkdir -p $$d; \
+	done)
 endif
 _MKDIRS := $(shell for d in $(modules); \
 	do \
@@ -407,7 +411,7 @@ $(h_objects) : $(OUT_DIR)include/%.h :  %.h
 	@echo Copying headers: 
 	cp $< $@
 
-vpath %.h $(dir $(h_sources))
+vpath %.h $(dir $(h_sources)) $(inc_dirs)
 
 
 # Don't try to MAKE the following extentions:
