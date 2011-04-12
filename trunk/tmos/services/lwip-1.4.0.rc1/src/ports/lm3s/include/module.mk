@@ -1,6 +1,6 @@
 ##########################################################################
 #
-#	Make include for lwIP/src/include/ipv6
+#	Make include for lwIP/src/ports/lm3s/include
 #	
 #   Platform: MPOS rev.2.3
 #
@@ -14,6 +14,7 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
+lwip_h_src	 	+= arch/cc.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -21,12 +22,12 @@ c_sources  	+= $(call changepath,$(local_c_src-y))
 cpp_sources += $(call changepath,$(local_cpp_src-y))
 h_sources  	+= $(call changepath,$(local_h_src-y))
 
-
 #add current directory to include path
-#inc_dirs += $(subdirectory)
+inc_dirs += $(subdirectory)
 
 #submodules
-local_modules-y := lwip 
+local_modules-y :=	
+
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
