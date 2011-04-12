@@ -8,6 +8,8 @@
 #ifndef MCU_INC_H_
 #define MCU_INC_H_
 
+#define TARGET_IS_TEMPEST_RC1	1		// Tempest rev C1
+
 #define RAM_SIZE 			0x18000
 #define FLASH_PAGE_SIZE		0x400
 
