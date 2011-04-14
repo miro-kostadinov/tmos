@@ -97,4 +97,10 @@ sys_arch_unprotect(sys_prot_t lev)
 }
 #endif /* SYS_LIGHTWEIGHT_PROT */
 
+/** Returns the current time in milliseconds,
+ * may be the same as sys_jiffies or at least based on it. */
+u32_t sys_now(void)
+{
+	return CURRENT_TIME;
+}
 
