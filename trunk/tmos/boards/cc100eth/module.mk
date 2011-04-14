@@ -6,7 +6,7 @@
 #
 #-------------------------------------------------------------------------------
 
-OUT_NAME	?= cc100
+OUT_NAME	?= cc100eth
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].
@@ -20,7 +20,7 @@ BUILD_HEX	?= n
 # Hardware selection
 CFG_CORE 	?= cortex-m3
 CFG_FAMILY	?= lm3s
-CFG_MCU 	?= LM3S5B91_C1
+CFG_MCU 	?= LM3S9B90_C3
 
 
 # Debugging format.
@@ -33,8 +33,9 @@ DEBUG 		?= dwarf-2
 
 
 # Select Target board
-#BOARD_TYPE  = HW_VER_10
-BOARD_TYPE  ?= HW_VER_11
+#BOARD_TYPE  ?= HW_VER_10
+#BOARD_TYPE  ?= HW_VER_11
+BOARD_TYPE  ?= HW_VER_31
 
 
 #===============	TMOS settings		===============#
@@ -71,6 +72,9 @@ USE_GUI			?=y
 # GPIO output expander (shift register)
 USE_GPIO_EXPANDER ?=y
 
+# Ethernet
+USE_LWIP_1_4	?=y
+
 
 ##########################################################################
 
@@ -82,7 +86,7 @@ local_h_src-y 	:=
 
 local_c_src-y 	+= swi_tab.c
  
-local_h_src-y 	+= brd_cfg.h brd_cpp.h swi_tab.h trace.h
+local_h_src-y 	+= brd_cfg.h brd_cpp.h swi_tab.h trace.h lwipopts.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

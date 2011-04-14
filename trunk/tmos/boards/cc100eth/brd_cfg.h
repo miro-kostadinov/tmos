@@ -62,6 +62,7 @@
 #define USE_SHA_1			1
 #define USE_GUI				1
 #define	USE_GPIO_EXPANDER 	1
+#define USE_LWIP_1_4		1
 
 #define USE_EXCEPTION_RECORD 1
 
