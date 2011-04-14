@@ -1,11 +1,5 @@
-/**
- * @file - stellarisif.h
- * Prototypes for Stellaris Ethernet interface.
- *
- */
-
 /*
- * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
+ * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
  * All rights reserved. 
  * 
  * Redistribution and use in source and binary forms, with or without modification, 
@@ -35,21 +29,10 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
+#ifndef __ARCH_SYS_ARCH_H__
+#define __ARCH_SYS_ARCH_H__
 
-/*
- * Copyright (c) 2008 Luminary Micro, Inc.
- *
- */
+typedef int                 sys_prot_t;
 
+#endif /* __ARCH_SYS_ARCH_H__ */
 
-#ifndef __STELLARISIF_H__
-#define __STELLARISIF_H__
-
-
-#if NETIF_DEBUG
-void stellarisif_debug_print(struct pbuf *p);
-#else
-#define stellarisif_debug_print(p)
-#endif /* NETIF_DEBUG */
-
-#endif // __STELLARISIF_H__
