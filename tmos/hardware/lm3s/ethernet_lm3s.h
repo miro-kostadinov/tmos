@@ -173,6 +173,8 @@ extern unsigned long EthernetPHYRead(MAC_Type* mac, unsigned char ucRegAddr);
 extern void EthernetPHYPowerOff(MAC_Type* mac);
 extern void EthernetPHYPowerOn(MAC_Type* mac);
 
+#define MAC0       ((MAC_Type *)MAC_BASE)	//!< doc!
+
 
 //*****************************************************************************
 //
