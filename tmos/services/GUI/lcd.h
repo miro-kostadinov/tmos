@@ -35,6 +35,7 @@
 #define PIX_LIGHTMAGENTA	PIX_RGB(0x0F, 0x08, 0x0E)
 #define PIX_YELLOW			PIX_RGB(0x1F, 0x3F, 0x00)
 #define PIX_WHITE			PIX_RGB(0x1F, 0x3F, 0x1F)
+#define PIX_ORANGE			PIX_RGB(0x1F, 0x1F, 0x00)
 
 #define BKLT_PIN_INDX	0
 #define RST_PIN_INDX	1

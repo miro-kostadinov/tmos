@@ -23,8 +23,8 @@ struct SPFD5414D: public LCD_MODULE
 	;
 
 	//virtual functions
-	void lcd_init(GUI_CB splash);
-	void lcd_reset();
+	virtual void lcd_init(GUI_CB splash);
+	virtual void lcd_reset();
 	void draw_bitmap(unsigned int x0, unsigned int y0,
 			const unsigned char* src, unsigned int width, unsigned int rows);
 	void draw_hline(unsigned int x0, unsigned int x1, unsigned int y);
@@ -62,7 +62,7 @@ struct TFT_CHECK
 	}
 	;
 
-	void delay();
+	void delay(unsigned int time = 0);
 	void tft_write(unsigned int value);
 	unsigned int tft_read();
 
