@@ -21,7 +21,7 @@
 static void SPI_SET_CLOCK(SPI_DRIVER_INFO* drv_info)
 {
 	//TO DO: calculate the baudrate
-	drv_info->hw_base->CPSR  =10;
+	drv_info->hw_base->CPSR  =2;
 }
 
 // Enable SPI
@@ -48,7 +48,7 @@ static void SPI_ENABLE(SPI_DRIVER_INFO* drv_info)
 	pSPI = drv_info->hw_base;
     pSPI->CR1 = SSI_CR1_EOT;
 	pSPI->IM = 0;// SSI_RXTO + SSI_RXOR + SSI_TXFF + SSI_RXFF;
-	pSPI->CPSR  =10;
+	pSPI->CPSR  =2;
 	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
 	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
 
