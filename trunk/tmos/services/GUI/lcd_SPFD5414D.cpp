@@ -104,7 +104,6 @@ void SPFD5414D::draw_bitmap(unsigned int x0, unsigned int y0,
 		const unsigned char* src, unsigned int width, unsigned int rows)
 {
 	unsigned int offset=0;
-//	RenderGDIBitmap(disp_buf + (y0>>3) + (x0 * 11), 1<<(y0&7), src, width, rows);
 	if(y0 < frame_y0)
 	{
 		offset = frame_y0 - y0;
@@ -246,11 +245,25 @@ void SPFD5414D::redraw_screen(WINDOW desktop)
 }
 
 
-void TFT_CHECK::delay()
+void TFT_CHECK::delay(unsigned int time)
 {
-	for(int i=0; i<200; i++)
+	if(time)
 	{
-		asm volatile ("nop");
+		unsigned int start_time, elapsed;
+		start_time = CURRENT_TIME;
+		do
+		{
+			elapsed = CURRENT_TIME - start_time;
+			if(elapsed < 0)
+				elapsed += 0x80000000;
+		} while(elapsed < time);
+	}
+	else
+	{
+		for(int i=0; i<200; i++)
+		{
+			asm volatile ("nop");
+		}
 	}
 }
 
@@ -279,6 +292,10 @@ void TFT_CHECK::tft_write( unsigned int value)
 		PIO_SetOutput(pins[SCL_PIN_INDX]);
 		delay();
 	}
+	PIO_ClrOutput(pins[SCL_PIN_INDX]);
+	delay();
+	PIO_SetOutput(pins[SCL_PIN_INDX]);
+	delay();
 	PIO_ClrOutput(pins[SCL_PIN_INDX]);
 	delay();
 }
@@ -315,12 +332,16 @@ unsigned int TFT_CHECK::read_id()
 //    PIO_CfgOutput0(pins[RST_PIN_INDX]);
 //	delay();
 //	PIO_SetOutput(pins[RST_PIN_INDX]);
-	for(res=0; res < 1000; res++)
-		delay();
+//	for(res=0; res < 1000; res++)
+//		delay();
+	delay(150);
     PIO_CfgOutput0(pins[SCL_PIN_INDX]);
 	PIO_CfgOutput0(pins[CSX_PIN_INDX]);
 
 	tft_write(TFT_SLPOUT);
+	PIO_SetOutput(pins[CSX_PIN_INDX]);
+	delay(150);
+	PIO_ClrOutput(pins[CSX_PIN_INDX]);
 	tft_write(TFT_RDDID);
 	res = tft_read();	//2A
 	res <<= 8;
