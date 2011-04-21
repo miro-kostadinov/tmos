@@ -93,8 +93,6 @@
     KEY_DRV_INDX,					//55
     GUI_DRV_INDX,					//56
     FILE_DRV_INDX,					//57
-    ECR_DRV_INDX,					//58
-    SDCARD_DRV_INDX,				//59
     INALID_DRV_INDX	                /*!<  invalid	                         */
 };
 
