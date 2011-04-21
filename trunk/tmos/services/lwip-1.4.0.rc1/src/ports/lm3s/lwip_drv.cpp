@@ -706,9 +706,8 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
         // not been programmed into the device.  Exit the program.
         //
         TRACE1("MAC Address Not Programmed!\n");
-        while(1)
-        {
-        }
+        ulUser0 = 0x00123456;
+        ulUser1 = 0x00123456;
     }
 
     //
