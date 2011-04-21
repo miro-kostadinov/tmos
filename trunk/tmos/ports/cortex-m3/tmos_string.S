@@ -34,9 +34,9 @@
 FUNC(	memcmp		)
 				cbz				r2, 2f
 1:
-				ldrb			r4, [r0], #1
+				ldrb			r12, [r0], #1
 				ldrb			r3, [r1], #1
-				cmp				r4, r3
+				cmp				r12, r3
 				bne				3f
 				subs			r2, #1
 				bne				1b
@@ -44,7 +44,7 @@ FUNC(	memcmp		)
 				movs			r0, #0
   				bx				lr
 3:
-				subs			r0, r4, r3
+				subs			r0, r12, r3
   				bx				lr
 
 ENDF(	memcmp		)
