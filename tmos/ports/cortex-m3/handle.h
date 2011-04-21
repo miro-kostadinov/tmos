@@ -57,8 +57,8 @@ struct CHandle {
 	 * Request driver DCR() call
 	 * @param reason
 	 */
-	void hcontrol(unsigned int volatile reason) {
-		HANDLE _hnd asm("r0") = this;
+	void hcontrol(unsigned int reason) {
+		register HANDLE _hnd asm ("r0") = this;
 		register unsigned int _reason asm("r1") = reason;
 
 		asm volatile ("swi %0"
