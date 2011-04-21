@@ -6,7 +6,7 @@
 #
 #-------------------------------------------------------------------------------
 
-OUT_NAME	?= cc100_int
+OUT_NAME	?= cc100int
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].
