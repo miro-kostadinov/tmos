@@ -35,21 +35,21 @@ ENTRY(	VECTOR_TABLE	)
 
 					.extern			systick_driver
 
-	.word			__stack_svc_end				// The system stack pointer
-	.word			sys_reset_handler			// -3
-	.word			sys_nmi_handler				// -2
-	.word			sys_hard_fault_handler		// -1
-    .word			sys_mpu_handler				// The MPU fault handler
-    .word			sys_bus_fault_handler		// The bus fault handler
-    .word			sys_usage_fault_handler		// The usage fault handler
-    .word			SWI_TABLE					// Reserved	use it to avoid optimization of SWI_TABLE
-    .word			DRV_TABLE					// Reserved
-    .word			0							// Reserved
-    .word			0							// Reserved
-    .word			sys_svc_handler				// SVCall handler
-    .word			sys_debug_handler			// Debug monitor handler
-    .word			0							// Reserved
-    .word			sys_pendsv_handler			// The PendSV handler
+	.word			__stack_svc_end				// 00 The system stack pointer
+	.word			sys_reset_handler			// 04 -3
+	.word			sys_nmi_handler				// 08 -2
+	.word			sys_hard_fault_handler		// 0C -1
+    .word			sys_mpu_handler				// 10 The MPU fault handler
+    .word			sys_bus_fault_handler		// 14 The bus fault handler
+    .word			sys_usage_fault_handler		// 18 The usage fault handler
+    .word			SWI_TABLE					// 1C Reserved	use it to avoid optimization of SWI_TABLE
+    .word			DRV_TABLE					// 20 Reserved
+    .word			0							// 24 Reserved
+    .word			0							// 28 Reserved
+    .word			sys_svc_handler				// 2C SVCall handler
+    .word			sys_debug_handler			// 30 Debug monitor handler
+    .word			0							// 34 Reserved
+    .word			sys_pendsv_handler			// 38 The PendSV handler
 	.word			systick_driver	+1
 
 	// DRV_TABLE is placed here
@@ -68,7 +68,7 @@ FUNC(	sys_reset_handler	)
 
 	// memory intit
 				/* Copy .relocate section  */
-		        ldr     	r0, =_dtors_end_//=_efixed
+		        ldr     	r0, =_efixed
 		        ldr     	r1, =_srelocate
 		        ldr     	r2, =_erelocate
 1:
