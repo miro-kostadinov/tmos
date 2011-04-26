@@ -409,7 +409,7 @@ $(cpp_ti_objects) : $(OUT_DIR)%_cpp.o : %.cpp
 $(h_objects) : $(OUT_DIR)include/%.h :  %.h
 	@echo
 	@echo Copying headers: 
-	cp $< $@
+	cp -p $< $@
 
 vpath %.h $(dir $(h_sources)) $(inc_dirs)
 
