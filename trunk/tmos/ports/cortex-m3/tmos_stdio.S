@@ -143,7 +143,9 @@ _check_type:
 		beq			_print_d
 		cmp			r3, #'u'
 		beq			_print_u
-		cmp			r3, #'x'
+		cmp			r3, #'p'
+		IT			NE
+		cmpne		r3, #'x'
 		IT			NE
 		cmpne		r3, #'X'
 		beq			_print_hex
