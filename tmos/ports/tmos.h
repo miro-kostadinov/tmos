@@ -45,16 +45,16 @@
 #include "tmos_types.h"
 
 #ifdef __cplusplus
-#if USE_CSTRING
-#include <str_list.h>
-#endif
+#	if USE_CSTRING
+#		include <str_list.h>
+#	endif
 #endif
 
 
 #include <brd_cpp.h>
 
-#include <port_cpp.h>
 #include <trace.h>
+#include <port_cpp.h>
 
 
 
