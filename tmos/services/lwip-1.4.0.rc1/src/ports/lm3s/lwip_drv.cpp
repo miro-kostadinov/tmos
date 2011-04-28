@@ -419,7 +419,7 @@ static struct pbuf *low_level_receive(struct netif *netif)
 
 /**
  * In this function, the hardware should be initialized.
- * Called from stellarisif_init().
+ * Called from ethernetif_init().
  *
  * @param netif the already initialized lwip network interface structure
  *        for this ethernetif
@@ -484,7 +484,7 @@ static void low_level_init(struct netif *netif)
 
 WEAK_C void lwIPHostTimerHandler(void)
 {
-	TRACE1("lwIP tmr");
+	//TRACE1("lwIP tmr");
 }
 
 //*****************************************************************************
@@ -604,7 +604,7 @@ static void lwIPServiceTimers(struct netif *netif)
  *         ERR_MEM if private data couldn't be allocated
  *         any other err_t on error
  */
-err_t stellarisif_init(struct netif *netif)
+err_t ethernetif_init(struct netif *netif)
 {
 	LWIP_DRIVER_DATA* drv_data = (LWIP_DRIVER_DATA*)netif;
 	LWIP_ASSERT("netif != NULL", (netif != NULL));
@@ -755,8 +755,8 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
     		&ip_addr, 				//IP address for the new netif
     		&net_mask, 				//network mask for the new netif
     		&gw_addr, 				//gateway IP address for the new netif
-    		drv_info,				//opaque data passed to the new netif
-            stellarisif_init,		//callback function that initializes the interface
+    		drv_info->hw_base,		//opaque data passed to the new netif
+            ethernetif_init,		//callback function that initializes the interface
             ip_input				//callback function that is called to pass
             						//ingress packets up in the protocol layer stack
             );
@@ -1033,7 +1033,7 @@ void lwIPNetworkConfigChange(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
  *
  * @param netif the lwip network interface structure for this ethernetif
  */
-int stellarisif_input(struct netif *netif)
+int ethernetif_input(struct netif *netif)
 {
 	LWIP_DRIVER_DATA* drv_data = (LWIP_DRIVER_DATA*)netif;
 	struct pbuf *p;
@@ -1046,7 +1046,7 @@ int stellarisif_input(struct netif *netif)
 		/* process the packet. */
 		if (ethernet_input(p, netif) != ERR_OK)
 		{
-			LWIP_DEBUGF(NETIF_DEBUG, ("stellarisif_input: input error\n"));
+			LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: input error\n"));
 			pbuf_free(p);
 			p = NULL;
 		}
@@ -1079,6 +1079,7 @@ void stellarisif_interrupt(struct netif *netif)
 	p = low_level_receive(netif);
 	while (p != NULL)
 	{
+    	TRACELN1(">");
 		/* Add the rx packet to the rx queue */
 		if (!enqueue_packet(p, &drv_data->rxq))
 		{
@@ -1117,13 +1118,14 @@ void stellarisif_interrupt(struct netif *netif)
 //*			lwIP thread
 //*----------------------------------------------------------------------------
 
+#define LWIP_THREAD_RXTXSIG		1
 void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 {
-//	LWIP_DRIVER_DATA*  drv_data;
-
-//	drv_data = drv_info->drv_data;
+	LWIP_DRIVER_DATA*  drv_data = drv_info->drv_data;
 
 	ip_adr_set set;
+
+	ALLOCATE_SIGNAL(LWIP_THREAD_RXTXSIG);
 
 	set.ip_addr = 0;
 	set.gw_addr = 0;
@@ -1133,12 +1135,49 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 	lwIPInit(drv_info, &set);
     while(1)
     {
-    	tsk_sleep(100);
+    	unsigned int sig;
+
+    	sig = tsk_wait_signal(LWIP_THREAD_RXTXSIG, 10);
+    	if(sig)
+    	{
+			//queue in/out packets
+            stellarisif_interrupt(&drv_data->lwip_netif);
+
+			//process input
+		    ethernetif_input(&drv_data->lwip_netif);
+	    	drv_info->hw_base->MACIM |= (ETH_INT_TX |  ETH_INT_RX);
+    	}
+
+    	sig = CURRENT_TIME;
+    	if(sig != drv_data->timer_main)
+    	{
+        	if(sig < drv_data->timer_main)
+        	{
+        		//timer overflow
+        		drv_data->timer_mdix &= 0x7FFFFFFF;
+        		drv_data->timer_tcp  &= 0x7FFFFFFF;
+				#if HOST_TMR_INTERVAL
+				drv_data->timer_host &= 0x7FFFFFFF;
+				#endif
+				#if LWIP_ARP
+				drv_data->timer_arp &= 0x7FFFFFFF;
+				#endif
+				#if LWIP_AUTOIP
+				drv_data->timer_autoIP &= 0x7FFFFFFF;
+				#endif
+				#if LWIP_DHCP
+				drv_data->timer_DHCPCoarse &= 0x7FFFFFFF;
+				drv_data->timer_DHCPFine &= 0x7FFFFFFF;
+				#endif
+        	}
+        	drv_data->timer_main = sig;
+            lwIPServiceTimers(&drv_data->lwip_netif);
+    	}
     }
 
 
 }
-TASK_DECLARE_STATIC(lwipdrv_task, "LWIP", (void (*)(void))lwipdrv_thread, 60, 100 + TRACE_SIZE);
+TASK_DECLARE_STATIC(lwipdrv_task, "LWIP", (void (*)(void))lwipdrv_thread, 60, 400 + TRACE_SIZE);
 
 
 //*----------------------------------------------------------------------------
@@ -1201,7 +1240,6 @@ void LWIP_DSR(LWIP_DRIVER_INFO* drv_info, HANDLE hnd)
 void LWIP_ISR(LWIP_DRIVER_INFO* drv_info )
 {
 	MAC_Type* mac = drv_info->hw_base;
-	netif* tmos_netif = &drv_info->drv_data->lwip_netif;
     unsigned long ulStatus;
 
     //
@@ -1216,23 +1254,9 @@ void LWIP_ISR(LWIP_DRIVER_INFO* drv_info )
     //
     if(ulStatus)
     {
-        stellarisif_interrupt(tmos_netif);
+    	usr_send_signal(&lwipdrv_task, LWIP_THREAD_RXTXSIG);
+    	mac->MACIM &= ~  (ETH_INT_TX |  ETH_INT_RX);
     }
 
-#if NO_SYS
-    //
-    // If no RTOS is enabled, then we do all lwIP procesing in the interrupt.
-    //
-
-    //
-    // Service any packets on the receive queue.
-    //
-    stellarisif_input(tmos_netif);
-
-    //
-    // Service the lwIP timers.
-    //
-    lwIPServiceTimers(tmos_netif);
-#endif
 }
 
