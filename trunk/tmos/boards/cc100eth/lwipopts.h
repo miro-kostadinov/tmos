@@ -68,7 +68,10 @@
 // ---------- Memory options ----------
 //
 //*****************************************************************************
-//#define MEM_LIBC_MALLOC                 0
+#define MEM_LIBC_MALLOC                 1
+#define malloc		tsk_malloc
+#define free		tsk_free
+
 #define MEM_ALIGNMENT                   4           // default is 1
 #define MEM_SIZE                        (22 * 1024)  // default is 1600, was 16K
 //#define MEMP_OVERFLOW_CHECK             0
