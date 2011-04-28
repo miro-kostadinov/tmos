@@ -68,14 +68,12 @@ FUNC(	sys_reset_handler	)
 
 	// memory intit
 				/* Copy .relocate section  */
-		        ldr     	r0, =_efixed
-		        ldr     	r1, =_srelocate
+		        ldr     	r1, =_efixed
+		        ldr     	r0, =_srelocate
 		        ldr     	r2, =_erelocate
-1:
-		        ldmia   	r0!, {r3-r6}
-		        stmia   	r1!, {r3-r6}
-		        cmp     	r1, r2
-		        bcc     	1b
+		        subs		r2, r0
+		        bl			memcpy
+
 
 				/* Clear .zero section (Zero init) */
                 ldr     	r1, =_szero
