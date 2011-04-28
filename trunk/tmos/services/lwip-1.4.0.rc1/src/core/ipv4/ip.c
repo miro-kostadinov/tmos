@@ -331,11 +331,14 @@ ip_input(struct pbuf *p, struct netif *inp)
     int first = 1;
     netif = inp;
     do {
-      LWIP_DEBUGF(IP_DEBUG, ("ip_input: iphdr->dest 0x%"X32_F" netif->ip_addr 0x%"X32_F" (0x%"X32_F", 0x%"X32_F", 0x%"X32_F")\n",
-          ip4_addr_get_u32(&iphdr->dest), ip4_addr_get_u32(&netif->ip_addr),
-          ip4_addr_get_u32(&iphdr->dest) & ip4_addr_get_u32(&netif->netmask),
-          ip4_addr_get_u32(&netif->ip_addr) & ip4_addr_get_u32(&netif->netmask),
-          ip4_addr_get_u32(&iphdr->dest) & ~ip4_addr_get_u32(&netif->netmask)));
+        LWIP_DEBUGF(IP_DEBUG, ("ip_input: iphdr->dest 0x%"X32_F" netif->ip_addr 0x%"X32_F" ",
+            ip4_addr_get_u32(&iphdr->dest), ip4_addr_get_u32(&netif->ip_addr)
+            ));
+        LWIP_DEBUGF(IP_DEBUG, ("(0x%"X32_F", 0x%"X32_F", 0x%"X32_F")\n",
+            ip4_addr_get_u32(&iphdr->dest) & ip4_addr_get_u32(&netif->netmask),
+            ip4_addr_get_u32(&netif->ip_addr) & ip4_addr_get_u32(&netif->netmask),
+            ip4_addr_get_u32(&iphdr->dest) & ~ip4_addr_get_u32(&netif->netmask)));
+
 
       /* interface is up and configured? */
       if ((netif_is_up(netif)) && (!ip_addr_isany(&(netif->ip_addr)))) {
@@ -821,6 +824,7 @@ ip_debug_print(struct pbuf *p)
 
   payload = (u8_t *)iphdr + IP_HLEN;
 
+  tsk_sleep(1);
   LWIP_DEBUGF(IP_DEBUG, ("IP header:\n"));
   LWIP_DEBUGF(IP_DEBUG, ("+-------------------------------+\n"));
   LWIP_DEBUGF(IP_DEBUG, ("|%2"S16_F" |%2"S16_F" |  0x%02"X16_F" |     %5"U16_F"     | (v, hl, tos, len)\n",
@@ -829,6 +833,7 @@ ip_debug_print(struct pbuf *p)
                     IPH_TOS(iphdr),
                     ntohs(IPH_LEN(iphdr))));
   LWIP_DEBUGF(IP_DEBUG, ("+-------------------------------+\n"));
+  tsk_sleep(1);
   LWIP_DEBUGF(IP_DEBUG, ("|    %5"U16_F"      |%"U16_F"%"U16_F"%"U16_F"|    %4"U16_F"   | (id, flags, offset)\n",
                     ntohs(IPH_ID(iphdr)),
                     ntohs(IPH_OFFSET(iphdr)) >> 15 & 1,
@@ -836,22 +841,26 @@ ip_debug_print(struct pbuf *p)
                     ntohs(IPH_OFFSET(iphdr)) >> 13 & 1,
                     ntohs(IPH_OFFSET(iphdr)) & IP_OFFMASK));
   LWIP_DEBUGF(IP_DEBUG, ("+-------------------------------+\n"));
+  tsk_sleep(1);
   LWIP_DEBUGF(IP_DEBUG, ("|  %3"U16_F"  |  %3"U16_F"  |    0x%04"X16_F"     | (ttl, proto, chksum)\n",
                     IPH_TTL(iphdr),
                     IPH_PROTO(iphdr),
                     ntohs(IPH_CHKSUM(iphdr))));
   LWIP_DEBUGF(IP_DEBUG, ("+-------------------------------+\n"));
+  tsk_sleep(1);
   LWIP_DEBUGF(IP_DEBUG, ("|  %3"U16_F"  |  %3"U16_F"  |  %3"U16_F"  |  %3"U16_F"  | (src)\n",
                     ip4_addr1_16(&iphdr->src),
                     ip4_addr2_16(&iphdr->src),
                     ip4_addr3_16(&iphdr->src),
                     ip4_addr4_16(&iphdr->src)));
   LWIP_DEBUGF(IP_DEBUG, ("+-------------------------------+\n"));
+  tsk_sleep(1);
   LWIP_DEBUGF(IP_DEBUG, ("|  %3"U16_F"  |  %3"U16_F"  |  %3"U16_F"  |  %3"U16_F"  | (dest)\n",
                     ip4_addr1_16(&iphdr->dest),
                     ip4_addr2_16(&iphdr->dest),
                     ip4_addr3_16(&iphdr->dest),
                     ip4_addr4_16(&iphdr->dest)));
   LWIP_DEBUGF(IP_DEBUG, ("+-------------------------------+\n"));
+  tsk_sleep(1);
 }
 #endif /* IP_DEBUG */
