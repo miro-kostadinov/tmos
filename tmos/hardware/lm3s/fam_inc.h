@@ -40,7 +40,7 @@
 #define __CORTEX_M                (0x03)                                                       /*!< Cortex core                    */
 
 #ifndef __NVIC_PRIO_BITS
-  #define __NVIC_PRIO_BITS    4               /*!< standard definition for NVIC Priority Bits */
+  #define __NVIC_PRIO_BITS    3               /*!< standard definition for NVIC Priority Bits */
 #endif
 
 /**	 @} end of addtogroup CMSIS_CM3_core_definitions	*/
