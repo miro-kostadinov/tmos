@@ -120,6 +120,7 @@ struct CHandle {
 
 		return res &= ~FLG_SIGNALED;
 	}
+	bool complete();
 
 	void tsk_cancel();
 	bool tsk_open(DRIVER_INDEX index, const void * m);
