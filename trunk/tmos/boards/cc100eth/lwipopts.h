@@ -407,7 +407,7 @@
 //#define LWIP_DBG_TYPES_ON               LWIP_DBG_ON
 #define LWIP_DBG_TYPES_ON               (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH)
 
-#define ETHARP_DEBUG                    LWIP_DBG_ON     // default is OFF
+//#define ETHARP_DEBUG                    LWIP_DBG_ON     // default is OFF
 #define NETIF_DEBUG                     LWIP_DBG_ON     // default is OFF
 //#define PBUF_DEBUG                      LWIP_DBG_ON     // default is OFF
 #define API_LIB_DEBUG                   LWIP_DBG_ON     // default is OFF

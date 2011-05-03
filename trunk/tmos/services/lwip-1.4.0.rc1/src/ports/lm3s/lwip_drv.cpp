@@ -17,6 +17,7 @@
 #include "netif/stellarisif.h"
 #include "lwip/stats.h"
 
+#include <lwip_api.h>
 //*****************************************************************************
 //
 // lwIP API Header Files
@@ -1118,10 +1119,12 @@ void stellarisif_interrupt(struct netif *netif)
 //*			lwIP thread
 //*----------------------------------------------------------------------------
 
+
 #define LWIP_THREAD_RXTXSIG		1
 void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 {
 	LWIP_DRIVER_DATA*  drv_data = drv_info->drv_data;
+    CHandle helper;
 
 	ip_adr_set set;
 
@@ -1133,11 +1136,16 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 	set.ip_addr_mode = IPADDR_USE_DHCP;
 
 	lwIPInit(drv_info, &set);
+	helper.tsk_safe_open(drv_info->info.drv_index, 0);
+	helper.mode0 = 0; //mode0=0 control handle
+	helper.tsk_start_read(NULL, 0);
     while(1)
     {
     	unsigned int sig;
 
-    	sig = tsk_wait_signal(LWIP_THREAD_RXTXSIG, 10);
+    	sig = tsk_wait_signal(SIGNAL_ANY, 10);
+
+        // 1) process ISRs
     	if(sig)
     	{
 			//queue in/out packets
@@ -1148,7 +1156,47 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 	    	drv_info->hw_base->MACIM |= (ETH_INT_TX |  ETH_INT_RX);
     	}
 
-    	sig = CURRENT_TIME;
+        // 2) get waiting clients
+		if(sig & helper.signal)
+        {
+			tcp_handle* client;
+
+        	helper.res &= ~FLG_SIGNALED;
+
+			while( (client = (tcp_handle*)helper.dst.as_voidptr) )
+			{
+				RES_CODE res  = RES_SIG_ERROR;
+
+				helper.dst.as_voidptr = client->next;
+
+			    if(client->cmd & FLAG_COMMAND)
+			    {
+			    	if((client->cmd>>4) <= MAX_LWIPCALLBACK)
+			    	{
+			    		res = lwip_api_functions[client->cmd>>4](client, &drv_data->lwip_netif);
+			    	}
+			    } else
+			    {
+				    if(client->cmd & FLAG_WRITE)
+				    {
+				    	res = lwip_api_write(client, &drv_data->lwip_netif);
+				    } else
+					    if(client->cmd & FLAG_READ)
+					    {
+					    	res = lwip_api_read(client);
+					    }
+			    }
+
+			    if(res & FLG_SIGNALED)
+			    {
+				    tsk_HND_SET_STATUS(client, res);
+			    }
+			}
+			helper.tsk_start_read(NULL, 0);
+        }
+
+        // 3) process lwip timeouts
+		sig = CURRENT_TIME;
     	if(sig != drv_data->timer_main)
     	{
         	if(sig < drv_data->timer_main)
@@ -1185,9 +1233,10 @@ TASK_DECLARE_STATIC(lwipdrv_task, "LWIP", (void (*)(void))lwipdrv_thread, 60, 40
 //*----------------------------------------------------------------------------
 void LWIP_DCR(LWIP_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 {
+	LWIP_DRIVER_DATA* drv_data = drv_info->drv_data;
+
 	switch(reason)
     {
-
         case DCR_RESET:
         	drv_info->drv_data->lwip_netif.state = drv_info->hw_base;
         	NVIC->NVIC_SetPriority(drv_info->info.drv_index,
@@ -1199,12 +1248,38 @@ void LWIP_DCR(LWIP_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
         	break;
 
         case DCR_OPEN:
+        	param->mode0 = 1;	// mark the handle as client
+        						// helper must clear this field
+
+        	if(param->mode.as_byteptr)
+        	{
+        		lwip_tcp_setup((tcp_handle*) param, (struct tcp_pcb*)param->mode.as_voidptr);
+        	} else
+        	{
+            	param->mode1 = TCPHS_UNKNOWN;
+        	}
+
 			param->res = RES_OK;
         	break;
 
-		case DCR_CLOSE:
+	    case DCR_CANCEL:
+	    	if(param->mode0)
+	    	{
+	    		// this is a client handle...
+	    		param->svc_list_cancel(drv_data->waiting);
+	    	} else
+	    	{
+	    		// helper
+	    		if(param == drv_data->helper)
+	    		{
+					//the helper task is waiting for object...
+					drv_data->helper = NULL;
+					param->dst.as_voidptr = NULL;
+					svc_HND_SET_STATUS(param, RES_SIG_OK);
+	    		}
+	    	}
 
-				break;
+			break;
 
    }
 
@@ -1215,7 +1290,40 @@ void LWIP_DCR(LWIP_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 //*----------------------------------------------------------------------------
 void LWIP_DSR(LWIP_DRIVER_INFO* drv_info, HANDLE hnd)
 {
+	LWIP_DRIVER_DATA* drv_data = drv_info->drv_data;
+	HANDLE tmp;
 
+	if(hnd->mode0)
+	{
+		// this is a client handle...
+		hnd->res = RES_BUSY;
+		if( (tmp=drv_data->helper) )
+		{
+			//the helper task is waiting for object...
+			hnd->next = NULL;
+			drv_data->helper = NULL;
+			tmp->dst.as_voidptr = hnd;
+			svc_HND_SET_STATUS(tmp, RES_SIG_OK);
+		} else
+		{
+			//queue the WINDOW object while helper task is busy
+			hnd->next = drv_data->waiting;
+			drv_data->waiting = hnd;
+		}
+	} else
+	{
+		// this should be the helper task
+		if( (tmp=drv_data->waiting) )
+		{
+			drv_data->waiting = NULL;
+			hnd->dst.as_voidptr = tmp;
+			svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+		} else
+		{
+			hnd->res = RES_BUSY;
+			drv_data->helper = hnd;
+		}
+	}
 }
 
 //*----------------------------------------------------------------------------

@@ -16,9 +16,9 @@ local_h_src-y 	:=
 
 local_c_src-y 	+= perf.c sys_arch.c 
 
-local_cpp_src-y	+= lwip_drv.cpp
+local_cpp_src-y	+= lwip_drv.cpp lwip_api.cpp
 
-local_h_src-y 	+= lwip_drv.h
+local_h_src-y 	+= lwip_drv.h lwip_api.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

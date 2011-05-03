@@ -126,6 +126,9 @@ struct LWIP_DRIVER_DATA
 	struct pbufq txq;
 	struct pbufq rxq;
 
+    HANDLE			waiting;
+    HANDLE			helper;
+
 	/** The default IP address aquisition mode. **/
 	unsigned char ip_addr_mode;
 };
