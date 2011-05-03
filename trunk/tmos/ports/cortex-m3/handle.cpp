@@ -158,6 +158,27 @@ void CHandle::tsk_cancel()
 		}
 }
 
+/**
+ * Waits for the last transaction to complete
+ * @return true if completed (or there is no transaction to complete)
+ * 		   false if closed
+ */
+bool CHandle::complete()
+{
+	while (res >= FLG_SIGNALED)
+	{
+		if(res & (FLG_SIGNALED | FLG_BUSY) )
+		{
+			tsk_get_signal(signal);
+	        res &= ~FLG_SIGNALED;
+		} else
+		{
+			//handle is closed or with error
+			return false;
+		}
+	}
+	return true;
+}
 
 
 
@@ -169,17 +190,9 @@ void CHandle::tsk_cancel()
  */
 bool CHandle::tsk_start_read(void * buf, unsigned int l)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-		//handle is closed or with error
+	if(!complete())
 		return false;
-	}
+
 	//handle is idle and open
 	len = l;
 	set_res_cmd(CMD_READ);
@@ -196,18 +209,8 @@ bool CHandle::tsk_start_read(void * buf, unsigned int l)
  */
 RES_CODE CHandle::tsk_read(void * buf, unsigned int l)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
+	if(!complete())
 		return res;
-	}
 
 	//handle is idle and open
 	len = l;
@@ -225,28 +228,19 @@ RES_CODE CHandle::tsk_read(void * buf, unsigned int l)
  */
 RES_CODE CHandle::tsk_read(void * buf, unsigned int l, unsigned int time)
 {
-	while (res >= FLG_SIGNALED)
+	if(complete())
 	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
+		//handle is idle and open
+		len = l;
+		set_res_cmd(CMD_READ);
+		dst.as_voidptr = buf;
+	    tsk_start_handle();
+	    if(tsk_wait_signal(signal, time))
 	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
-		return res;
+	    else
+	    	tsk_cancel();
 	}
 
-	//handle is idle and open
-	len = l;
-	set_res_cmd(CMD_READ);
-	dst.as_voidptr = buf;
-    tsk_start_handle();
-    if(tsk_wait_signal(signal, time))
-        res &= ~FLG_SIGNALED;
-    else
-    	tsk_cancel();
    return res;
 }
 
@@ -258,18 +252,8 @@ RES_CODE CHandle::tsk_read(void * buf, unsigned int l, unsigned int time)
  */
 RES_CODE CHandle::tsk_read_locked(void * buf, unsigned int l)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
+	if(!complete())
 		return res;
-	}
 
 	//handle is idle and open
 	len = l;
@@ -287,28 +271,19 @@ RES_CODE CHandle::tsk_read_locked(void * buf, unsigned int l)
  */
 RES_CODE CHandle::tsk_read_locked(void * buf, unsigned int l, unsigned int time)
 {
-	while (res >= FLG_SIGNALED)
+	if(complete())
 	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
+		//handle is idle and open
+		len = l;
+		set_res_cmd((CMD_READ|FLAG_LOCK));
+		dst.as_voidptr = buf;
+	    tsk_start_handle();
+	    if(tsk_wait_signal(signal, time))
 	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
-		return res;
+	    else
+	    	tsk_cancel();
 	}
 
-	//handle is idle and open
-	len = l;
-	set_res_cmd((CMD_READ|FLAG_LOCK));
-	dst.as_voidptr = buf;
-    tsk_start_handle();
-    if(tsk_wait_signal(signal, time))
-        res &= ~FLG_SIGNALED;
-    else
-    	tsk_cancel();
     return res;
 }
 
@@ -320,28 +295,19 @@ RES_CODE CHandle::tsk_read_locked(void * buf, unsigned int l, unsigned int time)
  */
 RES_CODE CHandle::tsk_resume_read(void * buf, unsigned int l)
 {
-	while (res >= FLG_SIGNALED)
+	if(complete())
 	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
+		//handle is idle and open
+		len = l;
+		set_res_cmd(CMD_READ);
+		dst.as_voidptr = buf;
+	    tsk_start_handle();
+	    if(tsk_resume_wait_signal(signal))
 	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
-		return res;
+	    else
+	    	tsk_cancel();
 	}
 
-	//handle is idle and open
-	len = l;
-	set_res_cmd(CMD_READ);
-	dst.as_voidptr = buf;
-    tsk_start_handle();
-    if(tsk_resume_wait_signal(signal))
-        res &= ~FLG_SIGNALED;
-    else
-    	tsk_cancel();
     return res;
 }
 
@@ -353,18 +319,9 @@ RES_CODE CHandle::tsk_resume_read(void * buf, unsigned int l)
  */
 bool CHandle::tsk_start_write(const void * buf, unsigned int l)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY))
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
+	if(!complete())
 		return false;
-	}
+
 	//handle is idle and open
 	len = l;
 	set_res_cmd(CMD_WRITE);
@@ -381,18 +338,8 @@ bool CHandle::tsk_start_write(const void * buf, unsigned int l)
  */
 RES_CODE CHandle::tsk_write(const void * buf, unsigned int l)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
+	if(!complete())
 		return res;
-	}
 
 	//handle is idle and open
 	len = l;
@@ -410,28 +357,19 @@ RES_CODE CHandle::tsk_write(const void * buf, unsigned int l)
  */
 RES_CODE CHandle::tsk_write(const void * buf, unsigned int l, unsigned int time)
 {
-	while (res >= FLG_SIGNALED)
+	if(complete())
 	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
+		//handle is idle and open
+		len = l;
+		set_res_cmd(CMD_WRITE);
+		src.as_voidptr = (void*)buf;
+	    tsk_start_handle();
+	    if(tsk_wait_signal(signal, time))
 	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
-		return res;
+	    else
+	    	tsk_cancel();
 	}
 
-	//handle is idle and open
-	len = l;
-	set_res_cmd(CMD_WRITE);
-	src.as_voidptr = (void*)buf;
-    tsk_start_handle();
-    if(tsk_wait_signal(signal, time))
-        res &= ~FLG_SIGNALED;
-    else
-    	tsk_cancel();
     return res;
 }
 
@@ -443,18 +381,8 @@ RES_CODE CHandle::tsk_write(const void * buf, unsigned int l, unsigned int time)
  */
 RES_CODE CHandle::tsk_write_locked(const void * buf, unsigned int l)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
+	if(!complete())
 		return res;
-	}
 
 	//handle is idle and open
 	len = l;
@@ -472,28 +400,19 @@ RES_CODE CHandle::tsk_write_locked(const void * buf, unsigned int l)
  */
 RES_CODE CHandle::tsk_write_locked(const void * buf, unsigned int l, unsigned int time)
 {
-	while (res >= FLG_SIGNALED)
+	if(complete())
 	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
+		//handle is idle and open
+		len = l;
+		set_res_cmd(CMD_WRITE|FLAG_LOCK);
+		src.as_voidptr = (void*)buf;
+	    tsk_start_handle();
+	    if(tsk_wait_signal(signal, time))
 	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
-		return res;
+	    else
+	    	tsk_cancel();
 	}
 
-	//handle is idle and open
-	len = l;
-	set_res_cmd(CMD_WRITE|FLAG_LOCK);
-	src.as_voidptr = (void*)buf;
-    tsk_start_handle();
-    if(tsk_wait_signal(signal, time))
-        res &= ~FLG_SIGNALED;
-    else
-    	tsk_cancel();
     return res;
 }
 
@@ -505,28 +424,19 @@ RES_CODE CHandle::tsk_write_locked(const void * buf, unsigned int l, unsigned in
  */
 RES_CODE CHandle::tsk_resume_write(const void * buf, unsigned int l)
 {
-	while (res >= FLG_SIGNALED)
+	if(complete())
 	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
+		//handle is idle and open
+		len = l;
+		set_res_cmd(CMD_WRITE);
+		src.as_voidptr = (void*)buf;
+	    tsk_start_handle();
+	    if(tsk_resume_wait_signal(signal))
 	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
-		return res;
+	    else
+	    	tsk_cancel();
 	}
 
-	//handle is idle and open
-	len = l;
-	set_res_cmd(CMD_WRITE);
-	src.as_voidptr = (void*)buf;
-    tsk_start_handle();
-    if(tsk_resume_wait_signal(signal))
-        res &= ~FLG_SIGNALED;
-    else
-    	tsk_cancel();
     return res;
 }
 
@@ -539,18 +449,8 @@ RES_CODE CHandle::tsk_resume_write(const void * buf, unsigned int l)
  */
 RES_CODE CHandle::tsk_read_write(void *d, const void *s, unsigned int l)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
+	if(!complete())
 		return res;
-	}
 
 	//handle is idle and open
 	len = l;
@@ -562,18 +462,8 @@ RES_CODE CHandle::tsk_read_write(void *d, const void *s, unsigned int l)
 
 RES_CODE CHandle::tsk_read_write_locked(void *d, const void *s, unsigned int l)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
+	if(!complete())
 		return res;
-	}
 
 	//handle is idle and open
 	len = l;
@@ -591,18 +481,8 @@ RES_CODE CHandle::tsk_read_write_locked(void *d, const void *s, unsigned int l)
  */
 bool CHandle::tsk_start_command(void * c, void *ptr)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
+	if(!complete())
 		return false;
-	}
 
 	//handle is idle and open
 	set_res_cmd(CMD_COMMAND);
@@ -620,18 +500,8 @@ bool CHandle::tsk_start_command(void * c, void *ptr)
  */
 RES_CODE CHandle::tsk_command(void * c, void *ptr)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
+	if(!complete())
 		return res;
-	}
 
 	//handle is idle and open
 	set_res_cmd(CMD_COMMAND);
@@ -648,18 +518,8 @@ RES_CODE CHandle::tsk_command(void * c, void *ptr)
  */
 RES_CODE CHandle::tsk_command_locked(void * c, void *ptr)
 {
-	while (res >= FLG_SIGNALED)
-	{
-		if(res & (FLG_SIGNALED | FLG_BUSY) )
-		{
-			tsk_get_signal(signal);
-	        res &= ~FLG_SIGNALED;
-	        continue;
-		}
-
-		//handle is closed or with error
+	if(!complete())
 		return res;
-	}
 
 	//handle is idle and open
 	set_res_cmd(CMD_COMMAND|FLAG_LOCK);
@@ -681,26 +541,6 @@ bool CHandle::svc_list_cancel(HANDLE& base)
 		return true;
 	}
 	return false;
-/*
-	if(base && base == this )
-	{
-		base = next;
-		svc_HND_SET_STATUS(this, RES_SIG_IDLE);
-		return true;
-	}
-	HANDLE ptr = base;
-	while(ptr && ptr->next)
-	{
-		if(ptr->next == this )
-		{
-			ptr->next = next;
-			svc_HND_SET_STATUS(this, RES_SIG_IDLE);
-			return true;
-		}
-		ptr = ptr->next;
-	}
-	return false;
-*/
 }
 
 /**
