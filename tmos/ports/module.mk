@@ -19,7 +19,7 @@ local_cpp_src-$(USE_CSTRING)	+= str_list.cpp
 local_cpp_src-$(USE_CACHE)		+= cache.cpp
 
 local_h_src-y 	+= tmos.h tmos_cfg.h tmos_inc.h str_list.h tmos_types.h crc32.h
-local_h_src-y 	+= cache.h memory.h
+local_h_src-y 	+= cache.h memory.h mqueue.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
