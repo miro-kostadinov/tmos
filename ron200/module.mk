@@ -9,9 +9,7 @@
 
 # local sources
 local_as_src-y	:=
- 
 local_c_src-y 	:= 
-
 local_cpp_src-y	:=   
 
 
@@ -22,7 +20,7 @@ cpp_sources += $(call changepath,$(local_cpp_src-y))
 
 
 #submodules
-local_modules-y := targets app
+local_modules-y := targets app interfaces
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)

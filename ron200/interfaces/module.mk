@@ -1,6 +1,6 @@
 ##########################################################################
 #
-#	Make include for app
+#	Make include for ron200/interfaces
 #	
 #   Platform: MPOS rev.2.3
 #
@@ -9,10 +9,10 @@
 
 # local sources
 local_as_src-y	:=
- 
-local_c_src-y 	:= 
+local_c_src-y 	:=
+local_cpp_src-y	:=
 
-local_cpp_src-y	:= main.cpp fpga.cpp cpu_pins.cpp
+local_cpp_src-y	+= if_jtag.cpp
 #display.cpp
 
 
@@ -20,7 +20,6 @@ local_cpp_src-y	:= main.cpp fpga.cpp cpu_pins.cpp
 as_sources 	+= $(call changepath,$(local_as_src-y))
 c_sources  	+= $(call changepath,$(local_c_src-y))
 cpp_sources += $(call changepath,$(local_cpp_src-y))
-
 
 #add current directory to include path
 inc_dirs += $(subdirectory) 
