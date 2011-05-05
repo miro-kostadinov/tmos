@@ -109,14 +109,18 @@ err_t lwip_cbf_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 	if(client == NULL)
 		return ERR_VAL;
 
-	if( client->mode1 == TCPHS_LISTEN )
+	if( client->mode1 & TCPHS_OP_LISTEN )
 	{
 		//client listens...
 		if(client->accept_que.push(newpcb))
 		{
 			//send signal
 			if(client->res & FLG_BUSY)
-				tsk_HND_SET_STATUS(client, RES_SIG_OK);
+			{
+				//Get from the driver
+				if(locked_clr_byte(&client->res, TCPHS_OP_ACCEPTING))
+					tsk_HND_SET_STATUS(client, RES_SIG_OK);
+			}
     		return ERR_OK;
 		}
 	}
@@ -135,6 +139,9 @@ RES_CODE lwip_api_tcp_accept(tcp_handle* client, struct netif *netif)
 		{
 			//Do nothing -> leave the client in BUSY state
 			//the accept callback will send series of signals
+
+			//Give to the driver
+			client->mode1 = TCPHS_LISTEN | TCPHS_OP_ACCEPTING;
 			return 0;
 		}
 		return RES_SIG_OK;
@@ -143,7 +150,7 @@ RES_CODE lwip_api_tcp_accept(tcp_handle* client, struct netif *netif)
 
 }
 
-RES_CODE tcp_handle::lwip_tcp_accept(struct tcp_pcb*& newpcb)
+RES_CODE tcp_handle::lwip_tcp_accept(struct tcp_pcb*& newpcb, unsigned int time)
 {
 	while(1)
 	{
@@ -154,7 +161,11 @@ RES_CODE tcp_handle::lwip_tcp_accept(struct tcp_pcb*& newpcb)
 		if(complete())
 		{
 			set_res_cmd(LWIP_CMD_TCP_ACCEPT);
-			tsk_start_and_wait();
+		    tsk_start_handle();
+		    if(tsk_wait_signal(signal, time))
+		        res &= ~FLG_SIGNALED;
+		    else
+		    	tsk_cancel();
 		}
 		if(res != RES_OK)
 			return res;
@@ -424,9 +435,9 @@ err_t lwip_cbf_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 	if(client->recv_que.push(p))
 	{
 		//send signal
-		if((client->mode1 == TCPHS_READING))
+		//Get from the driver
+		if(locked_clr_byte(&client->res, TCPHS_OP_READING))
 		{
-			client->mode1 = TCPHS_ESTABLISHED;
 			RES_CODE res = lwip_api_read(client);
 
 			if(res & FLG_SIGNALED)
@@ -485,6 +496,14 @@ RES_CODE lwip_api_read(tcp_handle* client)
 
 					if(client->len)
 						continue;
+				} else
+				{
+					if(!res)
+					{
+						tcp_recved((struct tcp_pcb *)client->mode.as_voidptr, p->tot_len);
+						pbuf_free(p);
+					}
+
 				}
 			}
 
@@ -496,11 +515,14 @@ RES_CODE lwip_api_read(tcp_handle* client)
 	}
 
 	if(!res)
+	{
+		//Give to the driver
 		client->mode1 = TCPHS_READING;
-
+	}
 	return res;
 }
 
+//--------------------   Helper   --------------------------------------------//
 /**
  * Error callback function for TCP netconns.
  * Signals conn->sem, posts to all conn mboxes and calls API_EVENT.
@@ -540,6 +562,190 @@ void lwip_tcp_setup(tcp_handle* client, struct tcp_pcb *pcb)
 	pcb->errf = lwip_cbf_err;
 }
 
+static void api_tcp_drain(tcp_handle* client)
+{
+	struct pbuf *p;
+	struct tcp_pcb *pcb;
+
+	pcb = (struct tcp_pcb *)client->mode.as_voidptr;
+
+	/* Drain the recv_que. */
+	while( client->recv_que.pop(p) )
+	{
+		if (p)
+		{
+			tcp_recved(pcb,	p->tot_len - client->recv_pos);
+			client->recv_pos = 0;
+			pbuf_free(p);
+		}
+
+	}
+
+	/* Drain the accept_que. */
+	while(client->accept_que.pop(pcb))
+	{
+		tcp_abort(pcb);
+	}
+}
+
+static RES_CODE api_close_internal(tcp_handle* client, unsigned int rxtx)
+{
+	err_t res;
+	struct tcp_pcb *pcb;
+
+	pcb = (struct tcp_pcb *)client->mode.as_voidptr;
+
+	if(pcb && client->mode1)
+	{
+		/* Set back some callback pointers */
+		if (rxtx == LWIP_SHUT_RDWR)
+		{
+			pcb->callback_arg = NULL;
+		}
+
+		if (pcb->state == LISTEN)
+		{
+			pcb->accept = NULL;
+		} else
+		{
+			/* some callbacks have to be reset if tcp_close is not successful */
+			if (rxtx & LWIP_SHUT_RD)
+			{
+				pcb->recv = NULL;
+				pcb->accept = NULL;
+			}
+			if (rxtx & LWIP_SHUT_WR)
+			{
+				pcb->sent = NULL;
+			}
+			if (rxtx == LWIP_SHUT_RDWR)
+			{
+				pcb->poll = NULL;
+				pcb->pollinterval = 4;
+				pcb->errf = NULL;
+			}
+		}
+
+		/* Try to close the connection */
+		if (rxtx == LWIP_SHUT_RDWR)
+		{
+			res = tcp_close(pcb);
+		}
+		else
+		{
+			res = tcp_shutdown(pcb, rxtx & LWIP_SHUT_RD, rxtx & LWIP_SHUT_WR);
+		}
+
+		if (res == ERR_OK)
+		{
+			/* Closing succeeded */
+			client->mode1 = TCPHS_UNKNOWN;
+			/* Set back some callback pointers as conn is going away */
+			client->mode.as_voidptr = NULL;
+
+		}
+		else
+		{
+			/* Closing failed, restore some of the callbacks */
+			/* Closing of listen pcb will never fail! */
+			lwip_tcp_setup(client, pcb);
+			/* don't restore recv callback: we don't want to receive any more data */
+			pcb->recv = NULL;
+
+			/* If closing didn't succeed, we get called again either
+			 from poll_tcp or from sent_tcp */
+			return RES_SIG_IDLE;
+		}
+	}
+
+	return RES_SIG_OK;
+}
+
+//--------------------   CLOSE   ---------------------------------------------//
+#ifdef LWIP_CMD_TCP_CLOSE
+RES_CODE lwip_api_tcp_close(tcp_handle* client, struct netif *netif)
+{
+	RES_CODE res;
+	unsigned int rxtx = client->src.as_int;
+
+	if (rxtx & LWIP_SHUT_RD)
+		api_tcp_drain(client);
+
+	if(client->mode.as_int && (client->mode1 & TCPHS_OP_PCB))
+	{
+		if((client->mode1 & (TCPHS_OP_WRITING | TCPHS_OP_CONNECTING)))
+		{
+			/* @to do TCP: abort running write/connect? */
+			res = RES_SIG_IDLE;
+		} else
+		{
+			if ((client->mode1 & TCPHS_OP_ACCEPTING) && (rxtx != LWIP_SHUT_RDWR))
+			{
+				/* LISTEN doesn't support half shutdown */
+				res = RES_SIG_ERROR;
+			} else
+			{
+				res = api_close_internal(client, rxtx);
+			}
+		}
+	} else
+	{
+		//nothing to delete
+		res = RES_SIG_OK;
+	}
+	return res;
+
+}
+
+RES_CODE tcp_handle::lwip_tcp_close(unsigned int rxtx)
+{
+	if(complete())
+	{
+		src.as_int = rxtx;
+		set_res_cmd(LWIP_CMD_TCP_CLOSE);
+		tsk_start_and_wait();
+	}
+	return res;
+}
+#endif
+
+//--------------------   DELETE   --------------------------------------------//
+#ifdef LWIP_CMD_TCP_DELETE
+RES_CODE lwip_api_tcp_delete(tcp_handle* client, struct netif *netif)
+{
+	RES_CODE res;
+
+	api_tcp_drain(client);
+
+	if(client->mode.as_int && (client->mode1 & TCPHS_OP_PCB))
+	{
+		if((client->mode1 & (TCPHS_OP_WRITING | TCPHS_OP_CONNECTING)))
+		{
+			/* @to do TCP: abort running write/connect? */
+			res = RES_SIG_IDLE;
+		} else
+		{
+			res = api_close_internal(client, LWIP_SHUT_RDWR);
+		}
+	} else
+	{
+		//nothing to delete
+		res = RES_SIG_OK;
+	}
+	return res;
+}
+
+RES_CODE tcp_handle::lwip_tcp_delete()
+{
+	if(complete())
+	{
+		set_res_cmd(LWIP_CMD_TCP_DELETE);
+		tsk_start_and_wait();
+	}
+	return res;
+}
+#endif
+
 extern "C" const LWIP_API_FUNC lwip_api_functions[MAX_LWIPCALLBACK+1] =
 {
 
@@ -561,6 +767,14 @@ extern "C" const LWIP_API_FUNC lwip_api_functions[MAX_LWIPCALLBACK+1] =
 
 #ifdef LWIP_CMD_TCP_CONNECT
 	lwip_api_tcp_connect,
+#endif
+
+#ifdef LWIP_CMD_TCP_CLOSE
+	lwip_api_tcp_close,
+#endif
+
+#ifdef LWIP_CMD_TCP_DELETE
+	lwip_api_tcp_delete,
 #endif
 
 	NULL

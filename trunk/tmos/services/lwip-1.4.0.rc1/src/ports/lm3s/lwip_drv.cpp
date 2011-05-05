@@ -1267,7 +1267,19 @@ void LWIP_DCR(LWIP_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 	    	if(param->mode0)
 	    	{
 	    		// this is a client handle...
-	    		param->svc_list_cancel(drv_data->waiting);
+	    		// first try the waiting
+	    		if(!param->svc_list_cancel(drv_data->waiting))
+	    		{
+	    			//try to cancel read & accept
+	    			if(param->res & FLG_BUSY)
+	    			{
+						if(locked_clr_byte(&param->res, TCPHS_CANCELABLE))
+						{
+							svc_HND_SET_STATUS(param, RES_SIG_CANCEL);
+						}
+	    			}
+
+	    		}
 	    	} else
 	    	{
 	    		// helper
