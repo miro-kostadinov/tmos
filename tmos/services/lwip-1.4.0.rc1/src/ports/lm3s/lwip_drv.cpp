@@ -1254,6 +1254,7 @@ void LWIP_DCR(LWIP_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
         	if(param->mode.as_byteptr)
         	{
         		lwip_tcp_setup((tcp_handle*) param, (struct tcp_pcb*)param->mode.as_voidptr);
+        		param->mode1 = TCPHS_ESTABLISHED;
         	} else
         	{
             	param->mode1 = TCPHS_UNKNOWN;
