@@ -417,18 +417,21 @@
 #define IGMP_DEBUG                      LWIP_DBG_ON     // default is OFF
 #define INET_DEBUG                      LWIP_DBG_ON     // default is OFF
 #define IP_DEBUG                        LWIP_DBG_ON     // default is OFF
+#define IP_DEBUG1                       LWIP_DBG_OFF
 //#define IP_REASS_DEBUG                  LWIP_DBG_ON     // default is OFF
 //#define RAW_DEBUG                       LWIP_DBG_ON     // default is OFF
 //#define MEM_DEBUG                       LWIP_DBG_ON     // default is OFF
 //#define MEMP_DEBUG                      LWIP_DBG_ON     // default is OFF
 #define SYS_DEBUG                       LWIP_DBG_ON     // default is OFF
 #define TCP_DEBUG                       LWIP_DBG_ON     // default is OFF
+#define TCP_DEBUG1                      LWIP_DBG_OFF
 #define TCP_INPUT_DEBUG                 LWIP_DBG_ON     // default is OFF
 #define TCP_FR_DEBUG                    LWIP_DBG_ON     // default is OFF
 #define TCP_RTO_DEBUG                   LWIP_DBG_ON     // default is OFF
 //#define TCP_CWND_DEBUG                  LWIP_DBG_ON     // default is OFF
 #define TCP_WND_DEBUG                   LWIP_DBG_ON     // default is OFF
 #define TCP_OUTPUT_DEBUG                LWIP_DBG_ON     // default is OFF
+#define TCP_OUTPUT_DEBUG1               LWIP_DBG_OFF
 #define TCP_RST_DEBUG                   LWIP_DBG_ON     // default is OFF
 #define TCP_QLEN_DEBUG                  LWIP_DBG_ON     // default is OFF
 //#define UDP_DEBUG                       LWIP_DBG_ON     // default is OFF
