@@ -118,7 +118,7 @@ err_t lwip_cbf_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 			if(client->res & FLG_BUSY)
 			{
 				//Get from the driver
-				if(locked_clr_byte(&client->res, TCPHS_OP_ACCEPTING))
+				if(locked_clr_byte(&client->mode1, TCPHS_OP_ACCEPTING))
 					tsk_HND_SET_STATUS(client, RES_SIG_OK);
 			}
     		return ERR_OK;
@@ -436,7 +436,7 @@ err_t lwip_cbf_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 	{
 		//send signal
 		//Get from the driver
-		if(locked_clr_byte(&client->res, TCPHS_OP_READING))
+		if(locked_clr_byte(&client->mode1, TCPHS_OP_READING))
 		{
 			RES_CODE res = lwip_api_read(client);
 
