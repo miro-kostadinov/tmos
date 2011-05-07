@@ -548,6 +548,7 @@ void lwip_cbf_err(void *arg, err_t err)
 		//send signal
 		client->mode1 = TCPHS_UNKNOWN;
 		client->mode.as_voidptr = NULL;
+		client->error = err;
 
 		if (client->res & FLG_BUSY)
 			tsk_HND_SET_STATUS(client, RES_SIG_ERROR);

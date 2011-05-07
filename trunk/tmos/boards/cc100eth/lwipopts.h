@@ -46,7 +46,7 @@
 // ---------- Stellaris / lwIP Port Options ----------
 //
 //*****************************************************************************
-#define HOST_TMR_INTERVAL               100         // default is 0
+#define TCP_TMR_INTERVAL				100			//default is 250
 //#define DHCP_EXPIRE_TIMER_MSECS         (60 * 1000)
 //#define INCLUDE_HTTPD_SSI
 //#define INCLUDE_HTTPD_CGI
@@ -219,13 +219,13 @@
 //*****************************************************************************
 //#define LWIP_TCP                        1
 //#define TCP_TTL                         (IP_DEFAULT_TTL)
-#define TCP_WND                         4096   // default is 2048
-//#define TCP_MAXRTX                      12
+#define TCP_WND                        	4096   // default is 2048
+#define TCP_MAXRTX                      5		//default is 12
 //#define TCP_SYNMAXRTX                   6
 //#define TCP_QUEUE_OOSEQ                 1
-#define TCP_MSS                        1500        // default is 128
+#define TCP_MSS                    		1500        // default is 128
 //#define TCP_CALCULATE_EFF_SEND_MSS      1
-#define TCP_SND_BUF                     (4 * TCP_MSS)
+#define TCP_SND_BUF                 	(4 * TCP_MSS)
                                                     // default is 256, was 6 *
 //#define TCP_SND_QUEUELEN                (4 * (TCP_SND_BUF/TCP_MSS))
 //#define TCP_SNDLOWAT                    (TCP_SND_BUF/2)
