@@ -933,7 +933,7 @@ tcp_output(struct tcp_pcb *pcb)
 
 #if TCP_OUTPUT_DEBUG
   if (seg == NULL) {
-    LWIP_DEBUGF(TCP_OUTPUT_DEBUG, ("tcp_output: nothing to send (%p)\n",
+    LWIP_DEBUGF(TCP_OUTPUT_DEBUG1, ("tcp_output: nothing to send (%p)\n",
                                    (void*)pcb->unsent));
   }
 #endif /* TCP_OUTPUT_DEBUG */

@@ -331,10 +331,10 @@ ip_input(struct pbuf *p, struct netif *inp)
     int first = 1;
     netif = inp;
     do {
-        LWIP_DEBUGF(IP_DEBUG, ("ip_input: iphdr->dest 0x%"X32_F" netif->ip_addr 0x%"X32_F" ",
+        LWIP_DEBUGF(IP_DEBUG1, ("ip_input: iphdr->dest 0x%"X32_F" netif->ip_addr 0x%"X32_F" ",
             ip4_addr_get_u32(&iphdr->dest), ip4_addr_get_u32(&netif->ip_addr)
             ));
-        LWIP_DEBUGF(IP_DEBUG, ("(0x%"X32_F", 0x%"X32_F", 0x%"X32_F")\n",
+        LWIP_DEBUGF(IP_DEBUG1, ("(0x%"X32_F", 0x%"X32_F", 0x%"X32_F")\n",
             ip4_addr_get_u32(&iphdr->dest) & ip4_addr_get_u32(&netif->netmask),
             ip4_addr_get_u32(&netif->ip_addr) & ip4_addr_get_u32(&netif->netmask),
             ip4_addr_get_u32(&iphdr->dest) & ~ip4_addr_get_u32(&netif->netmask)));
@@ -346,7 +346,7 @@ ip_input(struct pbuf *p, struct netif *inp)
         if (ip_addr_cmp(&current_iphdr_dest, &(netif->ip_addr)) ||
             /* or broadcast on this interface network address? */
             ip_addr_isbroadcast(&current_iphdr_dest, netif)) {
-          LWIP_DEBUGF(IP_DEBUG, ("ip_input: packet accepted on interface %c%c\n",
+          LWIP_DEBUGF(IP_DEBUG1, ("ip_input: packet accepted on interface %c%c\n",
               netif->name[0], netif->name[1]));
           /* break out of for loop */
           break;
@@ -389,7 +389,7 @@ ip_input(struct pbuf *p, struct netif *inp)
     /* remote port is DHCP server? */
     if (IPH_PROTO(iphdr) == IP_PROTO_UDP) {
       struct udp_hdr *udphdr = (struct udp_hdr *)((u8_t *)iphdr + iphdr_hlen);
-      LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_TRACE, ("ip_input: UDP packet to DHCP client port %"U16_F"\n",
+      LWIP_DEBUGF(IP_DEBUG1 | LWIP_DBG_TRACE, ("ip_input: UDP packet to DHCP client port %"U16_F"\n",
         ntohs(udphdr->dest)));
       if (IP_ACCEPT_LINK_LAYER_ADDRESSED_PORT(udphdr->dest)) {
         LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_TRACE, ("ip_input: DHCP packet accepted.\n"));
@@ -421,7 +421,7 @@ ip_input(struct pbuf *p, struct netif *inp)
   /* packet not for us? */
   if (netif == NULL) {
     /* packet not for us, route or discard */
-    LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_TRACE, ("ip_input: packet not for us.\n"));
+    LWIP_DEBUGF(IP_DEBUG1 | LWIP_DBG_TRACE, ("ip_input: packet not for us.\n"));
 #if IP_FORWARD
     /* non-broadcast packet? */
     if (!ip_addr_isbroadcast(&current_iphdr_dest, inp)) {
