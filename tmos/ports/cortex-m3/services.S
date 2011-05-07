@@ -542,14 +542,14 @@ ENDF(	locked_set_byte		)
 //------------------------------------------------------------------------------
 //unsigned int  locked_clr_byte(volatile unsigned char& var, unsigned int flags);
 FUNC(	locked_clr_byte		)
-
+				mov				r12, r0
 1:
-				ldrexb			r3, [r0]
-				ands			r3, r1
-				strexb			r2, r3, [r0]
+				ldrexb			r3, [r12]
+				and				r0, r1, r3
+				bics			r3, r0
+				strexb			r2, r3, [r12]
 				cmp				r2, #0
 				bne				1b
-				mov				r0, r3
 				bx				lr
 ENDF(	locked_clr_byte		)
 
