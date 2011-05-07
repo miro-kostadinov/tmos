@@ -1080,7 +1080,7 @@ void stellarisif_interrupt(struct netif *netif)
 	p = low_level_receive(netif);
 	while (p != NULL)
 	{
-    	TRACELN1(">");
+    	TRACE1(">");
 		/* Add the rx packet to the rx queue */
 		if (!enqueue_packet(p, &drv_data->rxq))
 		{
