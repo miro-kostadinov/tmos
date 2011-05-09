@@ -10,6 +10,9 @@
 #include <lwip_api.h>
 #include <lwip/tcp_impl.h>
 
+err_t lwip_cbf_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err);
+void lwip_cbf_err(void *arg, err_t err);
+
 //--------------------   TCP NEW   -------------------------------------------//
 #ifdef LWIP_CMD_TCP_NEW
 RES_CODE lwip_api_tcp_new(tcp_handle* client, struct netif *netif)
@@ -114,6 +117,9 @@ err_t lwip_cbf_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 		//client listens...
 		if(client->accept_que.push(newpcb))
 		{
+			newpcb->callback_arg = NULL;
+			newpcb->recv = lwip_cbf_recv;
+			newpcb->errf = lwip_cbf_err;
 			//send signal
 			if(client->res & FLG_BUSY)
 			{
