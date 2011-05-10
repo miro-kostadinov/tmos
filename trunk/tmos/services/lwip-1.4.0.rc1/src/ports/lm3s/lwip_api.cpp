@@ -477,11 +477,11 @@ RES_CODE lwip_api_read(tcp_handle* client)
 				unsigned int to_read;
 
 				src = (char*)p->payload;
-				if(src && p->tot_len)
+				if(src && p->len)
 				{
 					src+= client->recv_pos;
 
-					to_read = p->tot_len - client->recv_pos;
+					to_read = p->len - client->recv_pos;
 					if( to_read > client->len )
 						to_read = client->len;
 
@@ -491,7 +491,7 @@ RES_CODE lwip_api_read(tcp_handle* client)
 					client->recv_pos += to_read;
 					tcp_recved((struct tcp_pcb *)client->mode.as_voidptr, to_read);
 
-					if(client->recv_pos == p->tot_len)
+					if(client->recv_pos == p->len)
 					{
 						pbuf_free(p);
 						client->recv_que.pop(p);
@@ -506,7 +506,7 @@ RES_CODE lwip_api_read(tcp_handle* client)
 				{
 					if(!res)
 					{
-						tcp_recved((struct tcp_pcb *)client->mode.as_voidptr, p->tot_len);
+						tcp_recved((struct tcp_pcb *)client->mode.as_voidptr, p->len);
 						pbuf_free(p);
 					}
 
@@ -581,7 +581,7 @@ static void api_tcp_drain(tcp_handle* client)
 	{
 		if (p)
 		{
-			tcp_recved(pcb,	p->tot_len - client->recv_pos);
+			tcp_recved(pcb,	p->len - client->recv_pos);
 			client->recv_pos = 0;
 			pbuf_free(p);
 		}
