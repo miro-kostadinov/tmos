@@ -13,6 +13,7 @@
 
 #include "lwip/opt.h"
 #include "lwip/netif.h"
+#include "lwip/netif.h"
 
 
 //*****************************************************************************
@@ -71,9 +72,9 @@ struct pbufq
 
 struct ip_adr_set
 {
-	unsigned long ip_addr;
-	unsigned long net_mask;
-	unsigned long gw_addr;
+	struct ip_addr ip_addr;
+	struct ip_addr net_mask;
+	struct ip_addr gw_addr;
 	unsigned char ip_addr_mode; // IPADDR_USE_XXX
 };
 
