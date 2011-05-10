@@ -16,7 +16,7 @@ local_h_src-y 	:=
 
 lwip_h_src 	+= lwip/opt.h lwip/debug.h lwip/arch.h lwip/netif.h lwip/err.h 
 lwip_h_src 	+= lwip/ip_addr.h lwip/def.h lwip/pbuf.h lwip/tcp.h lwip/sys.h 
-lwip_h_src 	+= lwip/mem.h lwip/ip.h lwip/icmp.h
+lwip_h_src 	+= lwip/mem.h lwip/ip.h lwip/icmp.h lwip/inet.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

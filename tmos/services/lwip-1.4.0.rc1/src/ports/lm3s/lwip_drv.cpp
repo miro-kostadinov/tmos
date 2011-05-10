@@ -668,10 +668,6 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
 {
 	LWIP_DRIVER_DATA* drv_data = drv_info->drv_data;
 
-    struct ip_addr ip_addr;
-    struct ip_addr net_mask;
-    struct ip_addr gw_addr;
-
     //
     // Check the parameters.
     //
@@ -729,23 +725,6 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
     //
     lwip_init();
 
-    //
-    // Setup the network address values.
-    //
-    if(set->ip_addr_mode == IPADDR_USE_STATIC)
-    {
-        ip_addr.addr = htonl(set->ip_addr);
-        net_mask.addr = htonl(set->net_mask);
-        gw_addr.addr = htonl(set->gw_addr);
-    }
-#if LWIP_DHCP || LWIP_AUTOIP
-    else
-    {
-        ip_addr.addr = 0;
-        net_mask.addr = 0;
-        gw_addr.addr = 0;
-    }
-#endif
 
     //
     // Create, configure and add the Ethernet controller interface with
@@ -753,9 +732,9 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
     //
     netif_add(
     		&drv_data->lwip_netif,	//pre-allocated netif structure
-    		&ip_addr, 				//IP address for the new netif
-    		&net_mask, 				//network mask for the new netif
-    		&gw_addr, 				//gateway IP address for the new netif
+    		&set->ip_addr, 			//IP address for the new netif
+    		&set->net_mask, 		//network mask for the new netif
+    		&set->gw_addr, 			//gateway IP address for the new netif
     		drv_info->hw_base,		//opaque data passed to the new netif
             ethernetif_init,		//callback function that initializes the interface
             ip_input				//callback function that is called to pass
@@ -861,9 +840,6 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
 //*****************************************************************************
 void lwIPNetworkConfigChange(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
 {
-    struct ip_addr ip_addr;
-    struct ip_addr net_mask;
-    struct ip_addr gw_addr;
     struct netif *netif = &drv_info->drv_data->lwip_netif;
 	LWIP_DRIVER_DATA* drv_data = drv_info->drv_data;
 
@@ -885,23 +861,6 @@ void lwIPNetworkConfigChange(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
     ASSERT(set->ip_addr_mode == IPADDR_USE_STATIC);
 #endif
 
-    //
-    // Setup the network address values.
-    //
-    if(set->ip_addr_mode == IPADDR_USE_STATIC)
-    {
-        ip_addr.addr = htonl(set->ip_addr);
-        net_mask.addr = htonl(set->net_mask);
-        gw_addr.addr = htonl(set->gw_addr);
-    }
-#if LWIP_DHCP || LWIP_AUTOIP
-    else
-    {
-        ip_addr.addr = 0;
-        net_mask.addr = 0;
-        gw_addr.addr = 0;
-    }
-#endif
 
     //
     // Switch on the current IP Address Aquisition mode.
@@ -918,7 +877,7 @@ void lwIPNetworkConfigChange(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
             // configuration in lwIP, and if necessary, will reset any links
             // that are active.  This is valid for all three modes.
             //
-            netif_set_addr(netif, &ip_addr, &net_mask, &gw_addr);
+            netif_set_addr(netif, &set->ip_addr, &set->net_mask, &set->gw_addr);
 
             //
             // If we are going to DHCP mode, then start the DHCP server now.
@@ -959,7 +918,7 @@ void lwIPNetworkConfigChange(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
             if(set->ip_addr_mode == IPADDR_USE_STATIC)
             {
                 dhcp_stop(netif);
-                netif_set_addr(netif, &ip_addr, &net_mask, &gw_addr);
+                netif_set_addr(netif, &set->ip_addr, &set->net_mask, &set->gw_addr);
             }
 
             //
@@ -970,7 +929,7 @@ void lwIPNetworkConfigChange(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
             else if(set->ip_addr_mode == IPADDR_USE_AUTOIP)
             {
                 dhcp_stop(netif);
-                netif_set_addr(netif, &ip_addr, &net_mask, &gw_addr);
+                netif_set_addr(netif, &set->ip_addr, &set->net_mask, &set->gw_addr);
                 autoip_start(netif);
             }
 #endif
@@ -991,7 +950,7 @@ void lwIPNetworkConfigChange(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
             if(set->ip_addr_mode == IPADDR_USE_STATIC)
             {
                 autoip_stop(netif);
-                netif_set_addr(netif, &ip_addr, &net_mask, &gw_addr);
+                netif_set_addr(netif, &set->ip_addr, &set->net_mask, &set->gw_addr);
             }
 
             //
@@ -1002,7 +961,7 @@ void lwIPNetworkConfigChange(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
             else if(set->ip_addr_mode == IPADDR_USE_AUTOIP)
             {
                 autoip_stop(netif);
-                netif_set_addr(netif, &ip_addr, &net_mask, &gw_addr);
+                netif_set_addr(netif, &set->ip_addr, &set->net_mask, &set->gw_addr);
                 dhcp_start(netif);
             }
 #endif
@@ -1119,6 +1078,13 @@ void stellarisif_interrupt(struct netif *netif)
 //*			lwIP thread
 //*----------------------------------------------------------------------------
 
+WEAK_C void lwip_default_settings(ip_adr_set *set)
+{
+	set->ip_addr.addr = 0;
+	set->gw_addr.addr = 0;
+	set->net_mask.addr = 0;
+	set->ip_addr_mode = IPADDR_USE_DHCP;
+}
 
 #define LWIP_THREAD_RXTXSIG		1
 void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
@@ -1130,10 +1096,7 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 
 	ALLOCATE_SIGNAL(LWIP_THREAD_RXTXSIG);
 
-	set.ip_addr = 0;
-	set.gw_addr = 0;
-	set.net_mask = 0;
-	set.ip_addr_mode = IPADDR_USE_DHCP;
+	lwip_default_settings(&set);
 
 	lwIPInit(drv_info, &set);
 	helper.tsk_safe_open(drv_info->info.drv_index, 0);
