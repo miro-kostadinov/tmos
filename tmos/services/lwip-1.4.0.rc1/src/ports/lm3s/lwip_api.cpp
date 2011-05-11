@@ -433,90 +433,85 @@ err_t lwip_cbf_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
 	tcp_handle* client = (tcp_handle*)arg;
 
-	if(client == NULL)
-		return ERR_VAL;
-
-	client->error = err;
-
-	if(client->recv_que.push(p))
+	if(client)
 	{
-		//send signal
-		//Get from the driver
-		if(locked_clr_byte(&client->mode1, TCPHS_OP_READING))
+		if(client->recv_que.push(p))
 		{
-			RES_CODE res = lwip_api_read(client);
-
-			if(res & FLG_SIGNALED)
+			//send signal
+			//Get from the driver
+			if(locked_clr_byte(&client->mode1, TCPHS_OP_READING))
 			{
-				tsk_HND_SET_STATUS(client, res);
+				RES_CODE res = lwip_api_read(client);
+
+				if(res & FLG_SIGNALED)
+				{
+					tsk_HND_SET_STATUS(client, res);
+				}
 			}
+
+			// Packet is accepted!
+			return ERR_OK;
 		}
-
-	} else
-	{
-		return ERR_MEM;
 	}
-
-
-	return ERR_OK;
+	//Refuse the packet now. We will'be called again from the tcp timer
+	return ERR_VAL;
 }
 
 RES_CODE lwip_api_read(tcp_handle* client)
 {
 	RES_CODE res = 0;
-	char* src;
 	struct pbuf *p;
+
+	if(!client->len)
+	{
+		return RES_SIG_OK;
+	}
 
 	if(client->mode1 == TCPHS_ESTABLISHED)
 	{
 		while( !client->recv_que.empty() )
 		{
+			unsigned int to_read;
+
 			p = client->recv_que.top();
-			if(p)
+
+			to_read = pbuf_copy_partial(p, client->dst.as_byteptr, client->len,
+					client->recv_pos);
+			if(to_read)
 			{
-				unsigned int to_read;
+				client->dst.as_byteptr += to_read;
+				client->len -= to_read;
+				client->recv_pos += to_read;
+				tcp_recved((struct tcp_pcb *)client->mode.as_voidptr, to_read);
 
-				src = (char*)p->payload;
-				if(src && p->len)
+				if(client->recv_pos == p->tot_len)
 				{
-					src+= client->recv_pos;
-
-					to_read = p->len - client->recv_pos;
-					if( to_read > client->len )
-						to_read = client->len;
-
-					memcpy(client->dst.as_voidptr, src, to_read);
-					client->dst.as_byteptr += to_read;
-					client->len -= to_read;
-					client->recv_pos += to_read;
-					tcp_recved((struct tcp_pcb *)client->mode.as_voidptr, to_read);
-
-					if(client->recv_pos == p->len)
-					{
-						pbuf_free(p);
-						client->recv_que.pop(p);
-						client->recv_pos =0;
-					}
-
-					res = RES_SIG_OK;
-
-					if(client->len)
-						continue;
-				} else
-				{
-					if(!res)
-					{
-						tcp_recved((struct tcp_pcb *)client->mode.as_voidptr, p->len);
-						pbuf_free(p);
-					}
-
+					pbuf_free(p);
+					client->recv_que.pop(p);
+					client->recv_pos =0;
 				}
+
+				if(!client->len)
+					return RES_SIG_OK;
+
+				res = RES_SIG_OK;
+			} else
+			{
+				if(p)
+				{
+					to_read = p->tot_len;
+					if(client->recv_pos <= to_read)
+						to_read -= client->recv_pos;
+					client->recv_pos =0;
+					tcp_recved((struct tcp_pcb *)client->mode.as_voidptr, to_read);
+					pbuf_free(p);
+				}
+
+				if(!res)
+					client->recv_que.pop(p);
+
+				return RES_SIG_OK;
 			}
-
-			if(!res)
-				client->recv_que.pop(p);
-
-			return RES_SIG_OK;
 		}
 	}
 
@@ -581,11 +576,13 @@ static void api_tcp_drain(tcp_handle* client)
 	{
 		if (p)
 		{
-			tcp_recved(pcb,	p->len - client->recv_pos);
-			client->recv_pos = 0;
+			unsigned int len = p->tot_len;
+			if(client->recv_pos <= len)
+				len -= client->recv_pos;
+			tcp_recved(pcb,	len);
 			pbuf_free(p);
 		}
-
+		client->recv_pos = 0;
 	}
 
 	/* Drain the accept_que. */
