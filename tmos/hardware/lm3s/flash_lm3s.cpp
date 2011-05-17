@@ -81,6 +81,20 @@ void FLASHC_Type::write(unsigned long ulDstAddr, const unsigned char *pucSrcData
     }
 }
 
+void FLASHC_Type::write_user(unsigned long ulReg, unsigned long ulData)
+{
+    FMA = ulReg;
+    FMD = ulData;
+    FMC = FLASH_FMC_WRKEY | FLASH_FMC_COMT;
+
+    //
+    // Wait until the flash has been programmed.
+    //
+    while(FMC )
+    {
+    }
+}
+
 void FLASHC_Type::fast_write(unsigned long ulDstAddr, const unsigned char *pucSrcData,
 		unsigned long ulLength)
 {

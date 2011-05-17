@@ -52,6 +52,7 @@ struct FLASHC_Type
 
 	void erase_page(unsigned long ulAddress);
 	void write(unsigned long ulDstAddr, const unsigned char *pucSrcData, unsigned long ulLength);
+	void write_user(unsigned long ulReg, unsigned long ulData);
 	void fast_write(unsigned long ulDstAddr, const unsigned char *pucSrcData, unsigned long ulLength);
 };
 
