@@ -704,7 +704,7 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
         //
         TRACE1("MAC Address Not Programmed!\n");
         ulUser0 = 0x00123456;
-        ulUser1 = 0x00123456;
+        ulUser1 = 0x000050A5;
     }
 
     //
@@ -712,12 +712,12 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
     // address needed to program the hardware registers, then program the MAC
     // address into the Ethernet Controller registers.
     //
-    pucMACArray[0] = ((ulUser0 >>  0) & 0xff);
-    pucMACArray[1] = ((ulUser0 >>  8) & 0xff);
-    pucMACArray[2] = ((ulUser0 >> 16) & 0xff);
-    pucMACArray[3] = ((ulUser1 >>  0) & 0xff);
-    pucMACArray[4] = ((ulUser1 >>  8) & 0xff);
-    pucMACArray[5] = ((ulUser1 >> 16) & 0xff);
+    pucMACArray[0] = ((ulUser1 >> 16) & 0xff);
+    pucMACArray[1] = ((ulUser1 >>  8) & 0xff);
+    pucMACArray[2] = ((ulUser1 >>  0) & 0xff);
+    pucMACArray[3] = ((ulUser0 >> 16) & 0xff);
+    pucMACArray[4] = ((ulUser0 >>  8) & 0xff);
+    pucMACArray[5] = ((ulUser0 >>  0) & 0xff);
     EthernetMACAddrSet(drv_info->hw_base, pucMACArray);
 
     //
