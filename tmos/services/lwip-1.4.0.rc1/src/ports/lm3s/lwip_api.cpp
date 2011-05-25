@@ -10,6 +10,11 @@
 #include <lwip_api.h>
 #include <lwip/tcp_impl.h>
 
+extern "C"
+{
+#include <lwip/dns.h>
+}
+
 err_t lwip_cbf_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err);
 void lwip_cbf_err(void *arg, err_t err);
 
@@ -109,6 +114,7 @@ err_t lwip_cbf_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 {
 	tcp_handle* client = (tcp_handle*)arg;
 
+	TRACELN("LWIP accept %x", client);
 	if(client == NULL)
 		return ERR_VAL;
 
@@ -237,6 +243,7 @@ err_t lwip_cbf_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 {
 	tcp_handle* client = (tcp_handle*)arg;
 
+	TRACELN("LWIP connect %x", client);
 	if(client == NULL)
 		return ERR_VAL;
 
@@ -300,6 +307,7 @@ err_t lwip_cbf_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 {
 	tcp_handle* client = (tcp_handle*)arg;
 
+	TRACELN("LWIP sent %x %x", client, len);
 	if(client == NULL)
 		return ERR_VAL;
 
@@ -433,6 +441,12 @@ err_t lwip_cbf_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
 	tcp_handle* client = (tcp_handle*)arg;
 
+	TRACELN("LWIP recv %x %x", client, err);
+	if(p)
+	{
+		TRACE(" len=%d tot=%d", p->len, p->tot_len);
+	}
+
 	if(client)
 	{
 		if(client->recv_que.push(p))
@@ -482,10 +496,10 @@ RES_CODE lwip_api_read(tcp_handle* client)
 				client->dst.as_byteptr += to_read;
 				client->len -= to_read;
 				client->recv_pos += to_read;
-				tcp_recved((struct tcp_pcb *)client->mode.as_voidptr, to_read);
 
 				if(client->recv_pos == p->tot_len)
 				{
+					tcp_recved((struct tcp_pcb *)client->mode.as_voidptr, p->tot_len);
 					pbuf_free(p);
 					client->recv_que.pop(p);
 					client->recv_pos =0;
@@ -519,6 +533,65 @@ RES_CODE lwip_api_read(tcp_handle* client)
 	{
 		//Give to the driver
 		client->mode1 = TCPHS_READING;
+	}
+	return res;
+}
+
+//--------------------   DNS   ---------------------------------------------//
+/**
+ * Callback function that is called when DNS name is resolved
+ * (or on timeout). A waiting application thread is waked up by
+ * signaling the semaphore.
+ */
+void lwip_cbf_dns(const char *name, ip_addr_t *ipaddr, void *arg)
+{
+	tcp_handle* client = (tcp_handle*)arg;
+
+	if(client)
+	{
+		if(client->res & FLG_BUSY)
+		{
+			  if (ipaddr == NULL)
+			  {
+			    /* timeout or memory error */
+				tsk_HND_SET_STATUS(client, RES_SIG_ERROR);
+			  } else {
+			    /* address was resolved */
+				  *client->dst.as_intptr = ipaddr->addr;
+				  tsk_HND_SET_STATUS(client, RES_SIG_OK);
+			  }
+		}
+
+	}
+}
+
+RES_CODE lwip_api_dns(tcp_handle* client, struct netif *netif)
+{
+	ip_addr_t * ptr;
+
+	ptr = (ip_addr_t *)client->dst.as_voidptr;
+	client->error = dns_gethostbyname(client->src.as_charptr, ptr, lwip_cbf_dns, client);
+	if (client->error != (unsigned)ERR_INPROGRESS)
+	{
+		/* on error or immediate success, wake up the application
+		 * task waiting in netconn_gethostbyname */
+		if(client->error == ERR_OK)
+			return RES_SIG_OK;
+		else
+			return RES_SIG_ERROR;
+	}
+
+	return 0;
+}
+
+RES_CODE tcp_handle::lwip_tcp_dns(const char* url, ip_addr_t *addr)
+{
+	if(complete() && dst.as_voidptr)
+	{
+		src.as_cvoidptr = url;
+		dst.as_voidptr = addr;
+		set_res_cmd(LWIP_CMD_TCP_DNS);
+		tsk_start_and_wait();
 	}
 	return res;
 }
@@ -779,6 +852,10 @@ extern "C" const LWIP_API_FUNC lwip_api_functions[MAX_LWIPCALLBACK+1] =
 
 #ifdef LWIP_CMD_TCP_DELETE
 	lwip_api_tcp_delete,
+#endif
+
+#ifdef LWIP_CMD_TCP_DNS
+	lwip_api_dns,
 #endif
 
 	NULL
