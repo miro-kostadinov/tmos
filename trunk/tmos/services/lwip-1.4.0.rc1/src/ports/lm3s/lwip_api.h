@@ -18,9 +18,9 @@
 #define LWIP_CMD_TCP_ACCEPT		(( 3 <<4)+CMD_COMMAND)
 #define LWIP_CMD_TCP_CONNECT	(( 4 <<4)+CMD_COMMAND)
 #define LWIP_CMD_TCP_CLOSE		(( 5 <<4)+CMD_COMMAND)
-//#define LWIP_CMD_TCP_DELETE		(( 6 <<4)+CMD_COMMAND)
+#define LWIP_CMD_TCP_DNS		(( 6 <<4)+CMD_COMMAND)
 
-#define MAX_LWIPCALLBACK 		6
+#define MAX_LWIPCALLBACK 		7
 
 #ifndef LWIP_DRV_MAX_API_QUEUE
 #define LWIP_DRV_MAX_API_QUEUE 	3
@@ -102,6 +102,10 @@ RES_CODE lwip_tcp_close(unsigned int rxtx=LWIP_SHUT_RDWR);
 
 #ifdef LWIP_CMD_TCP_DELETE
 RES_CODE lwip_tcp_delete();
+#endif
+
+#ifdef LWIP_CMD_TCP_DNS
+RES_CODE lwip_tcp_dns(const char* url, ip_addr_t *addr);
 #endif
 
 };
