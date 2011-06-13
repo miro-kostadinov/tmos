@@ -126,13 +126,6 @@ register TASK_STRU *CURRENT_TASK asm("r11");
 
 #ifdef __cplusplus
 }
-template <int stksize>
-struct dyn_task
-{
-	unsigned reserved; // the task memory is released and then task exits...
-	TASK_STRU tcb;
-	unsigned int stack[stksize];
-};
 
 #endif
 
