@@ -263,6 +263,7 @@ void usr_task_init_static(TASK_DESCRIPTION const * desc, int bStart)
 	}
 }
 
+#ifdef malloc_swi
 Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
 		unsigned char priority, unsigned int stack_words)
 {
@@ -300,6 +301,7 @@ Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
 
 	return task;
 }
+#endif /*malloc_swi*/
 
 /**
  * Allocates one signal (from 8 to 16)
