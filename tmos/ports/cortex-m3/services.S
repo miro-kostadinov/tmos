@@ -304,12 +304,13 @@ FUNC(	svc_task_suspend	)
 
 				m_TRemove		r0, r2, r3
 				m_TCleanup		r0
-				mov				r3, r0
+				push			{r0,lr}
+				bl				svc_free
+				pop				{r3,lr}
                 movs			r0, #TSKSTATE_SUSPEND
 				b				s_susp_task
 
 ENDF(	svc_task_suspend	)
-
 
 //------------------------------------------------------------------------------
 //unsigned int resume_wait_signal(unsigned int signal);
