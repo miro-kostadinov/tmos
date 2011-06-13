@@ -217,7 +217,8 @@ extern "C" void __aeabi_unwind_cpp_pr0(void)
 
 void sys_task_return(void)
 {
-	usr_task_suspend(CURRENT_TASK);
+	while(1)
+		usr_task_suspend(CURRENT_TASK);
 }
 
 /**
@@ -260,6 +261,44 @@ void usr_task_init_static(TASK_DESCRIPTION const * desc, int bStart)
 		else
 			svc_task_schedule(task);
 	}
+}
+
+Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
+		unsigned char priority, unsigned int stack_words)
+{
+	Task* task;
+
+	//Allocate task control block and stack
+	stack_words = (stack_words * 4) + sizeof(TASK_STRU);
+	if (__get_CONTROL() & 2)
+	{
+		task = (Task*)usr_malloc(stack_words);
+	} else
+	{
+		task = (Task*)svc_malloc(stack_words);
+	}
+
+	if(task)
+	{
+		TASK_STACKED_CTX ctx;
+		ctx = (TASK_STACKED_CTX) (((unsigned int)task) + stack_words);
+		ctx--;
+		ctx->psr.as_int = 0x01000000; //thumb mode
+		ctx->pc.as_voidptr = (void*) func;
+		ctx->lr.as_voidptr = (void*) sys_task_return;
+
+		task->sp = ctx;
+
+		task->priority = priority;
+		task->time = main_task.time;
+		task->prev = task->next = task->tprev = task->tnext = task;
+		task->signals = 0;
+		task->aloc_sig = 0;
+		task->state = TSKSTATE_SUSPEND;
+		strcpy(task->name, name);
+	}
+
+	return task;
 }
 
 /**

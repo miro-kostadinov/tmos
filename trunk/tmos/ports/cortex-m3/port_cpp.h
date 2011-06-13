@@ -131,6 +131,8 @@ extern "C" void __cxa_pure_virtual(void);
 
 
 void usr_task_init_static(TASK_DESCRIPTION const * desc, int bStart);
+Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
+		unsigned char priority, unsigned int stack_words);
 
 /**
  * Macro to allocate a task signal
