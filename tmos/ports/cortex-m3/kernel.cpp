@@ -273,10 +273,10 @@ Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
 	stack_words = (stack_words * 4) + sizeof(TASK_STRU);
 	if (__get_CONTROL() & 2)
 	{
-		task = (Task*)usr_malloc(stack_words);
+		task = (Task*)((unsigned int)usr_malloc(stack_words+4) +4);
 	} else
 	{
-		task = (Task*)svc_malloc(stack_words);
+		task = (Task*)((unsigned int)svc_malloc(stack_words+4)+4);
 	}
 
 	if(task)

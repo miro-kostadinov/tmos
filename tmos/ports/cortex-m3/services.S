@@ -305,6 +305,7 @@ FUNC(	svc_task_suspend	)
 				m_TRemove		r0, r2, r3
 				m_TCleanup		r0
 				push			{r0,lr}
+				subs			r0, #4
 				bl				svc_free
 				pop				{r3,lr}
                 movs			r0, #TSKSTATE_SUSPEND
