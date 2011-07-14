@@ -24,6 +24,8 @@
 #include "types_lm3s.h"
 #include "timer_lm3s.h"
 
+/** Number of USB endpoints */
+#define CHIP_USB_NUMENDPOINTS 16
 
 
 #endif /* FAM_CPP_H_ */
