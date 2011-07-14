@@ -1111,7 +1111,7 @@ void USBD_DSR(USBD_INFO drv_info, HANDLE hnd)
 	    {
 		    if (endpoint->state != UDP_ENDPOINT_IDLE)
 		    {
-				svc_HND_SET_STATUS(hnd, RES_ERROR);
+				svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 				return;
 		    }
 		    endpoint->state = UDP_ENDPOINT_SENDING;
@@ -1180,7 +1180,7 @@ void USBD_DSR(USBD_INFO drv_info, HANDLE hnd)
     }
 
 
-	svc_HND_SET_STATUS(hnd, RES_ERROR);
+	svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 }
 
 void USBD_ISR(USBD_INFO drv_info)
