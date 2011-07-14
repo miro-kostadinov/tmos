@@ -93,7 +93,6 @@
 #define TRACE_FOCUS_LEVEL				TRACE_LEVEL_DEBUG
 #define TRACE_FILE_SYSTEM_LEVEL			TRACE_LEVEL_DEBUG
 #define TRACE_PRN_LEVEL					TRACE_LEVEL_DEBUG
-#define TRACE_ECR_LEVEL					TRACE_LEVEL_DEBUG
 // trace functions with levels:
 
 #define TRACE_LEVEL(level, ...) do{ if (level >= TRACE_DEFAULT_LEVEL) TRACE(__VA_ARGS__); }while(0)
