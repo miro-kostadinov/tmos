@@ -200,7 +200,8 @@ void usb_hal_configure(USB_DRV_INFO drv_info)
 	hw_base->USBRXIE = 0;
 	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
 
-	hw_base->USBGPCS = USB_USBGPCS_DEVMOD | USB_USBGPCS_DEVMODOTG;
+	drv_info->hw_base->USBPOWER |= USB_USBPOWER_SOFTCONN;
+	//hw_base->USBGPCS = USB_USBGPCS_DEVMOD | USB_USBGPCS_DEVMODOTG;
 }
 
 static unsigned int usb_hal_ept0_status(USB_CONTROLLER* hw_base)
@@ -939,6 +940,7 @@ static void usb_b_usbis_handler(USB_DRV_INFO drv_info, unsigned int status)
     if(drv_data->usb_state == USB_STATE_DOWN)
     {
     	//Disconnect
+		TRACELN1_USB("USB: session end");
     	drv_info->hw_base->USBPOWER &= ~(USB_USBPOWER_SOFTCONN);
     } else
     {
