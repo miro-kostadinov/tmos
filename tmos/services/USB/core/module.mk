@@ -1,24 +1,23 @@
 ##########################################################################
 #
-#	Make include for services
+#	Make include for services/USB/core
 #	
-#   Platform: MPOS rev.3.0	
+#   Platform: MPOS rev.2.3
 #
+#   www.thumbos.com
 #
 ##########################################################################
 
 # local sources
 local_as_src-y	:=
-local_c_src-y 	:= 
-local_cpp_src-y	:=   
+local_c_src-y 	:=
+local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_as_src-$(USE_AES_TMOS)+= aes_tmos.S
+local_cpp_src-y	+= usb_device.cpp cdc_data_inf.cpp cdc_acm_inf.cpp
 
-local_cpp_src-$(USE_SHA_1) 	+= sha_1.cpp
-
-local_h_src-$(USE_SHA_1) 	+= sha_1.h
-local_h_src-$(USE_AES_TMOS)	+= aes_tmos.h
+local_h_src-y 	+= usb_device.h usb_descriptors.h cdc_descriptors.h 
+local_h_src-y 	+= usb_requests.h usb_interface.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -26,14 +25,11 @@ c_sources  	+= $(call changepath,$(local_c_src-y))
 cpp_sources += $(call changepath,$(local_cpp_src-y))
 h_sources  	+= $(call changepath,$(local_h_src-y))
 
+#add current directory to include path
+inc_dirs += $(subdirectory) 
 
 #submodules
 local_modules-y := 
-
-local_modules-$(USE_POLARSSL)	+= PolarSSL
-local_modules-$(USE_GUI)		+= GUI
-local_modules-$(USE_USB)		+= USB
-local_modules-$(USE_LWIP_1_4)	+= lwip-1.4.0.rc1
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
