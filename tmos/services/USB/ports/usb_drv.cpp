@@ -263,7 +263,10 @@ void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd)
             {
             	usb_ack_packet(drv_info->hw_base, endpoint, eptnum);
             	endpoint->state = ENDPOINT_STATE_IDLE;
-            	svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
+            	if(hnd->len)
+            		svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
+            	else
+                	svc_HND_SET_STATUS(hnd, RES_SIG_OK);
             }
             break;
 
