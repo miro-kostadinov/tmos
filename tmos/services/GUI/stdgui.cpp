@@ -287,7 +287,7 @@ static void draw_box_frame(CMessageBox* msg_hnd, LCD_MODULE* lcd)
 	if(txt)
 	{
 		lcd->set_xy_all(posy, ALL_CENTER);
-		while(txt[0] && (posy < msg_hnd->rect.y1))
+		while(txt[0] && ((posy+lcd->font->hight) < msg_hnd->rect.y1))
 		{
 			lcd->clear_rect(1, posy, 100, posy+10);
 			txt = lcd->draw_text(txt);
