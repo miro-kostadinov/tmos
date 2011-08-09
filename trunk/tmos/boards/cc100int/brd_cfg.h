@@ -19,6 +19,7 @@
 #define USE_CRC32			1
 #define USE_CACHE			1
 #define USE_SHA_1			1
+#define USE_USB				1
 #define USE_GPIO_EXPANDER 	0
 #define USE_GUI				0
 
