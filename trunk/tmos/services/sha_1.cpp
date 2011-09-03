@@ -173,7 +173,7 @@ bool SHA1::Result(CSTRING& message_digest)
     for(i = 0; i < 5; i++)
     {
     	char buf[10];
-        tmos_sprintf(buf,"%0X",H[i]);
+        tmos_sprintf(buf,"%08X",H[i]);
         message_digest += buf;
     }
 
