@@ -1,4 +1,4 @@
-//==========================================================================
+//==============================================================================
 // This file is part of TMOS Operating System.
 // Copyright (C) 2007-2008 Informa Ltd.
 //
@@ -11,13 +11,13 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
-//==========================================================================
+//==============================================================================
 //
 // Author(s):     Miroslav Kostadinov
 // Date:          2008-05-01
 // Description:   Common types for TMOS
 //
-//========================================================================
+//==============================================================================
 #ifndef	OSTYPES_H
 #define	OSTYPES_H
 
@@ -31,9 +31,9 @@ extern "C"
 {
 #endif
 
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 Task related declarations
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 #define CURRENT_TIME (PMAIN_TASK->time)
@@ -41,19 +41,19 @@ extern "C"
 
 typedef union
 {
-	unsigned int 	as_int;			/**< as int		*/
-	void *			as_voidptr;		/**< as void*	*/
+	unsigned int 	as_int;			/**< as int				*/
+	void *			as_voidptr;		/**< as void*			*/
 	const void *	as_cvoidptr;	/**< as const void* 	*/
 	unsigned int *	as_intptr;		/**< as uint*			*/
 	unsigned char * as_string;		/**< as uchar *			*/
 	unsigned char * as_byteptr;		/**< as uchar *			*/
 	char * 			as_charptr;		/**< as char *			*/
-	unsigned short int * as_shortptr; /**< as short *			*/
+	unsigned short int* as_shortptr;/**< as short *			*/
 } word_reg;
 
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 TASK
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 typedef void     (*TASK_FUNCTION)(void);
 
 typedef struct
@@ -72,7 +72,7 @@ typedef struct TASK_STRU_t Task;
 typedef struct TASK_STRU_t
 {
     //Task Control Block
-	TASK_STACKED_CTX	sp;	/**< task stack		*/
+	TASK_STACKED_CTX	sp;	/**< task stack	*/
 	word_reg 		r4;		/**< r4			*/
 	word_reg 		r5;		/**< r5			*/
 	word_reg 		r6;		/**< r6			*/
@@ -80,27 +80,31 @@ typedef struct TASK_STRU_t
 	word_reg 		r8;		/**< r8			*/
 	word_reg 		r9;		/**< r9			*/
 
-    unsigned short	aloc_sig;	/**< allocated signals		*/
-    unsigned char	state;		/**< task state			*/
-    unsigned char	priority;	/**< task priority			*/
-    unsigned int	signals;	/**< task signals			*/
+    unsigned short	aloc_sig;	/**< allocated signals			*/
+    unsigned char	state;		/**< task state					*/
+    unsigned char	priority;	/**< task priority				*/
+    unsigned int	signals;	/**< task signals				*/
     volatile Task	*next;		/**< pointer to the next task	*/
     volatile Task	*prev;		/**< pointer to the prev task	*/
-    volatile unsigned int	time;	/**< task time	*/
-    Task			*tnext;		/**< next in time list	*/
-    Task			*tprev;		/**< prev in time list	*/
-    Task			*tlist;		/**< all tasks list(todo)*/
-	char			name[8];	/**< task name	*/
-	RES_CODE		res;		/**< task status doc!	*/
+    volatile unsigned int time;	/**< task time					*/
+    Task			*tnext;		/**< next in time list			*/
+    Task			*tprev;		/**< prev in time list			*/
+    Task			*tlist;		/**< all tasks list(todo)		*/
+	char			name[8];	/**< task name					*/
+	RES_CODE		res;		/**< task status doc!			*/
+#ifdef USE_MEMORY_TRACKING
+	int				aloc_mem;	/**< allocated memory words (main_task) */
+	int				aloc_ptrs;	/**< allocated memory pointers	*/
+#endif
 } TASK_STRU;
 
 typedef struct
 {
-	Task 			*tsk;	/**< pointer to the task	*/
-    unsigned 		*stack;	/**< pointer to the task stack	*/
-    TASK_FUNCTION	func;	/**< thread function	*/
-    unsigned char	priority;	/**< task priority	*/
-	const char		name[8];	/**< task name	*/
+	Task 			*tsk;		/**< pointer to the task		*/
+    unsigned 		*stack;		/**< pointer to the task stack	*/
+    TASK_FUNCTION	func;		/**< thread function			*/
+    unsigned char	priority;	/**< task priority				*/
+	const char		name[8];	/**< task name					*/
 }TASK_DESCRIPTION;
 
 // macro to declare a task statically
