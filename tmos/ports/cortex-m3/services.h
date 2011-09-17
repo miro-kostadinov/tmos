@@ -29,6 +29,7 @@ int  locked_dec_byte(volatile unsigned char* Addend);
 int  locked_inc_short(volatile short* Addend);
 int  locked_add_short(volatile short* Addend, int);
 int  locked_dec_short(volatile short* Addend);
+int  locked_inc_int(volatile int* Addend);
 int  locked_add_int(volatile int* Addend, int);
 int  locked_dec_int(volatile int* Addend);
 int  locked_set_byte(volatile unsigned char* var, unsigned int flags);
