@@ -1,4 +1,4 @@
-//==========================================================================
+//==============================================================================
 // This file is part of TMOS Operating System.
 // Copyright (C) 2007-2010 Informa Ltd.
 //
@@ -11,22 +11,22 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
-//==========================================================================
+//==============================================================================
 //
 // Author(s):     Miroslav Kostadinov
 // Date:          2008-05-01
 // Description:   Common defines for TMOS
 //
 // NOTE: This file can be included in both C and assembler sources
-//========================================================================
+//==============================================================================
 #ifndef	PORT_INC_H_
 #define	PORT_INC_H_
 
 #include <tmos_cfg.h>
 
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 task structure offsets
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #define tsk_sp			0x00
 #define tsk_r4			0x04
 #define tsk_r5			0x08
@@ -46,6 +46,11 @@
 #define tsk_tprev		0x34
 #define tsk_tlist		0x38
 #define tsk_name		0x3c
+#define tsk_res			0x40
+#ifdef USE_MEMORY_TRACKING
+#define tsk_aloc_mem	0x44
+#define tsk_aloc_ptrs	0x48
+#endif
 
 //	offsets in stacked context structure
 //#define tsk_tprev		0x34

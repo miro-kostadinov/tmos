@@ -164,13 +164,21 @@ sma_search_loop:
 				subs			bsize, bestsize, asize
 				cmp				bsize, #1
 				beq				7f
-				strh			bsize, [best]						// cf-> bs-s
-				adds			bptr, asize, bsize, lsl #17			// 	 bs-s<   s
+				strh			bsize, [best]					// cf-> bs-s
+				adds			bptr, asize, bsize, lsl #17		// bs-s<   s
 				adds			best, best, bsize, lsl #2
 				str				bptr, [best], #4
 				lsls			bsize, asize, #1
 				subs			bptr, best, #2
-				strh			bsize, [bptr, asize, lsl #2]			// n -> s<
+				strh			bsize, [bptr, asize, lsl #2]	// n -> s<
+#ifdef USE_MEMORY_TRACKING
+				ldr				bsize, [REG_MTASK, #tsk_aloc_mem]
+				adds			bsize, asize
+				str				bsize, [REG_MTASK, #tsk_aloc_mem]
+				ldr				bsize, [REG_MTASK, #tsk_aloc_ptrs]
+				adds			bsize, #1
+				str				bsize, [REG_MTASK, #tsk_aloc_ptrs]
+#endif
 sma_exit:		bx				lr
 
 
@@ -189,9 +197,17 @@ sma_match:		//match (pf, asize=bsize)
 //    +----+----+----+----+              +----+----+-----+----+
 				movs			best, bptr
 7:
+#ifdef USE_MEMORY_TRACKING
+				ldr				bsize, [REG_MTASK, #tsk_aloc_mem]
+				adds			bsize, bestsize
+				str				bsize, [REG_MTASK, #tsk_aloc_mem]
+				ldr				bsize, [REG_MTASK, #tsk_aloc_ptrs]
+				adds			bsize, #1
+				str				bsize, [REG_MTASK, #tsk_aloc_ptrs]
+#endif
 				ldrh			bsize, [best, #2]!
 				subs			bsize, #1
-				strh			bsize, [best], #2					//cf: p1=>p0
+				strh			bsize, [best], #2		//cf: p1=>p0
 				ldrsh			asize, [best]			//nf
 				ldrsh			bsize, [best, #2]		//pf
 				adds			asize, bsize
@@ -221,11 +237,20 @@ ENDF(	svc_free		)
 //------------------------------------------------------------------------------
 //void svc_pool_free(void* ptr, void* pool);
 FUNC(	svc_pool_free		)
+//------------------------------------------------------------------------------
 
 				cmp				r0, r1
 				bls				smf_exit				//BAD ptr!
 //check next
 				ldrh			r12, [r0, #-4]!			//r12=cs
+#ifdef USE_MEMORY_TRACKING
+				ldr				r3, [REG_MTASK, #tsk_aloc_mem]
+				subs			r3, r12
+				str				r3, [REG_MTASK, #tsk_aloc_mem]
+				ldr				r3, [REG_MTASK, #tsk_aloc_ptrs]
+				subs			r3, #1
+				str				r3, [REG_MTASK, #tsk_aloc_ptrs]
+#endif
 				ldr				r3, [r0, r12, lsl #2]
 				lsls			r3, r3, #16				//r3 = fs<<16
 				bcc				smf_check_prev
@@ -320,6 +345,7 @@ ENDF(	svc_free_pool		)
 //------------------------------------------------------------------------------
 //void * svc_realloc(void* ptr, unsigned int size)
 FUNC(	svc_realloc		)
+//------------------------------------------------------------------------------
 
 				cmp				r0, #0
 				beq				.L5					//realloc(NULL,size) -> malloc(size)
@@ -360,6 +386,11 @@ FUNC(	svc_realloc		)
 //assimilate next
 				add				r2, r2, r5, lsr #16	//r2=cs+fs
 				strh			r2, [r0]			//	r0->next = cs+fs
+#ifdef USE_MEMORY_TRACKING
+				ldr				r1, [REG_MTASK, #tsk_aloc_mem]
+				add				r1, r1, r5, lsr #16
+				str				r1, [REG_MTASK, #tsk_aloc_mem]
+#endif
 
 				add				r5, r0, r2, lsl #2	// r5 = nn
 				lsls			r1, r2, #1
@@ -389,6 +420,11 @@ smf_check_split:	//	r0, r1=newsize_b, r2=oldsize_w, r3=newsize_w
 //  n | cs<| ?? |   ...   |            n |cs-ns<|     |   ...   |
 //    +----+----+----+----+              +------+-----+----+----+
 
+#ifdef USE_MEMORY_TRACKING
+				ldr				r4, [REG_MTASK, #tsk_aloc_mem]
+				subs			r4, r1
+				str				r4, [REG_MTASK, #tsk_aloc_mem]
+#endif
 				strh			r3, [r0]				//c->size = newsize
 				adds			r0, r0, r3, lsl #2		//r0=s
 				add				r3, r1, r3, lsl #17
