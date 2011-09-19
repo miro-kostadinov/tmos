@@ -46,10 +46,10 @@
 #define tsk_tprev		0x34
 #define tsk_tlist		0x38
 #define tsk_name		0x3c
-#define tsk_res			0x40
+#define tsk_res			0x44
 #ifdef USE_MEMORY_TRACKING
-#define tsk_aloc_mem	0x44
-#define tsk_aloc_ptrs	0x48
+#define tsk_aloc_mem	0x48
+#define tsk_aloc_ptrs	0x4C
 #endif
 
 //	offsets in stacked context structure

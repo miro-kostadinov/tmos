@@ -169,6 +169,10 @@ extern "C" void sys_kernel_init( void)
     //extra initialization needed for main_task
     main_task.time = 0;								// current time is 000000000
     main_task.state = TSKSTATE_READY;				// leave it suspend ???
+#ifdef USE_MEMORY_TRACKING
+    main_task.aloc_mem = 0;
+    main_task.aloc_ptrs =0;
+#endif
 
     // Reset the drivers in DRV_RESET_FIRST_TABLE
     for (i = 0; (ptr =DRV_TABLE[DRV_RESET_FIRST_TABLE[i]]) ; i++)

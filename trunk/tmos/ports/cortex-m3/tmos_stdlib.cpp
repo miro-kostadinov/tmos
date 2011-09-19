@@ -9,6 +9,7 @@
 #include "tmos_stdlib.h"
 #include "tmos_string.h"
 #include <trace.h>
+#include <cmsis_cpp.h>
 
 /*-----------------------------------------------------------
  * 			Debug Dinamic Memory
@@ -39,29 +40,104 @@ void operator delete[](void *p)
 	tsk_free(p);
 }
 
-
+extern "C" char end;
 
 #if TRACE_MEMORY_LEVEL >= TRACE_DEFAULT_LEVEL
-unsigned int allocated_size;
-unsigned int allocated_count;
+
+void mm_info1( void )
+{
+	unsigned short* ptr = (unsigned short*)&end;
+
+	__disable_irq();
+	TRACE("\r\n==================================\r\n %08X %04X %04X  %04X ", ptr, ptr[0], ptr[1]>>1, ptr[2]);
+
+	do
+	{
+		ptr += ptr[0] <<1;
+		TRACE("\r\n %08X %04d %04d ", ptr+2, ptr[0]*4, (ptr[1]>>1)*4);
+		if(!(ptr[1]&1))
+		{
+			TRACE1("              ");
+		}
+		TRACE(" %04X %04X", ptr[2], ptr[3]);
+	}while(ptr[0]);
+	__enable_irq();
+}
+
+int is_dynamic_mem(void* ptr)
+{
+	unsigned short* pool = (unsigned short*) &end;
+	unsigned int adr = (unsigned int) ptr;
+	int res = 0;
+	int mem_size;
+
+	if ((adr > (unsigned int) pool) && (adr < (0x20018000)))
+	{
+		adr -= 4;
+
+		__disable_irq();
+		mem_size = 0;
+		do
+		{
+			pool += pool[0] << 1;
+			if (adr == (unsigned int) pool)
+			{
+				// the address is here
+				if (!(pool[1] & 1))
+				{
+					// the address is not free chunk
+					res = 1;
+				}
+				else
+				{
+					TRACELN("ERROR: Pointer(0x%04X) is already free!", ptr);
+				}
+			}
+			if (!(pool[1] & 1))
+			{
+//				TRACELN("%x   %d", pool+2, pool[0] <<2);
+				mem_size += pool[0] << 2;
+			}
+		} while (pool[0]);
+
+		if (mem_size != (PMAIN_TASK->aloc_mem<<2))
+		{
+			TRACELN("ERROR: bad mem size %08x (%d):(%d) %d", ptr, mem_size, (PMAIN_TASK->aloc_mem<<2), PMAIN_TASK->aloc_ptrs);
+			__enable_irq();
+			mm_info1();
+			tsk_sleep(10);
+			__disable_irq();
+		}
+		__enable_irq();
+//		mm_info1();
+	}
+	if (ptr && !res)
+		TRACELN("ERROR: bad mem ptr %08x", ptr);
+	return res;
+}
+
+
 void* tsk_malloc(unsigned int size)
 {
 	register unsigned int lr asm("r14");
 	void* ptr;
 	int buf[2];
-	ptr = usr_malloc(size);
+
+//	tsk_sleep(1);
+	ptr = CURRENT_TASK->name;
+	*buf = *((int*)ptr);
 	buf[1] = 0;
-	*buf = *((int*)((void*)CURRENT_TASK->name));
+
+	ptr = usr_malloc(size);
 	if(ptr)
 	{
-		allocated_size += dyn_sizeof(ptr);
-		allocated_count++;
-		TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, allocated_count, allocated_size);
+		TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
 	} else
 	{
 		TRACE("\r\nERROR:[%s+%d]", buf, size);
 
 	}
+	is_dynamic_mem(ptr);
 	return ptr;
 }
 
@@ -72,14 +148,14 @@ void* tsk_malloc_clear(unsigned int size)
 	int buf[2];
 	void * ptr;
 
-	ptr = usr_malloc(size);
+	ptr = CURRENT_TASK->name;
+	*buf = *((int*)ptr);
 	buf[1] = 0;
-	*buf = *((int*)((void*)CURRENT_TASK->name));
+
+	ptr = usr_malloc(size);
 	if(ptr)
 	{
-		allocated_size += dyn_sizeof(ptr);
-		allocated_count++;
-		TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, allocated_count, allocated_size);
+		TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
 	} else
 	{
 		TRACE("\r\nERROR:[%s+%d]", buf, size);
@@ -87,6 +163,7 @@ void* tsk_malloc_clear(unsigned int size)
 	}
 	if(ptr)
 		memclr(ptr, size);
+	is_dynamic_mem(ptr);
 	return ptr;
 }
 
@@ -97,22 +174,19 @@ void  tsk_free(void* ptr)
 	register unsigned int lr asm("r14");
 	int buf[2];
 
+//	tsk_sleep(1);
+	is_dynamic_mem(ptr);
 	if(ptr)
 	{
-		if((char*)ptr > &end)
-		{
-			allocated_size -= dyn_sizeof(ptr);
-			allocated_count--;
-		}
 		usr_free(ptr);
 		if((char*)ptr > &end)
 		{
+			void* ptr1;
+
+			ptr1 = CURRENT_TASK->name;
+			*buf = *((int*)ptr1);
 			buf[1] = 0;
-			*buf = *((int*)((void*)CURRENT_TASK->name));
-			TRACE_MEMORY("\r\n-%x[%s %x >%d,%d]", ptr, buf, lr, allocated_count, allocated_size);
-			buf[0] = CURRENT_TASK->time;
-			tsk_sleep(10);
-			CURRENT_TASK->time = buf[0];
+			TRACE_MEMORY("\r\n-%x[%s %x>%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
 		}
 	}
 }
@@ -121,24 +195,26 @@ void* tsk_realloc(void* ptr, unsigned int size)
 	register unsigned int _lr asm("r14");
 	int buf[2];
 	unsigned int lr = _lr;
+	void* ptr1;
 
+//	tsk_sleep(1);
+
+	is_dynamic_mem(ptr);
+	ptr1 = CURRENT_TASK->name;
+	*buf = *((int*)ptr1);
 	buf[1] = 0;
-	*buf = *((int*)((void*)CURRENT_TASK->name));
+
 	if(ptr)
 	{
 		if((char*)ptr > &end)
 		{
-			allocated_size -= dyn_sizeof(ptr);
-			allocated_count--;
 			TRACE_MEMORY("\r\n-%x[%x<]", ptr, lr);
 		}
 	}
 	ptr = usr_realloc(ptr, size);
 	if(ptr)
 	{
-		allocated_size += dyn_sizeof(ptr);
-		allocated_count++;
-		TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, allocated_count, allocated_size);
+		TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
 	} else
 	{
 		if(size)
@@ -146,7 +222,7 @@ void* tsk_realloc(void* ptr, unsigned int size)
 			TRACE("\r\nERROR:[%s=%d]", buf, size);
 		} else
 		{
-			TRACE_MEMORY("\r\n+%x[%s %x=%d,%d]", ptr, buf, lr, allocated_count, allocated_size);
+			TRACE_MEMORY("\r\n+%x[%s %x=%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
 		}
 	}
 	return ptr;
