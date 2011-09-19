@@ -199,7 +199,8 @@ sma_match:		//match (pf, asize=bsize)
 7:
 #ifdef USE_MEMORY_TRACKING
 				ldr				bsize, [REG_MTASK, #tsk_aloc_mem]
-				adds			bsize, bestsize
+				ldrh			asize, [best]
+				adds			bsize, asize
 				str				bsize, [REG_MTASK, #tsk_aloc_mem]
 				ldr				bsize, [REG_MTASK, #tsk_aloc_ptrs]
 				adds			bsize, #1
