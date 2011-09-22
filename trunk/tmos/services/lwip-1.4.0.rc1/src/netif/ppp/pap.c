@@ -619,7 +619,7 @@ static int upap_printpkt(
   LWIP_UNUSED_ARG(plen);
   LWIP_UNUSED_ARG(printer);
   LWIP_UNUSED_ARG(arg);
-  return 0;
+  return (0);
 }
 #endif /* PPP_ADDITIONAL_CALLBACKS */
 

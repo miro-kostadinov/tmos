@@ -159,7 +159,7 @@ tcp_close_shutdown(struct tcp_pcb *pcb, u8_t rst_on_unacked_data)
       pcb->state = TIME_WAIT;
       TCP_REG(&tcp_tw_pcbs, pcb);
 
-      return ERR_OK;
+      return (ERR_OK);
     }
   }
 
@@ -229,7 +229,7 @@ tcp_close_shutdown(struct tcp_pcb *pcb, u8_t rst_on_unacked_data)
        This can only be valid for sequential APIs, not for the raw API. */
     tcp_output(pcb);
   }
-  return err;
+  return (err);
 }
 
 /**
@@ -301,7 +301,7 @@ tcp_shutdown(struct tcp_pcb *pcb, int shut_rx, int shut_tx)
     }
   }
   /* @todo: return another err_t if not in correct state or already shut? */
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -447,7 +447,7 @@ tcp_bind(struct tcp_pcb *pcb, ip_addr_t *ipaddr, u16_t port)
   pcb->local_port = port;
   TCP_REG(&tcp_bound_pcbs, pcb);
   LWIP_DEBUGF(TCP_DEBUG, ("tcp_bind: bind to port %"U16_F"\n", port));
-  return ERR_OK;
+  return (ERR_OK);
 }
 #if LWIP_CALLBACK_API
 /**
@@ -499,7 +499,7 @@ tcp_listen_with_backlog(struct tcp_pcb *pcb, u8_t backlog)
       if (lpcb->local_port == pcb->local_port) {
         if (ip_addr_cmp(&lpcb->local_ip, &pcb->local_ip)) {
           /* this address/port is already used */
-          return NULL;
+          return (NULL);
         }
       }
     }
@@ -507,7 +507,7 @@ tcp_listen_with_backlog(struct tcp_pcb *pcb, u8_t backlog)
 #endif /* SO_REUSE */
   lpcb = (struct tcp_pcb_listen *)memp_malloc(MEMP_TCP_PCB_LISTEN);
   if (lpcb == NULL) {
-    return NULL;
+    return (NULL);
   }
   lpcb->callback_arg = pcb->callback_arg;
   lpcb->local_port = pcb->local_port;
@@ -556,7 +556,7 @@ u32_t tcp_update_rcv_ann_wnd(struct tcp_pcb *pcb)
       LWIP_ASSERT("new_rcv_ann_wnd <= 0xffff", new_rcv_ann_wnd <= 0xffff);
       pcb->rcv_ann_wnd = (u16_t)new_rcv_ann_wnd;
     }
-    return 0;
+    return (0);
   }
 }
 
@@ -653,7 +653,7 @@ tcp_connect(struct tcp_pcb *pcb, ip_addr_t *ipaddr, u16_t port,
   if (ipaddr != NULL) {
     pcb->remote_ip = *ipaddr;
   } else {
-    return ERR_VAL;
+    return (ERR_VAL);
   }
   pcb->remote_port = port;
 
@@ -1072,7 +1072,7 @@ tcp_seg_copy(struct tcp_seg *seg)
 
   cseg = (struct tcp_seg *)memp_malloc(MEMP_TCP_SEG);
   if (cseg == NULL) {
-    return NULL;
+    return (NULL);
   }
   SMEMCPY((u8_t *)cseg, (const u8_t *)seg, sizeof(struct tcp_seg)); 
   pbuf_ref(cseg->p);
@@ -1095,7 +1095,7 @@ tcp_recv_null(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
   } else if (err == ERR_OK) {
     return tcp_close(pcb);
   }
-  return ERR_OK;
+  return (ERR_OK);
 }
 #endif /* LWIP_CALLBACK_API */
 
@@ -1617,7 +1617,7 @@ tcp_pcbs_sane(void)
   for(pcb = tcp_tw_pcbs; pcb != NULL; pcb = pcb->next) {
     LWIP_ASSERT("tcp_pcbs_sane: tw pcb->state == TIME-WAIT", pcb->state == TIME_WAIT);
   }
-  return 1;
+  return (1);
 }
 #endif /* TCP_DEBUG */
 

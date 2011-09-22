@@ -189,12 +189,12 @@ memp_sanity(void)
       c = 1;
       for (n = memp_tab[i]; n != NULL; n = n->next) {
         if (n == m && --c < 0) {
-          return 0;
+          return (0);
         }
       }
     }
   }
-  return 1;
+  return (1);
 }
 #endif /* MEMP_SANITY_CHECK*/
 #if MEMP_OVERFLOW_CHECK
@@ -394,7 +394,7 @@ memp_malloc_fn(memp_t type, const char* file, const int line)
   struct memp *memp;
   SYS_ARCH_DECL_PROTECT(old_level);
  
-  LWIP_ERROR("memp_malloc: type < MEMP_MAX", (type < MEMP_MAX), return NULL;);
+  LWIP_ERROR("memp_malloc: type < MEMP_MAX", (type < MEMP_MAX), return (NULL););
 
   SYS_ARCH_PROTECT(old_level);
 #if MEMP_OVERFLOW_CHECK >= 2
@@ -421,7 +421,7 @@ memp_malloc_fn(memp_t type, const char* file, const int line)
 
   SYS_ARCH_UNPROTECT(old_level);
 
-  return memp;
+  return (memp);
 }
 
 /**

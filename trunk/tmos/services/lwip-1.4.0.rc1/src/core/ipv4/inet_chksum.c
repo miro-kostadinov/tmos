@@ -41,7 +41,7 @@
 #include "lwip/inet_chksum.h"
 #include "lwip/def.h"
 
-#include <stddef.h>
+//#include <stddef.h>
 #include <string.h>
 
 /* These are some reference implementations of the checksum algorithm, with the
@@ -170,7 +170,7 @@ lwip_standard_chksum(void *dataptr, int len)
     sum = SWAP_BYTES_IN_WORD(sum);
   }
 
-  return (u16_t)sum;
+  return ((u16_t)sum);
 }
 #endif
 
@@ -313,7 +313,7 @@ inet_chksum_pseudo(struct pbuf *p,
   acc = FOLD_U32T(acc);
   acc = FOLD_U32T(acc);
   LWIP_DEBUGF(INET_DEBUG, ("inet_chksum_pseudo(): pbuf chain lwip_chksum()=%"X32_F"\n", acc));
-  return (u16_t)~(acc & 0xffffUL);
+  return ((u16_t)~(acc & 0xffffUL));
 }
 
 /* inet_chksum_pseudo:
@@ -379,7 +379,7 @@ inet_chksum_pseudo_partial(struct pbuf *p,
   acc = FOLD_U32T(acc);
   acc = FOLD_U32T(acc);
   LWIP_DEBUGF(INET_DEBUG, ("inet_chksum_pseudo(): pbuf chain lwip_chksum()=%"X32_F"\n", acc));
-  return (u16_t)~(acc & 0xffffUL);
+  return ((u16_t)~(acc & 0xffffUL));
 }
 
 /* inet_chksum:
@@ -395,7 +395,7 @@ inet_chksum_pseudo_partial(struct pbuf *p,
 u16_t
 inet_chksum(void *dataptr, u16_t len)
 {
-  return ~LWIP_CHKSUM(dataptr, len);
+  return (~LWIP_CHKSUM(dataptr, len));
 }
 
 /**
@@ -426,7 +426,7 @@ inet_chksum_pbuf(struct pbuf *p)
   if (swapped) {
     acc = SWAP_BYTES_IN_WORD(acc);
   }
-  return (u16_t)~(acc & 0xffffUL);
+  return ((u16_t)~(acc & 0xffffUL));
 }
 
 /* These are some implementations for LWIP_CHKSUM_COPY, which copies data

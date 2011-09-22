@@ -121,7 +121,7 @@ raw_input(struct pbuf *p, struct netif *inp)
     prev = pcb;
     pcb = pcb->next;
   }
-  return eaten;
+  return (eaten);
 }
 
 /**
@@ -142,7 +142,7 @@ err_t
 raw_bind(struct raw_pcb *pcb, ip_addr_t *ipaddr)
 {
   ip_addr_set(&pcb->local_ip, ipaddr);
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -162,7 +162,7 @@ err_t
 raw_connect(struct raw_pcb *pcb, ip_addr_t *ipaddr)
 {
   ip_addr_set(&pcb->remote_ip, ipaddr);
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 
@@ -216,7 +216,7 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *ipaddr)
     /* new header pbuf could not be allocated? */
     if (q == NULL) {
       LWIP_DEBUGF(RAW_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS, ("raw_sendto: could not allocate header\n"));
-      return ERR_MEM;
+      return (ERR_MEM);
     }
     /* chain header q in front of given pbuf p */
     pbuf_chain(q, p);
@@ -227,7 +227,7 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *ipaddr)
     q = p;
     if(pbuf_header(q, -IP_HLEN)) {
       LWIP_ASSERT("Can't restore header we just removed!", 0);
-      return ERR_MEM;
+      return (ERR_MEM);
     }
   }
 
@@ -238,7 +238,7 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *ipaddr)
     if (q != p) {
       pbuf_free(q);
     }
-    return ERR_RTE;
+    return (ERR_RTE);
   }
 
 #if IP_SOF_BROADCAST
@@ -249,7 +249,7 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *ipaddr)
     if (q != p) {
       pbuf_free(q);
     }
-    return ERR_VAL;
+    return (ERR_VAL);
   }
 #endif /* IP_SOF_BROADCAST */
 
@@ -274,7 +274,7 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *ipaddr)
     /* free the header */
     pbuf_free(q);
   }
-  return err;
+  return (err);
 }
 
 /**
@@ -287,7 +287,7 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *ipaddr)
 err_t
 raw_send(struct raw_pcb *pcb, struct pbuf *p)
 {
-  return raw_sendto(pcb, p, &pcb->remote_ip);
+  return (raw_sendto(pcb, p, &pcb->remote_ip));
 }
 
 /**
@@ -346,7 +346,7 @@ raw_new(u8_t proto)
     pcb->next = raw_pcbs;
     raw_pcbs = pcb;
   }
-  return pcb;
+  return (pcb);
 }
 
 #endif /* LWIP_RAW */

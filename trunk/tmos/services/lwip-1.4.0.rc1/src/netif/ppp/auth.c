@@ -297,7 +297,7 @@ setupapfile(char **argv)
     seteuid(0);
     if (ufile == NULL) {
       option_error("unable to open user login data file %s", *argv);
-      return 0;
+      return (0);
     }
     check_access(ufile, *argv);
 
@@ -305,7 +305,7 @@ setupapfile(char **argv)
     if (fgets(user, MAXNAMELEN - 1, ufile) == NULL
         || fgets(passwd, MAXSECRETLEN - 1, ufile) == NULL){
       option_error("unable to read user login data file %s", *argv);
-      return 0;
+      return (0);
     }
     fclose(ufile);
 
@@ -334,7 +334,7 @@ privgroup(char **argv)
     g = getgrnam(*argv);
     if (g == 0) {
       option_error("group %s is unknown", *argv);
-      return 0;
+      return (0);
     }
     for (i = 0; i < ngroups; ++i) {
       if (groups[i] == g->gr_gid) {
@@ -342,7 +342,7 @@ privgroup(char **argv)
         break;
       }
     }
-    return 1;
+    return (1);
 }
 #endif
 
@@ -365,7 +365,7 @@ set_noauth_addr(char **argv)
     wp->next = noauth_addrs;
     BCOPY(addr, wp->word, l);
     noauth_addrs = wp;
-    return 1;
+    return (1);
 }
 #endif /* UNUSED */
 
@@ -1007,7 +1007,7 @@ null_login(int unit)
 {
   LWIP_UNUSED_ARG(unit);
   /* XXX Fail until we decide that we want to support logins. */
-  return 0;
+  return (0);
 }
 
 
@@ -1033,7 +1033,7 @@ get_pap_passwd(int unit, char *user, char *passwd)
   if(passwd) {
     strcpy(passwd, "none");
   }
-  return 1;
+  return (1);
 }
 
 /*
@@ -1044,7 +1044,7 @@ static int
 have_pap_secret(void)
 {
   /* XXX Fail until we set up our passwords. */
-  return 0;
+  return (0);
 }
 
 /*
@@ -1061,7 +1061,7 @@ have_chap_secret(char *client, char *server, u32_t remote)
   LWIP_UNUSED_ARG(remote);
 
   /* XXX Fail until we set up our passwords. */
-  return 0;
+  return (0);
 }
 #if CHAP_SUPPORT
 
@@ -1084,7 +1084,7 @@ get_secret(int unit, char *client, char *server, char *secret, int *secret_len, 
   addrs = NULL;
 
   if(!client || !client[0] || strcmp(client, ppp_settings.user)) {
-    return 0;
+    return (0);
   }
 
   len = (int)strlen(ppp_settings.passwd);
@@ -1096,7 +1096,7 @@ get_secret(int unit, char *client, char *server, char *secret, int *secret_len, 
   BCOPY(ppp_settings.passwd, secret, len);
   *secret_len = len;
 
-  return 1;
+  return (1);
 #else
   int ret = 0, len;
   struct wordlist *addrs;
@@ -1107,7 +1107,7 @@ get_secret(int unit, char *client, char *server, char *secret, int *secret_len, 
 
   /* XXX Find secret. */
   if (ret < 0) {
-    return 0;
+    return (0);
   }
 
   if (save_addrs) {
@@ -1124,7 +1124,7 @@ get_secret(int unit, char *client, char *server, char *secret, int *secret_len, 
   BZERO(secbuf, sizeof(secbuf));
   *secret_len = len;
 
-  return 1;
+  return (1);
 #endif
 }
 #endif /* CHAP_SUPPORT */
@@ -1184,7 +1184,7 @@ ip_addr_check(u32_t addr, struct wordlist *addrs)
 {
   /* don't allow loopback or multicast address */
   if (bad_ip_adrs(addr)) {
-    return 0;
+    return (0);
   }
 
   if (addrs == NULL) {
@@ -1192,7 +1192,7 @@ ip_addr_check(u32_t addr, struct wordlist *addrs)
   }
 
   /* XXX All other addresses allowed. */
-  return 1;
+  return (1);
 }
 
 /*
@@ -1220,9 +1220,9 @@ some_ip_ok(struct wordlist *addrs)
       if (addrs->word[0] == '-')
         break;
       if (addrs->word[0] != '!')
-        return 1; /* some IP address is allowed */
+        return (1); /* some IP address is allowed */
     }
-    return 0;
+    return (0);
 }
 
 /*
@@ -1258,7 +1258,7 @@ static int
 scan_authfile(FILE *f, char *client, char *server, char *secret, struct wordlist **addrs, struct wordlist **opts, char *filename)
 {
   /* We do not (currently) need this in lwip  */
-  return 0; /* dummy */
+  return (0); /* dummy */
 }
 /*
  * free_wordlist - release memory allocated for a wordlist.

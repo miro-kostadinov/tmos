@@ -853,13 +853,13 @@ ChapPrintPkt( u_char *p, int plen, void (*printer) (void *, char *, ...), void *
   u_char x;
 
   if (plen < CHAP_HEADERLEN) {
-    return 0;
+    return (0);
   }
   GETCHAR(code, p);
   GETCHAR(id, p);
   GETSHORT(len, p);
   if (len < CHAP_HEADERLEN || len > plen) {
-    return 0;
+    return (0);
   }
 
   if (code >= 1 && code <= sizeof(ChapCodenames) / sizeof(char *)) {

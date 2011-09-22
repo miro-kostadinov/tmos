@@ -131,7 +131,7 @@ ip_route(ip_addr_t *dest)
     if (netif_is_up(netif)) {
       if (ip_addr_netcmp(dest, &(netif->ip_addr), &(netif->netmask))) {
         /* return netif on which to forward IP packet */
-        return netif;
+        return (netif);
       }
     }
   }
@@ -140,10 +140,10 @@ ip_route(ip_addr_t *dest)
       ip4_addr1_16(dest), ip4_addr2_16(dest), ip4_addr3_16(dest), ip4_addr4_16(dest)));
     IP_STATS_INC(ip.rterr);
     snmp_inc_ipoutnoroutes();
-    return NULL;
+    return (NULL);
   }
   /* no matching netif found, use default netif */
-  return netif_default;
+  return (netif_default);
 }
 
 #if IP_FORWARD
@@ -261,7 +261,7 @@ ip_input(struct pbuf *p, struct netif *inp)
     IP_STATS_INC(ip.err);
     IP_STATS_INC(ip.drop);
     snmp_inc_ipinhdrerrors();
-    return ERR_OK;
+    return (ERR_OK);
   }
 
   /* obtain IP header length in number of 32-bit words */
@@ -288,7 +288,7 @@ ip_input(struct pbuf *p, struct netif *inp)
     IP_STATS_INC(ip.lenerr);
     IP_STATS_INC(ip.drop);
     snmp_inc_ipindiscards();
-    return ERR_OK;
+    return (ERR_OK);
   }
 
   /* verify checksum */
@@ -302,7 +302,7 @@ ip_input(struct pbuf *p, struct netif *inp)
     IP_STATS_INC(ip.chkerr);
     IP_STATS_INC(ip.drop);
     snmp_inc_ipinhdrerrors();
-    return ERR_OK;
+    return (ERR_OK);
   }
 #endif
 
@@ -414,7 +414,7 @@ ip_input(struct pbuf *p, struct netif *inp)
       IP_STATS_INC(ip.drop);
       snmp_inc_ipinaddrerrors();
       snmp_inc_ipindiscards();
-      return ERR_OK;
+      return (ERR_OK);
     }
   }
 
@@ -434,7 +434,7 @@ ip_input(struct pbuf *p, struct netif *inp)
       snmp_inc_ipindiscards();
     }
     pbuf_free(p);
-    return ERR_OK;
+    return (ERR_OK);
   }
   /* packet consists of multiple fragments? */
   if ((IPH_OFFSET(iphdr) & PP_HTONS(IP_OFFMASK | IP_MF)) != 0) {
@@ -445,7 +445,7 @@ ip_input(struct pbuf *p, struct netif *inp)
     p = ip_reass(p);
     /* packet not fully reassembled yet? */
     if (p == NULL) {
-      return ERR_OK;
+      return (ERR_OK);
     }
     iphdr = (struct ip_hdr *)p->payload;
 #else /* IP_REASSEMBLY == 0, no packet fragment reassembly code present */
@@ -456,7 +456,7 @@ ip_input(struct pbuf *p, struct netif *inp)
     IP_STATS_INC(ip.drop);
     /* unsupported protocol feature */
     snmp_inc_ipinunknownprotos();
-    return ERR_OK;
+    return (ERR_OK);
 #endif /* IP_REASSEMBLY */
   }
 
@@ -474,7 +474,7 @@ ip_input(struct pbuf *p, struct netif *inp)
     IP_STATS_INC(ip.drop);
     /* unsupported protocol feature */
     snmp_inc_ipinunknownprotos();
-    return ERR_OK;
+    return (ERR_OK);
   }
 #endif /* IP_OPTIONS_ALLOWED == 0 */
 
@@ -535,6 +535,7 @@ ip_input(struct pbuf *p, struct netif *inp)
       IP_STATS_INC(ip.proterr);
       IP_STATS_INC(ip.drop);
       snmp_inc_ipinunknownprotos();
+      break;
     }
   }
 
@@ -543,7 +544,7 @@ ip_input(struct pbuf *p, struct netif *inp)
   ip_addr_set_any(&current_iphdr_src);
   ip_addr_set_any(&current_iphdr_dest);
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -620,7 +621,7 @@ err_t ip_output_if_opt(struct pbuf *p, ip_addr_t *src, ip_addr_t *dest,
         LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_LEVEL_SERIOUS, ("ip_output_if_opt: not enough room for IP options in pbuf\n"));
         IP_STATS_INC(ip.err);
         snmp_inc_ipoutdiscards();
-        return ERR_BUF;
+        return (ERR_BUF);
       }
       MEMCPY(p->payload, ip_options, optlen);
       if (optlen < optlen_aligned) {
@@ -640,7 +641,7 @@ err_t ip_output_if_opt(struct pbuf *p, ip_addr_t *src, ip_addr_t *dest,
 
       IP_STATS_INC(ip.err);
       snmp_inc_ipoutdiscards();
-      return ERR_BUF;
+      return (ERR_BUF);
     }
 
     iphdr = (struct ip_hdr *)p->payload;
@@ -727,7 +728,7 @@ err_t ip_output_if_opt(struct pbuf *p, ip_addr_t *src, ip_addr_t *dest,
 #endif /* IP_FRAG */
 
   LWIP_DEBUGF(IP_DEBUG, ("netif->output()"));
-  return netif->output(netif, p, dest);
+  return (netif->output(netif, p, dest));
 }
 
 /**
@@ -761,10 +762,10 @@ ip_output(struct pbuf *p, ip_addr_t *src, ip_addr_t *dest,
     LWIP_DEBUGF(IP_DEBUG, ("ip_output: No route to %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
       ip4_addr1_16(dest), ip4_addr2_16(dest), ip4_addr3_16(dest), ip4_addr4_16(dest)));
     IP_STATS_INC(ip.rterr);
-    return ERR_RTE;
+    return (ERR_RTE);
   }
 
-  return ip_output_if(p, src, dest, ttl, tos, proto, netif);
+  return (ip_output_if(p, src, dest, ttl, tos, proto, netif));
 }
 
 #if LWIP_NETIF_HWADDRHINT
@@ -808,7 +809,7 @@ ip_output_hinted(struct pbuf *p, ip_addr_t *src, ip_addr_t *dest,
   err = ip_output_if(p, src, dest, ttl, tos, proto, netif);
   netif->addr_hint = NULL;
 
-  return err;
+  return (err);
 }
 #endif /* LWIP_NETIF_HWADDRHINT*/
 

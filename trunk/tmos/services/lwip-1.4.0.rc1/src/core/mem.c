@@ -94,7 +94,7 @@ again:
   }
   if (poolnr > MEMP_POOL_LAST) {
     LWIP_ASSERT("mem_malloc(): no pool is that big!", 0);
-    return NULL;
+    return (NULL);
   }
   element = (struct memp_malloc_helper*)memp_malloc(poolnr);
   if (element == NULL) {
@@ -107,7 +107,7 @@ again:
       goto again;
     }
 #endif /* MEM_USE_POOLS_TRY_BIGGER_POOL */
-    return NULL;
+    return (NULL);
   }
 
   /* save the pool number this element came from */
@@ -381,7 +381,7 @@ mem_trim(void *rmem, mem_size_t newsize)
   }
 
   if (newsize > MEM_SIZE_ALIGNED) {
-    return NULL;
+    return (NULL);
   }
 
   LWIP_ASSERT("mem_trim: legal memory", (u8_t *)rmem >= (u8_t *)ram &&
@@ -405,7 +405,7 @@ mem_trim(void *rmem, mem_size_t newsize)
   LWIP_ASSERT("mem_trim can only shrink memory", newsize <= size);
   if (newsize > size) {
     /* not supported */
-    return NULL;
+    return (NULL);
   }
   if (newsize == size) {
     /* No change in size, simply return */
@@ -498,7 +498,7 @@ mem_malloc(mem_size_t size)
   LWIP_MEM_ALLOC_DECL_PROTECT();
 
   if (size == 0) {
-    return NULL;
+    return (NULL);
   }
 
   /* Expand the size of the allocated memory region so that we can
@@ -511,7 +511,7 @@ mem_malloc(mem_size_t size)
   }
 
   if (size > MEM_SIZE_ALIGNED) {
-    return NULL;
+    return (NULL);
   }
 
   /* protect the heap from concurrent access */
@@ -612,7 +612,7 @@ mem_malloc(mem_size_t size)
   MEM_STATS_INC(err);
   LWIP_MEM_ALLOC_UNPROTECT();
   sys_mutex_unlock(&mem_mutex);
-  return NULL;
+  return (NULL);
 }
 
 #endif /* MEM_USE_POOLS */

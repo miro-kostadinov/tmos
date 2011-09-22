@@ -449,7 +449,7 @@ vj_uncompress_uncomp(struct pbuf *nb, struct vjcompress *comp)
   BCOPY(ip, &cs->cs_ip, hlen);
   cs->cs_hlen = (u_short)hlen;
   INCR(vjs_uncompressedin);
-  return 0;
+  return (0);
 }
 
 /*

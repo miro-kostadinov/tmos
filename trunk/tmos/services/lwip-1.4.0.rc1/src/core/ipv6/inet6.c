@@ -67,7 +67,7 @@ chksum(void *dataptr, u16_t len)
     acc += htons((u16_t)(*(u8_t *)dataptr) << 8);
   }
 
-  return acc;
+  return (acc);
 
 }
 
@@ -116,7 +116,7 @@ inet_chksum_pseudo(struct pbuf *p,
   while (acc >> 16) {
     acc = (acc & 0xffff) + (acc >> 16);
   }
-  return ~(acc & 0xffff);
+  return (~(acc & 0xffff));
 }
 
 /* inet_chksum:
@@ -133,7 +133,7 @@ inet_chksum(void *dataptr, u16_t len)
   acc = chksum(dataptr, len);
   sum = (acc & 0xffff) + (acc >> 16);
   sum += (sum >> 16);
-  return ~(sum & 0xffff);
+  return (~(sum & 0xffff));
 }
 
 u16_t
@@ -159,5 +159,5 @@ inet_chksum_pbuf(struct pbuf *p)
   if (swapped) {
     acc = ((acc & 0xff) << 8) | ((acc & 0xff00) >> 8);
   }
-  return ~(acc & 0xffff);
+  return (~(acc & 0xffff));
 }

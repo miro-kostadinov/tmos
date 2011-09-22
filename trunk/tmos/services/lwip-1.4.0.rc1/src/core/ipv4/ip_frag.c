@@ -281,7 +281,7 @@ ip_reass_enqueue_new_datagram(struct ip_hdr *fraghdr, int clen)
     {
       IPFRAG_STATS_INC(ip_frag.memerr);
       LWIP_DEBUGF(IP_REASS_DEBUG,("Failed to alloc reassdata struct\n"));
-      return NULL;
+      return (NULL);
     }
   }
   memset(ipr, 0, sizeof(struct ip_reassdata));
@@ -457,12 +457,12 @@ ip_reass_chain_frag_into_datagram_and_validate(struct ip_reassdata *ipr, struct 
     return valid;
   }
   /* If we come here, not all fragments were received, yet! */
-  return 0; /* not yet valid! */
+  return (0); /* not yet valid! */
 #if IP_REASS_CHECK_OVERLAP
 freepbuf:
   ip_reass_pbufcount -= pbuf_clen(new_p);
   pbuf_free(new_p);
-  return 0;
+  return (0);
 #endif /* IP_REASS_CHECK_OVERLAP */
 }
 
@@ -603,13 +603,13 @@ ip_reass(struct pbuf *p)
   }
   /* the datagram is not (yet?) reassembled completely */
   LWIP_DEBUGF(IP_REASS_DEBUG,("ip_reass_pbufcount: %d out\n", ip_reass_pbufcount));
-  return NULL;
+  return (NULL);
 
 nullreturn:
   LWIP_DEBUGF(IP_REASS_DEBUG,("ip_reass: nullreturn\n"));
   IPFRAG_STATS_INC(ip_frag.drop);
   pbuf_free(p);
-  return NULL;
+  return (NULL);
 }
 #endif /* IP_REASSEMBLY */
 
@@ -697,7 +697,7 @@ ip_frag(struct pbuf *p, struct netif *netif, ip_addr_t *dest)
   rambuf = pbuf_alloc(PBUF_LINK, 0, PBUF_REF);
   if (rambuf == NULL) {
     LWIP_DEBUGF(IP_REASS_DEBUG, ("ip_frag: pbuf_alloc(PBUF_LINK, 0, PBUF_REF) failed\n"));
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   rambuf->tot_len = rambuf->len = mtu;
   rambuf->payload = LWIP_MEM_ALIGN((void *)buf);
@@ -737,7 +737,7 @@ ip_frag(struct pbuf *p, struct netif *netif, ip_addr_t *dest)
 #if LWIP_NETIF_TX_SINGLE_PBUF
     rambuf = pbuf_alloc(PBUF_IP, cop, PBUF_RAM);
     if (rambuf == NULL) {
-      return ERR_MEM;
+      return (ERR_MEM);
     }
     LWIP_ASSERT("this needs a pbuf in one piece!",
       (rambuf->len == rambuf->tot_len) && (rambuf->next == NULL));
@@ -745,7 +745,7 @@ ip_frag(struct pbuf *p, struct netif *netif, ip_addr_t *dest)
     /* make room for the IP header */
     if(pbuf_header(rambuf, IP_HLEN)) {
       pbuf_free(rambuf);
-      return ERR_MEM;
+      return (ERR_MEM);
     }
     /* fill in the IP header */
     SMEMCPY(rambuf->payload, original_iphdr, IP_HLEN);
@@ -758,7 +758,7 @@ ip_frag(struct pbuf *p, struct netif *netif, ip_addr_t *dest)
      */
     rambuf = pbuf_alloc(PBUF_LINK, IP_HLEN, PBUF_RAM);
     if (rambuf == NULL) {
-      return ERR_MEM;
+      return (ERR_MEM);
     }
     LWIP_ASSERT("this needs a pbuf in one piece!",
                 (p->len >= (IP_HLEN)));
@@ -781,14 +781,14 @@ ip_frag(struct pbuf *p, struct netif *netif, ip_addr_t *dest)
       pcr = ip_frag_alloc_pbuf_custom_ref();
       if (pcr == NULL) {
         pbuf_free(rambuf);
-        return ERR_MEM;
+        return (ERR_MEM);
       }
       /* Mirror this pbuf, although we might not need all of it. */
       newpbuf = pbuf_alloced_custom(PBUF_RAW, newpbuflen, PBUF_REF, &pcr->pc, p->payload, newpbuflen);
       if (newpbuf == NULL) {
         ip_frag_free_pbuf_custom_ref(pcr);
         pbuf_free(rambuf);
-        return ERR_MEM;
+        return (ERR_MEM);
       }
       pbuf_ref(p);
       pcr->original = p;
@@ -833,7 +833,7 @@ ip_frag(struct pbuf *p, struct netif *netif, ip_addr_t *dest)
     } else {
       LWIP_DEBUGF(IP_REASS_DEBUG, ("ip_frag: pbuf_alloc() for header failed\n"));
       pbuf_free(rambuf);
-      return ERR_MEM;
+      return (ERR_MEM);
     }
 #else /* IP_FRAG_USES_STATIC_BUF */
     /* No need for separate header pbuf - we allowed room for it in rambuf
@@ -858,6 +858,6 @@ ip_frag(struct pbuf *p, struct netif *netif, ip_addr_t *dest)
   pbuf_free(rambuf);
 #endif /* IP_FRAG_USES_STATIC_BUF */
   snmp_inc_ipfragoks();
-  return ERR_OK;
+  return (ERR_OK);
 }
 #endif /* IP_FRAG */

@@ -74,7 +74,7 @@ netbuf *netbuf_new(void)
 #endif /* LWIP_NETBUF_RECVINFO || LWIP_CHECKSUM_ON_COPY */
     return buf;
   } else {
-    return NULL;
+    return (NULL);
   }
 }
 
@@ -106,7 +106,7 @@ netbuf_delete(struct netbuf *buf)
 void *
 netbuf_alloc(struct netbuf *buf, u16_t size)
 {
-  LWIP_ERROR("netbuf_alloc: invalid buf", (buf != NULL), return NULL;);
+  LWIP_ERROR("netbuf_alloc: invalid buf", (buf != NULL), return (NULL););
 
   /* Deallocate any previously allocated memory. */
   if (buf->p != NULL) {
@@ -114,7 +114,7 @@ netbuf_alloc(struct netbuf *buf, u16_t size)
   }
   buf->p = pbuf_alloc(PBUF_TRANSPORT, size, PBUF_RAM);
   if (buf->p == NULL) {
-     return NULL;
+     return (NULL);
   }
   LWIP_ASSERT("check that first pbuf can hold size",
              (buf->p->len >= size));
@@ -149,19 +149,19 @@ netbuf_free(struct netbuf *buf)
 err_t
 netbuf_ref(struct netbuf *buf, const void *dataptr, u16_t size)
 {
-  LWIP_ERROR("netbuf_ref: invalid buf", (buf != NULL), return ERR_ARG;);
+  LWIP_ERROR("netbuf_ref: invalid buf", (buf != NULL), return (ERR_ARG););
   if (buf->p != NULL) {
     pbuf_free(buf->p);
   }
   buf->p = pbuf_alloc(PBUF_TRANSPORT, 0, PBUF_REF);
   if (buf->p == NULL) {
     buf->ptr = NULL;
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   buf->p->payload = (void*)dataptr;
   buf->p->len = buf->p->tot_len = size;
   buf->ptr = buf->p;
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -192,16 +192,16 @@ netbuf_chain(struct netbuf *head, struct netbuf *tail)
 err_t
 netbuf_data(struct netbuf *buf, void **dataptr, u16_t *len)
 {
-  LWIP_ERROR("netbuf_data: invalid buf", (buf != NULL), return ERR_ARG;);
-  LWIP_ERROR("netbuf_data: invalid dataptr", (dataptr != NULL), return ERR_ARG;);
-  LWIP_ERROR("netbuf_data: invalid len", (len != NULL), return ERR_ARG;);
+  LWIP_ERROR("netbuf_data: invalid buf", (buf != NULL), return (ERR_ARG););
+  LWIP_ERROR("netbuf_data: invalid dataptr", (dataptr != NULL), return (ERR_ARG););
+  LWIP_ERROR("netbuf_data: invalid len", (len != NULL), return (ERR_ARG););
 
   if (buf->ptr == NULL) {
-    return ERR_BUF;
+    return (ERR_BUF);
   }
   *dataptr = buf->ptr->payload;
   *len = buf->ptr->len;
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -223,9 +223,9 @@ netbuf_next(struct netbuf *buf)
   }
   buf->ptr = buf->ptr->next;
   if (buf->ptr->next == NULL) {
-    return 1;
+    return (1);
   }
-  return 0;
+  return (0);
 }
 
 /**

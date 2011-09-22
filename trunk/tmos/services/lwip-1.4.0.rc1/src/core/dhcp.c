@@ -323,7 +323,7 @@ dhcp_select(struct netif *netif)
   msecs = (dhcp->tries < 6 ? 1 << dhcp->tries : 60) * 1000;
   dhcp->request_timeout = (msecs + DHCP_FINE_TIMER_MSECS - 1) / DHCP_FINE_TIMER_MSECS;
   LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_STATE, ("dhcp_select(): set request timeout %"U16_F" msecs\n", msecs));
-  return result;
+  return (result);
 }
 
 /**
@@ -610,7 +610,7 @@ dhcp_start(struct netif *netif)
   struct dhcp *dhcp;
   err_t result = ERR_OK;
 
-  LWIP_ERROR("netif != NULL", (netif != NULL), return ERR_ARG;);
+  LWIP_ERROR("netif != NULL", (netif != NULL), return (ERR_ARG););
   dhcp = netif->dhcp;
   LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_STATE, ("dhcp_start(netif=%p) %c%c%"U16_F"\n", (void*)netif, netif->name[0], netif->name[1], (u16_t)netif->num));
   /* Remove the flag that says this netif is handled by DHCP,
@@ -620,13 +620,13 @@ dhcp_start(struct netif *netif)
   /* check hwtype of the netif */
   if ((netif->flags & NETIF_FLAG_ETHARP) == 0) {
     LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE, ("dhcp_start(): No ETHARP netif\n"));
-    return ERR_ARG;
+    return (ERR_ARG);
   }
 
   /* check MTU of the netif */
   if (netif->mtu < DHCP_MAX_MSG_LEN_MIN_REQUIRED) {
     LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE, ("dhcp_start(): Cannot use this netif with DHCP: MTU is too small\n"));
-    return ERR_MEM;
+    return (ERR_MEM);
   }
 
   /* no DHCP client attached yet? */
@@ -635,7 +635,7 @@ dhcp_start(struct netif *netif)
     dhcp = (struct dhcp *)mem_malloc(sizeof(struct dhcp));
     if (dhcp == NULL) {
       LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE, ("dhcp_start(): could not allocate dhcp\n"));
-      return ERR_MEM;
+      return (ERR_MEM);
     }
     /* store this dhcp client in the netif */
     netif->dhcp = dhcp;
@@ -657,7 +657,7 @@ dhcp_start(struct netif *netif)
   dhcp->pcb = udp_new();
   if (dhcp->pcb == NULL) {
     LWIP_DEBUGF(DHCP_DEBUG  | LWIP_DBG_TRACE, ("dhcp_start(): could not obtain pcb\n"));
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   dhcp->pcb->so_options |= SOF_BROADCAST;
   /* set up local and remote port for the pcb */
@@ -671,11 +671,11 @@ dhcp_start(struct netif *netif)
   if (result != ERR_OK) {
     /* free resources allocated above */
     dhcp_stop(netif);
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   /* Set the flag that says this netif is handled by DHCP. */
   netif->flags |= NETIF_FLAG_DHCP;
-  return result;
+  return (result);
 }
 
 /**
@@ -834,7 +834,7 @@ dhcp_decline(struct netif *netif)
   msecs = 10*1000;
   dhcp->request_timeout = (msecs + DHCP_FINE_TIMER_MSECS - 1) / DHCP_FINE_TIMER_MSECS;
   LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE, ("dhcp_decline(): set request timeout %"U16_F" msecs\n", msecs));
-  return result;
+  return (result);
 }
 #endif /* DHCP_DOES_ARP_CHECK */
 
@@ -890,7 +890,7 @@ dhcp_discover(struct netif *netif)
   msecs = (dhcp->tries < 6 ? 1 << dhcp->tries : 60) * 1000;
   dhcp->request_timeout = (msecs + DHCP_FINE_TIMER_MSECS - 1) / DHCP_FINE_TIMER_MSECS;
   LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_STATE, ("dhcp_discover(): set request timeout %"U16_F" msecs\n", msecs));
-  return result;
+  return (result);
 }
 
 
@@ -1044,7 +1044,7 @@ dhcp_renew(struct netif *netif)
   msecs = dhcp->tries < 10 ? dhcp->tries * 2000 : 20 * 1000;
   dhcp->request_timeout = (msecs + DHCP_FINE_TIMER_MSECS - 1) / DHCP_FINE_TIMER_MSECS;
   LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_STATE, ("dhcp_renew(): set request timeout %"U16_F" msecs\n", msecs));
-  return result;
+  return (result);
 }
 
 /**
@@ -1104,7 +1104,7 @@ dhcp_rebind(struct netif *netif)
   msecs = dhcp->tries < 10 ? dhcp->tries * 1000 : 10 * 1000;
   dhcp->request_timeout = (msecs + DHCP_FINE_TIMER_MSECS - 1) / DHCP_FINE_TIMER_MSECS;
   LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_STATE, ("dhcp_rebind(): set request timeout %"U16_F" msecs\n", msecs));
-  return result;
+  return (result);
 }
 
 /**
@@ -1145,7 +1145,7 @@ dhcp_reboot(struct netif *netif)
   msecs = dhcp->tries < 10 ? dhcp->tries * 1000 : 10 * 1000;
   dhcp->request_timeout = (msecs + DHCP_FINE_TIMER_MSECS - 1) / DHCP_FINE_TIMER_MSECS;
   LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_STATE, ("dhcp_reboot(): set request timeout %"U16_F" msecs\n", msecs));
-  return result;
+  return (result);
 }
 
 
@@ -1198,7 +1198,7 @@ dhcp_release(struct netif *netif)
   netif_set_gw(netif, IP_ADDR_ANY);
   netif_set_netmask(netif, IP_ADDR_ANY);
   
-  return result;
+  return (result);
 }
 
 /**
@@ -1316,7 +1316,7 @@ dhcp_parse_reply(struct dhcp *dhcp, struct pbuf *p)
   dhcp_clear_all_options(dhcp);
   /* check that beginning of dhcp_msg (up to and including chaddr) is in first pbuf */
   if (p->len < DHCP_SNAME_OFS) {
-    return ERR_BUF;
+    return (ERR_BUF);
   }
   dhcp->msg_in = (struct dhcp_msg *)p->payload;
 #if LWIP_DHCP_BOOTP_FILE
@@ -1338,7 +1338,7 @@ again:
     q = q->next;
   }
   if (q == NULL) {
-    return ERR_BUF;
+    return (ERR_BUF);
   }
   offset = options_idx;
   offset_max = options_idx_max;
@@ -1487,7 +1487,7 @@ decode_next:
     options_idx_max = DHCP_SNAME_OFS + DHCP_SNAME_LEN;
     goto again;
   }
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -1615,15 +1615,15 @@ dhcp_create_msg(struct netif *netif, struct dhcp *dhcp, u8_t message_type)
     xid_initialised = !xid_initialised;
   }
 #endif
-  LWIP_ERROR("dhcp_create_msg: netif != NULL", (netif != NULL), return ERR_ARG;);
-  LWIP_ERROR("dhcp_create_msg: dhcp != NULL", (dhcp != NULL), return ERR_VAL;);
+  LWIP_ERROR("dhcp_create_msg: netif != NULL", (netif != NULL), return (ERR_ARG););
+  LWIP_ERROR("dhcp_create_msg: dhcp != NULL", (dhcp != NULL), return (ERR_VAL););
   LWIP_ASSERT("dhcp_create_msg: dhcp->p_out == NULL", dhcp->p_out == NULL);
   LWIP_ASSERT("dhcp_create_msg: dhcp->msg_out == NULL", dhcp->msg_out == NULL);
   dhcp->p_out = pbuf_alloc(PBUF_TRANSPORT, sizeof(struct dhcp_msg), PBUF_RAM);
   if (dhcp->p_out == NULL) {
     LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS,
       ("dhcp_create_msg(): could not allocate pbuf\n"));
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   LWIP_ASSERT("dhcp_create_msg: check that first pbuf can hold struct dhcp_msg",
            (dhcp->p_out->len >= sizeof(struct dhcp_msg)));
@@ -1677,7 +1677,7 @@ dhcp_create_msg(struct netif *netif, struct dhcp *dhcp, u8_t message_type)
   /* Add option MESSAGE_TYPE */
   dhcp_option(dhcp, DHCP_OPTION_MESSAGE_TYPE, DHCP_OPTION_MESSAGE_TYPE_LEN);
   dhcp_option_byte(dhcp, message_type);
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**

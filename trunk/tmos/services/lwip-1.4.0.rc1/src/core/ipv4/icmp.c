@@ -227,6 +227,7 @@ icmp_input(struct pbuf *p, struct netif *inp)
                 (s16_t)type, (s16_t)code));
     ICMP_STATS_INC(icmp.proterr);
     ICMP_STATS_INC(icmp.drop);
+    break;
   }
   pbuf_free(p);
   return;

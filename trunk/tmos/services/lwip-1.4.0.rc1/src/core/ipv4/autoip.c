@@ -236,9 +236,9 @@ autoip_create_addr(struct netif *netif, ip_addr_t *ipaddr)
 static err_t
 autoip_arp_probe(struct netif *netif)
 {
-  return etharp_raw(netif, (struct eth_addr *)netif->hwaddr, &ethbroadcast,
-    (struct eth_addr *)netif->hwaddr, IP_ADDR_ANY, &ethzero,
-    &netif->autoip->llipaddr, ARP_REQUEST);
+  return (etharp_raw(netif, (struct eth_addr *) netif->hwaddr, &ethbroadcast,
+			(struct eth_addr *) netif->hwaddr, IP_ADDR_ANY, &ethzero,
+			&netif->autoip->llipaddr, ARP_REQUEST));
 }
 
 /**
@@ -249,9 +249,9 @@ autoip_arp_probe(struct netif *netif)
 static err_t
 autoip_arp_announce(struct netif *netif)
 {
-  return etharp_raw(netif, (struct eth_addr *)netif->hwaddr, &ethbroadcast,
+  return (etharp_raw(netif, (struct eth_addr *)netif->hwaddr, &ethbroadcast,
     (struct eth_addr *)netif->hwaddr, &netif->autoip->llipaddr, &ethzero,
-    &netif->autoip->llipaddr, ARP_REQUEST);
+    &netif->autoip->llipaddr, ARP_REQUEST));
 }
 
 /**
@@ -281,7 +281,7 @@ autoip_bind(struct netif *netif)
   /* bring the interface up */
   netif_set_up(netif);
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -317,7 +317,7 @@ autoip_start(struct netif *netif)
     if(autoip == NULL) {
       LWIP_DEBUGF(AUTOIP_DEBUG | LWIP_DBG_TRACE,
         ("autoip_start(): could not allocate autoip\n"));
-      return ERR_MEM;
+      return (ERR_MEM);
     }
     memset(autoip, 0, sizeof(struct autoip));
     /* store this AutoIP client in the netif */
@@ -334,7 +334,7 @@ autoip_start(struct netif *netif)
   autoip_create_addr(netif, &(autoip->llipaddr));
   autoip_start_probing(netif);
 
-  return result;
+  return (result);
 }
 
 static void
@@ -390,7 +390,7 @@ autoip_stop(struct netif *netif)
 {
   netif->autoip->state = AUTOIP_STATE_OFF;
   netif_set_down(netif);
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**

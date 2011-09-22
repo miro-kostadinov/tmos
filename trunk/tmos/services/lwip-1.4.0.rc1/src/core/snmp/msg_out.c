@@ -190,13 +190,13 @@ snmp_send_response(struct snmp_msg_pstat *m_stat)
 
     pbuf_free(p);
     LWIP_DEBUGF(SNMP_MSG_DEBUG, ("snmp_snd_response() done\n"));
-    return err;
+    return (err);
   }
   else
   {
     /* first pbuf alloc try or retry alloc failed
        very low on memory, couldn't return tooBig */
-    return ERR_MEM;
+    return (ERR_MEM);
   }
 }
 
@@ -277,11 +277,11 @@ snmp_send_trap(s8_t generic_trap, struct snmp_obj_id *eoid, s32_t specific_trap)
       }
       else
       {
-        return ERR_MEM;
+        return (ERR_MEM);
       }
     }
   }
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 void

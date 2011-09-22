@@ -36,7 +36,7 @@ default_netif_linkoutput(struct netif *netif, struct pbuf *p)
   fail_unless(netif == &test_netif);
   fail_unless(p != NULL);
   linkoutput_ctr++;
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 static err_t
@@ -48,7 +48,7 @@ default_netif_init(struct netif *netif)
   netif->mtu = 1500;
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
   netif->hwaddr_len = ETHARP_HWADDR_LEN;
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 static void

@@ -175,7 +175,7 @@ tcpip_input(struct pbuf *p, struct netif *inp)
   if (sys_mbox_valid(&mbox)) {
     msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_INPKT);
     if (msg == NULL) {
-      return ERR_MEM;
+      return (ERR_MEM);
     }
 
     msg->type = TCPIP_MSG_INPKT;
@@ -183,11 +183,11 @@ tcpip_input(struct pbuf *p, struct netif *inp)
     msg->msg.inp.netif = inp;
     if (sys_mbox_trypost(&mbox, msg) != ERR_OK) {
       memp_free(MEMP_TCPIP_MSG_INPKT, msg);
-      return ERR_MEM;
+      return (ERR_MEM);
     }
-    return ERR_OK;
+    return (ERR_OK);
   }
-  return ERR_VAL;
+  return (ERR_VAL);
 #endif /* LWIP_TCPIP_CORE_LOCKING_INPUT */
 }
 
@@ -210,7 +210,7 @@ tcpip_callback_with_block(tcpip_callback_fn function, void *ctx, u8_t block)
   if (sys_mbox_valid(&mbox)) {
     msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_API);
     if (msg == NULL) {
-      return ERR_MEM;
+      return (ERR_MEM);
     }
 
     msg->type = TCPIP_MSG_CALLBACK;
@@ -221,12 +221,12 @@ tcpip_callback_with_block(tcpip_callback_fn function, void *ctx, u8_t block)
     } else {
       if (sys_mbox_trypost(&mbox, msg) != ERR_OK) {
         memp_free(MEMP_TCPIP_MSG_API, msg);
-        return ERR_MEM;
+        return (ERR_MEM);
       }
     }
-    return ERR_OK;
+    return (ERR_OK);
   }
-  return ERR_VAL;
+  return (ERR_VAL);
 }
 
 #if LWIP_TCPIP_TIMEOUT
@@ -246,7 +246,7 @@ tcpip_timeout(u32_t msecs, sys_timeout_handler h, void *arg)
   if (sys_mbox_valid(&mbox)) {
     msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_API);
     if (msg == NULL) {
-      return ERR_MEM;
+      return (ERR_MEM);
     }
 
     msg->type = TCPIP_MSG_TIMEOUT;
@@ -254,9 +254,9 @@ tcpip_timeout(u32_t msecs, sys_timeout_handler h, void *arg)
     msg->msg.tmo.h = h;
     msg->msg.tmo.arg = arg;
     sys_mbox_post(&mbox, msg);
-    return ERR_OK;
+    return (ERR_OK);
   }
-  return ERR_VAL;
+  return (ERR_VAL);
 }
 
 /**
@@ -275,16 +275,16 @@ tcpip_untimeout(sys_timeout_handler h, void *arg)
   if (sys_mbox_valid(&mbox)) {
     msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_API);
     if (msg == NULL) {
-      return ERR_MEM;
+      return (ERR_MEM);
     }
 
     msg->type = TCPIP_MSG_UNTIMEOUT;
     msg->msg.tmo.h = h;
     msg->msg.tmo.arg = arg;
     sys_mbox_post(&mbox, msg);
-    return ERR_OK;
+    return (ERR_OK);
   }
-  return ERR_VAL;
+  return (ERR_VAL);
 }
 #endif /* LWIP_TCPIP_TIMEOUT */
 
@@ -313,7 +313,7 @@ tcpip_apimsg(struct api_msg *apimsg)
     sys_arch_sem_wait(&apimsg->msg.conn->op_completed, 0);
     return apimsg->msg.err;
   }
-  return ERR_VAL;
+  return (ERR_VAL);
 }
 
 #if LWIP_TCPIP_CORE_LOCKING
@@ -360,7 +360,7 @@ tcpip_netifapi(struct netifapi_msg* netifapimsg)
     err_t err = sys_sem_new(&netifapimsg->msg.sem, 0);
     if (err != ERR_OK) {
       netifapimsg->msg.err = err;
-      return err;
+      return (err);
     }
     
     msg.type = TCPIP_MSG_NETIFAPI;
@@ -370,7 +370,7 @@ tcpip_netifapi(struct netifapi_msg* netifapimsg)
     sys_sem_free(&netifapimsg->msg.sem);
     return netifapimsg->msg.err;
   }
-  return ERR_VAL;
+  return (ERR_VAL);
 }
 #else /* !LWIP_TCPIP_CORE_LOCKING */
 /**

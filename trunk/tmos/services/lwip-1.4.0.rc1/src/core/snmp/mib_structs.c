@@ -496,14 +496,14 @@ snmp_search_tree(struct mib_node *node, u8_t ident_len, s32_t *ident, struct snm
         {
           /* search failed, identifier mismatch (nosuchname) */
           LWIP_DEBUGF(SNMP_MIB_DEBUG,("an search failed *ident==%"S32_F"\n",*ident));
-          return NULL;
+          return (NULL);
         }
       }
       else
       {
         /* search failed, short object identifier (nosuchname) */
         LWIP_DEBUGF(SNMP_MIB_DEBUG,("an search failed, short object identifier\n"));
-        return NULL;
+        return (NULL);
       }
     }
     else if(node_type == MIB_NODE_LR)
@@ -543,14 +543,14 @@ snmp_search_tree(struct mib_node *node, u8_t ident_len, s32_t *ident, struct snm
         {
           /* search failed */
           LWIP_DEBUGF(SNMP_MIB_DEBUG,("ln search failed *ident==%"S32_F"\n",*ident));
-          return NULL;
+          return (NULL);
         }
       }
       else
       {
         /* search failed, short object identifier (nosuchname) */
         LWIP_DEBUGF(SNMP_MIB_DEBUG,("ln search failed, short object identifier\n"));
-        return NULL;
+        return (NULL);
       }
     }
     else if(node_type == MIB_NODE_EX)
@@ -593,14 +593,14 @@ snmp_search_tree(struct mib_node *node, u8_t ident_len, s32_t *ident, struct snm
         {
           /* search failed */
           LWIP_DEBUGF(SNMP_MIB_DEBUG,("en search failed *ident==%"S32_F"\n",*ident));
-          return NULL;
+          return (NULL);
         }
       }
       else
       {
         /* search failed, short object identifier (nosuchname) */
         LWIP_DEBUGF(SNMP_MIB_DEBUG,("en search failed, short object identifier\n"));
-        return NULL;
+        return (NULL);
       }
     }
     else if (node_type == MIB_NODE_SC)
@@ -618,19 +618,19 @@ snmp_search_tree(struct mib_node *node, u8_t ident_len, s32_t *ident, struct snm
       {
         /* search failed, short object identifier (nosuchname) */
         LWIP_DEBUGF(SNMP_MIB_DEBUG,("search failed, invalid object identifier length\n"));
-        return NULL;
+        return (NULL);
       }
     }
     else
     {
       /* unknown node_type */
       LWIP_DEBUGF(SNMP_MIB_DEBUG,("search failed node_type %"U16_F" unkown\n",(u16_t)node_type));
-      return NULL;
+      return (NULL);
     }
   }
   /* done, found nothing */
   LWIP_DEBUGF(SNMP_MIB_DEBUG,("search failed node==%p\n",(void*)node));
-  return NULL;
+  return (NULL);
 }
 
 /**
@@ -1064,7 +1064,7 @@ snmp_expand_tree(struct mib_node *node, u8_t ident_len, s32_t *ident, struct snm
     {
       /* unknown/unhandled node_type */
       LWIP_DEBUGF(SNMP_MIB_DEBUG,("expand failed node_type %"U16_F" unkown\n",(u16_t)node_type));
-      return NULL;
+      return (NULL);
     }
 
     if (climb_tree)
@@ -1094,13 +1094,13 @@ snmp_expand_tree(struct mib_node *node, u8_t ident_len, s32_t *ident, struct snm
       {
         /* tree ends here ... */
         LWIP_DEBUGF(SNMP_MIB_DEBUG,("expand failed, tree ends here\n"));
-        return NULL;
+        return (NULL);
       }
     }
   }
   /* done, found nothing */
   LWIP_DEBUGF(SNMP_MIB_DEBUG,("expand failed node==%p\n",(void*)node));
-  return NULL;
+  return (NULL);
 }
 
 /**
@@ -1117,11 +1117,11 @@ snmp_iso_prefix_tst(u8_t ident_len, s32_t *ident)
       (ident[0] == 1) && (ident[1] == 3) &&
       (ident[2] == 6) && (ident[3] == 1))
   {
-    return 1;
+    return (1);
   }
   else
   {
-    return 0;
+    return (0);
   }
 }
 
@@ -1162,12 +1162,12 @@ snmp_iso_prefix_expand(u8_t ident_len, s32_t *ident, struct snmp_obj_id *oidret)
       i++;
     }
     oidret->len = i;
-    return 1;
+    return (1);
   }
   else
   {
     /* i != ident_len */
-    return 0;
+    return (0);
   }
 }
 

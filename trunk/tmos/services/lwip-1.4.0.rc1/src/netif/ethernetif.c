@@ -147,7 +147,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
   
   LINK_STATS_INC(link.xmit);
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -282,7 +282,7 @@ ethernetif_init(struct netif *netif)
   ethernetif = mem_malloc(sizeof(struct ethernetif));
   if (ethernetif == NULL) {
     LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_init: out of memory\n"));
-    return ERR_MEM;
+    return (ERR_MEM);
   }
 
 #if LWIP_NETIF_HOSTNAME
@@ -312,7 +312,7 @@ ethernetif_init(struct netif *netif)
   /* initialize the hardware */
   low_level_init(netif);
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 #endif /* 0 */

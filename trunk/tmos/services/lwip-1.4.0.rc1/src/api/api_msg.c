@@ -90,7 +90,7 @@ recv_raw(void *arg, struct raw_pcb *pcb, struct pbuf *p,
     int recv_avail;
     SYS_ARCH_GET(conn->recv_avail, recv_avail);
     if ((recv_avail + (int)(p->tot_len)) > conn->recv_bufsize) {
-      return 0;
+      return (0);
     }
 #endif /* LWIP_SO_RCVBUF */
     /* copy the whole packet into new pbufs */
@@ -107,7 +107,7 @@ recv_raw(void *arg, struct raw_pcb *pcb, struct pbuf *p,
       buf = (struct netbuf *)memp_malloc(MEMP_NETBUF);
       if (buf == NULL) {
         pbuf_free(q);
-        return 0;
+        return (0);
       }
 
       buf->p = q;
@@ -118,7 +118,7 @@ recv_raw(void *arg, struct raw_pcb *pcb, struct pbuf *p,
       len = q->tot_len;
       if (sys_mbox_trypost(&conn->recvmbox, buf) != ERR_OK) {
         netbuf_delete(buf);
-        return 0;
+        return (0);
       } else {
         SYS_ARCH_INC(conn->recv_avail, len);
         /* Register event with callback */
@@ -127,7 +127,7 @@ recv_raw(void *arg, struct raw_pcb *pcb, struct pbuf *p,
     }
   }
 
-  return 0; /* do not eat the packet */
+  return (0); /* do not eat the packet */
 }
 #endif /* LWIP_RAW*/
 
@@ -221,7 +221,7 @@ recv_tcp(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
   LWIP_ASSERT("recv_tcp: recv for wrong pcb!", conn->pcb.tcp == pcb);
 
   if (conn == NULL) {
-    return ERR_VAL;
+    return (ERR_VAL);
   }
   if (!sys_mbox_valid(&conn->recvmbox)) {
     /* recvmbox already deleted */
@@ -229,7 +229,7 @@ recv_tcp(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
       tcp_recved(pcb, p->tot_len);
       pbuf_free(p);
     }
-    return ERR_OK;
+    return (ERR_OK);
   }
   /* Unlike for UDP or RAW pcbs, don't check for available space
      using recv_avail since that could break the connection
@@ -246,14 +246,14 @@ recv_tcp(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 
   if (sys_mbox_trypost(&conn->recvmbox, p) != ERR_OK) {
     /* don't deallocate p: it is presented to us later again from tcp_fasttmr! */
-    return ERR_MEM;
+    return (ERR_MEM);
   } else {
     SYS_ARCH_INC(conn->recv_avail, len);
     /* Register event with callback */
     API_EVENT(conn, NETCONN_EVT_RCVPLUS, len);
   }
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -293,7 +293,7 @@ poll_tcp(void *arg, struct tcp_pcb *pcb)
     }
   }
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -327,7 +327,7 @@ sent_tcp(void *arg, struct tcp_pcb *pcb, u16_t len)
     }
   }
   
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -432,14 +432,14 @@ accept_function(void *arg, struct tcp_pcb *newpcb, err_t err)
 
   if (!sys_mbox_valid(&conn->acceptmbox)) {
     LWIP_DEBUGF(API_MSG_DEBUG, ("accept_function: acceptmbox already deleted\n"));
-    return ERR_VAL;
+    return (ERR_VAL);
   }
 
   /* We have to set the callback here even though
    * the new socket is unknown. conn->socket is marked as -1. */
   newconn = netconn_alloc(conn->type, conn->callback);
   if (newconn == NULL) {
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   newconn->pcb.tcp = newpcb;
   setup_tcp(newconn);
@@ -455,13 +455,13 @@ accept_function(void *arg, struct tcp_pcb *newpcb, err_t err)
     sys_mbox_free(&newconn->recvmbox);
     sys_mbox_set_invalid(&newconn->recvmbox);
     netconn_free(newconn);
-    return ERR_MEM;
+    return (ERR_MEM);
   } else {
     /* Register event with callback */
     API_EVENT(conn, NETCONN_EVT_RCVPLUS, 0);
   }
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 #endif /* LWIP_TCP */
 
@@ -562,7 +562,7 @@ netconn_alloc(enum netconn_type t, netconn_callback callback)
 
   conn = (struct netconn *)memp_malloc(MEMP_NETCONN);
   if (conn == NULL) {
-    return NULL;
+    return (NULL);
   }
 
   conn->last_err = ERR_OK;
@@ -597,12 +597,12 @@ netconn_alloc(enum netconn_type t, netconn_callback callback)
 
   if (sys_sem_new(&conn->op_completed, 0) != ERR_OK) {
     memp_free(MEMP_NETCONN, conn);
-    return NULL;
+    return (NULL);
   }
   if (sys_mbox_new(&conn->recvmbox, size) != ERR_OK) {
     sys_sem_free(&conn->op_completed);
     memp_free(MEMP_NETCONN, conn);
-    return NULL;
+    return (NULL);
   }
 
 #if LWIP_TCP
@@ -926,7 +926,7 @@ do_connected(void *arg, struct tcp_pcb *pcb, err_t err)
   conn = (struct netconn *)arg;
 
   if (conn == NULL) {
-    return ERR_VAL;
+    return (ERR_VAL);
   }
 
   LWIP_ASSERT("conn->state == NETCONN_CONNECT", conn->state == NETCONN_CONNECT);
@@ -956,7 +956,7 @@ do_connected(void *arg, struct tcp_pcb *pcb, err_t err)
   if (was_blocking) {
     sys_sem_signal(&conn->op_completed);
   }
-  return ERR_OK;
+  return (ERR_OK);
 }
 #endif /* LWIP_TCP */
 
@@ -1298,9 +1298,9 @@ do_writemore(struct netconn *conn)
   }
 #if LWIP_TCPIP_CORE_LOCKING
   else
-    return ERR_MEM;
+    return (ERR_MEM);
 #endif
-  return ERR_OK;
+  return (ERR_OK);
 }
 #endif /* LWIP_TCP */
 

@@ -916,7 +916,7 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
       (type != (SNMP_ASN1_UNIV | SNMP_ASN1_CONSTR | SNMP_ASN1_SEQ)))
   {
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   ofs += (1 + len_octets);
   snmp_asn1_dec_type(p, ofs, &type);
@@ -925,20 +925,20 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
   {
     /* can't decode or no integer (version) */
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   derr = snmp_asn1_dec_s32t(p, ofs + 1 + len_octets, len, &version);
   if (derr != ERR_OK)
   {
     /* can't decode */
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   if (version != 0)
   {
     /* not version 1 */
     snmp_inc_snmpinbadversions();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   ofs += (1 + len_octets + len);
   snmp_asn1_dec_type(p, ofs, &type);
@@ -947,13 +947,13 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
   {
     /* can't decode or no octet string (community) */
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   derr = snmp_asn1_dec_raw(p, ofs + 1 + len_octets, len, SNMP_COMMUNITY_STR_LEN, m_stat->community);
   if (derr != ERR_OK)
   {
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   /* add zero terminator */
   len = ((len < (SNMP_COMMUNITY_STR_LEN))?(len):(SNMP_COMMUNITY_STR_LEN));
@@ -964,7 +964,7 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
     /** @todo: move this if we need to check more names */
     snmp_inc_snmpinbadcommunitynames();
     snmp_authfail_trap();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   ofs += (1 + len_octets + len);
   snmp_asn1_dec_type(p, ofs, &type);
@@ -972,7 +972,7 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
   if (derr != ERR_OK)
   {
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   switch(type)
   {
@@ -1009,7 +1009,7 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
   if (derr != ERR_OK)
   {
     /* unsupported input PDU for this agent (no parse error) */
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   m_stat->rt = type & 0x1F;
   ofs += (1 + len_octets);
@@ -1017,7 +1017,7 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
   {
     /* decoded PDU length does not equal actual payload length */
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   snmp_asn1_dec_type(p, ofs, &type);
   derr = snmp_asn1_dec_length(p, ofs+1, &len_octets, &len);
@@ -1025,14 +1025,14 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
   {
     /* can't decode or no integer (request ID) */
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   derr = snmp_asn1_dec_s32t(p, ofs + 1 + len_octets, len, &m_stat->rid);
   if (derr != ERR_OK)
   {
     /* can't decode */
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   ofs += (1 + len_octets + len);
   snmp_asn1_dec_type(p, ofs, &type);
@@ -1041,7 +1041,7 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
   {
     /* can't decode or no integer (error-status) */
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   /* must be noError (0) for incoming requests.
      log errors for mib-2 completeness and for debug purposes */
@@ -1050,7 +1050,7 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
   {
     /* can't decode */
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   switch (m_stat->error_status)
   {
@@ -1077,7 +1077,7 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
   {
     /* can't decode or no integer (error-index) */
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   /* must be 0 for incoming requests.
      decode anyway to catch bad integers (and dirty tricks) */
@@ -1086,11 +1086,11 @@ snmp_pdu_header_check(struct pbuf *p, u16_t ofs, u16_t pdu_len, u16_t *ofs_ret, 
   {
     /* can't decode */
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   ofs += (1 + len_octets + len);
   *ofs_ret = ofs;
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 static err_t
@@ -1108,7 +1108,7 @@ snmp_pdu_dec_varbindlist(struct pbuf *p, u16_t ofs, u16_t *ofs_ret, struct snmp_
       (type != (SNMP_ASN1_UNIV | SNMP_ASN1_CONSTR | SNMP_ASN1_SEQ)))
   {
     snmp_inc_snmpinasnparseerrs();
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   ofs += (1 + len_octets);
 
@@ -1131,7 +1131,7 @@ snmp_pdu_dec_varbindlist(struct pbuf *p, u16_t ofs, u16_t *ofs_ret, struct snmp_
       snmp_inc_snmpinasnparseerrs();
       /* free varbinds (if available) */
       snmp_varbind_list_free(&m_stat->invb);
-      return ERR_ARG;
+      return (ERR_ARG);
     }
     ofs += (1 + len_octets);
     vb_len -= (1 + len_octets);
@@ -1144,7 +1144,7 @@ snmp_pdu_dec_varbindlist(struct pbuf *p, u16_t ofs, u16_t *ofs_ret, struct snmp_
       snmp_inc_snmpinasnparseerrs();
       /* free varbinds (if available) */
       snmp_varbind_list_free(&m_stat->invb);
-      return ERR_ARG;
+      return (ERR_ARG);
     }
     derr = snmp_asn1_dec_oid(p, ofs + 1 + len_octets, len, &oid);
     if (derr != ERR_OK)
@@ -1153,7 +1153,7 @@ snmp_pdu_dec_varbindlist(struct pbuf *p, u16_t ofs, u16_t *ofs_ret, struct snmp_
       snmp_inc_snmpinasnparseerrs();
       /* free varbinds (if available) */
       snmp_varbind_list_free(&m_stat->invb);
-      return ERR_ARG;
+      return (ERR_ARG);
     }
     ofs += (1 + len_octets + len);
     vb_len -= (1 + len_octets + len);
@@ -1166,7 +1166,7 @@ snmp_pdu_dec_varbindlist(struct pbuf *p, u16_t ofs, u16_t *ofs_ret, struct snmp_
       snmp_inc_snmpinasnparseerrs();
       /* free varbinds (if available) */
       snmp_varbind_list_free(&m_stat->invb);
-      return ERR_ARG;
+      return (ERR_ARG);
     }
 
     switch (type)
@@ -1280,7 +1280,7 @@ snmp_pdu_dec_varbindlist(struct pbuf *p, u16_t ofs, u16_t *ofs_ret, struct snmp_
       snmp_inc_snmpinasnparseerrs();
       /* free varbinds (if available) */
       snmp_varbind_list_free(&m_stat->invb);
-      return ERR_ARG;
+      return (ERR_ARG);
     }
     ofs += (1 + len_octets + len);
     vb_len -= (1 + len_octets + len);
@@ -1296,7 +1296,7 @@ snmp_pdu_dec_varbindlist(struct pbuf *p, u16_t ofs, u16_t *ofs_ret, struct snmp_
   }
 
   *ofs_ret = ofs;
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 struct snmp_varbind*
@@ -1323,7 +1323,7 @@ snmp_varbind_alloc(struct snmp_obj_id *oid, u8_t type, u8_t len)
       if (vb->ident == NULL)
       {
         memp_free(MEMP_SNMP_VARBIND, vb);
-        return NULL;
+        return (NULL);
       }
       while(i > 0)
       {
@@ -1351,7 +1351,7 @@ snmp_varbind_alloc(struct snmp_obj_id *oid, u8_t type, u8_t len)
           memp_free(MEMP_SNMP_VALUE, vb->ident);
         }
         memp_free(MEMP_SNMP_VARBIND, vb);
-        return NULL;
+        return (NULL);
       }
     }
     else

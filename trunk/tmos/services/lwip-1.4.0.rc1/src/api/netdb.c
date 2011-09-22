@@ -98,7 +98,7 @@ lwip_gethostbyname(const char *name)
   if (err != ERR_OK) {
     LWIP_DEBUGF(DNS_DEBUG, ("lwip_gethostbyname(%s) failed, err=%d\n", name, err));
     h_errno = HOST_NOT_FOUND;
-    return NULL;
+    return (NULL);
   }
 
   /* fill hostent */
@@ -221,7 +221,7 @@ lwip_gethostbyname_r(const char *name, struct hostent *ret, char *buf,
   *result = ret;
 
   /* return success */
-  return 0;
+  return (0);
 }
 
 /**
@@ -341,7 +341,7 @@ lwip_getaddrinfo(const char *nodename, const char *servname,
 
   *res = ai;
 
-  return 0;
+  return (0);
 memerr:
   if (ai != NULL) {
     memp_free(MEMP_NETDB, ai);
