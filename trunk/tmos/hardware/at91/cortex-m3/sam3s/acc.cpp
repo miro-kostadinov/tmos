@@ -111,22 +111,22 @@ extern uint32_t ACC_GetComparisionResult( Acc *pAcc, uint32_t dwStatus )
     {
         if ( dwStatus & ACC_ISR_SCO )
         {
-            return 0 ; /* inn>inp*/
+            return (0) ; /* inn>inp*/
         }
         else
         {
-            return 1 ;/* inp>inn*/
+            return (1) ;/* inp>inn*/
         }
     }
     else
     {
         if ( dwStatus & ACC_ISR_SCO )
         {
-            return 1 ; /* inp>inn*/
+            return (1) ; /* inp>inn*/
         }
         else
         {
-            return 0 ;/* inn>inp*/
+            return (0) ;/* inn>inp*/
         }
     }
 }

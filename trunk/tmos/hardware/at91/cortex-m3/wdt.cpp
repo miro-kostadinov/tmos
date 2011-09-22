@@ -100,7 +100,7 @@ extern uint32_t WDT_GetPeriod( uint32_t dwMs )
 {
     if ( (dwMs < 4) || (dwMs > 16000) )
     {
-        return 0 ;
+        return (0);
     }
     return ((dwMs << 8) / 1000) ;
 }

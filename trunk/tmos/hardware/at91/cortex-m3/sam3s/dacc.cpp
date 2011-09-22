@@ -74,7 +74,7 @@ extern void DACC_Initialize( Dacc* pDACC,
                              uint32_t startup
                             )
 {
-    assert( 1024*refresh*1000/(mck>>1) < 20 ) ;
+    ASSERT( 1024*refresh*1000/(mck>>1) < 20 ) ;
 
     /* Enable peripheral clock*/
     PMC->PMC_PCER0 = 1 << idDACC;
@@ -131,7 +131,7 @@ extern uint32_t DACC_WriteBuffer( Dacc* pDACC, uint16_t *pwBuffer, uint32_t dwSi
         pDACC->DACC_TCR = dwSize ;
         pDACC->DACC_PTCR = DACC_PTCR_TXTEN ;
 
-        return 1 ;
+        return (1);
     }
     /* Check if the second PDC bank is free*/
     else
@@ -141,11 +141,11 @@ extern uint32_t DACC_WriteBuffer( Dacc* pDACC, uint16_t *pwBuffer, uint32_t dwSi
             pDACC->DACC_TNPR = (uint32_t)pwBuffer ;
             pDACC->DACC_TNCR = dwSize ;
 
-            return 1 ;
+            return (1);
         }
         else
 		{
-            return 0 ;
+            return (0);
 		}
     }
 

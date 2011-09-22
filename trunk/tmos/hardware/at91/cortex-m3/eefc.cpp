@@ -94,7 +94,7 @@ extern void EFC_SetWaitState( Efc* efc, uint8_t ucCycles )
  */
 extern uint32_t EFC_GetStatus( Efc* efc )
 {
-    return efc->EEFC_FSR ;
+    return (efc->EEFC_FSR) ;
 }
 
 /**
@@ -104,7 +104,7 @@ extern uint32_t EFC_GetStatus( Efc* efc )
  */
 extern uint32_t EFC_GetResult( Efc* efc )
 {
-    return efc->EEFC_FRR ;
+    return (efc->EEFC_FRR) ;
 }
 
 /**
@@ -209,6 +209,7 @@ extern void EFC_StartCommand( Efc* efc, uint32_t dwCommand, uint32_t dwArgument 
         break;
 
         default: ASSERT( 0 ) ;
+        break;
     }
 
     /* Start command Embedded flash */

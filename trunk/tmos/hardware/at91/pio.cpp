@@ -352,14 +352,14 @@ uint8_t PIO_Configure( const Pin *list, uint32_t size )
                               (list->attribute & PIO_PULLUP) ? 1 : 0);
                 break;
 
-            default: return 0;
+            default: return (0);
         }
 
         list++;
         size--;
     }
 
-    return 1;
+    return (1);
 }
 
 /**
@@ -412,11 +412,11 @@ unsigned char PIO_Get( const Pin *pin )
 
     if ( (reg & pin->mask) == 0 )
     {
-        return 0 ;
+        return (0);
     }
     else
     {
-        return 1 ;
+        return (1);
     }
 }
 
@@ -432,14 +432,14 @@ unsigned char PIO_Get( const Pin *pin )
  */
 unsigned char PIO_GetOutputDataStatus(const Pin *pin)
 {
-    if ((pin->pio->PIO_ODSR & pin->mask) == 0) {
-
-        return 0;
-    }
-    else {
-
-        return 1;
-    }
+    if ((pin->pio->PIO_ODSR & pin->mask) == 0)
+	{
+		return (0);
+	}
+	else
+	{
+		return (1);
+	}
 }
 
 /**

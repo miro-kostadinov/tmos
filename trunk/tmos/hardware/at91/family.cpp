@@ -18,7 +18,7 @@
  */
 extern "C" unsigned int AT91_GetDiv(unsigned int baudrate)
 {
-	return (((system_clock_frequency * 10) / (baudrate * 16)) + 5) / 10;
+	return ((((system_clock_frequency * 10) / (baudrate * 16)) + 5) / 10);
 }
 
 

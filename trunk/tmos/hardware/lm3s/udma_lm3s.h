@@ -14,6 +14,7 @@
 #define UDMA_LM3S_H_
 
 #include <tmos_types.h>
+#include <udma_inc.h>
 
 #ifdef __cplusplus
 extern "C"

@@ -162,7 +162,7 @@ void SSC_Write(uint32_t frame)
 uint32_t SSC_Read(void)
 {
     while ((SSC->SSC_SR & SSC_SR_RXRDY) == 0);
-    return SSC->SSC_RHR;
+    return (SSC->SSC_RHR);
 }
 
 /**
@@ -179,16 +179,16 @@ uint8_t SSC_WriteBuffer(void *buffer, uint32_t length)
         SSC->SSC_TPR = (uint32_t) buffer;
         SSC->SSC_TCR = length;
         SSC->SSC_PTCR = SSC_PTCR_TXTEN;
-        return 1;
+        return (1);
     }
     /* Check if second bank is free*/
     else if (SSC->SSC_TNCR == 0) {
 
         SSC->SSC_TNPR = (uint32_t) buffer;
         SSC->SSC_TNCR = length;
-        return 1;
+        return (1);
     }
-    return 0;
+    return (0);
 }
 
 /**
@@ -206,13 +206,13 @@ uint8_t SSC_ReadBuffer(void *buffer, uint32_t length)
         SSC->SSC_RPR = (uint32_t) buffer;
         SSC->SSC_RCR = length;
         SSC->SSC_PTCR = SSC_PTCR_RXTEN;
-        return 1;
+        return (1);
     }
     /* Check if second bank is free*/
     else if (SSC->SSC_RNCR == 0) {
         SSC->SSC_RNPR = (uint32_t) buffer;
         SSC->SSC_RNCR = length;
-        return 1;
+        return (1);
     }
-    return 0;
+    return (0);
 }

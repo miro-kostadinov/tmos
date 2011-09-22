@@ -196,7 +196,7 @@ uint8_t USART_WriteBuffer(
         usart->US_TCR = size;
         usart->US_PTCR = US_PTCR_TXTEN;
 
-        return 1;
+        return (1);
     }
     /* Check if the second PDC bank is free*/
     else if (usart->US_TNCR == 0) {
@@ -204,11 +204,11 @@ uint8_t USART_WriteBuffer(
         usart->US_TNPR = (uint32_t) buffer;
         usart->US_TNCR = size;
 
-        return 1;
+        return (1);
     }
     else {
 
-        return 0;
+        return (0);
     }
 }
 
@@ -236,13 +236,13 @@ uint16_t USART_Read(
             if (timeOut == 0) {
 
                 TRACE_ERROR( "USART_Read: Timed out.\n\r" ) ;
-                return 0;
+                return (0);
             }
             timeOut--;
         }
     }
 
-    return usart->US_RHR;
+    return (usart->US_RHR);
 }
 
 /**
@@ -265,7 +265,7 @@ uint8_t USART_ReadBuffer(Usart *usart,
         usart->US_RCR = size;
         usart->US_PTCR = US_PTCR_RXTEN;
 
-        return 1;
+        return (1);
     }
     /* Check if the second PDC bank is free*/
     else if (usart->US_RNCR == 0) {
@@ -273,11 +273,11 @@ uint8_t USART_ReadBuffer(Usart *usart,
         usart->US_RNPR = (uint32_t) buffer;
         usart->US_RNCR = size;
 
-        return 1;
+        return (1);
     }
     else {
 
-        return 0;
+        return (0);
     }
 }
 
@@ -291,11 +291,11 @@ uint8_t USART_IsDataAvailable(Usart *usart)
 {
     if ((usart->US_CSR & US_CSR_RXRDY) != 0) {
 
-        return 1;
+        return (1);
     }
     else {
 
-        return 0;
+        return (0);
     }
 }
 
@@ -346,7 +346,7 @@ uint32_t USART_IsRxReady(Usart *usart)
  */
 uint32_t USART_GetStatus(Usart *usart)
 {
-    return usart->US_CSR;
+    return (usart->US_CSR);
 }
 /**
  * \brief   Enable interrupt
@@ -372,5 +372,5 @@ void USART_DisableIt(Usart *usart,uint32_t mode)
 uint8_t USART_GetChar(Usart *usart)
 {
     while ((usart->US_CSR & US_CSR_RXRDY) == 0);
-    return usart->US_RHR;
+    return (usart->US_RHR);
 }

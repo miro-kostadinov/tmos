@@ -66,7 +66,7 @@ void RTT_SetPrescaler(Rtt *rtt, uint16_t prescaler)
  */
 uint32_t RTT_GetTime(Rtt *rtt)
 {
-    return rtt->RTT_VR;
+    return (rtt->RTT_VR);
 }
 
 /**
@@ -88,7 +88,7 @@ void RTT_EnableIT(Rtt *rtt, uint32_t sources)
  */
 uint32_t RTT_GetStatus(Rtt *rtt)
 {
-    return rtt->RTT_SR;
+    return (rtt->RTT_SR);
 }
 
 /**
