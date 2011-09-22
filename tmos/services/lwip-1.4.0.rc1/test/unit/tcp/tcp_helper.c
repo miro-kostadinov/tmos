@@ -177,7 +177,7 @@ test_tcp_counters_recv(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err
     counters->close_calls++;
   }
   EXPECT(counters->recv_calls_after_close == 0 && counters->recved_bytes_after_close == 0);
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /** Allocate a pcb and set up the test_tcp_counters_* callbacks */

@@ -209,10 +209,10 @@ igmp_start(struct netif *netif)
       netif->igmp_mac_filter(netif, &allsystems, IGMP_ADD_MAC_FILTER);
     }
 
-    return ERR_OK;
+    return (ERR_OK);
   }
 
-  return ERR_MEM;
+  return (ERR_MEM);
 }
 
 /**
@@ -256,7 +256,7 @@ igmp_stop(struct netif *netif)
     /* move to "next" */
     group = next;
   }
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -302,7 +302,7 @@ igmp_lookfor_group(struct netif *ifp, ip_addr_t *addr)
   /* to be clearer, we return NULL here instead of
    * 'group' (which is also NULL at this point).
    */
-  return NULL;
+  return (NULL);
 }
 
 /**
@@ -376,7 +376,7 @@ igmp_remove_group(struct igmp_group *group)
   /* free group */
   memp_free(MEMP_IGMP_GROUP, group);
 
-  return err;
+  return (err);
 }
 
 /**
@@ -520,8 +520,8 @@ igmp_joingroup(ip_addr_t *ifaddr, ip_addr_t *groupaddr)
   struct netif      *netif;
 
   /* make sure it is multicast address */
-  LWIP_ERROR("igmp_joingroup: attempt to join non-multicast address", ip_addr_ismulticast(groupaddr), return ERR_VAL;);
-  LWIP_ERROR("igmp_joingroup: attempt to join allsystems address", (!ip_addr_cmp(groupaddr, &allsystems)), return ERR_VAL;);
+  LWIP_ERROR("igmp_joingroup: attempt to join non-multicast address", ip_addr_ismulticast(groupaddr), return (ERR_VAL););
+  LWIP_ERROR("igmp_joingroup: attempt to join allsystems address", (!ip_addr_cmp(groupaddr, &allsystems)), return (ERR_VAL););
 
   /* loop through netif's */
   netif = netif_list;
@@ -565,14 +565,14 @@ igmp_joingroup(ip_addr_t *ifaddr, ip_addr_t *groupaddr)
         /* Return an error even if some network interfaces are joined */
         /** @todo undo any other netif already joined */
         LWIP_DEBUGF(IGMP_DEBUG, ("igmp_joingroup: Not enought memory to join to group\n"));
-        return ERR_MEM;
+        return (ERR_MEM);
       }
     }
     /* proceed to next network interface */
     netif = netif->next;
   }
 
-  return err;
+  return (err);
 }
 
 /**
@@ -590,8 +590,8 @@ igmp_leavegroup(ip_addr_t *ifaddr, ip_addr_t *groupaddr)
   struct netif      *netif;
 
   /* make sure it is multicast address */
-  LWIP_ERROR("igmp_leavegroup: attempt to leave non-multicast address", ip_addr_ismulticast(groupaddr), return ERR_VAL;);
-  LWIP_ERROR("igmp_leavegroup: attempt to leave allsystems address", (!ip_addr_cmp(groupaddr, &allsystems)), return ERR_VAL;);
+  LWIP_ERROR("igmp_leavegroup: attempt to leave non-multicast address", ip_addr_ismulticast(groupaddr), return (ERR_VAL););
+  LWIP_ERROR("igmp_leavegroup: attempt to leave allsystems address", (!ip_addr_cmp(groupaddr, &allsystems)), return (ERR_VAL););
 
   /* loop through netif's */
   netif = netif_list;
@@ -645,7 +645,7 @@ igmp_leavegroup(ip_addr_t *ifaddr, ip_addr_t *groupaddr)
     netif = netif->next;
   }
 
-  return err;
+  return (err);
 }
 
 /**

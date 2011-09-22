@@ -197,7 +197,7 @@ get_socket(int s)
   if ((s < 0) || (s >= NUM_SOCKETS)) {
     LWIP_DEBUGF(SOCKETS_DEBUG, ("get_socket(%d): invalid\n", s));
     set_errno(EBADF);
-    return NULL;
+    return (NULL);
   }
 
   sock = &sockets[s];
@@ -205,7 +205,7 @@ get_socket(int s)
   if (!sock->conn) {
     LWIP_DEBUGF(SOCKETS_DEBUG, ("get_socket(%d): not active\n", s));
     set_errno(EBADF);
-    return NULL;
+    return (NULL);
   }
 
   return sock;
@@ -221,10 +221,10 @@ static struct lwip_sock *
 tryget_socket(int s)
 {
   if ((s < 0) || (s >= NUM_SOCKETS)) {
-    return NULL;
+    return (NULL);
   }
   if (!sockets[s].conn) {
-    return NULL;
+    return (NULL);
   }
   return &sockets[s];
 }
@@ -432,7 +432,7 @@ lwip_bind(int s, const struct sockaddr *name, socklen_t namelen)
 
   LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_bind(%d) succeeded\n", s));
   sock_set_errno(sock, 0);
-  return 0;
+  return (0);
 }
 
 int
@@ -458,7 +458,7 @@ lwip_close(int s)
 
   free_socket(sock, is_tcp);
   set_errno(0);
-  return 0;
+  return (0);
 }
 
 int
@@ -504,7 +504,7 @@ lwip_connect(int s, const struct sockaddr *name, socklen_t namelen)
 
   LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_connect(%d) succeeded\n", s));
   sock_set_errno(sock, 0);
-  return 0;
+  return (0);
 }
 
 /**
@@ -540,7 +540,7 @@ lwip_listen(int s, int backlog)
   }
 
   sock_set_errno(sock, 0);
-  return 0;
+  return (0);
 }
 
 int
@@ -607,7 +607,7 @@ lwip_recvfrom(int s, void *mem, size_t len, int flags,
           s, lwip_strerr(err)));
         sock_set_errno(sock, err_to_errno(err));
         if (err == ERR_CLSD) {
-          return 0;
+          return (0);
         } else {
           return -1;
         }
@@ -1414,7 +1414,7 @@ lwip_getaddrname(int s, struct sockaddr *name, socklen_t *namelen, u8_t local)
 
   MEMCPY(name, &sin, *namelen);
   sock_set_errno(sock, 0);
-  return 0;
+  return (0);
 }
 
 int
@@ -1551,7 +1551,7 @@ lwip_getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen)
     
     /* If this is no TCP socket, ignore any options. */
     if (sock->conn->type != NETCONN_TCP)
-      return 0;
+      return (0);
 
     switch (optname) {
     case TCP_NODELAY:
@@ -1580,7 +1580,7 @@ lwip_getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen)
     
     /* If this is no UDP lite socket, ignore any options. */
     if (sock->conn->type != NETCONN_UDPLITE) {
-      return 0;
+      return (0);
     }
 
     switch (optname) {
@@ -1958,7 +1958,7 @@ lwip_setsockopt(int s, int level, int optname, const void *optval, socklen_t opt
 
     /* If this is no TCP socket, ignore any options. */
     if (sock->conn->type != NETCONN_TCP)
-      return 0;
+      return (0);
 
     switch (optname) {
     case TCP_NODELAY:
@@ -1987,7 +1987,7 @@ lwip_setsockopt(int s, int level, int optname, const void *optval, socklen_t opt
 
     /* If this is no UDP lite socket, ignore any options. */
     if (sock->conn->type != NETCONN_UDPLITE)
-      return 0;
+      return (0);
 
     switch (optname) {
     case UDPLITE_SEND_CSCOV:
@@ -2274,7 +2274,7 @@ lwip_ioctl(int s, long cmd, void *argp)
 
     LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_ioctl(%d, FIONREAD, %p) = %"U16_F"\n", s, argp, *((u16_t*)argp)));
     sock_set_errno(sock, 0);
-    return 0;
+    return (0);
 
   case FIONBIO:
     val = 0;
@@ -2284,7 +2284,7 @@ lwip_ioctl(int s, long cmd, void *argp)
     netconn_set_nonblocking(sock->conn, val);
     LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_ioctl(%d, FIONBIO, %d)\n", s, val));
     sock_set_errno(sock, 0);
-    return 0;
+    return (0);
 
   default:
     LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_ioctl(%d, UNIMPL: 0x%lx, %p)\n", s, cmd, argp));

@@ -193,12 +193,12 @@ snmp_asn1_enc_type(struct pbuf *p, u16_t ofs, u8_t type)
       msg_ptr = (u8_t*)p->payload;
       msg_ptr += ofs - base;
       *msg_ptr = type;
-      return ERR_OK;
+      return (ERR_OK);
     }
     p = p->next;
   }
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 /**
@@ -228,7 +228,7 @@ snmp_asn1_enc_length(struct pbuf *p, u16_t ofs, u16_t length)
       if (length < 0x80)
       {
         *msg_ptr = (u8_t)length;
-        return ERR_OK;
+        return (ERR_OK);
       }
       else if (length < 0x100)
       {
@@ -238,7 +238,7 @@ snmp_asn1_enc_length(struct pbuf *p, u16_t ofs, u16_t length)
         {
           /* next octet in next pbuf */
           p = p->next;
-          if (p == NULL) { return ERR_ARG; }
+          if (p == NULL) { return (ERR_ARG); }
           msg_ptr = (u8_t*)p->payload;
         }
         else
@@ -247,7 +247,7 @@ snmp_asn1_enc_length(struct pbuf *p, u16_t ofs, u16_t length)
           msg_ptr++;
         }
         *msg_ptr = (u8_t)length;
-        return ERR_OK;
+        return (ERR_OK);
       }
       else
       {
@@ -264,7 +264,7 @@ snmp_asn1_enc_length(struct pbuf *p, u16_t ofs, u16_t length)
           {
             /* next octet in next pbuf */
             p = p->next;
-            if (p == NULL) { return ERR_ARG; }
+            if (p == NULL) { return (ERR_ARG); }
             msg_ptr = (u8_t*)p->payload;
             plen += p->len;
           }
@@ -284,13 +284,13 @@ snmp_asn1_enc_length(struct pbuf *p, u16_t ofs, u16_t length)
             *msg_ptr = (u8_t)(length >> 8);
           }
         }
-        return ERR_OK;
+        return (ERR_OK);
       }
     }
     p = p->next;
   }
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 /**
@@ -330,7 +330,7 @@ snmp_asn1_enc_u32t(struct pbuf *p, u16_t ofs, u16_t octets_needed, u32_t value)
         {
           /* next octet in next pbuf */
           p = p->next;
-          if (p == NULL) { return ERR_ARG; }
+          if (p == NULL) { return (ERR_ARG); }
           msg_ptr = (u8_t*)p->payload;
           plen += p->len;
         }
@@ -349,7 +349,7 @@ snmp_asn1_enc_u32t(struct pbuf *p, u16_t ofs, u16_t octets_needed, u32_t value)
         {
           /* next octet in next pbuf */
           p = p->next;
-          if (p == NULL) { return ERR_ARG; }
+          if (p == NULL) { return (ERR_ARG); }
           msg_ptr = (u8_t*)p->payload;
           plen += p->len;
         }
@@ -361,12 +361,12 @@ snmp_asn1_enc_u32t(struct pbuf *p, u16_t ofs, u16_t octets_needed, u32_t value)
       }
       /* (only) one least significant octet */
       *msg_ptr = (u8_t)value;
-      return ERR_OK;
+      return (ERR_OK);
     }
     p = p->next;
   }
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 /**
@@ -405,7 +405,7 @@ snmp_asn1_enc_s32t(struct pbuf *p, u16_t ofs, u16_t octets_needed, s32_t value)
         {
           /* next octet in next pbuf */
           p = p->next;
-          if (p == NULL) { return ERR_ARG; }
+          if (p == NULL) { return (ERR_ARG); }
           msg_ptr = (u8_t*)p->payload;
           plen += p->len;
         }
@@ -417,12 +417,12 @@ snmp_asn1_enc_s32t(struct pbuf *p, u16_t ofs, u16_t octets_needed, s32_t value)
       }
       /* (only) one least significant octet */
       *msg_ptr = (u8_t)value;
-      return ERR_OK;
+      return (ERR_OK);
     }
     p = p->next;
   }
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 /**
@@ -467,7 +467,7 @@ snmp_asn1_enc_oid(struct pbuf *p, u16_t ofs, u8_t ident_len, s32_t *ident)
         {
           /* next octet in next pbuf */
           p = p->next;
-          if (p == NULL) { return ERR_ARG; }
+          if (p == NULL) { return (ERR_ARG); }
           msg_ptr = (u8_t*)p->payload;
           plen += p->len;
         }
@@ -483,7 +483,7 @@ snmp_asn1_enc_oid(struct pbuf *p, u16_t ofs, u8_t ident_len, s32_t *ident)
       {
 /* @bug:  allow empty varbinds for symmetry (we must decode them for getnext), allow partial compression??  */
         /* ident_len <= 1, at least we need zeroDotZero (0.0) (ident_len == 2) */
-        return ERR_ARG;
+        return (ERR_ARG);
       }
       while (ident_len > 0)
       {
@@ -508,7 +508,7 @@ snmp_asn1_enc_oid(struct pbuf *p, u16_t ofs, u8_t ident_len, s32_t *ident)
             {
               /* next octet in next pbuf */
               p = p->next;
-              if (p == NULL) { return ERR_ARG; }
+              if (p == NULL) { return (ERR_ARG); }
               msg_ptr = (u8_t*)p->payload;
               plen += p->len;
             }
@@ -528,7 +528,7 @@ snmp_asn1_enc_oid(struct pbuf *p, u16_t ofs, u8_t ident_len, s32_t *ident)
           {
             /* next octet in next pbuf */
             p = p->next;
-            if (p == NULL) { return ERR_ARG; }
+            if (p == NULL) { return (ERR_ARG); }
             msg_ptr = (u8_t*)p->payload;
             plen += p->len;
           }
@@ -541,12 +541,12 @@ snmp_asn1_enc_oid(struct pbuf *p, u16_t ofs, u8_t ident_len, s32_t *ident)
         /* proceed to next sub-identifier */
         ident++;
       }
-      return ERR_OK;
+      return (ERR_OK);
     }
     p = p->next;
   }
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 /**
@@ -585,7 +585,7 @@ snmp_asn1_enc_raw(struct pbuf *p, u16_t ofs, u16_t raw_len, u8_t *raw)
         {
           /* next octet in next pbuf */
           p = p->next;
-          if (p == NULL) { return ERR_ARG; }
+          if (p == NULL) { return (ERR_ARG); }
           msg_ptr = (u8_t*)p->payload;
           plen += p->len;
         }
@@ -600,12 +600,12 @@ snmp_asn1_enc_raw(struct pbuf *p, u16_t ofs, u16_t raw_len, u8_t *raw)
         /* copy last or single octet */
         *msg_ptr = *raw;
       }
-      return ERR_OK;
+      return (ERR_OK);
     }
     p = p->next;
   }
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 #endif /* LWIP_SNMP */

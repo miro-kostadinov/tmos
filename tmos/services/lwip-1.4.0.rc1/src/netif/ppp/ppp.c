@@ -776,7 +776,7 @@ pppifOutputOverEthernet(int pd, struct pbuf *p)
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.proterr);
     snmp_inc_ifoutdiscards(&pc->netif);
-    return ERR_MEM;
+    return (ERR_MEM);
   }
 
   pbuf_header(pb, -(s16_t)PPPOE_HDRLEN);
@@ -800,7 +800,7 @@ pppifOutputOverEthernet(int pd, struct pbuf *p)
   snmp_add_ifoutoctets(&pc->netif, tot_len);
   snmp_inc_ifoutucastpkts(&pc->netif);
   LINK_STATS_INC(link.xmit);
-  return ERR_OK;
+  return (ERR_OK);
 }
 #endif /* PPPOE_SUPPORT */
 
@@ -828,7 +828,7 @@ pppifOutput(struct netif *netif, struct pbuf *pb, ip_addr_t *ipaddr)
     LINK_STATS_INC(link.opterr);
     LINK_STATS_INC(link.drop);
     snmp_inc_ifoutdiscards(netif);
-    return ERR_ARG;
+    return (ERR_ARG);
   }
 
   /* Check that the link is up. */
@@ -854,7 +854,7 @@ pppifOutput(struct netif *netif, struct pbuf *pb, ip_addr_t *ipaddr)
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.drop);
     snmp_inc_ifoutdiscards(netif);
-    return ERR_MEM;
+    return (ERR_MEM);
   }
 
 #if VJ_SUPPORT
@@ -880,7 +880,7 @@ pppifOutput(struct netif *netif, struct pbuf *pb, ip_addr_t *ipaddr)
         LINK_STATS_INC(link.drop);
         snmp_inc_ifoutdiscards(netif);
         pbuf_free(headMB);
-        return ERR_VAL;
+        return (ERR_VAL);
     }
   }
 #endif /* VJ_SUPPORT */
@@ -942,7 +942,7 @@ pppifOutput(struct netif *netif, struct pbuf *pb, ip_addr_t *ipaddr)
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.drop);
     snmp_inc_ifoutdiscards(netif);
-    return ERR_MEM;
+    return (ERR_MEM);
   }
 
   /* Send it. */
@@ -951,7 +951,7 @@ pppifOutput(struct netif *netif, struct pbuf *pb, ip_addr_t *ipaddr)
   nPut(pc, headMB);
 #endif /* PPPOS_SUPPORT */
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /* Get and set parameters for the given connection.
@@ -1219,7 +1219,7 @@ ppp_recv_config( int unit, int mru, u32_t asyncmap, int pcomp, int accomp)
 int
 ccp_test( int unit, int opt_len,  int for_transmit, u_char *opt_ptr)
 {
-  return 0; /* XXX Currently no compression. */
+  return (0); /* XXX Currently no compression. */
 }
 
 /*
@@ -1240,7 +1240,7 @@ int
 ccp_fatal_error(int unit)
 {
   /* XXX */
-  return 0;
+  return (0);
 }
 #endif
 
@@ -1254,7 +1254,7 @@ get_idle_time(int u, struct ppp_idle *ip)
   LWIP_UNUSED_ARG(u);
   LWIP_UNUSED_ARG(ip);
 
-  return 0;
+  return (0);
 }
 
 
@@ -1312,7 +1312,7 @@ sifvjcomp(int pd, int vjcomp, u8_t cidcomp, u8_t maxcid)
   LWIP_UNUSED_ARG(maxcid);
 #endif /* PPPOS_SUPPORT && VJ_SUPPORT */
 
-  return 0;
+  return (0);
 }
 
 /*
@@ -1330,7 +1330,7 @@ pppifNetifInit(struct netif *netif)
   /* @todo: Initialize interface hostname */
   /* netif_set_hostname(netif, "lwip"); */
 #endif /* LWIP_NETIF_HOSTNAME */
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 
@@ -1376,7 +1376,7 @@ sifnpmode(int u, int proto, enum NPmode mode)
   LWIP_UNUSED_ARG(u);
   LWIP_UNUSED_ARG(proto);
   LWIP_UNUSED_ARG(mode);
-  return 0;
+  return (0);
 }
 
 /*

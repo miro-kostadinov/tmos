@@ -218,7 +218,7 @@ setescape(argv)
       n = strtol(p, &endp, 16);
       if (p == endp) {
         option_error("escape parameter contains invalid hex number '%s'", p);
-        return 0;
+        return (0);
       }
       p = endp;
       if (n < 0 || n == 0x5E || n > 0xFF) {
@@ -431,9 +431,9 @@ lcp_extcode(fsm *f, int code, u_char id, u_char *inp, int len)
       break;
 
     default:
-      return 0;
+      return (0);
   }
-  return 1;
+  return (1);
 }
 
 
@@ -1058,11 +1058,11 @@ lcp_nakci(fsm *f, u_char *p, int len)
     *go = try;
   }
 
-  return 1;
+  return (1);
 
 bad:
   LCPDEBUG(LOG_WARNING, ("lcp_nakci: received bad Nak!\n"));
-  return 0;
+  return (0);
 }
 
 
@@ -1204,11 +1204,11 @@ lcp_rejci(fsm *f, u_char *p, int len)
   if (f->state != LS_OPENED) {
     *go = try;
   }
-  return 1;
+  return (1);
   
 bad:
   LCPDEBUG(LOG_WARNING, ("lcp_rejci: received bad Reject!\n"));
-  return 0;
+  return (0);
 }
 
 
@@ -1777,14 +1777,14 @@ lcp_printpkt( u_char *p, int plen, void (*printer) (void *, char *, ...), void *
   u32_t cilong;
 
   if (plen < HEADERLEN) {
-    return 0;
+    return (0);
   }
   pstart = p;
   GETCHAR(code, p);
   GETCHAR(id, p);
   GETSHORT(len, p);
   if (len < HEADERLEN || len > plen) {
-    return 0;
+    return (0);
   }
 
   if (code >= 1 && code <= sizeof(lcp_codenames) / sizeof(char *)) {

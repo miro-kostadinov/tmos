@@ -315,7 +315,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
 	/* Return to prior interrupt state and return. */
 	SYS_ARCH_UNPROTECT(lev);
-	return ERR_OK;
+	return (ERR_OK);
 }
 
 /**
@@ -641,7 +641,7 @@ err_t ethernetif_init(struct netif *netif)
 	/* initialize the hardware */
 	low_level_init(netif);
 
-	return ERR_OK;
+	return (ERR_OK);
 }
 
 //*****************************************************************************

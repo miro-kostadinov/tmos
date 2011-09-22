@@ -735,11 +735,11 @@ ipcp_nakci(fsm *f, u_char *p, int len)
     *go = try;
   }
 
-  return 1;
+  return (1);
 
 bad:
   IPCPDEBUG(LOG_INFO, ("ipcp_nakci: received bad Nak!\n"));
-  return 0;
+  return (0);
 }
 
 
@@ -850,11 +850,11 @@ ipcp_rejci(fsm *f, u_char *p, int len)
   if (f->state != LS_OPENED) {
     *go = try;
   }
-  return 1;
+  return (1);
 
 bad:
   IPCPDEBUG(LOG_INFO, ("ipcp_rejci: received bad Reject!\n"));
-  return 0;
+  return (0);
 }
 
 
@@ -1353,7 +1353,7 @@ ipcp_printpkt(u_char *p, int plen, void (*printer) (void *, char *, ...), void *
   LWIP_UNUSED_ARG(plen);
   LWIP_UNUSED_ARG(printer);
   LWIP_UNUSED_ARG(arg);
-  return 0;
+  return (0);
 }
 
 /*
@@ -1388,23 +1388,23 @@ ip_active_pkt(u_char *pkt, int len)
   len -= PPP_HDRLEN;
   pkt += PPP_HDRLEN;
   if (len < IP_HDRLEN) {
-    return 0;
+    return (0);
   }
   if ((get_ipoff(pkt) & IP_OFFMASK) != 0) {
-    return 0;
+    return (0);
   }
   if (get_ipproto(pkt) != IPPROTO_TCP) {
-    return 1;
+    return (1);
   }
   hlen = get_iphl(pkt) * 4;
   if (len < hlen + TCP_HDRLEN) {
-    return 0;
+    return (0);
   }
   tcp = pkt + hlen;
   if ((get_tcpflags(tcp) & TH_FIN) != 0 && len == hlen + get_tcpoff(tcp) * 4) {
-    return 0;
+    return (0);
   }
-  return 1;
+  return (1);
 }
 #endif /* PPP_ADDITIONAL_CALLBACKS */
 

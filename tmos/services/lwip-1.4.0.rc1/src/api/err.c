@@ -65,11 +65,9 @@ static const char *err_strerr[] = {
  * @param err an lwip internal err_t
  * @return a string representation for err
  */
-const char *
-lwip_strerr(err_t err)
+const char* lwip_strerr(err_t err)
 {
-  return err_strerr[-err];
-
+	return (err_strerr[-err]);
 }
 
 #endif /* LWIP_DEBUG */

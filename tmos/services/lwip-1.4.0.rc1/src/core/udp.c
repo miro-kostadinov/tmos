@@ -381,7 +381,7 @@ err_t
 udp_send(struct udp_pcb *pcb, struct pbuf *p)
 {
   /* send to the packet using remote ip and port stored in the pcb */
-  return udp_sendto(pcb, p, &pcb->remote_ip, pcb->remote_port);
+  return (udp_sendto(pcb, p, &pcb->remote_ip, pcb->remote_port));
 }
 
 #if LWIP_CHECKSUM_ON_COPY
@@ -444,12 +444,12 @@ udp_sendto_chksum(struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *dst_ip,
     LWIP_DEBUGF(UDP_DEBUG | LWIP_DBG_LEVEL_SERIOUS, ("udp_send: No route to %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
       ip4_addr1_16(dst_ip), ip4_addr2_16(dst_ip), ip4_addr3_16(dst_ip), ip4_addr4_16(dst_ip)));
     UDP_STATS_INC(udp.rterr);
-    return ERR_RTE;
+    return (ERR_RTE);
   }
 #if LWIP_CHECKSUM_ON_COPY
   return udp_sendto_if_chksum(pcb, p, dst_ip, dst_port, netif, have_chksum, chksum);
 #else /* LWIP_CHECKSUM_ON_COPY */
-  return udp_sendto_if(pcb, p, dst_ip, dst_port, netif);
+  return (udp_sendto_if(pcb, p, dst_ip, dst_port, netif));
 #endif /* LWIP_CHECKSUM_ON_COPY */
 }
 
@@ -497,7 +497,7 @@ udp_sendto_if_chksum(struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *dst_ip,
   if ( ((pcb->so_options & SOF_BROADCAST) == 0) && ip_addr_isbroadcast(dst_ip, netif) ) {
     LWIP_DEBUGF(UDP_DEBUG | LWIP_DBG_LEVEL_SERIOUS,
       ("udp_sendto_if: SOF_BROADCAST not enabled on pcb %p\n", (void *)pcb));
-    return ERR_VAL;
+    return (ERR_VAL);
   }
 #endif /* IP_SOF_BROADCAST */
 
@@ -507,7 +507,7 @@ udp_sendto_if_chksum(struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *dst_ip,
     err = udp_bind(pcb, &pcb->local_ip, pcb->local_port);
     if (err != ERR_OK) {
       LWIP_DEBUGF(UDP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS, ("udp_send: forced port bind failed\n"));
-      return err;
+      return (err);
     }
   }
 
@@ -518,7 +518,7 @@ udp_sendto_if_chksum(struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *dst_ip,
     /* new header pbuf could not be allocated? */
     if (q == NULL) {
       LWIP_DEBUGF(UDP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS, ("udp_send: could not allocate header\n"));
-      return ERR_MEM;
+      return (ERR_MEM);
     }
     /* chain header q in front of given pbuf p */
     pbuf_chain(q, p);
@@ -563,7 +563,7 @@ udp_sendto_if_chksum(struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *dst_ip,
         q = NULL;
         /* p is still referenced by the caller, and will live on */
       }
-      return ERR_VAL;
+      return (ERR_VAL);
     }
     /* use UDP PCB local IP address as source address */
     src_ip = &(pcb->local_ip);
@@ -673,7 +673,7 @@ udp_sendto_if_chksum(struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *dst_ip,
   }
 
   UDP_STATS_INC(udp.xmit);
-  return err;
+  return (err);
 }
 
 /**
@@ -734,7 +734,7 @@ udp_bind(struct udp_pcb *pcb, ip_addr_t *ipaddr, u16_t port)
         /* other PCB already binds to this local IP and port */
         LWIP_DEBUGF(UDP_DEBUG,
                     ("udp_bind: local port %"U16_F" already bound by another pcb\n", port));
-        return ERR_USE;
+        return (ERR_USE);
       }
     }
   }
@@ -763,7 +763,7 @@ udp_bind(struct udp_pcb *pcb, ip_addr_t *ipaddr, u16_t port)
     if (ipcb != NULL) {
       /* no more ports available in local range */
       LWIP_DEBUGF(UDP_DEBUG, ("udp_bind: out of free UDP ports\n"));
-      return ERR_USE;
+      return (ERR_USE);
     }
   }
   pcb->local_port = port;
@@ -779,7 +779,7 @@ udp_bind(struct udp_pcb *pcb, ip_addr_t *ipaddr, u16_t port)
                ip4_addr1_16(&pcb->local_ip), ip4_addr2_16(&pcb->local_ip),
                ip4_addr3_16(&pcb->local_ip), ip4_addr4_16(&pcb->local_ip),
                pcb->local_port));
-  return ERR_OK;
+  return (ERR_OK);
 }
 /**
  * Connect an UDP PCB.
@@ -806,7 +806,7 @@ udp_connect(struct udp_pcb *pcb, ip_addr_t *ipaddr, u16_t port)
   if (pcb->local_port == 0) {
     err_t err = udp_bind(pcb, &pcb->local_ip, pcb->local_port);
     if (err != ERR_OK) {
-      return err;
+      return (err);
     }
   }
 
@@ -842,13 +842,13 @@ udp_connect(struct udp_pcb *pcb, ip_addr_t *ipaddr, u16_t port)
   for (ipcb = udp_pcbs; ipcb != NULL; ipcb = ipcb->next) {
     if (pcb == ipcb) {
       /* already on the list, just return */
-      return ERR_OK;
+      return (ERR_OK);
     }
   }
   /* PCB not yet on the list, add PCB now */
   pcb->next = udp_pcbs;
   udp_pcbs = pcb;
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -936,7 +936,7 @@ udp_new(void)
     memset(pcb, 0, sizeof(struct udp_pcb));
     pcb->ttl = UDP_TTL;
   }
-  return pcb;
+  return (pcb);
 }
 
 #if UDP_DEBUG

@@ -45,7 +45,7 @@ RES_CODE lwip_api_tcp_new(tcp_handle* client, struct netif *netif)
 			res = RES_SIG_OUT_OF_MEMORY;
 		}
 	}
-	return res;
+	return (res);
 }
 
 RES_CODE tcp_handle::lwip_tcp_new(unsigned int priority)
@@ -56,7 +56,7 @@ RES_CODE tcp_handle::lwip_tcp_new(unsigned int priority)
 		set_res_cmd(LWIP_CMD_TCP_NEW);
 		tsk_start_and_wait();
 	}
-	return res;
+	return (res);
 }
 #endif
 
@@ -94,7 +94,7 @@ RES_CODE tcp_handle::lwip_tcp_bind(ip_addr_t *ipaddr, u16_t port)
 		set_res_cmd(LWIP_CMD_TCP_BIND);
 		tsk_start_and_wait();
 	}
-	return res;
+	return (res);
 }
 #endif
 
@@ -116,7 +116,7 @@ err_t lwip_cbf_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 
 	TRACELN("LWIP accept %x", client);
 	if(client == NULL)
-		return ERR_VAL;
+		return (ERR_VAL);
 
 	if( client->mode1 & TCPHS_OP_LISTEN )
 	{
@@ -133,10 +133,10 @@ err_t lwip_cbf_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 				if(locked_clr_byte(&client->mode1, TCPHS_OP_ACCEPTING))
 					tsk_HND_SET_STATUS(client, RES_SIG_OK);
 			}
-    		return ERR_OK;
+    		return (ERR_OK);
 		}
 	}
-    return ERR_MEM;
+    return (ERR_MEM);
 
 }
 
@@ -154,7 +154,7 @@ RES_CODE lwip_api_tcp_accept(tcp_handle* client, struct netif *netif)
 
 			//Give to the driver
 			client->mode1 = TCPHS_LISTEN | TCPHS_OP_ACCEPTING;
-			return 0;
+			return (0);
 		}
 		return RES_SIG_OK;
 	}
@@ -180,7 +180,7 @@ RES_CODE tcp_handle::lwip_tcp_accept(struct tcp_pcb*& newpcb, unsigned int time)
 		    	tsk_cancel();
 		}
 		if(res != RES_OK)
-			return res;
+			return (res);
 	}
 }
 #endif
@@ -207,7 +207,7 @@ RES_CODE lwip_api_tcp_listen(tcp_handle* client, struct netif *netif)
 			res = RES_SIG_OK;
 		}
 	}
-	return res;
+	return (res);
 }
 
 RES_CODE tcp_handle::lwip_tcp_listen()
@@ -217,7 +217,7 @@ RES_CODE tcp_handle::lwip_tcp_listen()
 		set_res_cmd(LWIP_CMD_TCP_LISTEN);
 		tsk_start_and_wait();
 	}
-	return res;
+	return (res);
 }
 #endif
 
@@ -245,7 +245,7 @@ err_t lwip_cbf_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 
 	TRACELN("LWIP connect %x", client);
 	if(client == NULL)
-		return ERR_VAL;
+		return (ERR_VAL);
 
 	if(client->mode1 == TCPHS_CONECTING)
 	{
@@ -255,7 +255,7 @@ err_t lwip_cbf_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 
 	}
 
-	return ERR_OK;
+	return (ERR_OK);
 }
 
 RES_CODE lwip_api_tcp_connect(tcp_handle* client, struct netif *netif)
@@ -270,7 +270,7 @@ RES_CODE lwip_api_tcp_connect(tcp_handle* client, struct netif *netif)
 		if(client->error == ERR_OK)
 		{
 			client->mode1 = TCPHS_CONECTING;
-			return 0;
+			return (0);
 		}
 	}
 	return RES_SIG_ERROR;
@@ -285,7 +285,7 @@ RES_CODE tcp_handle::lwip_tcp_connect(ip_addr_t *addr, u16_t port)
 		set_res_cmd(LWIP_CMD_TCP_CONNECT);
 		tsk_start_and_wait();
 	}
-	return res;
+	return (res);
 }
 #endif
 //--------------------   WRITE   ---------------------------------------------//
@@ -309,7 +309,7 @@ err_t lwip_cbf_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 
 	TRACELN("LWIP sent %x %x", client, len);
 	if(client == NULL)
-		return ERR_VAL;
+		return (ERR_VAL);
 
 	client->dst.as_byteptr += len;
 
@@ -363,7 +363,7 @@ err_t lwip_cbf_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 				tsk_HND_SET_STATUS(client, RES_SIG_OK);
 		}
 	}
-	return ERR_OK;
+	return (ERR_OK);
 }
 
 RES_CODE lwip_api_write(tcp_handle* client, struct netif *netif)
@@ -428,7 +428,7 @@ RES_CODE lwip_api_write(tcp_handle* client, struct netif *netif)
 		}
 	}
 
-	return res;
+	return (res);
 }
 
 //--------------------   READ   ---------------------------------------------//
@@ -464,11 +464,11 @@ err_t lwip_cbf_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 			}
 
 			// Packet is accepted!
-			return ERR_OK;
+			return (ERR_OK);
 		}
 	}
 	//Refuse the packet now. We will'be called again from the tcp timer
-	return ERR_VAL;
+	return (ERR_VAL);
 }
 
 RES_CODE lwip_api_read(tcp_handle* client)
@@ -534,7 +534,7 @@ RES_CODE lwip_api_read(tcp_handle* client)
 		//Give to the driver
 		client->mode1 = TCPHS_READING;
 	}
-	return res;
+	return (res);
 }
 
 //--------------------   DNS   ---------------------------------------------//
@@ -581,7 +581,7 @@ RES_CODE lwip_api_dns(tcp_handle* client, struct netif *netif)
 			return RES_SIG_ERROR;
 	}
 
-	return 0;
+	return (0);
 }
 
 RES_CODE tcp_handle::lwip_tcp_dns(const char* url, ip_addr_t *addr)
@@ -593,7 +593,7 @@ RES_CODE tcp_handle::lwip_tcp_dns(const char* url, ip_addr_t *addr)
 		set_res_cmd(LWIP_CMD_TCP_DNS);
 		tsk_start_and_wait();
 	}
-	return res;
+	return (res);
 }
 
 //--------------------   Helper   --------------------------------------------//
@@ -770,7 +770,7 @@ RES_CODE lwip_api_tcp_close(tcp_handle* client, struct netif *netif)
 		//nothing to delete
 		res = RES_SIG_OK;
 	}
-	return res;
+	return (res);
 
 }
 
@@ -782,7 +782,7 @@ RES_CODE tcp_handle::lwip_tcp_close(unsigned int rxtx)
 		set_res_cmd(LWIP_CMD_TCP_CLOSE);
 		tsk_start_and_wait();
 	}
-	return res;
+	return (res);
 }
 #endif
 
@@ -809,7 +809,7 @@ RES_CODE lwip_api_tcp_delete(tcp_handle* client, struct netif *netif)
 		//nothing to delete
 		res = RES_SIG_OK;
 	}
-	return res;
+	return (res);
 }
 
 RES_CODE tcp_handle::lwip_tcp_delete()
@@ -819,7 +819,7 @@ RES_CODE tcp_handle::lwip_tcp_delete()
 		set_res_cmd(LWIP_CMD_TCP_DELETE);
 		tsk_start_and_wait();
 	}
-	return res;
+	return (res);
 }
 #endif
 

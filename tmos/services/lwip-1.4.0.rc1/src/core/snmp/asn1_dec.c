@@ -64,12 +64,12 @@ snmp_asn1_dec_type(struct pbuf *p, u16_t ofs, u8_t *type)
       msg_ptr = (u8_t*)p->payload;
       msg_ptr += ofs - base;
       *type = *msg_ptr;
-      return ERR_OK;
+      return (ERR_OK);
     }
     p = p->next;
   }
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 /**
@@ -102,7 +102,7 @@ snmp_asn1_dec_length(struct pbuf *p, u16_t ofs, u8_t *octets_used, u16_t *length
         /* primitive definite length format */
         *octets_used = 1;
         *length = *msg_ptr;
-        return ERR_OK;
+        return (ERR_OK);
       }
       else if (*msg_ptr == 0x80)
       {
@@ -124,7 +124,7 @@ snmp_asn1_dec_length(struct pbuf *p, u16_t ofs, u8_t *octets_used, u16_t *length
             {
               /* next octet in next pbuf */
               p = p->next;
-              if (p == NULL) { return ERR_ARG; }
+              if (p == NULL) { return (ERR_ARG); }
               msg_ptr = (u8_t*)p->payload;
               plen += p->len;
             }
@@ -149,7 +149,7 @@ snmp_asn1_dec_length(struct pbuf *p, u16_t ofs, u8_t *octets_used, u16_t *length
           }
         }
         *octets_used = 1;
-        return ERR_OK;
+        return (ERR_OK);
       }
       else if (*msg_ptr == 0x81)
       {
@@ -159,7 +159,7 @@ snmp_asn1_dec_length(struct pbuf *p, u16_t ofs, u8_t *octets_used, u16_t *length
         {
           /* next octet in next pbuf */
           p = p->next;
-          if (p == NULL) { return ERR_ARG; }
+          if (p == NULL) { return (ERR_ARG); }
           msg_ptr = (u8_t*)p->payload;
         }
         else
@@ -169,7 +169,7 @@ snmp_asn1_dec_length(struct pbuf *p, u16_t ofs, u8_t *octets_used, u16_t *length
         }
         *length = *msg_ptr;
         *octets_used = 2;
-        return ERR_OK;
+        return (ERR_OK);
       }
       else if (*msg_ptr == 0x82)
       {
@@ -185,7 +185,7 @@ snmp_asn1_dec_length(struct pbuf *p, u16_t ofs, u8_t *octets_used, u16_t *length
           {
             /* next octet in next pbuf */
             p = p->next;
-            if (p == NULL) { return ERR_ARG; }
+            if (p == NULL) { return (ERR_ARG); }
             msg_ptr = (u8_t*)p->payload;
             plen += p->len;
           }
@@ -206,21 +206,21 @@ snmp_asn1_dec_length(struct pbuf *p, u16_t ofs, u8_t *octets_used, u16_t *length
           }
         }
         *octets_used = 3;
-        return ERR_OK;
+        return (ERR_OK);
       }
       else
       {
         /* constructed definite length format 3..127 octets, this is too big (>64k) */
         /**  @todo: do we need to accept inefficient codings with many leading zero's? */
         *octets_used = 1 + ((*msg_ptr) & 0x7f);
-        return ERR_ARG;
+        return (ERR_ARG);
       }
     }
     p = p->next;
   }
 
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 /**
@@ -258,7 +258,7 @@ snmp_asn1_dec_u32t(struct pbuf *p, u16_t ofs, u16_t len, u32_t *value)
         if (*msg_ptr & 0x80)
         {
           /* negative, expecting zero sign bit! */
-          return ERR_ARG;
+          return (ERR_ARG);
         }
         else
         {
@@ -272,7 +272,7 @@ snmp_asn1_dec_u32t(struct pbuf *p, u16_t ofs, u16_t len, u32_t *value)
             {
               /* next octet in next pbuf */
               p = p->next;
-              if (p == NULL) { return ERR_ARG; }
+              if (p == NULL) { return (ERR_ARG); }
               msg_ptr = (u8_t*)p->payload;
               plen += p->len;
             }
@@ -294,7 +294,7 @@ snmp_asn1_dec_u32t(struct pbuf *p, u16_t ofs, u16_t len, u32_t *value)
           {
             /* next octet in next pbuf */
             p = p->next;
-            if (p == NULL) { return ERR_ARG; }
+            if (p == NULL) { return (ERR_ARG); }
             msg_ptr = (u8_t*)p->payload;
             plen += p->len;
           }
@@ -305,17 +305,17 @@ snmp_asn1_dec_u32t(struct pbuf *p, u16_t ofs, u16_t len, u32_t *value)
           }
         }
         *value |= *msg_ptr;
-        return ERR_OK;
+        return (ERR_OK);
       }
       else
       {
-        return ERR_ARG;
+        return (ERR_ARG);
       }
     }
     p = p->next;
   }
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 /**
@@ -385,7 +385,7 @@ snmp_asn1_dec_s32t(struct pbuf *p, u16_t ofs, u16_t len, s32_t *value)
           {
             /* next octet in next pbuf */
             p = p->next;
-            if (p == NULL) { return ERR_ARG; }
+            if (p == NULL) { return (ERR_ARG); }
             msg_ptr = (u8_t*)p->payload;
             plen += p->len;
           }
@@ -403,17 +403,17 @@ snmp_asn1_dec_s32t(struct pbuf *p, u16_t ofs, u16_t len, s32_t *value)
         {
           *lsb_ptr |= *msg_ptr;
         }
-        return ERR_OK;
+        return (ERR_OK);
       }
       else
       {
-        return ERR_ARG;
+        return (ERR_ARG);
       }
     }
     p = p->next;
   }
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 /**
@@ -482,7 +482,7 @@ snmp_asn1_dec_oid(struct pbuf *p, u16_t ofs, u16_t len, struct snmp_obj_id *oid)
       {
         /* accepting zero length identifiers e.g. for
            getnext operation. uncommon but valid */
-        return ERR_OK;
+        return (ERR_OK);
       }
       len--;
       if (len > 0)
@@ -492,7 +492,7 @@ snmp_asn1_dec_oid(struct pbuf *p, u16_t ofs, u16_t len, struct snmp_obj_id *oid)
         {
           /* next octet in next pbuf */
           p = p->next;
-          if (p == NULL) { return ERR_ARG; }
+          if (p == NULL) { return (ERR_ARG); }
           msg_ptr = (u8_t*)p->payload;
           plen += p->len;
         }
@@ -518,7 +518,7 @@ snmp_asn1_dec_oid(struct pbuf *p, u16_t ofs, u16_t len, struct snmp_obj_id *oid)
             {
               /* next octet in next pbuf */
               p = p->next;
-              if (p == NULL) { return ERR_ARG; }
+              if (p == NULL) { return (ERR_ARG); }
               msg_ptr = (u8_t*)p->payload;
               plen += p->len;
             }
@@ -550,7 +550,7 @@ snmp_asn1_dec_oid(struct pbuf *p, u16_t ofs, u16_t len, struct snmp_obj_id *oid)
           {
             /* next octet in next pbuf */
             p = p->next;
-            if (p == NULL) { return ERR_ARG; }
+            if (p == NULL) { return (ERR_ARG); }
             msg_ptr = (u8_t*)p->payload;
             plen += p->len;
           }
@@ -566,19 +566,19 @@ snmp_asn1_dec_oid(struct pbuf *p, u16_t ofs, u16_t len, struct snmp_obj_id *oid)
       if (len == 0)
       {
         /* len == 0, end of oid */
-        return ERR_OK;
+        return (ERR_OK);
       }
       else
       {
         /* len > 0, oid->len == LWIP_SNMP_OBJ_ID_LEN or malformed encoding */
-        return ERR_ARG;
+        return (ERR_ARG);
       }
 
     }
     p = p->next;
   }
   /* p == NULL, ofs >= plen */
-  return ERR_ARG;
+  return (ERR_ARG);
 }
 
 /**
@@ -622,7 +622,7 @@ snmp_asn1_dec_raw(struct pbuf *p, u16_t ofs, u16_t len, u16_t raw_len, u8_t *raw
             {
               /* next octet in next pbuf */
               p = p->next;
-              if (p == NULL) { return ERR_ARG; }
+              if (p == NULL) { return (ERR_ARG); }
               msg_ptr = (u8_t*)p->payload;
               plen += p->len;
             }
@@ -634,23 +634,23 @@ snmp_asn1_dec_raw(struct pbuf *p, u16_t ofs, u16_t len, u16_t raw_len, u8_t *raw
           }
           /* copy last octet */
           *raw = *msg_ptr;
-          return ERR_OK;
+          return (ERR_OK);
         }
         else
         {
           /* raw_len < len, not enough dst space */
-          return ERR_ARG;
+          return (ERR_ARG);
         }
       }
       p = p->next;
     }
     /* p == NULL, ofs >= plen */
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   else
   {
     /* len == 0, empty string */
-    return ERR_OK;
+    return (ERR_OK);
   }
 }
 

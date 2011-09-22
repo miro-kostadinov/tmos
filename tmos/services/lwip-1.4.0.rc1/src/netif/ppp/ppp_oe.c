@@ -148,7 +148,7 @@ pppoe_create(struct netif *ethif, int pd, void (*linkStatusCB)(int pd, int up), 
   sc = (struct pppoe_softc *)memp_malloc(MEMP_PPPOE_IF);
   if (sc == NULL) {
     *scptr = NULL;
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   memset(sc, 0, sizeof(struct pppoe_softc));
 
@@ -165,7 +165,7 @@ pppoe_create(struct netif *ethif, int pd, void (*linkStatusCB)(int pd, int up), 
 
   *scptr = sc;
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 err_t
@@ -202,7 +202,7 @@ pppoe_destroy(struct netif *ifp)
 #endif /* PPPOE_TODO */
   memp_free(MEMP_PPPOE_IF, sc);
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /*
@@ -217,7 +217,7 @@ pppoe_find_softc_by_session(u_int session, struct netif *rcvif)
   struct pppoe_softc *sc;
 
   if (session == 0) {
-    return NULL;
+    return (NULL);
   }
 
   for (sc = pppoe_softc_list; sc != NULL; sc = sc->next) {
@@ -226,11 +226,11 @@ pppoe_find_softc_by_session(u_int session, struct netif *rcvif)
       if (sc->sc_ethif == rcvif) {
         return sc;
       } else {
-        return NULL;
+        return (NULL);
       }
     }
   }
-  return NULL;
+  return (NULL);
 }
 
 /* Check host unique token passed and return appropriate softc pointer,
@@ -241,11 +241,11 @@ pppoe_find_softc_by_hunique(u8_t *token, size_t len, struct netif *rcvif)
   struct pppoe_softc *sc, *t;
 
   if (pppoe_softc_list == NULL) {
-    return NULL;
+    return (NULL);
   }
 
   if (len != sizeof sc) {
-    return NULL;
+    return (NULL);
   }
   MEMCPY(&t, token, len);
 
@@ -257,19 +257,19 @@ pppoe_find_softc_by_hunique(u8_t *token, size_t len, struct netif *rcvif)
 
   if (sc == NULL) {
     PPPDEBUG(LOG_DEBUG, ("pppoe: alien host unique tag, no session found\n"));
-    return NULL;
+    return (NULL);
   }
 
   /* should be safe to access *sc now */
   if (sc->sc_state < PPPOE_STATE_PADI_SENT || sc->sc_state >= PPPOE_STATE_SESSION) {
     printf("%c%c%"U16_F": host unique tag found, but it belongs to a connection in state %d\n",
       sc->sc_ethif->name[0], sc->sc_ethif->name[1], sc->sc_ethif->num, sc->sc_state);
-    return NULL;
+    return (NULL);
   }
   if (sc->sc_ethif != rcvif) {
     printf("%c%c%"U16_F": wrong interface, not accepting host unique\n",
       sc->sc_ethif->name[0], sc->sc_ethif->name[1], sc->sc_ethif->num);
-    return NULL;
+    return (NULL);
   }
   return sc;
 }
@@ -661,7 +661,7 @@ pppoe_output(struct pppoe_softc *sc, struct pbuf *pb)
 
   pbuf_free(pb);
 
-  return res;
+  return (res);
 }
 
 static err_t
@@ -696,7 +696,7 @@ pppoe_send_padi(struct pppoe_softc *sc)
   /* allocate a buffer */
   pb = pbuf_alloc(PBUF_LINK, (u16_t)(sizeof(struct eth_hdr) + PPPOE_HEADERLEN + len), PBUF_RAM);
   if (!pb) {
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   LWIP_ASSERT("pb->tot_len == pb->len", pb->tot_len == pb->len);
 
@@ -812,7 +812,7 @@ pppoe_connect(struct pppoe_softc *sc)
 #ifdef PPPOE_SERVER
   /* wait PADI if IFF_PASSIVE */
   if ((sc->sc_sppp.pp_if.if_flags & IFF_PASSIVE)) {
-    return 0;
+    return (0);
   }
 #endif
   /* save state, in case we fail to send PADI */
@@ -821,7 +821,7 @@ pppoe_connect(struct pppoe_softc *sc)
   err = pppoe_send_padi(sc);
   PPPDEBUG(LOG_DEBUG, ("pppoe: %c%c%"U16_F": failed to send PADI, error=%d\n", sc->sc_ethif->name[0], sc->sc_ethif->name[1], sc->sc_ethif->num, err));
   sys_timeout(PPPOE_DISC_TIMEOUT, pppoe_timeout, sc);
-  return err;
+  return (err);
 }
 
 /* disconnect */
@@ -867,7 +867,7 @@ pppoe_do_disconnect(struct pppoe_softc *sc)
 
   sc->sc_linkStatusCB(sc->sc_pd, 0); /* notify upper layers */
 
-  return err;
+  return (err);
 }
 
 /* Connection attempt aborted */
@@ -913,7 +913,7 @@ pppoe_send_padr(struct pppoe_softc *sc)
     sizeof(struct eth_hdr) + PPPOE_HEADERLEN + len <= 0xffff);
   pb = pbuf_alloc(PBUF_LINK, (u16_t)(sizeof(struct eth_hdr) + PPPOE_HEADERLEN + len), PBUF_RAM);
   if (!pb) {
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   LWIP_ASSERT("pb->tot_len == pb->len", pb->tot_len == pb->len);
   p = (u8_t*)pb->payload + sizeof (struct eth_hdr);
@@ -953,7 +953,7 @@ pppoe_send_padt(struct netif *outgoing_if, u_int session, const u8_t *dest)
 
   pb = pbuf_alloc(PBUF_LINK, sizeof(struct eth_hdr) + PPPOE_HEADERLEN, PBUF_RAM);
   if (!pb) {
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   LWIP_ASSERT("pb->tot_len == pb->len", pb->tot_len == pb->len);
 
@@ -969,7 +969,7 @@ pppoe_send_padt(struct netif *outgoing_if, u_int session, const u8_t *dest)
 
   pbuf_free(pb);
 
-  return res;
+  return (res);
 }
 
 #ifdef PPPOE_SERVER
@@ -992,7 +992,7 @@ pppoe_send_pado(struct pppoe_softc *sc)
   len += 2 + 2 + sc->sc_hunique_len;
   pb = pbuf_alloc(PBUF_LINK, sizeof(struct eth_hdr) + PPPOE_HEADERLEN + len, PBUF_RAM);
   if (!pb) {
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   LWIP_ASSERT("pb->tot_len == pb->len", pb->tot_len == pb->len);
   p = (u8_t*)pb->payload + sizeof (struct eth_hdr);
@@ -1029,7 +1029,7 @@ pppoe_send_pads(struct pppoe_softc *sc)
   }
   pb = pbuf_alloc(PBUF_LINK, sizeof(struct eth_hdr) + PPPOE_HEADERLEN + len, PBUF_RAM);
   if (!pb) {
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   LWIP_ASSERT("pb->tot_len == pb->len", pb->tot_len == pb->len);
   p = (u8_t*)pb->payload + sizeof (struct eth_hdr);
@@ -1070,7 +1070,7 @@ pppoe_xmit(struct pppoe_softc *sc, struct pbuf *pb)
     PPPDEBUG(LOG_ERR, ("pppoe: %c%c%"U16_F": pppoe_xmit: could not allocate room for header\n", sc->sc_ethif->name[0], sc->sc_ethif->name[1], sc->sc_ethif->num));
     LINK_STATS_INC(link.lenerr);
     pbuf_free(pb);
-    return ERR_BUF;
+    return (ERR_BUF);
   } 
 
   p = (u8_t*)pb->payload + sizeof(struct eth_hdr);
@@ -1087,7 +1087,7 @@ pppoe_ifattach_hook(void *arg, struct pbuf **mp, struct netif *ifp, int dir)
   int s;
 
   if (mp != (struct pbuf **)PFIL_IFNET_DETACH) {
-    return 0;
+    return (0);
   }
 
   LIST_FOREACH(sc, &pppoe_softc_list, sc_list) {
@@ -1103,7 +1103,7 @@ pppoe_ifattach_hook(void *arg, struct pbuf **mp, struct netif *ifp, int dir)
     pppoe_clear_softc(sc, "ethernet interface detached");
   }
 
-  return 0;
+  return (0);
 }
 #endif
 

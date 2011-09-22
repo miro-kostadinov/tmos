@@ -455,7 +455,7 @@ update_arp_entry(struct netif *netif, ip_addr_t *ipaddr, struct eth_addr *ethadd
       ip_addr_isbroadcast(ipaddr, netif) ||
       ip_addr_ismulticast(ipaddr)) {
     LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE, ("update_arp_entry: will not add non-unicast IP address to ARP cache\n"));
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   /* find or create ARP entry */
   i = find_entry(ipaddr, flags);
@@ -504,7 +504,7 @@ update_arp_entry(struct netif *netif, ip_addr_t *ipaddr, struct eth_addr *ethadd
     pbuf_free(p);
   }
 #endif /* ARP_QUEUEING */
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 #if ETHARP_SUPPORT_STATIC_ENTRIES
@@ -558,11 +558,11 @@ etharp_remove_static_entry(ip_addr_t *ipaddr)
   if ((arp_table[i].state != ETHARP_STATE_STABLE) ||
     (arp_table[i].static_entry == 0)) {
     /* entry wasn't a static entry, cannot remove it */
-    return ERR_ARG;
+    return (ERR_ARG);
   }
   /* entry found, free it */
   free_entry(i);
-  return ERR_OK;
+  return (ERR_OK);
 }
 #endif /* ETHARP_SUPPORT_STATIC_ENTRIES */
 
@@ -843,7 +843,7 @@ etharp_output(struct netif *netif, struct pbuf *q, ip_addr_t *ipaddr)
     LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS,
       ("etharp_output: could not allocate room for header.\n"));
     LINK_STATS_INC(link.lenerr);
-    return ERR_BUF;
+    return (ERR_BUF);
   }
 
   /* assume unresolved Ethernet address */
@@ -953,7 +953,7 @@ etharp_query(struct netif *netif, ip_addr_t *ipaddr, struct pbuf *q)
       ip_addr_ismulticast(ipaddr) ||
       ip_addr_isany(ipaddr)) {
     LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE, ("etharp_query: will not add non-unicast IP address to ARP cache\n"));
-    return ERR_ARG;
+    return (ERR_ARG);
   }
 
   /* find entry in ARP cache, ask to create entry if queueing packet */
@@ -990,7 +990,7 @@ etharp_query(struct netif *netif, ip_addr_t *ipaddr, struct pbuf *q)
          etharp_query again could lead to sending the queued packets. */
     }
     if (q == NULL) {
-      return result;
+      return (result);
     }
   }
 
@@ -1073,7 +1073,7 @@ etharp_query(struct netif *netif, ip_addr_t *ipaddr, struct pbuf *q)
     LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE, ("etharp_query: Ethernet destination address unknown, queueing disabled, packet %p dropped\n", (void *)q));
 #endif /* ARP_QUEUEING */
   }
-  return result;
+  return (result);
 }
 
 /**
@@ -1116,7 +1116,7 @@ etharp_raw(struct netif *netif, const struct eth_addr *ethsrc_addr,
     LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS,
       ("etharp_raw: could not allocate pbuf for ARP request.\n"));
     ETHARP_STATS_INC(etharp.memerr);
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   LWIP_ASSERT("check that first pbuf can hold struct etharp_hdr",
               (p->len >= SIZEOF_ETHARP_PACKET));
@@ -1164,7 +1164,7 @@ etharp_raw(struct netif *netif, const struct eth_addr *ethsrc_addr,
   p = NULL;
   /* could not allocate pbuf for ARP request */
 
-  return result;
+  return (result);
 }
 
 /**
@@ -1218,7 +1218,7 @@ ethernet_input(struct pbuf *p, struct netif *netif)
     if (VLAN_ID(vlan) != ETHARP_VLAN_CHECK) {
       /* silently ignore this packet: not for our VLAN */
       pbuf_free(p);
-      return ERR_OK;
+      return (ERR_OK);
     }
 #endif /* ETHARP_VLAN_CHECK */
     type = vlan->tpid;
@@ -1276,10 +1276,10 @@ ethernet_input(struct pbuf *p, struct netif *netif)
 
   /* This means the pbuf is freed or consumed,
      so the caller doesn't have to free it again */
-  return ERR_OK;
+  return (ERR_OK);
 
 free_and_return:
   pbuf_free(p);
-  return ERR_OK;
+  return (ERR_OK);
 }
 #endif /* LWIP_ARP || LWIP_ETHERNET */

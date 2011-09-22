@@ -289,9 +289,9 @@ ip_addr_t
 dns_getserver(u8_t numdns)
 {
   if (numdns < DNS_MAX_SERVERS) {
-    return dns_servers[numdns];
+    return (dns_servers[numdns]);
   } else {
-    return *IP_ADDR_ANY;
+    return (*IP_ADDR_ANY);
   }
 }
 
@@ -420,7 +420,7 @@ dns_local_addhost(const char *hostname, const ip_addr_t *addr)
   LWIP_ASSERT("namelen <= DNS_LOCAL_HOSTLIST_MAX_NAMELEN", namelen <= DNS_LOCAL_HOSTLIST_MAX_NAMELEN);
   entry = (struct local_hostlist_entry *)memp_malloc(MEMP_LOCALHOSTLIST);
   if (entry == NULL) {
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   entry->name = (char*)entry + sizeof(struct local_hostlist_entry);
   MEMCPY((char*)entry->name, hostname, namelen);
@@ -428,7 +428,7 @@ dns_local_addhost(const char *hostname, const ip_addr_t *addr)
   ip_addr_copy(entry->addr, *addr);
   entry->next = local_hostlist_dynamic;
   local_hostlist_dynamic = entry;
-  return ERR_OK;
+  return (ERR_OK);
 }
 #endif /* DNS_LOCAL_HOSTLIST_IS_DYNAMIC*/
 #endif /* DNS_LOCAL_HOSTLIST */
@@ -504,7 +504,7 @@ dns_compare_name(unsigned char *query, unsigned char *response)
       /* Not compressed name */
       while (n > 0) {
         if ((*query) != (*response)) {
-          return 1;
+          return (1);
         }
         ++response;
         ++query;
@@ -514,7 +514,7 @@ dns_compare_name(unsigned char *query, unsigned char *response)
     }
   } while (*response != 0);
 
-  return 0;
+  return (0);
 }
 #endif /* DNS_DOES_NAME_CHECK */
 
@@ -544,7 +544,7 @@ dns_parse_name(unsigned char *query)
     }
   } while (*query != 0);
 
-  return query + 1;
+  return (query + 1);
 }
 
 /**
@@ -620,7 +620,7 @@ dns_send(u8_t numdns, const char* name, u8_t id)
     err = ERR_MEM;
   }
 
-  return err;
+  return (err);
 }
 
 /**
@@ -886,7 +886,7 @@ dns_enqueue(const char *name, dns_found_callback found, void *callback_arg)
     if ((lseqi >= DNS_TABLE_SIZE) || (dns_table[lseqi].state != DNS_STATE_DONE)) {
       /* no entry can't be used now, table is full */
       LWIP_DEBUGF(DNS_DEBUG, ("dns_enqueue: \"%s\": DNS entries table is full\n", name));
-      return ERR_MEM;
+      return (ERR_MEM);
     } else {
       /* use the oldest completed one */
       i = lseqi;
@@ -910,7 +910,7 @@ dns_enqueue(const char *name, dns_found_callback found, void *callback_arg)
   dns_check_entry(i);
 
   /* dns query is enqueued */
-  return ERR_INPROGRESS;
+  return (ERR_INPROGRESS);
 }
 
 /**
@@ -941,13 +941,13 @@ dns_gethostbyname(const char *hostname, ip_addr_t *addr, dns_found_callback foun
   if ((dns_pcb == NULL) || (addr == NULL) ||
       (!hostname) || (!hostname[0]) ||
       (strlen(hostname) >= DNS_MAX_NAME_LENGTH)) {
-    return ERR_VAL;
+    return (ERR_VAL);
   }
 
 #if LWIP_HAVE_LOOPIF
   if (strcmp(hostname, "localhost")==0) {
     ip_addr_set_loopback(addr);
-    return ERR_OK;
+    return (ERR_OK);
   }
 #endif /* LWIP_HAVE_LOOPIF */
 
@@ -959,11 +959,11 @@ dns_gethostbyname(const char *hostname, ip_addr_t *addr, dns_found_callback foun
   }
   if (ipaddr != IPADDR_NONE) {
     ip4_addr_set_u32(addr, ipaddr);
-    return ERR_OK;
+    return (ERR_OK);
   }
 
   /* queue query with specified callback */
-  return dns_enqueue(hostname, found, callback_arg);
+  return (dns_enqueue(hostname, found, callback_arg));
 }
 
 #endif /* LWIP_DNS */

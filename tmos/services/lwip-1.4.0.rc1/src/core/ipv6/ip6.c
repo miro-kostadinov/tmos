@@ -78,13 +78,14 @@ ip_route(struct ip_addr *dest)
 
   for(netif = netif_list; netif != NULL; netif = netif->next) {
     if (ip_addr_netcmp(dest, &(netif->ip_addr), &(netif->netmask))) {
-      return netif;
+      return (netif);
     }
   }
 
-  return netif_default;
+  return (netif_default);
 }
 
+#if IP_FORWARD
 /* ip_forward:
  *
  * Forwards an IP packet. It finds an appropriate route for the packet, decrements
@@ -142,6 +143,7 @@ ip_forward(struct pbuf *p, struct ip_hdr *iphdr)
 
   netif->output(netif, p, (struct ip_addr *)&(iphdr->dest));
 }
+#endif
 
 /* ip_input:
  *
@@ -244,6 +246,7 @@ ip_input(struct pbuf *p, struct netif *inp) {
 
     IP_STATS_INC(ip.proterr);
     IP_STATS_INC(ip.drop);
+    break;
   }
   PERF_STOP("ip_input");
 }
@@ -270,7 +273,7 @@ ip_output_if (struct pbuf *p, struct ip_addr *src, struct ip_addr *dest,
     LWIP_DEBUGF(IP_DEBUG, ("ip_output: not enough room for IP header in pbuf\n"));
     IP_STATS_INC(ip.err);
 
-    return ERR_BUF;
+    return (ERR_BUF);
   }
   LWIP_DEBUGF(IP_DEBUG, ("len %"U16_F" tot_len %"U16_F"\n", p->len, p->tot_len));
 
@@ -304,7 +307,7 @@ ip_output_if (struct pbuf *p, struct ip_addr *src, struct ip_addr *dest,
 #endif /* IP_DEBUG */
 
   PERF_STOP("ip_output_if");
-  return netif->output(netif, p, dest);
+  return (netif->output(netif, p, dest));
 }
 
 /* ip_output:
@@ -321,10 +324,10 @@ ip_output(struct pbuf *p, struct ip_addr *src, struct ip_addr *dest,
   if ((netif = ip_route(dest)) == NULL) {
     LWIP_DEBUGF(IP_DEBUG, ("ip_output: No route to 0x%"X32_F"\n", dest->addr));
     IP_STATS_INC(ip.rterr);
-    return ERR_RTE;
+    return (ERR_RTE);
   }
 
-  return ip_output_if (p, src, dest, ttl, proto, netif);
+  return (ip_output_if (p, src, dest, ttl, proto, netif));
 }
 
 #if LWIP_NETIF_HWADDRHINT
@@ -345,7 +348,7 @@ ip_output_hinted(struct pbuf *p, struct ip_addr *src, struct ip_addr *dest,
   err = ip_output_if(p, src, dest, ttl, tos, proto, netif);
   netif->addr_hint = NULL;
 
-  return err;
+  return (err);
 }
 #endif /* LWIP_NETIF_HWADDRHINT*/
 

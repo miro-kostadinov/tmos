@@ -2092,7 +2092,7 @@ noleafs_set_test(struct obj_def *od, u16_t len, void *value)
   LWIP_UNUSED_ARG(len);
   LWIP_UNUSED_ARG(value);
   /* can't set */
-  return 0;
+  return (0);
 }
 
 void

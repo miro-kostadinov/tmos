@@ -57,7 +57,7 @@ tcp_oos_seg_seqno(struct tcp_pcb* pcb, int seg_index)
     seg = seg->next;
   }
   fail();
-  return 0;
+  return (0);
 }
 
 /** Get the tcplen (datalen + SYN/FIN) of a segment (by index) on the ooseq list

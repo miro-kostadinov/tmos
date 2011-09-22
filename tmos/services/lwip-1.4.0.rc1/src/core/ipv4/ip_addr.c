@@ -60,24 +60,24 @@ ip4_addr_isbroadcast(u32_t addr, const struct netif *netif)
   /* all ones (broadcast) or all zeroes (old skool broadcast) */
   if ((~addr == IPADDR_ANY) ||
       (addr == IPADDR_ANY)) {
-    return 1;
+    return (1);
   /* no broadcast support on this network interface? */
   } else if ((netif->flags & NETIF_FLAG_BROADCAST) == 0) {
     /* the given address cannot be a broadcast address
      * nor can we check against any broadcast addresses */
-    return 0;
+    return (0);
   /* address matches network interface address exactly? => no broadcast */
   } else if (addr == ip4_addr_get_u32(&netif->ip_addr)) {
-    return 0;
+    return (0);
   /*  on the same (sub) network... */
   } else if (ip_addr_netcmp(&ipaddr, &(netif->ip_addr), &(netif->netmask))
          /* ...and host identifier bits are all ones? =>... */
           && ((addr & ~ip4_addr_get_u32(&netif->netmask)) ==
            (IPADDR_BROADCAST & ~ip4_addr_get_u32(&netif->netmask)))) {
     /* => network broadcast address */
-    return 1;
+    return (1);
   } else {
-    return 0;
+    return (0);
   }
 }
 
@@ -102,11 +102,11 @@ ip4_addr_netmask_valid(u32_t netmask)
   for (; mask != 0; mask >>= 1) {
     if ((nm_hostorder & mask) != 0) {
       /* there is a one after the first zero -> invalid */
-      return 0;
+      return (0);
     }
   }
   /* no one after the first zero -> valid */
-  return 1;
+  return (1);
 }
 
 /* Here for now until needed in other places in lwIP */
@@ -261,7 +261,7 @@ char *
 ipaddr_ntoa(const ip_addr_t *addr)
 {
   static char str[16];
-  return ipaddr_ntoa_r(addr, str, 16);
+  return (ipaddr_ntoa_r(addr, str, 16));
 }
 
 /**
@@ -297,16 +297,16 @@ char *ipaddr_ntoa_r(const ip_addr_t *addr, char *buf, int buflen)
     } while(*ap);
     while(i--) {
       if (len++ >= buflen) {
-        return NULL;
+        return (NULL);
       }
       *rp++ = inv[i];
     }
     if (len++ >= buflen) {
-      return NULL;
+      return (NULL);
     }
     *rp++ = '.';
     ap++;
   }
   *--rp = 0;
-  return buf;
+  return (buf);
 }

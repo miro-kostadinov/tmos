@@ -467,7 +467,7 @@ tcp_listen_input(struct tcp_pcb_listen *pcb)
     if (npcb == NULL) {
       LWIP_DEBUGF(TCP_DEBUG, ("tcp_listen_input: could not allocate PCB\n"));
       TCP_STATS_INC(tcp.memerr);
-      return ERR_MEM;
+      return (ERR_MEM);
     }
 #if TCP_LISTEN_BACKLOG
     pcb->accepts_pending++;
@@ -505,11 +505,11 @@ tcp_listen_input(struct tcp_pcb_listen *pcb)
     rc = tcp_enqueue_flags(npcb, TCP_SYN | TCP_ACK);
     if (rc != ERR_OK) {
       tcp_abandon(npcb, 0);
-      return rc;
+      return (rc);
     }
-    return tcp_output(npcb);
+    return (tcp_output(npcb));
   }
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -530,7 +530,7 @@ tcp_timewait_input(struct tcp_pcb *pcb)
    *   acceptable since we only send ACKs)
    * - second check the RST bit (... return) */
   if (flags & TCP_RST)  {
-    return ERR_OK;
+    return (ERR_OK);
   }
   /* - fourth, check the SYN bit, */
   if (flags & TCP_SYN) {
@@ -540,7 +540,7 @@ tcp_timewait_input(struct tcp_pcb *pcb)
       /* If the SYN is in the window it is an error, send a reset */
       tcp_rst(ackno, seqno + tcplen, ip_current_dest_addr(), ip_current_src_addr(),
         tcphdr->dest, tcphdr->src);
-      return ERR_OK;
+      return (ERR_OK);
     }
   } else if (flags & TCP_FIN) {
     /* - eighth, check the FIN bit: Remain in the TIME-WAIT state.
@@ -551,9 +551,9 @@ tcp_timewait_input(struct tcp_pcb *pcb)
   if ((tcplen > 0))  {
     /* Acknowledge data, FIN or out-of-window SYN */
     pcb->flags |= TF_ACK_NOW;
-    return tcp_output(pcb);
+    return (tcp_output(pcb));
   }
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -595,20 +595,20 @@ tcp_process(struct tcp_pcb *pcb)
       LWIP_ASSERT("tcp_input: pcb->state != CLOSED", pcb->state != CLOSED);
       recv_flags |= TF_RESET;
       pcb->flags &= ~TF_ACK_DELAY;
-      return ERR_RST;
+      return (ERR_RST);
     } else {
       LWIP_DEBUGF(TCP_INPUT_DEBUG, ("tcp_process: unacceptable reset seqno %"U32_F" rcv_nxt %"U32_F"\n",
        seqno, pcb->rcv_nxt));
       LWIP_DEBUGF(TCP_DEBUG, ("tcp_process: unacceptable reset seqno %"U32_F" rcv_nxt %"U32_F"\n",
        seqno, pcb->rcv_nxt));
-      return ERR_OK;
+      return (ERR_OK);
     }
   }
 
   if ((flags & TCP_SYN) && (pcb->state != SYN_SENT && pcb->state != SYN_RCVD)) { 
     /* Cope with new connection attempt after remote end crashed */
     tcp_ack_now(pcb);
-    return ERR_OK;
+    return (ERR_OK);
   }
   
   if ((pcb->flags & TF_RXCLOSED) == 0) {
@@ -665,7 +665,7 @@ tcp_process(struct tcp_pcb *pcb)
        * connected. */
       TCP_EVENT_CONNECTED(pcb, ERR_OK, err);
       if (err == ERR_ABRT) {
-        return ERR_ABRT;
+        return (ERR_ABRT);
       }
       tcp_ack_now(pcb);
     }
@@ -695,7 +695,7 @@ tcp_process(struct tcp_pcb *pcb)
           if (err != ERR_ABRT) {
             tcp_abort(pcb);
           }
-          return ERR_ABRT;
+          return (ERR_ABRT);
         }
         old_cwnd = pcb->cwnd;
         /* If there was any data contained within this ACK,
@@ -764,7 +764,7 @@ tcp_process(struct tcp_pcb *pcb)
     break;
   case CLOSING:
     tcp_receive(pcb);
-    if (flags & TCP_ACK && ackno == pcb->snd_nxt) {
+    if ((flags & TCP_ACK) && ackno == pcb->snd_nxt) {
       LWIP_DEBUGF(TCP_DEBUG, ("TCP connection closed: CLOSING %"U16_F" -> %"U16_F".\n", inseg.tcphdr->src, inseg.tcphdr->dest));
       tcp_pcb_purge(pcb);
       TCP_RMV(&tcp_active_pcbs, pcb);
@@ -774,7 +774,7 @@ tcp_process(struct tcp_pcb *pcb)
     break;
   case LAST_ACK:
     tcp_receive(pcb);
-    if (flags & TCP_ACK && ackno == pcb->snd_nxt) {
+    if ((flags & TCP_ACK) && ackno == pcb->snd_nxt) {
       LWIP_DEBUGF(TCP_DEBUG, ("TCP connection closed: LAST_ACK %"U16_F" -> %"U16_F".\n", inseg.tcphdr->src, inseg.tcphdr->dest));
       /* bugfix #21699: don't set pcb->state to CLOSED here or we risk leaking segments */
       recv_flags |= TF_CLOSED;
@@ -783,7 +783,7 @@ tcp_process(struct tcp_pcb *pcb)
   default:
     break;
   }
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 #if TCP_QUEUE_OOSEQ
@@ -1237,7 +1237,7 @@ tcp_receive(struct tcp_pcb *pcb)
                    TCP_SEQ_GEQ(seqno + tcplen,
                                next->tcphdr->seqno + next->len)) {
               /* inseg cannot have FIN here (already processed above) */
-              if (TCPH_FLAGS(next->tcphdr) & TCP_FIN &&
+              if ( (TCPH_FLAGS(next->tcphdr) & TCP_FIN) &&
                   (TCPH_FLAGS(inseg.tcphdr) & TCP_SYN) == 0) {
                 TCPH_SET_FLAG(inseg.tcphdr, TCP_FIN);
                 tcplen = TCP_TCPLEN(&inseg);
@@ -1561,6 +1561,7 @@ tcp_parseopt(struct tcp_pcb *pcb)
         /* All other options have a length field, so that we easily
            can skip past them. */
         c += opts[c + 1];
+        break;
       }
     }
   }

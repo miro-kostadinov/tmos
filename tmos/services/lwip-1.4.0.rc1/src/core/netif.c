@@ -96,7 +96,7 @@ netif_loopif_init(struct netif *netif)
   netif->name[0] = 'l';
   netif->name[1] = 'o';
   netif->output = netif_loop_output;
-  return ERR_OK;
+  return (ERR_OK);
 }
 #endif /* LWIP_HAVE_LOOPIF */
 
@@ -183,7 +183,7 @@ netif_add(struct netif *netif, ip_addr_t *ipaddr, ip_addr_t *netmask,
 
   /* call user specified initialization function for netif */
   if (init(netif) != ERR_OK) {
-    return NULL;
+    return (NULL);
   }
 
   /* add this netif to the list */
@@ -206,7 +206,7 @@ netif_add(struct netif *netif, ip_addr_t *ipaddr, ip_addr_t *netmask,
   LWIP_DEBUGF(NETIF_DEBUG, (" gw "));
   ip_addr_debug_print(NETIF_DEBUG, gw);
   LWIP_DEBUGF(NETIF_DEBUG, ("\n"));
-  return netif;
+  return (netif);
 }
 
 /**
@@ -289,7 +289,7 @@ netif_find(char *name)
   u8_t num;
 
   if (name == NULL) {
-    return NULL;
+    return (NULL);
   }
 
   num = name[2] - '0';
@@ -299,11 +299,11 @@ netif_find(char *name)
        name[0] == netif->name[0] &&
        name[1] == netif->name[1]) {
       LWIP_DEBUGF(NETIF_DEBUG, ("netif_find: found %c%c\n", name[0], name[1]));
-      return netif;
+      return (netif);
     }
   }
   LWIP_DEBUGF(NETIF_DEBUG, ("netif_find: didn't find %c%c\n", name[0], name[1]));
-  return NULL;
+  return (NULL);
 }
 
 /**
@@ -612,7 +612,7 @@ netif_loop_output(struct netif *netif, struct pbuf *p,
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.drop);
     snmp_inc_ifoutdiscards(stats_if);
-    return ERR_MEM;
+    return (ERR_MEM);
   }
 #if LWIP_LOOPBACK_MAX_PBUFS
   clen = pbuf_clen(r);
@@ -623,7 +623,7 @@ netif_loop_output(struct netif *netif, struct pbuf *p,
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.drop);
     snmp_inc_ifoutdiscards(stats_if);
-    return ERR_MEM;
+    return (ERR_MEM);
   }
   netif->loop_cnt_current += clen;
 #endif /* LWIP_LOOPBACK_MAX_PBUFS */
@@ -634,7 +634,7 @@ netif_loop_output(struct netif *netif, struct pbuf *p,
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.drop);
     snmp_inc_ifoutdiscards(stats_if);
-    return err;
+    return (err);
   }
 
   /* Put the packet on a linked list which gets emptied through calling
@@ -663,7 +663,7 @@ netif_loop_output(struct netif *netif, struct pbuf *p,
   tcpip_callback((tcpip_callback_fn)netif_poll, netif);
 #endif /* LWIP_NETIF_LOOPBACK_MULTITHREADING */
 
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**

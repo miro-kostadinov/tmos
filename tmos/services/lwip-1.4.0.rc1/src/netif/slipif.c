@@ -125,7 +125,7 @@ slipif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
     }
   }
   sio_send(SLIP_END, priv->sd);
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
@@ -250,7 +250,7 @@ slipif_input(struct netif *netif, u8_t block)
     }
   }
 
-  return NULL;
+  return (NULL);
 }
 
 #if !NO_SYS
@@ -303,7 +303,7 @@ slipif_init(struct netif *netif)
   /* Allocate private data */
   priv = mem_malloc(sizeof(struct slipif_priv));
   if (!priv) {
-    return ERR_MEM;
+    return (ERR_MEM);
   }
 
   netif->name[0] = 's';
@@ -338,7 +338,7 @@ slipif_init(struct netif *netif)
   /* Create a thread to poll the serial line. */
   sys_thread_new(SLIPIF_THREAD_NAME, slipif_loop_thread, netif,
     SLIPIF_THREAD_STACKSIZE, SLIPIF_THREAD_PRIO);
-  return ERR_OK;
+  return (ERR_OK);
 }
 
 /**
