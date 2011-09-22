@@ -106,6 +106,8 @@ void dcr_SPI_driver(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 			//cancel 1st?
 			if(--drv_info->drv_data->cnt)
 				break;
+        	SysCtlPeripheralDisable(drv_info->info.peripheral_indx);
+        	break;
 
         case DCR_RESET:
 
@@ -144,6 +146,7 @@ void dcr_SPI_driver(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 
         case DCR_CLOCK:
         	SPI_SET_CLOCK(drv_info);
+        	break;
    }
 }
 

@@ -13,7 +13,6 @@
 //*			Portable
 //*----------------------------------------------------------------------------
 #define CAN_TASK_STACK_SIZE 100
-typedef dyn_task<CAN_TASK_STACK_SIZE+8> CAN_TASK;
 
 void can_thread(CAN_INFO drv_info)
 {
@@ -36,13 +35,14 @@ void CAN_DCR(CAN_INFO drv_info, unsigned int reason, HANDLE param)
     {
         case DCR_RESET:
         	//Initialize the driver here
+            Task* task;
 
-        	CAN_TASK* task = (BTASK*)svc_malloc(sizeof(CAN_TASK));
-        	TASK_DESCRIPTION can_task_desc =
-				{ &task->tcb, &task->stack[CAN_TASK_STACK_SIZE], can_thread,
-						90, "CANT" };
-            usr_task_init_static(&can_task_desc, true);
-            task->tcb.sp->r0.as_cvoidptr = drv_info;
+            task = usr_task_create_dynamic("CANT", (TASK_FUNCTION) can_thread, 90,
+				CAN_TASK_STACK_SIZE);
+			if (task)
+				svc_task_schedule(task);
+
+            task->sp->r0.as_cvoidptr = drv_info;
             break;
 
 	    case DCR_OPEN:
@@ -51,13 +51,14 @@ void CAN_DCR(CAN_INFO drv_info, unsigned int reason, HANDLE param)
 
 
 	    case DCR_CANCEL:
-	    	if(win->mode.as_int)
+	    	if(param->mode.as_int)
 	    	{
 		    	param->svc_list_cancel(drv_data->waiting);
 	    	} else
 	    	{
 		    	param->svc_list_cancel(drv_data->helper);
 	    	}
+	    	break;
 
     }
 }

@@ -109,7 +109,7 @@
 //
 //    /* Parse valid interfaces */
 //    if (pArg->pIfDesc == 0)
-//        return 0;
+//        return (0);
 //
 //    /* Find endpoint descriptors */
 //    if (pDesc->bDescriptorType == USBGenericDescriptor_ENDPOINT) {
@@ -132,7 +132,7 @@
 //        &&  pCdcd->bBulkOutPIPE != 0)
 //        return USBRC_FINISHED;
 //
-//    return 0;
+//    return (0);
 //}
 
 ///**

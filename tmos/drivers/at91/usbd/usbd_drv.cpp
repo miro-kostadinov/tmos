@@ -112,9 +112,9 @@ static inline uint8_t UDP_EnablePeripheralClock(uint32_t dwId)
     if (!PMC_IsPeriphEnabled(dwId))
     {
         PMC_EnablePeripheral(dwId);
-        return 1;
+        return (1);
     }
-    return 0;
+    return (0);
 }
 
 /**
@@ -185,7 +185,7 @@ static HANDLE UDP_EndOfTransfer(Endpoint *endpoint, unsigned int status)
 		}
 	}
 
-	return hnd;
+	return (hnd);
 }
 
 /*
@@ -271,7 +271,7 @@ static bool UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size)
     	if(!hnd)
     	{
     		pEndpoint->rxfifo_cnt = size;
-    		return true;
+    		return (true);
     	}
 
     	dwRead = size;
@@ -296,7 +296,7 @@ static bool UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size)
 
     	}
     }
-    return false;
+    return (false);
 
 }
 
@@ -313,7 +313,7 @@ static bool svc_UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size, HA
     	if(!hnd)
     	{
     		pEndpoint->rxfifo_cnt = size;
-    		return true;
+    		return (true);
     	}
 
     	dwRead = size;
@@ -337,7 +337,7 @@ static bool svc_UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size, HA
 
     	}
     }
-    return false;
+    return (false);
 
 }
 /**
@@ -849,7 +849,7 @@ bool try_cancel_transfer(HANDLE * list, HANDLE hnd)
     	{
     		*list = hnd->next;
 			svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
-			return true;
+			return (true);
     	}
     	while((next=prev->next))
     	{
@@ -857,12 +857,12 @@ bool try_cancel_transfer(HANDLE * list, HANDLE hnd)
 	    	{
 	    		prev->next = hnd->next;
 				svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
-				return true;
+				return (true);
 	    	}
 	    	prev = next;
     	}
     }
-    return 0;
+    return (0);
 }
 */
 

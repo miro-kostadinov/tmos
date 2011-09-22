@@ -29,6 +29,7 @@ void SYSTICK_DCR(SYSTICK_INFO drv_info, unsigned int reason, void* param)
 		SysTick->SysTick_Config(ticks);
 		NVIC->NVIC_SetPriority (SysTick_IRQn, 0);  /* SYSTICK MUST HAVE THE HIGHEST PRIORITY !!!! */
 		NVIC->NVIC_SetPriority (PendSV_IRQn, -1);
+		break;
 	}
 }
 

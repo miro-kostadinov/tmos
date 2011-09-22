@@ -11,7 +11,7 @@
 #include <tmos.h>
 #include <pio_drv.h>
 #include <platform_drv.h>
-
+#include <mcu_cpp.h>
 //*----------------------------------------------------------------------------
 //*		Helper functions - can be used without driver.
 //*----------------------------------------------------------------------------
@@ -21,7 +21,7 @@ Pio* get_pio_base(PIN_DESC pins)
 	unsigned int res;
 
 	res = pins->port * ((unsigned)PIOB - (unsigned)PIOA);
-	return (Pio*)(res + (unsigned)PIOA);
+	return ((Pio*)(res + (unsigned)PIOA));
 }
 
 void PIO_CfgOutput(PIN_DESC pins)
@@ -149,12 +149,12 @@ void PIO_ClrOutput(PIN_DESC pins)
 
 unsigned int PIO_Read(PIN_DESC pins)
 {
-    return get_pio_base(pins)->PIO_PDSR & pins->mask;
+    return (get_pio_base(pins)->PIO_PDSR & pins->mask);
 }
 
 bool pio_open(HANDLE hnd, PIN_DESC pins)
 {
-	return hnd->tsk_open((DRIVER_INDEX)(PIOA_IRQn + pins->port), pins);
+	return (hnd->tsk_open((DRIVER_INDEX)(PIOA_IRQn + pins->port), pins));
 }
 
 
@@ -349,6 +349,10 @@ void PIO_ISR(PIO_INFO drv_info )
     pin_ints &= pPio->PIO_IMR;
 
     pPio->PIO_IDR = pin_ints;
-    isr_contol(&drv_info->info, DCR_ISR, (void*)pin_ints);
+#ifdef isr_contol_swi
+   isr_contol(&drv_info->info, DCR_ISR, (void*)pin_ints);
+#else
+#error "the board must define isr_contol_swi"
+#endif
 }
 

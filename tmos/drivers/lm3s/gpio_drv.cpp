@@ -30,14 +30,14 @@ const DRIVER_INDEX GPIO_IRQ_INDX[] = {
 GPIO_Type * PIO_Base(PIN_DESC Pin)
 {
 	if(Pin.port_num == PORT_V)
-		return (GPIO_Type *)NULL;
+		return ((GPIO_Type *)NULL);
 #ifndef USE_AHB_PERIPHERAL
     if(SYSCTL->GPIOHSCTL & (1 << Pin.port_num))
         return (GPIO_Type *)g_pulGPIOBaseAddrs[(Pin.port_num << 1) + 1];
     else
         return (GPIO_Type *)g_pulGPIOBaseAddrs[Pin.port_num << 1];
 #else
-    return (GPIO_Type *)(0x40050000 + ((Pin.port_num + 8)<<12));
+    return ((GPIO_Type *)(0x40050000 + ((Pin.port_num + 8)<<12)));
 #endif
 }
 
@@ -120,7 +120,7 @@ unsigned char PIO_Read(PIN_DESC Pin)
 	if(Port_Base)
 	{
 	    ASSERT(SYSCTL->RCGC2&(1<<Pin.port_num));
-		return Port_Base->DATA_Bits[Pin.pin_pattern];
+		return (Port_Base->DATA_Bits[Pin.pin_pattern]);
 	}
 	else
 		return (Pin.pin_pattern & gpio_data.sreg_val);
