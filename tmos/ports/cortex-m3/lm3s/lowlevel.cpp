@@ -50,5 +50,5 @@ WEAK_C unsigned int LowLevelResetCause(void)
 
 	res = SYSCTL->SysCtlResetCauseGet();
 	SYSCTL->SysCtlResetCauseClear(res);
-	return res;
+	return (res);
 }

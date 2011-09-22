@@ -119,19 +119,19 @@ public:
 	 * @param s
 	 * @return
 	 */
-	CSTRING& operator=( const CSTRING& s ) 	{ return this->assign(s); }
+	CSTRING& operator=( const CSTRING& s ) 	{ return (this->assign(s)); }
 	/**
 	 * Assign string operator
 	 * @param s
 	 * @return
 	 */
-	CSTRING& operator=( const char* s ) 	{ return this->assign(s); }
+	CSTRING& operator=( const char* s ) 	{ return (this->assign(s)); }
 	/** Assign char operator
 	 *
 	 * @param c
 	 * @return
 	 */
-	CSTRING& operator=( char c )			{ return this->assign(c); }
+	CSTRING& operator=( char c )			{ return (this->assign(c)); }
 
 
 	//Append
@@ -144,19 +144,19 @@ public:
 	 * @param s
 	 * @return
 	 */
-	CSTRING& operator+=(const CSTRING& s)	{ return this->append(s); }
+	CSTRING& operator+=(const CSTRING& s)	{ return (this->append(s)); }
 	/**
 	 * Append string operator
 	 * @param s
 	 * @return
 	 */
-	CSTRING& operator+=(const char* s)		{ return this->append(s); }
+	CSTRING& operator+=(const char* s)		{ return (this->append(s)); }
 	/** Append char operator
 	 *
 	 * @param c
 	 * @return
 	 */
-	CSTRING& operator+=(const char  c)		{ return this->append(c); }
+	CSTRING& operator+=(const char  c)		{ return (this->append(c)); }
 
 
 	//Compare
@@ -198,7 +198,7 @@ CSTRING operator+( const CSTRING& s1, char c );
  * @return
  */
 inline bool operator==(const CSTRING& s1, const CSTRING& s2) {
-	return s1.compare(s2) == 0;
+	return (s1.compare(s2) == 0);
 }
 
 /** CSTRING == char*
@@ -208,7 +208,7 @@ inline bool operator==(const CSTRING& s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator==(const CSTRING& s1, const char* s2) {
-	return s1.compare(s2) == 0;
+	return (s1.compare(s2) == 0);
 }
 
 /** char* == CSTRING
@@ -218,7 +218,7 @@ inline bool operator==(const CSTRING& s1, const char* s2) {
  * @return
  */
 inline bool operator==(const char* s1, const CSTRING& s2) {
-	return s2.compare(s1) == 0;
+	return (s2.compare(s1) == 0);
 }
 
 /** CSTRING != CSTRING
@@ -228,7 +228,7 @@ inline bool operator==(const char* s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator!=(const CSTRING& s1, const CSTRING& s2) {
-	return s1.compare(s2) != 0;
+	return (s1.compare(s2) != 0);
 }
 
 /** CSTRING != char*
@@ -238,7 +238,7 @@ inline bool operator!=(const CSTRING& s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator!=(const CSTRING& s1, const char* s2) {
-	return s1.compare(s2) != 0;
+	return (s1.compare(s2) != 0);
 }
 
 /** char* != CSTRING
@@ -248,7 +248,7 @@ inline bool operator!=(const CSTRING& s1, const char* s2) {
  * @return
  */
 inline bool operator!=(const char* s1, const CSTRING& s2) {
-	return s2.compare(s1) != 0;
+	return (s2.compare(s1) != 0);
 }
 
 /** CSTRING < CSTRING
@@ -258,7 +258,7 @@ inline bool operator!=(const char* s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator<(const CSTRING& s1, const CSTRING& s2) {
-	return s1.compare(s2) < 0;
+	return (s1.compare(s2) < 0);
 }
 
 /** CSTRING < char*
@@ -268,7 +268,7 @@ inline bool operator<(const CSTRING& s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator<(const CSTRING& s1, const char* s2) {
-	return s1.compare(s2) < 0;
+	return (s1.compare(s2) < 0);
 }
 
 /** char* < CSTRING
@@ -278,7 +278,7 @@ inline bool operator<(const CSTRING& s1, const char* s2) {
  * @return
  */
 inline bool operator<(const char* s1, const CSTRING& s2) {
-	return s2.compare(s1) >= 0;
+	return (s2.compare(s1) >= 0);
 }
 
 /** CSTRING > CSTRING
@@ -288,7 +288,7 @@ inline bool operator<(const char* s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator>(const CSTRING& s1, const CSTRING& s2) {
-	return s1.compare(s2) > 0;
+	return (s1.compare(s2) > 0);
 }
 
 /** CSTRING > char*
@@ -298,7 +298,7 @@ inline bool operator>(const CSTRING& s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator>(const CSTRING& s1, const char* s2) {
-	return s1.compare(s2) > 0;
+	return (s1.compare(s2) > 0);
 }
 
 /** char* > CSTRING
@@ -308,7 +308,7 @@ inline bool operator>(const CSTRING& s1, const char* s2) {
  * @return
  */
 inline bool operator>(const char* s1, const CSTRING& s2) {
-	return s2.compare(s1) <= 0;
+	return (s2.compare(s1) <= 0);
 }
 
 /** CSTRING <= CSTRING
@@ -318,7 +318,7 @@ inline bool operator>(const char* s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator<=(const CSTRING& s1, const CSTRING& s2) {
-	return s1.compare(s2) <= 0;
+	return (s1.compare(s2) <= 0);
 }
 
 /** CSTRING <= char*
@@ -328,7 +328,7 @@ inline bool operator<=(const CSTRING& s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator<=(const CSTRING& s1, const char* s2) {
-	return s1.compare(s2) <= 0;
+	return (s1.compare(s2) <= 0);
 }
 
 /** char* <= CSTRING
@@ -338,7 +338,7 @@ inline bool operator<=(const CSTRING& s1, const char* s2) {
  * @return
  */
 inline bool operator<=(const char* s1, const CSTRING& s2) {
-	return s2.compare(s1) > 0;
+	return (s2.compare(s1) > 0);
 }
 
 /** CSTRING >= CSTRING
@@ -348,7 +348,7 @@ inline bool operator<=(const char* s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator>=(const CSTRING& s1, const CSTRING& s2) {
-	return s1.compare(s2) >= 0;
+	return (s1.compare(s2) >= 0);
 }
 
 /** CSTRING >= char*
@@ -359,7 +359,7 @@ inline bool operator>=(const CSTRING& s1, const CSTRING& s2) {
  * @return
  */
 inline bool operator>=(const CSTRING& s1, const char* s2) {
-	return s1.compare(s2) >= 0;
+	return (s1.compare(s2) >= 0);
 }
 
 /** char* >= CSTRING
@@ -369,7 +369,7 @@ inline bool operator>=(const CSTRING& s1, const char* s2) {
  * @return
  */
 inline bool operator>=(const char* s1, const CSTRING& s2) {
-	return s2.compare(s1) < 0;
+	return (s2.compare(s1) < 0);
 }
 
 /** CSTRING format (written in assembly)

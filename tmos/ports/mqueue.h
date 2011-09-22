@@ -24,12 +24,12 @@ public:
 
 	bool empty()
 	{
-		return in == out;
+		return (in == out);
 	}
 
 	bool full()
 	{
-		return in2 == out;
+		return (in2 == out);
 	}
 
 	bool push(T item)
@@ -40,9 +40,9 @@ public:
 			in = in2++;
 			if(in2 == size)
 				in2=0;
-			return true;
+			return (true);
 		}
-		return false;
+		return (false);
 	}
 
 	bool pop(T& item)
@@ -52,9 +52,9 @@ public:
 			item = items[out++];
 			if(out == size)
 				out=0;
-			return true;
+			return (true);
 		}
-		return false;
+		return (false);
 	}
 };
 
@@ -75,12 +75,12 @@ public:
 
 	bool empty()
 	{
-		return in == out;
+		return (in == out);
 	}
 
 	bool full()
 	{
-		return ((in+1) & size_mask) == out;
+		return (((in+1) & size_mask) == out);
 	}
 
 	bool push(T item)
@@ -91,9 +91,9 @@ public:
 		{
 			items[in] = item;
 			in = in2;
-			return true;
+			return (true);
 		}
-		return false;
+		return (false);
 	}
 
 	bool pop(T& item)
@@ -102,17 +102,17 @@ public:
 		{
 			item = items[out++];
 			out &= size_mask;
-			return true;
+			return (true);
 		}
-		return false;
+		return (false);
 	}
 
 	T top()
 	{
 		if(in != out)
-			return items[out];
+			return (items[out]);
 
-		return NULL;
+		return (NULL);
 	}
 };
 

@@ -53,5 +53,5 @@ WEAK_C unsigned int LowLevelResetCause(void)
 	unsigned int res;
 
 	res = (RSTC->RSTC_SR >> 8) & 0x7;
-	return res;
+	return (res);
 }

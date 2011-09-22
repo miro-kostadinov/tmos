@@ -17,17 +17,17 @@
 
 void* operator new(size_t size)
 {
-    return tsk_malloc(size);
+    return (tsk_malloc(size));
 }
 
 void* operator new(size_t size, void* obj)
 {
-    return obj;
+    return (obj);
 }
 
 void* operator new[](size_t size)
 {
-    return tsk_malloc(size);
+    return (tsk_malloc(size));
 }
 
 void operator delete(void *p)
@@ -113,7 +113,7 @@ int is_dynamic_mem(void* ptr)
 	}
 	if (ptr && !res)
 		TRACELN("ERROR: bad mem ptr %08x", ptr);
-	return res;
+	return (res);
 }
 
 
@@ -235,7 +235,7 @@ void* tsk_malloc_clear(unsigned int size)
 	ptr = tsk_malloc(size);
 	if(ptr)
 		memclr(ptr, size);
-	return ptr;
+	return (ptr);
 }
 
 #endif
@@ -249,13 +249,13 @@ unsigned int atoi(const char *ptr )
 	unsigned int res=0;
 	if(ptr)
 		tmos_sscanf(ptr, "%d", &res);
-	return res;
+	return (res);
 }
 
 unsigned int ahextoi(const char *ptr )
 {
 	unsigned int res=0;
 	tmos_sscanf(ptr, "%x", &res);
-	return res;
+	return (res);
 }
 

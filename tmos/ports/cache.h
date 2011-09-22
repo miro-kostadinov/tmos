@@ -20,7 +20,7 @@ struct CCache
 
 	//--constructors
 	CCache() :
-		buf(), next(), pos(NULL), size(CACHE_DEFAULT_SIZE)
+			buf(), next(), pos(NULL), size(CACHE_DEFAULT_SIZE)
 	{
 	}
 	;
@@ -39,6 +39,7 @@ struct CCache
 	{
 	}
 	;
+	virtual ~CCache();
 
 	char getc(); // get 1 char
 	RES_CODE getc(char& c);
