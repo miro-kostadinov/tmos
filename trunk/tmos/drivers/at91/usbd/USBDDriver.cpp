@@ -278,6 +278,7 @@ static void GetDescriptor(
                       "USBDDriver_GetDescriptor: Unknown descriptor type (%d)\n\r",
                       type);
             USBD_Stall(hnd);
+            break;
     }
 }
 
@@ -497,6 +498,7 @@ void USBDDriver_RequestHandler(
                               "USBDDriver_RequestHandler: Unknown recipient (%d)\n\r",
                               USBGenericRequest_GetRecipient(pRequest));
                     USBD_Stall(hnd);
+                    break;
             }
             break;
 
@@ -529,6 +531,7 @@ void USBDDriver_RequestHandler(
                               "USBDDriver_RequestHandler: Unknown feature selector (%d)\n\r",
                               USBFeatureRequest_GetFeatureSelector(pRequest));
                     USBD_Stall(hnd);
+                    break;
             }
             break;
 
@@ -581,6 +584,7 @@ void USBDDriver_RequestHandler(
                           "USBDDriver_RequestHandler: Unknown feature selector (%d)\n\r",
                           USBFeatureRequest_GetFeatureSelector(pRequest));
                 USBD_Stall(hnd);
+                break;
         }
         break;
 
@@ -604,6 +608,7 @@ void USBDDriver_RequestHandler(
                   "USBDDriver_RequestHandler: Unknown request code (%d)\n\r",
                   USBGenericRequest_GetRequest(pRequest));
         USBD_Stall(hnd);
+        break;
     }
 }
 
@@ -632,6 +637,6 @@ void USBDDriver_Initialize(
 
 	if (pInterfaces != 0)
 	{
-		memclr(pInterfaces, sizeof(pInterfaces));
+		memclr(pInterfaces, sizeof(*pInterfaces));
 	}
 }

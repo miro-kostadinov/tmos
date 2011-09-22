@@ -18,7 +18,7 @@ __attribute__ ((weak)) void CDC_SETCONTROLLINESTATE(CDCDSerialPort *)
 __attribute__ ((weak)) uint8_t CDCDSerial_LineCodingIsToChange(CDCLineCoding * pLineCoding)
 {
     /* Nothing to do */
-	return USBRC_SUCCESS;
+	return (USBRC_SUCCESS);
 }
 
 __attribute__  ((weak)) void CDCDSerial_ControlLineStateChanged(uint8_t DTR,uint8_t RTS)
@@ -52,16 +52,16 @@ static uint32_t CDCDSerial_EventHandler(uint32_t event, uint32_t param)
 		{
 			event = CDCDSerial_LineCodingIsToChange((CDCLineCoding*) param);
 			if (event != USBRC_SUCCESS)
-				return event;
+				return (event);
 		}
 	}
 		break;
 
 	default:
-		return USBRC_SUCCESS;
+		return (USBRC_SUCCESS);
 	}
 
-	return USBRC_SUCCESS;
+	return (USBRC_SUCCESS);
 }
 
 //*----------------------------------------------------------------------------

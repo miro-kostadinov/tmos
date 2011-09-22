@@ -66,6 +66,6 @@
 uint8_t USBD_IsHighSpeed(void)
 {
   //  return USBD_HAL_IsHighSpeed();
-	return 0;
+	return (0);
 }
 

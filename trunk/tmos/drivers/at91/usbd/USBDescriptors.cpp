@@ -52,11 +52,11 @@ unsigned char USBConfigurationDescriptor_IsSelfPowered(
 {
     if ((configuration->bmAttributes & (1 << 6)) != 0)
     {
-        return 1;
+        return (1);
     }
     else
     {
-        return 0;
+        return (0);
     }
 }
 
