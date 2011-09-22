@@ -146,7 +146,7 @@
 				locked_inc_short(&storage.ram->refs);
 			}
 		}
-		return *this;
+		return (*this);
 	}
 
 	/** Assign substring
@@ -164,7 +164,7 @@
 			storage.ram->buf[len] = 0;
 			storage.ram->len = len;
 		}
-		return *this;
+		return (*this);
 	}
 
 	/** Assign string
@@ -192,7 +192,7 @@
 							strcpy(storage.ram->buf, s);
 							storage.ram->refs = 1;
 							storage.ram->len = len;
-							return *this;
+							return (*this);
 						}
 					}
 				} else
@@ -208,7 +208,7 @@
 				{
 					ASSERT(storage.ram);
 				}
-				return *this;
+				return (*this);
 			}
 			s="";
 		}
@@ -218,7 +218,7 @@
 				str_free(storage.ram);
 		storage.rom = s;
 
-		return *this;
+		return (*this);
 	}
 
 	/** Assign char
@@ -238,7 +238,7 @@
 			storage.ram->buf[0] = ch;
 			storage.ram->buf[1] = 0;
 		}
-		return *this;
+		return (*this);
 	}
 
 	//Append
@@ -263,10 +263,10 @@
 				locked_inc_short(&storage.ram->refs);
 				append(src);
 				locked_dec_short(&storage.ram->refs);
-				return *this;
+				return (*this);
 			}
 		}
-		return append(src);
+		return (append(src));
 	}
 
 	/** Append string
@@ -361,7 +361,7 @@
 
 			}
 		}
-		return *this;
+		return (*this);
 	}
 
 	/** Append substrng
@@ -459,7 +459,7 @@
 
 			}
 		}
-		return *this;
+		return (*this);
 	}
 
 	/** Append char
@@ -549,7 +549,7 @@
 			}
 		}
 
-		return *this;
+		return (*this);
 	}
 
 
@@ -575,7 +575,7 @@
 			strcpy(s.storage.ram->buf, s1.c_str());
 			strcpy(s.storage.ram->buf + len1, s2.c_str());
 		}
-		return s;
+		return (s);
 	}
 
 	/**
@@ -600,7 +600,7 @@
 			strcpy(res.storage.ram->buf, s);
 			strcpy(res.storage.ram->buf + len1, s2.c_str());
 		}
-		return res;
+		return (res);
 	}
 
 	/**
@@ -625,7 +625,7 @@
 			res.storage.ram->buf[0] = c;
 			strcpy(res.storage.ram->buf + len1, s2.c_str());
 		}
-		return res;
+		return (res);
 	}
 
 	/**
@@ -650,7 +650,7 @@
 			strcpy(res.storage.ram->buf, s1.c_str());
 			strcpy(res.storage.ram->buf+ len1, s);
 		}
-		return res;
+		return (res);
 	}
 
 	/**
@@ -679,7 +679,7 @@
 				res.storage.ram->buf[len2] = c;
 			}
 		}
-		return res;
+		return (res);
 	}
 
 	/**
@@ -695,7 +695,7 @@
     	s1 = RAM_ADR(storage.adr)?storage.ram->buf: storage.rom;
     	s2 = RAM_ADR(str.storage.adr)?str.storage.ram->buf: str.storage.rom;
 
-    	return strcmp(s1, s2);
+    	return (strcmp(s1, s2));
     }
 
     /** Compare with string
@@ -705,7 +705,7 @@
      */
     int CSTRING::compare( const char* str ) const
     {
-    	return strcmp(RAM_ADR(storage.adr)?storage.ram->buf: storage.rom, str);
+    	return (strcmp(RAM_ADR(storage.adr)?storage.ram->buf: storage.rom, str));
     }
 
     /** Compare with substring
@@ -716,7 +716,7 @@
      */
     int CSTRING::compare( const char* str, unsigned int len ) const
     {
-    	return strncmp(RAM_ADR(storage.adr)?storage.ram->buf: storage.rom, str, len);
+    	return (strncmp(RAM_ADR(storage.adr)?storage.ram->buf: storage.rom, str, len));
     }
 
     /**
@@ -736,13 +736,13 @@
     		while(*ptr)
     		{
     			if(*ptr == val)
-    				return true;
+    				return (true);
     			ptr++;
     			pos++;
     		}
 
     	}
-    	return false;
+    	return (false);
     }
 
     /** Get data pinter
@@ -755,7 +755,7 @@
 		/*
 		 * 	NOTE: NULL can be returned!
 		 */
-		return RAM_ADR(storage.adr)?storage.ram->buf: storage.rom;
+		return (RAM_ADR(storage.adr)?storage.ram->buf: storage.rom);
 	}
 
 	/**
@@ -770,9 +770,9 @@
 
 		if(RAM_ADR(storage.adr))
 			if(storage.ram->refs == 1)
-				return STR_SIZEOF(storage.ram)-1;
+				return (STR_SIZEOF(storage.ram)-1);
 
-		return 0;
+		return (0);
 	}
 
 	/** removes all characters from the string
@@ -816,7 +816,7 @@
 				*dst = 0;
 		}
 
-		return res;
+		return (res);
 	}
 
 	/** Empty test
@@ -830,10 +830,10 @@
 			if(RAM_ADR(storage.adr))
 				return (storage.ram->len == 0);
 			else
-				return !storage.rom[0];
+				return (!storage.rom[0]);
 
 		}
-		return true;
+		return (true);
 	}
 
 	/**
@@ -915,8 +915,8 @@
 		}
 
 		if(storage.ram)
-			return STR_SIZEOF(storage.ram)-1;
-		return 0;
+			return (STR_SIZEOF(storage.ram)-1);
+		return (0);
 	}
 
 	/** swap the contents of this string with another
@@ -955,12 +955,12 @@
 		if(len)
 		{
 			CSTRING res(c_str() +index, len);
-			return res;
+			return (res);
 
 		} else
 		{
 			CSTRING res;
-			return res;
+			return (res);
 		}
 
 
@@ -979,8 +979,8 @@
 		len = sub.length();
 		if( pos+len <= length())
 			if( !memcmp(c_str()+pos, sub.c_str(), len))
-				return len;
-		return 0;
+				return (len);
+		return (0);
 	}
 
 	/** Length()
@@ -990,8 +990,8 @@
 	unsigned int CSTRING::length() const
 	{
 		if(RAM_ADR(storage.adr))
-			return storage.ram->len;
-		return strlen(storage.rom);
+			return (storage.ram->len);
+		return (strlen(storage.rom));
 	}
 
 	/**
@@ -1023,9 +1023,9 @@
 				storage.ram = tmp;
 
 			}
-			return storage.ram;
+			return (storage.ram);
 		}
-		return NULL;
+		return (NULL);
 	}
 /**
  * Erase substring
@@ -1054,7 +1054,7 @@ CSTRING& CSTRING::erase(unsigned int index, unsigned int count)
 		}
 	}
 
-	return *this;
+	return (*this);
 }
 
 
@@ -1071,7 +1071,7 @@ unsigned int CSTRING::atoi()
 	{
 		tmos_sscanf(ptr, "%d", &res);
 	}
-	return res;
+	return (res);
 }
 
 unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead)
@@ -1089,7 +1089,7 @@ unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead)
 			{
 				if(dwRead)
 					*dwRead += pos;
-				return index;
+				return (index);
 			}
 			if(sl[pos] != str[pos])
 				break;
@@ -1100,7 +1100,7 @@ unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead)
 		sl+= pos+1;
 		index++;
 	}
-	return 0;
+	return (0);
 }
 
 /**
@@ -1116,7 +1116,7 @@ unsigned int CSTRING::find_in_list(STR_LIST sl, unsigned int* dwRead) const
 	buf = c_str();
 	if(dwRead)
 		buf += *dwRead;
-	return ::find_in_list(buf, sl, dwRead);
+	return (::find_in_list(buf, sl, dwRead));
 }
 
 /**
@@ -1130,9 +1130,9 @@ char& CSTRING::operator[]( unsigned int index )
 	if(RAM_ADR(storage.adr))
 	{
 		ASSERT(index <= storage.ram->len);
-		return storage.ram->buf[index];
+		return (storage.ram->buf[index]);
 	}
-	return dummy_char;
+	return (dummy_char);
 }
 
 /**
@@ -1145,16 +1145,16 @@ const char& CSTRING::operator[]( unsigned int index ) const
 	if(RAM_ADR(storage.adr))
 	{
 		ASSERT(index <= storage.ram->len);
-		return storage.ram->buf[index];
+		return (storage.ram->buf[index]);
 	} else
 	{
 		if(storage.adr)
 		{
-			return storage.rom[index];
+			return (storage.rom[index]);
 		}
 	}
 	ASSERT(storage.adr);
-	return dummy_char;
+	return (dummy_char);
 }
 
 

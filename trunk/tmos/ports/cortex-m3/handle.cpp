@@ -105,7 +105,7 @@ bool CHandle::tsk_open(DRIVER_INDEX index, const void * m)
 			if(res == RES_OK)
 			{
 		    	CURRENT_TASK->aloc_sig |= signal;
-				return true;
+				return (true);
 			}
 			TRACELN_ERROR("Handle open err INDEX:%u", drv_index);
 	    } else
@@ -116,7 +116,7 @@ bool CHandle::tsk_open(DRIVER_INDEX index, const void * m)
 		drv_index = INALID_DRV_INDX;
 	} else
 		TRACELN_ERROR("Memory err INDEX:%u", index);
-	return false;
+	return (false);
 }
 
 /**
@@ -174,10 +174,10 @@ bool CHandle::complete()
 		} else
 		{
 			//handle is closed or with error
-			return false;
+			return (false);
 		}
 	}
-	return true;
+	return (true);
 }
 
 
@@ -191,14 +191,14 @@ bool CHandle::complete()
 bool CHandle::tsk_start_read(void * buf, unsigned int l)
 {
 	if(!complete())
-		return false;
+		return (false);
 
 	//handle is idle and open
 	len = l;
 	set_res_cmd(CMD_READ);
 	dst.as_voidptr = buf;
 	tsk_start_handle();
-	return true;
+	return (true);
 }
 
 /**
@@ -210,13 +210,13 @@ bool CHandle::tsk_start_read(void * buf, unsigned int l)
 RES_CODE CHandle::tsk_read(void * buf, unsigned int l)
 {
 	if(!complete())
-		return res;
+		return (res);
 
 	//handle is idle and open
 	len = l;
 	set_res_cmd(CMD_READ);
 	dst.as_voidptr = buf;
-	return tsk_start_and_wait();
+	return (tsk_start_and_wait());
 }
 
 /**
@@ -241,7 +241,7 @@ RES_CODE CHandle::tsk_read(void * buf, unsigned int l, unsigned int time)
 	    	tsk_cancel();
 	}
 
-   return res;
+   return (res);
 }
 
 /**
@@ -253,13 +253,13 @@ RES_CODE CHandle::tsk_read(void * buf, unsigned int l, unsigned int time)
 RES_CODE CHandle::tsk_read_locked(void * buf, unsigned int l)
 {
 	if(!complete())
-		return res;
+		return (res);
 
 	//handle is idle and open
 	len = l;
 	set_res_cmd((CMD_READ|FLAG_LOCK));
 	dst.as_voidptr = buf;
-	return tsk_start_and_wait();
+	return (tsk_start_and_wait());
 }
 
 /**
@@ -284,7 +284,7 @@ RES_CODE CHandle::tsk_read_locked(void * buf, unsigned int l, unsigned int time)
 	    	tsk_cancel();
 	}
 
-    return res;
+    return (res);
 }
 
 /**
@@ -308,7 +308,7 @@ RES_CODE CHandle::tsk_resume_read(void * buf, unsigned int l)
 	    	tsk_cancel();
 	}
 
-    return res;
+    return (res);
 }
 
 /**
@@ -320,14 +320,14 @@ RES_CODE CHandle::tsk_resume_read(void * buf, unsigned int l)
 bool CHandle::tsk_start_write(const void * buf, unsigned int l)
 {
 	if(!complete())
-		return false;
+		return (false);
 
 	//handle is idle and open
 	len = l;
 	set_res_cmd(CMD_WRITE);
 	src.as_voidptr = (void*)buf;
 	tsk_start_handle();
-	return true;
+	return (true);
 }
 
 /**
@@ -339,13 +339,13 @@ bool CHandle::tsk_start_write(const void * buf, unsigned int l)
 RES_CODE CHandle::tsk_write(const void * buf, unsigned int l)
 {
 	if(!complete())
-		return res;
+		return (res);
 
 	//handle is idle and open
 	len = l;
 	set_res_cmd(CMD_WRITE);
 	src.as_cvoidptr = buf;
-	return tsk_start_and_wait();
+	return (tsk_start_and_wait());
 }
 
 /**
@@ -370,7 +370,7 @@ RES_CODE CHandle::tsk_write(const void * buf, unsigned int l, unsigned int time)
 	    	tsk_cancel();
 	}
 
-    return res;
+    return (res);
 }
 
 /**
@@ -382,13 +382,13 @@ RES_CODE CHandle::tsk_write(const void * buf, unsigned int l, unsigned int time)
 RES_CODE CHandle::tsk_write_locked(const void * buf, unsigned int l)
 {
 	if(!complete())
-		return res;
+		return (res);
 
 	//handle is idle and open
 	len = l;
 	set_res_cmd(CMD_WRITE|FLAG_LOCK);
 	src.as_voidptr = (void*)buf;
-	return tsk_start_and_wait();
+	return (tsk_start_and_wait());
 }
 
 /**
@@ -413,7 +413,7 @@ RES_CODE CHandle::tsk_write_locked(const void * buf, unsigned int l, unsigned in
 	    	tsk_cancel();
 	}
 
-    return res;
+    return (res);
 }
 
 /**
@@ -437,7 +437,7 @@ RES_CODE CHandle::tsk_resume_write(const void * buf, unsigned int l)
 	    	tsk_cancel();
 	}
 
-    return res;
+    return (res);
 }
 
 /**
@@ -450,27 +450,27 @@ RES_CODE CHandle::tsk_resume_write(const void * buf, unsigned int l)
 RES_CODE CHandle::tsk_read_write(void *d, const void *s, unsigned int l)
 {
 	if(!complete())
-		return res;
+		return (res);
 
 	//handle is idle and open
 	len = l;
 	set_res_cmd(CMD_READ_WRITE);
 	dst.as_voidptr = d;
 	src.as_voidptr = (void*)s;
-	return tsk_start_and_wait();
+	return (tsk_start_and_wait());
 }
 
 RES_CODE CHandle::tsk_read_write_locked(void *d, const void *s, unsigned int l)
 {
 	if(!complete())
-		return res;
+		return (res);
 
 	//handle is idle and open
 	len = l;
 	set_res_cmd(CMD_READ_WRITE|FLAG_LOCK);
 	dst.as_voidptr = d;
 	src.as_voidptr = (void*)s;
-	return tsk_start_and_wait();
+	return (tsk_start_and_wait());
 }
 
 /**
@@ -482,14 +482,14 @@ RES_CODE CHandle::tsk_read_write_locked(void *d, const void *s, unsigned int l)
 bool CHandle::tsk_start_command(void * c, void *ptr)
 {
 	if(!complete())
-		return false;
+		return (false);
 
 	//handle is idle and open
 	set_res_cmd(CMD_COMMAND);
 	dst.as_voidptr = ptr;
 	src.as_voidptr = c;
 	tsk_start_handle();
-	return true;
+	return (true);
 }
 
 /**
@@ -501,13 +501,13 @@ bool CHandle::tsk_start_command(void * c, void *ptr)
 RES_CODE CHandle::tsk_command(void * c, void *ptr)
 {
 	if(!complete())
-		return res;
+		return (res);
 
 	//handle is idle and open
 	set_res_cmd(CMD_COMMAND);
 	dst.as_voidptr = ptr;
 	src.as_voidptr = c;
-	return tsk_start_and_wait();
+	return (tsk_start_and_wait());
 }
 
 /**
@@ -519,13 +519,13 @@ RES_CODE CHandle::tsk_command(void * c, void *ptr)
 RES_CODE CHandle::tsk_command_locked(void * c, void *ptr)
 {
 	if(!complete())
-		return res;
+		return (res);
 
 	//handle is idle and open
 	set_res_cmd(CMD_COMMAND|FLAG_LOCK);
 	dst.as_voidptr = ptr;
 	src.as_voidptr = c;
-	return tsk_start_and_wait();
+	return (tsk_start_and_wait());
 }
 
 /**
@@ -538,9 +538,9 @@ bool CHandle::svc_list_cancel(HANDLE& base)
 	if(list_remove(base))
 	{
 		svc_HND_SET_STATUS(this, RES_SIG_IDLE);
-		return true;
+		return (true);
 	}
-	return false;
+	return (false);
 }
 
 /**
@@ -553,7 +553,7 @@ bool CHandle::list_remove(HANDLE& base)
 	if(base && base == this )
 	{
 		base = next;
-		return true;
+		return (true);
 	}
 	HANDLE ptr = base;
 	while(ptr && ptr->next)
@@ -561,11 +561,11 @@ bool CHandle::list_remove(HANDLE& base)
 		if(ptr->next == this )
 		{
 			ptr->next = next;
-			return true;
+			return (true);
 		}
 		ptr = ptr->next;
 	}
-	return false;
+	return (false);
 }
 
 /**
@@ -631,7 +631,7 @@ HANDLE tsk_open_new_hnd(DRIVER_INDEX index, const void * mode )
 		}
 	}
 
-	return hnd;
+	return (hnd);
 }
 
 HANDLE tsk_safe_open_new_hnd(DRIVER_INDEX index, const void * mode )
@@ -643,12 +643,14 @@ HANDLE tsk_safe_open_new_hnd(DRIVER_INDEX index, const void * mode )
 		if( (hnd = new CHandle()) )
 		{
 			if(hnd->tsk_open(index, mode))
-				return hnd;
+				break;
 
 			delete hnd;
-			tsk_sleep(10);
 		}
+		tsk_sleep(10);
 	}
+
+	return (hnd);
 }
 
 

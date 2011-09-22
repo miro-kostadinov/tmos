@@ -21,7 +21,6 @@
 
 
 #include <tmos.h>
-#include <tmos.h>
 #include <cmsis_cpp.h>
 
 extern TASK_STRU main_task;
@@ -109,10 +108,10 @@ static bool is_first_reset(int index)
 	for(int i=0; DRV_RESET_FIRST_TABLE[i] < INALID_DRV_INDX; i++ )
 	{
 		if(index == DRV_RESET_FIRST_TABLE[i])
-			return true;
+			return (true);
 	}
 
-	return false;
+	return (false);
 }
 
 WEAK_C void app_init(void)
@@ -303,7 +302,7 @@ Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
 		strcpy(task->name, name);
 	}
 
-	return task;
+	return (task);
 }
 #endif /*malloc_swi*/
 
@@ -319,7 +318,7 @@ unsigned int tsk_signal_allocate(void)
     signal = (signal+256) & ~signal;
 	CURRENT_TASK->aloc_sig |= signal;
 
-	return signal;
+	return (signal);
 }
 
 /** release signal

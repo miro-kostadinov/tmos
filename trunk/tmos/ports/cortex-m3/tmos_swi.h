@@ -146,7 +146,7 @@ inline static   unsigned int tsk_try_signal(unsigned int volatile signal)
 	  : "=r"(_signal)
 	  : "I" (tsk_try_signal_swi), "0"(_signal)
 	  : "r1", "r2", "r3", "r12", "memory");
-	return _signal;
+	return (_signal);
 }
 #endif
 
@@ -160,7 +160,7 @@ inline static   unsigned int tsk_get_signal(unsigned int volatile signal)
 	  : "=r"(_signal)
 	  : "I" (tsk_get_signal_swi), "0"(_signal)
 	  : "r1", "r2", "r3", "r12", "memory");
-	return _signal;
+	return (_signal);
 }
 #endif
 
@@ -175,7 +175,7 @@ inline static   unsigned int tsk_wait_signal(unsigned int volatile signal, unsig
 	  : "=r"(_signal), "=r"(_time)
 	  : "I" (tsk_wait_signal_swi), "0"(_signal), "1"(_time)
 	  : "r2", "r3", "r12", "memory");
-	return _signal;
+	return (_signal);
 }
 #endif
 
@@ -189,7 +189,7 @@ inline static   unsigned int tsk_resume_wait_signal(unsigned int volatile signal
 	  : "=r"(_signal)
 	  : "I" (tsk_resume_wait_signal_swi), "0"(_signal)
 	  : "r1", "r2", "r3", "r12", "memory");
-	return _signal;
+	return (_signal);
 }
 #endif
 
@@ -238,7 +238,7 @@ inline static void* usr_malloc(unsigned int volatile size)
 	  : "=r"(_size)
 	  : "I" (malloc_swi), "0"(_size)
 	  : "r3", "memory");
-	return (void*)_size;
+	return ((void*)_size);
 }
 #endif
 
@@ -264,7 +264,7 @@ inline static void* usr_realloc(void* volatile ptr, unsigned int volatile size)
 	  : "=r"(_ptr)
 	  : "I" (realloc_swi), "0"(_ptr), "r"(_size)
 	  : "r3", "memory");
-	return (void*)_ptr;
+	return ((void*)_ptr);
 }
 #endif
 

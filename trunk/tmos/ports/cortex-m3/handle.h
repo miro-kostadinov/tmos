@@ -118,7 +118,7 @@ struct CHandle {
 				: "I" (tsk_start_and_wait_swi), "0"(_hnd)
 				: "r1", "memory");
 
-		return res &= ~FLG_SIGNALED;
+		return (res &= ~FLG_SIGNALED);
 	}
 	bool complete();
 
@@ -143,10 +143,13 @@ struct CHandle {
 	 */
 	RES_CODE tsk_write(const char * buf)
 	{
-		return tsk_write(buf, strlen(buf));
+		return (tsk_write(buf, strlen(buf)));
 	}
 #if USE_CSTRING
-	RES_CODE tsk_write(CSTRING& str) {return tsk_write(str.c_str(), str.length());}
+	RES_CODE tsk_write(CSTRING& str)
+	{
+		return (tsk_write(str.c_str(), str.length()));
+	}
 #endif
 	RES_CODE tsk_write_locked(const void * buf, unsigned int l);
 	RES_CODE tsk_write_locked(const void * buf, unsigned int ln,

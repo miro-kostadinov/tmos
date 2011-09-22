@@ -61,13 +61,13 @@ public:
 	auto_ptr& operator=(auto_ptr& rhs)
 	{
 		reset(rhs.release());
-		return *this;
+		return (*this);
 	}
 	template<class Y>
 	auto_ptr& operator=(auto_ptr<Y>& rhs)
 	{
 		reset(rhs.release());
-		return *this;
+		return (*this);
 	}
 
 	//destructor
@@ -79,15 +79,15 @@ public:
 	//value access
 	T* get() const
 	{
-		return ap;
+		return (ap);
 	}
 	T& operator*() const
 	{
-		return *ap;
+		return (*ap);
 	}
 	T* operator->() const
 	{
-		return ap;
+		return (ap);
 	}
 
 	//release ownership
@@ -95,7 +95,7 @@ public:
 	{
 		T* tmp(ap);
 		ap = 0;
-		return tmp;
+		return (tmp);
 	}
 
 	//reset value
@@ -118,17 +118,17 @@ public:
 	auto_ptr& operator=(auto_ptr_ref<T> rhs)
 	{ //new
 		reset(rhs.yp);
-		return *this;
+		return (*this);
 	}
 	template<class Y>
 	operator auto_ptr_ref<Y>()
 	{
-		return auto_ptr_ref<Y> (release());
+		return (auto_ptr_ref<Y> (release()));
 	}
 	template<class Y>
 	operator auto_ptr<Y>()
 	{
-		return auto_ptr<Y> (release());
+		return (auto_ptr<Y> (release()));
 	}
 };
 

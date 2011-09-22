@@ -28,12 +28,12 @@ char CCache::getc()
 	{
 		c = *pos++;
 		if (c || ((unsigned) (pos - buf.c_str()) <= buf.length()))
-			return c;
+			return (c);
 	}
 
 	if (load() == RES_OK)
-		return *pos++;
-	return 0;
+		return (*pos++);
+	return (0);
 }
 
 RES_CODE CCache::getc(char& c)
@@ -48,8 +48,8 @@ RES_CODE CCache::getc(char& c)
 
 	res = load();
 	if (res == RES_OK)
-		return c = *pos++;
-	return res;
+		return (c = *pos++);
+	return (res);
 }
 
 RES_CODE CCache::get_pc(char&c)
@@ -66,7 +66,7 @@ RES_CODE CCache::get_pc(char&c)
 			break;
 	}
 
-	return res;
+	return (res);
 }
 
 RES_CODE CCache::skip_ws()
@@ -88,7 +88,7 @@ RES_CODE CCache::skip_ws()
 		res = load();
 	} while (res == RES_OK);
 
-	return res;
+	return (res);
 
 }
 
@@ -104,10 +104,10 @@ bool CCache::ungetc()
 	if (pos > buf.c_str())
 	{
 		pos--;
-		return true;
+		return (true);
 	}
 
-	return false;
+	return (false);
 }
 
 //*----------------------------------------------------------------------------
@@ -118,7 +118,7 @@ RES_CODE CCache::readline(CSTRING& var)
 	unsigned int res;
 	int i;
 
-	while (1)
+	do
 	{
 		if (pos)
 		{
@@ -138,10 +138,9 @@ RES_CODE CCache::readline(CSTRING& var)
 			var.append(pos, i);
 		}
 		res = load();
-		if (res != RES_OK)
-			return res;
+	} while (res == RES_OK);
 
-	};
+	return (res);
 }
 
 //*----------------------------------------------------------------------------
@@ -150,7 +149,7 @@ RES_CODE CCache::readline(CSTRING& var)
 RES_CODE CCache::readline(CSTRING& str, unsigned int time)
 {
 	CURRENT_TASK->time = CURRENT_TIME + time;
-	return readline(str);
+	return (readline(str));
 }
 
 RES_CODE CCache::load()
@@ -211,7 +210,7 @@ RES_CODE CCache::get_name(CSTRING& var)
 					return RES_OK;
 
 				default:
-					return res;
+					return (res);
 				}
 
 			}
@@ -220,7 +219,7 @@ RES_CODE CCache::get_name(CSTRING& var)
 		ungetc();
 		res = RES_INVALID_DATA;
 	}
-	return res;
+	return (res);
 }
 
 //*----------------------------------------------------------------------------
@@ -295,7 +294,7 @@ RES_CODE CCache::match(const char* str)
 
 	}
 
-	return res;
+	return (res);
 }
 
 RES_CODE CCache::match_name(const char* str)
@@ -335,7 +334,7 @@ RES_CODE CCache::match_name(const char* str)
 			res = RES_OK;
 	}
 
-	return res;
+	return (res);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //+			CCachedHandle
@@ -364,7 +363,7 @@ RES_CODE CCachedHandle::load()
 		len -= hnd->len;
 		buf.storage.ram->len = len;
 		buf.storage.ram->buf[len] = 0;
-		return hnd->res;
+		return (hnd->res);
 	}
 
 	return RES_OUT_OF_MEMORY;
