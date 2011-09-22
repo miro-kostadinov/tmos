@@ -124,6 +124,7 @@ void KEY2_DCR(KEY2_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 					drv_data->key_in = (drv_data->key_in+1) & DRV_KEYBUF_SIZE;
 				}
             }
+            break;
     }
 }
 

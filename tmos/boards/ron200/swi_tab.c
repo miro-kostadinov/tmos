@@ -19,14 +19,12 @@ void sys_resume_wait_signal(void);
 void sys_drv_service_wait(void);
 void sys_malloc(void);
 void sys_realloc(void);
+#ifdef isr_contol_swi
 void sys_isr_contol(void);
+#endif
 
-//void svc_HND_SET_STATUS(HANDLE hnd, RES_CODE result);
-//RES_CODE drv_hcontrol(HANDLE hnd, unsigned int reason);
-//RES_CODE drv_service(HANDLE hnd);
+
 void svc_HND_SET_STATUS(void);
-void drv_hcontrol(void);
-void drv_service(void);
 void svc_drv_service(void);
 void svc_drv_hcontrol(void);
 
