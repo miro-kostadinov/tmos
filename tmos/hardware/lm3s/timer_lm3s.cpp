@@ -33,7 +33,7 @@ unsigned long  TIMER_Type::GetPeripheral(void)
 		return SYSCTL_PERIPH_TIMER2;
 	if( this == TIMER3 )
 		return SYSCTL_PERIPH_TIMER3;
-	return 0;
+	return (0);
 }
 
 /**

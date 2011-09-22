@@ -47,7 +47,7 @@
 //		return SYSCTL_PERIPH_UART1;
 //	if( this == UART2 )
 //		return SYSCTL_PERIPH_UART2;
-//	return 0;
+//	return (0);
 //}
 
 /**
@@ -57,12 +57,12 @@
 unsigned long UART_Type::DMA_GetRxChannel(void)
 {
 	if( this == UART0 )
-		return UDMA_CHANNEL_UART0RX;
+		return (UDMA_CHANNEL_UART0RX);
 	if( this == UART1 )
-		return UDMA_CHANNEL_UART1RX;
+		return (UDMA_CHANNEL_UART1RX);
 	if( this == UART2 )
-		return UDMA_CHANNEL_UART2RX;
-	return 0;
+		return (UDMA_CHANNEL_UART2RX);
+	return (0);
 }
 
 /**DMA_GetTxChannel
@@ -72,12 +72,12 @@ unsigned long UART_Type::DMA_GetRxChannel(void)
 unsigned long UART_Type::DMA_GetTxChannel(void)
 {
 	if( this == UART0 )
-		return UDMA_CHANNEL_UART0TX;
+		return (UDMA_CHANNEL_UART0TX);
 	if( this == UART1 )
-		return UDMA_CHANNEL_UART1TX;
+		return (UDMA_CHANNEL_UART1TX);
 	if( this == UART2 )
-		return UDMA_CHANNEL_UART2TX;
-	return 0;
+		return (UDMA_CHANNEL_UART2TX);
+	return (0);
 }
 /*
  *

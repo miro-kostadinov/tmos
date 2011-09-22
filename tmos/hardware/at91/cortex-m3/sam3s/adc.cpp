@@ -190,7 +190,7 @@ static uint32_t calcul_startup( uint32_t startup )
     else if( startup == 15 )
         startup_value = 960;
 
-    return startup_value;
+    return (startup_value);
 }
 
 /**
@@ -222,7 +222,7 @@ extern void ADC_check( Adc* pAdc, uint32_t mck_freq )
     startup = (( pAdc->ADC_MR & ADC_MR_STARTUP_Msk) >> ADC_MR_STARTUP_Pos);
     if( !(pAdc->ADC_MR & ADC_MR_SLEEP_SLEEP) )
     {
-        /* 40µs */
+        /* 40ï¿½s */
         if( ADC_STARTUP_NORM * adc_freq / 1000000 > calcul_startup(startup) )
         {
             TRACE("Startup time too small: %d, programmed: %d\r\n", (int)(ADC_STARTUP_NORM * adc_freq / 1000000), (int)calcul_startup(startup));
@@ -236,7 +236,7 @@ extern void ADC_check( Adc* pAdc, uint32_t mck_freq )
         }
         if( !(pAdc->ADC_MR & ADC_MR_FWUP_ON) )
         {
-            /* Sleep 40µs */
+            /* Sleep 40ï¿½s */
             if( ADC_STARTUP_NORM * adc_freq / 1000000 > calcul_startup(startup) )
             {
                 TRACE("Startup time too small: %d, programmed: %d\r\n", (int)(ADC_STARTUP_NORM * adc_freq / 1000000), (int)(calcul_startup(startup)));
@@ -246,7 +246,7 @@ extern void ADC_check( Adc* pAdc, uint32_t mck_freq )
         {
             if( pAdc->ADC_MR & ADC_MR_FWUP_ON )
             {
-                /* Fast Wake Up Sleep Mode: 12µs */
+                /* Fast Wake Up Sleep Mode: 12ï¿½s */
                 if( ADC_STARTUP_FAST * adc_freq / 1000000 > calcul_startup(startup) )
                 {
                     TRACE("Startup time too small: %d, programmed: %d\r\n", (int)(ADC_STARTUP_NORM * adc_freq / 1000000), (int)(calcul_startup(startup)));
@@ -279,7 +279,7 @@ extern uint32_t ADC_GetConvertedData( Adc* pAdc, uint32_t dwChannel )
 		dwData=*(pAdc->ADC_CDR+dwChannel) ;
     }
 
-    return dwData ;
+    return (dwData);
 }
 /**
  * Set compare channel
@@ -371,7 +371,7 @@ extern uint32_t ADC_IsChannelInterruptStatusSet( uint32_t dwAdc_sr, uint32_t dwC
         dwStatus = 0 ;
     }
 
-    return dwStatus ;
+    return (dwStatus);
 }
 
 /**
@@ -390,7 +390,7 @@ extern uint32_t ADC_ReadBuffer( Adc* pADC, int16_t *pwBuffer, uint32_t dwSize )
         pADC->ADC_RCR = dwSize ;
         pADC->ADC_PTCR = ADC_PTCR_RXTEN;
 
-        return 1;
+        return (1);
     }
     /* Check if the second PDC bank is free*/
     else
@@ -400,11 +400,11 @@ extern uint32_t ADC_ReadBuffer( Adc* pADC, int16_t *pwBuffer, uint32_t dwSize )
             pADC->ADC_RNPR = (uint32_t)pwBuffer ;
             pADC->ADC_RNCR = dwSize ;
 
-            return 1 ;
+            return (1);
         }
         else
         {
-            return 0 ;
+            return (0);
         }
     }
 }

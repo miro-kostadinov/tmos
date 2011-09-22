@@ -13,22 +13,22 @@
 #include <tmos.h>
 #include "fam_cpp.h"
 
-/**
- * The base addresses of all the GPIO modules.
- * Both the APB and AHB apertures are provided.
- */
-static const unsigned long g_pulGPIOBaseAddrs[] =
-{
-    GPIO_PORTA_BASE, GPIO_PORTA_AHB_BASE,
-    GPIO_PORTB_BASE, GPIO_PORTB_AHB_BASE,
-    GPIO_PORTC_BASE, GPIO_PORTC_AHB_BASE,
-    GPIO_PORTD_BASE, GPIO_PORTD_AHB_BASE,
-    GPIO_PORTE_BASE, GPIO_PORTE_AHB_BASE,
-    GPIO_PORTF_BASE, GPIO_PORTF_AHB_BASE,
-    GPIO_PORTG_BASE, GPIO_PORTG_AHB_BASE,
-    GPIO_PORTH_BASE, GPIO_PORTH_AHB_BASE,
-    GPIO_PORTJ_BASE, GPIO_PORTJ_AHB_BASE,
-};
+///**
+// * The base addresses of all the GPIO modules.
+// * Both the APB and AHB apertures are provided.
+// */
+//static const unsigned long g_pulGPIOBaseAddrs[] =
+//{
+//    GPIO_PORTA_BASE, GPIO_PORTA_AHB_BASE,
+//    GPIO_PORTB_BASE, GPIO_PORTB_AHB_BASE,
+//    GPIO_PORTC_BASE, GPIO_PORTC_AHB_BASE,
+//    GPIO_PORTD_BASE, GPIO_PORTD_AHB_BASE,
+//    GPIO_PORTE_BASE, GPIO_PORTE_AHB_BASE,
+//    GPIO_PORTF_BASE, GPIO_PORTF_AHB_BASE,
+//    GPIO_PORTG_BASE, GPIO_PORTG_AHB_BASE,
+//    GPIO_PORTH_BASE, GPIO_PORTH_AHB_BASE,
+//    GPIO_PORTJ_BASE, GPIO_PORTJ_AHB_BASE,
+//};
 
 //*****************************************************************************
 //

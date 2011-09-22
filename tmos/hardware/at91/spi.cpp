@@ -131,7 +131,7 @@ void SPI_ConfigureNPCS( Spi* spi, uint32_t dwNpcs, uint32_t dwConfiguration )
  */
 extern uint32_t SPI_GetStatus( Spi* spi )
 {
-    return spi->SPI_SR ;
+    return (spi->SPI_SR);
 }
 
 /**
@@ -146,7 +146,7 @@ extern uint32_t SPI_Read( Spi* spi )
 {
     while ( (spi->SPI_SR & SPI_SR_RDRF) == 0 ) ;
 
-    return spi->SPI_RDR & 0xFFFF ;
+    return (spi->SPI_RDR & 0xFFFF);
 }
 
 /**
@@ -266,7 +266,7 @@ extern uint32_t SPI_WriteBuffer( Spi* spi, void* pvBuffer, uint32_t dwLength )
         spi->SPI_TCR = dwLength ;
         spi->SPI_PTCR = PERIPH_PTCR_TXTEN ;
 
-        return 1 ;
+        return (1);
     }
     /* Check if second bank is free */
     else
@@ -276,12 +276,12 @@ extern uint32_t SPI_WriteBuffer( Spi* spi, void* pvBuffer, uint32_t dwLength )
             spi->SPI_TNPR = (uint32_t)pvBuffer ;
             spi->SPI_TNCR = dwLength ;
 
-            return 1 ;
+            return (1);
         }
     }
 
     /* No free banks */
-    return 0 ;
+    return (0);
 }
 
 /**
@@ -301,7 +301,7 @@ extern uint32_t SPI_ReadBuffer( Spi* spi, void *pvBuffer, uint32_t dwLength )
         spi->SPI_RCR = dwLength ;
         spi->SPI_PTCR = PERIPH_PTCR_RXTEN ;
 
-        return 1 ;
+        return (1);
     }
     /* Check if second bank is free */
     else
@@ -310,12 +310,12 @@ extern uint32_t SPI_ReadBuffer( Spi* spi, void *pvBuffer, uint32_t dwLength )
         {
             spi->SPI_RNPR = (uint32_t)pvBuffer ;
             spi->SPI_RNCR = dwLength ;
-            return 1 ;
+            return (1);
         }
     }
 
     /* No free bank */
-    return 0 ;
+    return (0);
 }
 
 

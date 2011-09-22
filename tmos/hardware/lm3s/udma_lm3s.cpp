@@ -711,7 +711,7 @@ unsigned long UDMA_Type::uDMAChannelSizeGet(unsigned long ulChannel)
     // Get the current control word value and mask off all but the size field.
     ulControl = pControlTable[ulChannel].CHCTL & (UDMA_CHCTL_XFERSIZE_M|UDMA_CHCTL_XFERMODE_M);
     if((ulControl & UDMA_CHCTL_XFERMODE_M) == UDMA_MODE_STOP )
-    	return 0;
+    	return (0);
     // Shift the size field and add one, then return to user.
     return(((ulControl&UDMA_CHCTL_XFERSIZE_M) >> 4) + 1);
 }
@@ -730,7 +730,8 @@ void * UDMA_Type::uDMAChannelDestPtrGet(unsigned long ulChannel)
     // Get the base address of the control table.
     pControlTable = (UDMA_CTRL_Type *)this->CTLBASE;
     ulControl = this->uDMAChannelSizeGet(ulChannel);
-   	return (void *)(pControlTable[ulChannel].DSTENDP - this->uDMAChannelSizeGet(ulChannel)+1);
+   	return ((void *) (pControlTable[ulChannel].DSTENDP
+			- this->uDMAChannelSizeGet(ulChannel) + 1));
 }
 
 //*****************************************************************************
