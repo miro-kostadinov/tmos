@@ -33,7 +33,7 @@ RES_CODE usb_handle::device_config(const USBDDriverDescriptors* drv_descriptors)
 		set_res_cmd(USB_CMD_DEVICE_CONFIG);
 		tsk_start_and_wait();
 	}
-	return res;
+	return (res);
 }
 
 

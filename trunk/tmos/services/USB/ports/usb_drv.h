@@ -119,6 +119,7 @@ struct USB_DRIVER_DATA
 	Endpoint		endpoints[USB_NUMENDPOINTS]; //!< Endpoint structures
 
 	USB_DRIVER_DATA() {};
+	virtual ~USB_DRIVER_DATA() {};
 
 	//usb API functions
 	void usb_shutdown();
