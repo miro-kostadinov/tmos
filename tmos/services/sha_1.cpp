@@ -137,7 +137,7 @@ bool SHA1::Result(unsigned *message_digest_array)
 
     if (Corrupted)
     {
-        return false;
+        return (false);
     }
 
     if (!Computed)
@@ -151,7 +151,7 @@ bool SHA1::Result(unsigned *message_digest_array)
         message_digest_array[i] = H[i];
     }
 
-    return true;
+    return (true);
 }
 
 bool SHA1::Result(CSTRING& message_digest)
@@ -161,7 +161,7 @@ bool SHA1::Result(CSTRING& message_digest)
     message_digest.clear();
     if (Corrupted)
     {
-        return false;
+        return (false);
     }
 
     if (!Computed)
@@ -177,7 +177,7 @@ bool SHA1::Result(CSTRING& message_digest)
         message_digest += buf;
     }
 
-    return true;
+    return (true);
 }
 
 /*  
@@ -464,5 +464,5 @@ void SHA1::PadMessage()
  */
 unsigned SHA1::CircularShift(int bits, unsigned word)
 {
-    return ((word << bits) & 0xFFFFFFFF) | ((word & 0xFFFFFFFF) >> (32-bits));
+    return (((word << bits) & 0xFFFFFFFF) | ((word & 0xFFFFFFFF) >> (32-bits)));
 }

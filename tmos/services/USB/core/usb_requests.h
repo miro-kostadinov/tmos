@@ -116,47 +116,47 @@ struct USBGenericRequest
      * \return Request code.
      * \sa "USB Request Codes"
      */
-    unsigned char GetRequest() const { return bRequest; };
+    unsigned char GetRequest() const { return (bRequest); };
 
     /**
      * Returns the wValue field of the given request.
      * \return Request value.
      */
-    unsigned short GetValue() const { return wValue; };
+    unsigned short GetValue() const { return (wValue); };
 
     /**
      * Returns the expected length of the data phase following a request.
      * \return Length of data phase.
      */
-    unsigned short GetLength() const { return wLength; };
+    unsigned short GetLength() const { return (wLength); };
 
 
     /**
      * Returns the wIndex field of the given request.
      * \return Request index;
      */
-    unsigned short GetIndex() const { return wIndex; };
+    unsigned short GetIndex() const { return (wIndex); };
 
     /**
      * Returns the direction of the data transfer following the given request.
      * \return Transfer direction.
      * \sa "USB Request Directions"
      */
-    RequestType_dir GetDirection() const {return bmRequestType.dir; };
+    RequestType_dir GetDirection() const {return (bmRequestType.dir); };
 
     /**
      * Returns the type of the descriptor requested by the host given the
      * corresponding GET_DESCRIPTOR request.
      * \return Type of the requested descriptor.
      */
-    unsigned int GetDescriptorType() const { return wValue >> 8; };
+    unsigned int GetDescriptorType() const { return (wValue >> 8); };
 
     /**
      * Returns the index of the requested descriptor, given the corresponding
      * GET_DESCRIPTOR request.
      * \return Index of the requested descriptor.
      */
-    unsigned int GetDescriptorIndex() const { return wValue & 0xFF; };
+    unsigned int GetDescriptorIndex() const { return (wValue & 0xFF); };
 
 
 
@@ -165,7 +165,7 @@ struct USBGenericRequest
      * SET_INTERFACE request.
      * \return Interface number.
      */
-	unsigned int GetInterface() const { return wIndex & 0xFF; };
+	unsigned int GetInterface() const { return (wIndex & 0xFF); };
 
 
     /**
@@ -173,14 +173,14 @@ struct USBGenericRequest
      * SET_INTERFACE request should use.
      * \return New active setting for the interface.
      */
-	unsigned int GetAlternateSetting() const { return wValue & 0xFF; };
+	unsigned int GetAlternateSetting() const { return (wValue & 0xFF); };
 
 
     /**
      * Returns the endpoint number targetted by a given request.
      * \return Endpoint number.
      */
-	unsigned int GetEndpointNumber() const {return wIndex & 0xF; };
+	unsigned int GetEndpointNumber() const {return (wIndex & 0xF); };
 
 
     /**
@@ -188,7 +188,7 @@ struct USBGenericRequest
      * \return Request recipient.
      * \sa "USB Request Recipients"
      */
-	RequestType_recipient GetRecipient() const { return bmRequestType.recipient; };
+	RequestType_recipient GetRecipient() const { return (bmRequestType.recipient); };
 
 
     /**
@@ -196,7 +196,7 @@ struct USBGenericRequest
      *  request.
      *  \return Feature selector.
      */
-    unsigned short GetFeatureSelector() const { return wValue; };
+    unsigned short GetFeatureSelector() const { return (wValue); };
 
 
     /**
@@ -204,7 +204,7 @@ struct USBGenericRequest
      * to the given SET_CONFIGURATION request.
      * \return Number of the requested configuration.
      */
-    unsigned short GetConfiguration() const { return wValue; };
+    unsigned short GetConfiguration() const { return (wValue); };
 
 }__attribute__ ((packed));
 

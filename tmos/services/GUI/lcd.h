@@ -60,6 +60,7 @@ struct LCD_MODULE
 	{
 	}
 	;
+	virtual ~LCD_MODULE(){};
 
 	virtual void lcd_init(GUI_CB splash);
 	virtual void lcd_reset()=0;

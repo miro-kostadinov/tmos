@@ -58,18 +58,20 @@ WEAK_C usb_interface* InterfaceFactory(const USBInterfaceDescriptor* ds, int siz
 		switch(ds->bDeviceSubClass)
 		{
 		case CDC_ACM_SUBCLASS:
-			return new usb_cdc_acm_interface(ds->bAlternateSetting);
+			return (new usb_cdc_acm_interface(ds->bAlternateSetting));
 		default:;
+		break;
 		}
 		break;
 
 	case CDCDATA_DEVICE_CLASS:
-		return new usb_cdc_data_interface(ds->bAlternateSetting);
+		return (new usb_cdc_data_interface(ds->bAlternateSetting));
 
 	default:;
+	break;
 	}
 
-	return NULL;
+	return (NULL);
 }
 
 void usb_device::Initialize(const USBDDriverDescriptors *descriptors)
@@ -241,6 +243,7 @@ void usb_device::GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd)
         default:
             TRACE_USB(" Unknown descriptor type (%d)", pRequest->GetDescriptorType());
             usb_svc_stall(hnd);
+            break;
     }
 }
 
@@ -261,7 +264,7 @@ const USBConfigurationDescriptor* usb_device::GetConfiguration(uint8_t cfg)
 	{
 		pConfiguration = pDescriptors->pFsConfiguration;
 	}
-	return pConfiguration;
+	return (pConfiguration);
 }
 
 /**
@@ -533,6 +536,7 @@ void usb_device::RequestHandler(const void* drv,
                         TRACE_USB(" Unknown recipient(%d)",
                         		pRequest->GetRecipient());
                         usb_svc_stall(hnd);
+                        break;
                 }
                 break;
 
@@ -559,6 +563,7 @@ void usb_device::RequestHandler(const void* drv,
                     	TRACELN_USB(" Unknown feature selector(%d)",
                     			pRequest->GetFeatureSelector());
                         usb_svc_stall(hnd);
+                        break;
                 }
                 break;
 
@@ -606,6 +611,7 @@ void usb_device::RequestHandler(const void* drv,
                 	TRACELN_USB(" Unknown feature selector(%d)",
                 			pRequest->GetFeatureSelector());
                     usb_svc_stall(hnd);
+                    break;
             }
             break;
 
@@ -628,6 +634,7 @@ void usb_device::RequestHandler(const void* drv,
         	TRACE_USB(" Unknown request(%d)",
                       pRequest->GetRequest());
             usb_svc_stall(hnd);
+            break;
         }
     	break;
 
@@ -649,6 +656,7 @@ void usb_device::RequestHandler(const void* drv,
     	TRACE_USB(" Unknown recipient(%d)",
     			pRequest->bmRequestType.recipient);
         usb_svc_stall(hnd);
+        break;
 
     }
 
@@ -676,7 +684,7 @@ bool usb_device::ConfigInterface(const USBInterfaceDescriptor* ds, int size, HAN
 	if(interfaces[infnum])
 	{
 		if(interfaces[infnum]->bAlternativeSetting == ds->bAlternateSetting)
-			return true;
+			return (true);
 		//shutdown here!?
 		delete interfaces[infnum];
 	}
@@ -692,7 +700,7 @@ bool usb_device::ConfigInterface(const USBInterfaceDescriptor* ds, int size, HAN
 		{
 			usb_svc_configendpoint(hnd, endpoint);
 		}
-		return true;
+		return (true);
 	}
-	return false;
+	return (false);
 }

@@ -116,13 +116,13 @@ struct USBGenericDescriptor
 	/// Returns the length of a descriptor.
 	/// \return Length of descriptor in bytes.
 	//--------------------------------------------------------------------------
-	unsigned int GetLength() const { return bLength;}
+	unsigned int GetLength() const { return (bLength);}
 
 	//--------------------------------------------------------------------------
 	/// Returns the type of a descriptor.
 	/// \return Type of descriptor.
 	//--------------------------------------------------------------------------
-	USBDescriptorType GetType()	const { return bDescriptorType; }
+	USBDescriptorType GetType()	const { return (bDescriptorType); }
 
 	//--------------------------------------------------------------------------
 	/// Returns a pointer to the descriptor right after the given one, when
@@ -131,7 +131,7 @@ struct USBGenericDescriptor
 	//--------------------------------------------------------------------------
 	USBGenericDescriptor* GetNextDescriptor() const
 	{
-	    return (USBGenericDescriptor *) (((char *) this) + GetLength());
+	    return ((USBGenericDescriptor *) (((char *) this) + GetLength()));
 	}
 
 	const USBGenericDescriptor* FindNext(USBDescriptorType from,
@@ -146,12 +146,12 @@ struct USBGenericDescriptor
 			   descriptor = descriptor->GetNextDescriptor();
 
 			   if(descriptor->GetType() == from)
-					return descriptor;
+					return (descriptor);
 
 			   if(descriptor->GetType() == to)
 					break;
 		   }
-		return NULL;
+		return (NULL);
 	}
 } __attribute__ ((packed)); // GCC
 
@@ -352,7 +352,7 @@ struct USBEndpointDescriptor
 	/// Returns the number of an endpoint given its descriptor.
 	/// \return Endpoint number.
 	//--------------------------------------------------------------------------
-	unsigned char GetNumber() const {	return bEndpointAddress & 0xF;}
+	unsigned char GetNumber() const {	return (bEndpointAddress & 0xF);}
 
 	//--------------------------------------------------------------------------
 	/// Returns the direction of an endpoint given its descriptor.
@@ -360,7 +360,7 @@ struct USBEndpointDescriptor
 	//--------------------------------------------------------------------------
 	EndpointDirection GetDirection() const
 	{
-		return (EndpointDirection)(bEndpointAddress >> 7 );
+		return ((EndpointDirection) (bEndpointAddress >> 7));
 	}
 
 	//--------------------------------------------------------------------------
@@ -369,7 +369,7 @@ struct USBEndpointDescriptor
 	//--------------------------------------------------------------------------
 	EndpointAttribute_TransferType GetType() const
 	{
-		return (EndpointAttribute_TransferType) (bmAttributes & 0x3);
+		return ((EndpointAttribute_TransferType) (bmAttributes & 0x3));
 	}
 
 	//--------------------------------------------------------------------------
@@ -377,13 +377,13 @@ struct USBEndpointDescriptor
 	/// its descriptor.
 	/// \return Maximum packet size of endpoint.
 	//--------------------------------------------------------------------------
-	unsigned short GetMaxPacketSize() const {	return wMaxPacketSize; }
+	unsigned short GetMaxPacketSize() const {	return (wMaxPacketSize); }
 
 	//--------------------------------------------------------------------------
 	/// Returns the polling interval on an endpoint given its descriptor.
 	/// \return Polling interval of endpoint.
 	//--------------------------------------------------------------------------
-	unsigned char GetInterval() const {	return bInterval;	}
+	unsigned char GetInterval() const {	return (bInterval);	}
 
 } __attribute__ ((packed)); // GCC
 //------------------------------------------------------------------------------
@@ -412,7 +412,7 @@ struct USBDeviceQualifierDescriptor
 //         				USBOtgDescriptor (0x09)
 //------------------------------------------------------------------------------
 
-/// OTG Attribute Fields D7…2: Reserved D1: HNP support D0: SRP support
+/// OTG Attribute Fields D7ï¿½2: Reserved D1: HNP support D0: SRP support
 enum USBOTGAttributes : unsigned char
 {
 	NO_OTG_SUPPORT	 	= 0x00,	//!< No OTG feature supported
@@ -480,14 +480,14 @@ struct USBConfigurationDescriptor
 	/// \param configuration Pointer to a USBConfigurationDescriptor instance.
 	/// \return Total length (in bytes) of the configuration.
 	//--------------------------------------------------------------------------
-	unsigned int GetTotalLength() const { return wTotalLength; }
+	unsigned int GetTotalLength() const { return (wTotalLength); }
 
 	//--------------------------------------------------------------------------
 	/// Returns the number of interfaces in a configuration.
 	/// \param configuration Pointer to a USBConfigurationDescriptor instance.
 	/// \return Number of interfaces in configuration.
 	//--------------------------------------------------------------------------
-	unsigned char GetNumInterfaces() const { return bNumInterfaces; }
+	unsigned char GetNumInterfaces() const { return (bNumInterfaces); }
 
 	//--------------------------------------------------------------------------
 	/// Indicates if the device is self-powered when in a given configuration.
@@ -495,7 +495,7 @@ struct USBConfigurationDescriptor
 	/// \return 1 if the device is self-powered when in the given configuration;
 	///         otherwise 0.
 	//--------------------------------------------------------------------------
-	unsigned char IsSelfPowered() const { return (bmAttributes >> 6) & 1; }
+	unsigned char IsSelfPowered() const { return ((bmAttributes >> 6) & 1); }
 
 	//--------------------------------------------------------------------------
 	/// Parses the given Configuration descriptor (followed by relevant

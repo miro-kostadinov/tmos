@@ -17,7 +17,7 @@
 
 WEAK_C RES_CODE maindlg_cb(WINDOW obj, unsigned int param, unsigned int msg)
 {
-	return 0;
+	return (0);
 }
 
 
@@ -39,7 +39,7 @@ WEAK_C RES_CODE splashdlg_cb(WINDOW obj, LCD_MODULE* lcd, unsigned int msg)
 	lcd->draw_text("TMOS");
 	lcd->color = PIX_BLUE;
 	lcd->draw_text("DEMO");
-	return 0;
+	return (0);
 }
 
 
@@ -252,6 +252,7 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 					svc_HND_SET_STATUS(win, RES_SIG_OK);
 	    		}
 	    	}
+	    	break;
 
     }
 }

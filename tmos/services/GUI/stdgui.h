@@ -32,13 +32,13 @@ struct CWindow : CHandle
 	WINDOW			prev;					//up in Z-order
 	RES_CODE	callback(unsigned int param, unsigned int msg)
 	{
-		return ((GUI_CB)mode.as_voidptr)(this, param, msg);
+		return (((GUI_CB)mode.as_voidptr)(this, param, msg));
 	}
 	bool tsk_window_init( GUI_CB cback);
 
 	RES_CODE tsk_window_showmodal()
 	{
-		return tsk_read(NULL, 0);
+		return (tsk_read(NULL, 0));
 	}
 
 	void tsk_window_show()

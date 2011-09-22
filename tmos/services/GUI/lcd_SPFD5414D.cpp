@@ -330,7 +330,7 @@ unsigned int TFT_CHECK::tft_read( )
 	}
 	PIO_ClrOutput(pins[SCL_PIN_INDX]);
 	delay();
-	return res;
+	return (res);
 }
 
 unsigned int TFT_CHECK::read_id()
@@ -357,7 +357,7 @@ unsigned int TFT_CHECK::read_id()
 	res <<= 8;
 	res |= tft_read(); //2A4033
 	PIO_SetOutput(pins[CSX_PIN_INDX]);
-	return res;
+	return (res);
 }
 
 

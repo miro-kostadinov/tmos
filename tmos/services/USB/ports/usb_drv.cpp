@@ -31,6 +31,7 @@ void USB_DRIVER_DATA::usb_event(USB_EVENT event)
 		break;
 
 	default: ;
+	break;
 	}
 }
 
@@ -53,7 +54,7 @@ HANDLE usb_end_transfer(Endpoint *endpoint, unsigned int status)
 			svc_HND_SET_STATUS(hnd, status);
 		}
 	}
-	return hnd;
+	return (hnd);
 }
 
 void usb_end_transfers(Endpoint *endpoint, unsigned int status)
@@ -281,6 +282,7 @@ void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd)
 
 		    // Enable interrupt on endpoint
 		    ENTPOINT_ENABLE_INT(drv_info->hw_base, eptnum);
+		    break;
 		}
 	    return;
     }

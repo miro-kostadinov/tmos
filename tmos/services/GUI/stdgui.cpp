@@ -16,7 +16,7 @@ unsigned int current_laguage;
 
 bool CWindow::tsk_window_init( GUI_CB cback)
 {
-	return tsk_open(GUI_DRV_INDX, (const void*)cback);
+	return (tsk_open(GUI_DRV_INDX, (const void*) cback));
 }
 
 WINDOW tsk_new_window(GUI_CB callback)
@@ -33,7 +33,7 @@ WINDOW tsk_new_window(GUI_CB callback)
 			win = NULL;
 		}
 	}
-	return win;
+	return (win);
 }
 
 //*----------------------------------------------------------------------------
@@ -126,7 +126,7 @@ RES_CODE menu_draw(MENU_WINDOW menu_hnd, LCD_MODULE* lcd)
     {
     	lcd->invert_hline(0, lcd->size_x-1, i);
     }
-	return 0;
+	return (0);
 }
 #else
 RES_CODE menu_draw(MENU_HANDLE menu_hnd)
@@ -160,7 +160,7 @@ RES_CODE menu_draw(MENU_HANDLE menu_hnd)
     {
 		lcd->invert_hline(0, lcd->size_x-1, i);
     }
-	return 0;
+	return (0);
 }
 #endif
 
@@ -169,7 +169,7 @@ extern const unsigned char key_codes[];
 RES_CODE menu_cb(MENU_WINDOW menu_hnd, unsigned int param, unsigned int msg)
 {
     if(msg == WM_DRAW)
-        return menu_draw(menu_hnd, (LCD_MODULE*)param);
+        return (menu_draw(menu_hnd, (LCD_MODULE*) param));
 
     if(msg == WM_KEY)
     {
@@ -180,7 +180,7 @@ RES_CODE menu_cb(MENU_WINDOW menu_hnd, unsigned int param, unsigned int msg)
 	        	menu_hnd->text_offset = 0;
 				if(menu_hnd->pos)
 					menu_hnd->pos--;
-	    	    return FLG_BUSY;
+	    	    return (FLG_BUSY);
 #endif
 
 #ifdef KEY_DOWN
@@ -188,7 +188,7 @@ RES_CODE menu_cb(MENU_WINDOW menu_hnd, unsigned int param, unsigned int msg)
 	        	menu_hnd->text_offset = 0;
 				if(menu_hnd->pos < ( menu_hnd->menu->count-1))
 					menu_hnd->pos++;
-		        return FLG_BUSY;
+		        return (FLG_BUSY);
 #endif
 
 #ifdef KEY_OK
@@ -214,11 +214,12 @@ RES_CODE menu_cb(MENU_WINDOW menu_hnd, unsigned int param, unsigned int msg)
                 		return RES_SIG_OK;
                 	}
                 }
+                break;
 #endif
          }
     }
 
-    return 0;
+    return (0);
 }
 
 
@@ -268,7 +269,7 @@ RES_CODE menu_box(const MENU_STRU *menu, MENU_WINDOW menu_hnd)
 #if MENU_INDEX == ENABLE_INDEX
 	menu_index/=10;
 #endif
-    return res;
+    return (res);
 }
 
 
@@ -304,7 +305,7 @@ RES_CODE msgbox_cb(CMessageBox* msg_hnd, unsigned int param, unsigned int msg)
     if(msg == WM_DRAW)
     {
         draw_box_frame(msg_hnd, (LCD_MODULE*)param);
-        return 0;
+        return (0);
     }
 
     if(msg == WM_KEY)
@@ -324,7 +325,7 @@ RES_CODE msgbox_cb(CMessageBox* msg_hnd, unsigned int param, unsigned int msg)
         }
     }
 
-    return 0;
+    return (0);
 }
 
 RES_CODE msg_box(const char *msg)
@@ -335,7 +336,7 @@ RES_CODE msg_box(const char *msg)
 	{
 		msg_hnd.msg_text = msg;
 		msg_hnd.tsk_window_showmodal();
-		return msg_hnd.res;
+		return (msg_hnd.res);
 	}
     return RES_ERROR;
 }
@@ -348,19 +349,19 @@ RES_CODE msg_box(CSTRING& msg)
 	{
 		msg_hnd.msg_text = msg;
 		msg_hnd.tsk_window_showmodal();
-		return msg_hnd.res;
+		return (msg_hnd.res);
 	}
     return RES_ERROR;
 }
 
 WEAK RES_CODE msg_error(CSTRING& msg, int err_code)
 {
-	return msg_box(msg);
+	return (msg_box(msg));
 }
 
 WEAK RES_CODE msg_error(const char *msg, int err_code)
 {
-	return msg_box(msg);
+	return (msg_box(msg));
 }
 
 //*----------------------------------------------------------------------------
@@ -509,7 +510,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 		   lcd->draw_hline(pos, pos + lcd->font->spacing, 1+12+15-2);
 		   lcd->draw_hline(pos, pos + lcd->font->spacing, 1+12+15-1);
 		}
-        return 0;
+        return (0);
     }
 
     if(msg == WM_KEY)
@@ -536,7 +537,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 					box->data += buttons[box->x + box->y * 10];
 					box->data += s2;
 					box->pos++;
-					return FLG_BUSY;
+					return (FLG_BUSY);
 				}
 #endif
 
@@ -552,7 +553,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 					else
 						box->flags ^= TXT_FLAGS_EDIT;
 					box->flags &=~TXT_FLAGS_CURSOR;
-					return FLG_BUSY;
+					return (FLG_BUSY);
 #endif
 
 #ifdef KEY_RIGHT
@@ -569,7 +570,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 						if(++box->x > 9)
 							box->x=0;
 					}
-					return FLG_BUSY;
+					return (FLG_BUSY);
 #endif
 
 #ifdef KEY_LEFT
@@ -586,14 +587,14 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 						if(box->x-- == 0)
 							box->x=9;
 					}
-					return FLG_BUSY;
+					return (FLG_BUSY);
 #endif
 
 #ifdef KEY_UP
 				case KEY_UP:
 					box->flags &=~TXT_FLAGS_RES;
 					if(box->flags & TXT_FLAGS_CONST)
-						return 0;
+						return (0);
 					if(box->flags & TXT_FLAGS_EDIT)
 						box->flags ^= TXT_FLAGS_EDIT;
 					else
@@ -603,14 +604,14 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 						if(box->sy-- == 0 )
 							box->sy = 0;
 					}
-					return FLG_BUSY;
+					return (FLG_BUSY);
 #endif
 
 #ifdef KEY_DOWN
 				case KEY_DOWN:
 					box->flags &=~TXT_FLAGS_RES;
 					if(box->flags & TXT_FLAGS_CONST)
-						return 0;
+						return (0);
 					if(box->flags & TXT_FLAGS_EDIT)
 						box->flags ^= TXT_FLAGS_EDIT;
 					else
@@ -620,15 +621,15 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 						if(++box->sy >= TXT_SCREEN_LINES)
 							box->sy = TXT_SCREEN_LINES-1;
 					}
-					return FLG_BUSY;
+					return (FLG_BUSY);
 #endif
 			}
-            return FLAG_WRITE;
+            return (FLAG_WRITE);
         }
 
     }
 
-    return 0;
+    return (0);
 }
 
 /*
@@ -655,7 +656,7 @@ RES_CODE get_box(const char * title, CSTRING& data, bool constant)
 	{
 		res = box_hnd.tsk_window_showmodal();
 		if((constant == true) || (box_hnd.flags & TXT_FLAGS_RES) )
-			return res;
+			return (res);
 		if(data != box_hnd.data)
 		{
 			res = msg_box("Save changes ?");
@@ -665,12 +666,12 @@ RES_CODE get_box(const char * title, CSTRING& data, bool constant)
 		else
 			res = RES_IDLE;
 	}
-	return res;
+	return (res);
 }
 
 RES_CODE get_box(CSTRING& title, CSTRING& data, bool constant)
 {
-	return get_box(title.c_str(), data, constant);
+	return (get_box(title.c_str(), data, constant));
 }
 
 
@@ -685,7 +686,7 @@ RES_CODE statusbox_cb(CMessageBox* msg_hnd, unsigned int param, unsigned int msg
         draw_box_frame(msg_hnd, (LCD_MODULE*)param);
     }
 
-    return 0;
+    return (0);
 }
 
 void status_box_free(CMessageBox* msg_hnd)
@@ -708,11 +709,11 @@ CMessageBox* status_box_show(const char *msg)
 		{
 			msg_hnd->rect.y0 += 10;
 			msg_hnd->tsk_window_show();
-			return msg_hnd;
+			return (msg_hnd);
 		}
 		delete msg_hnd;
 	}
-	return NULL;
+	return (NULL);
 }
 
 CMessageBox* status_box_show(CSTRING& msg)
@@ -727,11 +728,11 @@ CMessageBox* status_box_show(CSTRING& msg)
 		{
 			msg_hnd->rect.y0 += 10;
 			msg_hnd->tsk_window_show();
-			return msg_hnd;
+			return (msg_hnd);
 		}
 		delete msg_hnd;
 	}
-	return NULL;
+	return (NULL);
 }
 
 

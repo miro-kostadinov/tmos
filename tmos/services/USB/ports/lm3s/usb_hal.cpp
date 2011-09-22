@@ -82,7 +82,7 @@ unsigned int usb_read_payload(volatile void* src, HANDLE hnd, unsigned int size)
 
     	}
     }
-    return size;
+    return (size);
 }
 
 /** Reset on DCR_RESET
@@ -230,7 +230,7 @@ static unsigned int usb_hal_ept0_status(USB_CONTROLLER* hw_base)
     }
     hw_base->DEVICE_EP[0].USBTXCSRL = clear;
 
-    return status;
+    return (status);
 }
 
 static unsigned int usb_hal_ept_tx_status(USB_CONTROLLER* hw_base, unsigned int eptnum)
@@ -241,7 +241,7 @@ static unsigned int usb_hal_ept_tx_status(USB_CONTROLLER* hw_base, unsigned int 
 
 	hw_base->DEVICE_EP[eptnum].USBTXCSRL = status & ~(USB_USBTXCSRL0_STALLED
 			| USB_USBTXCSRL_UNDRN);
-    return status;
+    return (status);
 }
 
 static unsigned int usb_hal_ept_rx_status(USB_CONTROLLER* hw_base, unsigned int eptnum)
@@ -252,7 +252,7 @@ static unsigned int usb_hal_ept_rx_status(USB_CONTROLLER* hw_base, unsigned int 
 
 	hw_base->DEVICE_EP[eptnum].USBRXCSRL = status & ~(USB_USBRXCSRL_STALLED
 			| USB_USBRXCSRL_DATAERR | USB_USBRXCSRL_OVER);
-    return status;
+    return (status);
 }
 
 /*void USBFIFOFlush(USB_CONTROLLER* hw_base, unsigned long eptnum,
@@ -512,13 +512,13 @@ static unsigned int round_to_fifosize(unsigned int& size)
     	if(new_size >= size)
     	{
     		size = new_size;
-    		return size_code;
+    		return (size_code);
     	}
     	new_size <<= 1;
     }
 	TRACELN_USB("ERROR: invalid endpoint size!");
 	size = 64;
-	return 3;
+	return (3);
 }
 
 void usb_hal_config_fifo(USB_DRV_INFO drv_info)
