@@ -39,7 +39,7 @@ struct CCache
 	{
 	}
 	;
-	virtual ~CCache();
+	virtual ~CCache(){};
 
 	char getc(); // get 1 char
 	RES_CODE getc(char& c);
