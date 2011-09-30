@@ -344,6 +344,7 @@ FUNC(	sys_wait_signal		)
 
 				ldr				r1, [r3, #tsk_signal]
 				mrs 			r2, PSP					// Get Task SP
+                str				r2, [r3, #tsk_sp]		//Early update before task switch
                 str				r0, [r2, #tsk_sp_r1]
 				ands			r0, r1
                 bne				_return_signal
@@ -542,6 +543,20 @@ FUNC(	locked_set_byte		)
 ENDF(	locked_set_byte		)
 
 //------------------------------------------------------------------------------
+//unsigned int  locked_set_int(volatile unsigned int& var, unsigned int flags);
+FUNC(	locked_set_int		)
+
+1:
+				ldrex			r3, [r0]
+				orrs			r3, r1
+				strex			r2, r3, [r0]
+				cmp				r2, #0
+				bne				1b
+				mov				r0, r3
+				bx				lr
+ENDF(	locked_set_int		)
+
+//------------------------------------------------------------------------------
 //unsigned int  locked_clr_byte(volatile unsigned char& var, unsigned int flags);
 FUNC(	locked_clr_byte		)
 				mov				r12, r0
@@ -554,6 +569,20 @@ FUNC(	locked_clr_byte		)
 				bne				1b
 				bx				lr
 ENDF(	locked_clr_byte		)
+
+//------------------------------------------------------------------------------
+//unsigned int  locked_clr_int(volatile unsigned int& var, unsigned int flags);
+FUNC(	locked_clr_int		)
+				mov				r12, r0
+1:
+				ldrex			r3, [r12]
+				and				r0, r1, r3
+				bics			r3, r0
+				strex			r2, r3, [r12]
+				cmp				r2, #0
+				bne				1b
+				bx				lr
+ENDF(	locked_clr_int		)
 
 //------------------------------------------------------------------------------
 //unsigned int  locked_inc_short(volatile unsigned short* Addend);
