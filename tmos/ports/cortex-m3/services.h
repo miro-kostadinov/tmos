@@ -34,6 +34,8 @@ int  locked_add_int(volatile int* Addend, int);
 int  locked_dec_int(volatile int* Addend);
 int  locked_set_byte(volatile unsigned char* var, unsigned int flags);
 int  locked_clr_byte(volatile unsigned char* var, unsigned int flags);
+unsigned int  locked_set_int(volatile unsigned int* var, unsigned int flags);
+unsigned int  locked_clr_int(volatile unsigned int* var, unsigned int flags);
 void* locked_set_if_null(void* pointer, void* value);
 
 #ifdef __cplusplus
