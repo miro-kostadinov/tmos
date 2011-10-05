@@ -180,7 +180,9 @@ void EM6125::clear_screen()
 }
 
 extern unsigned int cpu_usage;
+#if USE_MEMORY_TRACKING
 extern char end;
+#endif
 
 void EM6125::redraw_screen(WINDOW desktop)
 {

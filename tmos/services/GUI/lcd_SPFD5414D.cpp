@@ -205,7 +205,9 @@ void SPFD5414D::clear_screen()
 }
 
 extern unsigned int cpu_usage;
+#if USE_MEMORY_TRACKING
 extern char end;
+#endif
 
 void SPFD5414D::redraw_screen(WINDOW desktop)
 {
