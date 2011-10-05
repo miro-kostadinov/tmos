@@ -36,9 +36,9 @@
 
 	flags	 [-]  [0]
 
-‘-’				Left-justify the result in the field (instead of the normal right-justification).
-‘0’				Pad the field with zeros instead of spaces. The zeros are placed after any indication of sign or base.
-				This flag is ignored if the ‘-’ flag is also specified, or if a precision is specified.
+ï¿½-ï¿½				Left-justify the result in the field (instead of the normal right-justification).
+ï¿½0ï¿½				Pad the field with zeros instead of spaces. The zeros are placed after any indication of sign or base.
+				This flag is ignored if the ï¿½-ï¿½ flag is also specified, or if a precision is specified.
 
     width		minimum number of characters to be printed.
 
@@ -52,12 +52,12 @@ for s			Specified the maximum numer of characters to be printed.
 
 	type	[d] [i] [u] [x] [X] [c] [s] [n]
 
-‘%d’, ‘%i’		Print an integer as a signed decimal number. ‘%d’ and ‘%i’ are synonymous
-‘%u’			Print an integer as an unsigned decimal number.
-‘%x’, ‘%X’		Print an integer as an unsigned hexadecimal number. ‘%x’ uses lower-case letters and ‘%X’ uses upper-case.
-‘%c’			Print a single character.
-‘%s’			Print a string.
-‘%n’			Get the number of characters printed so far.
+ï¿½%dï¿½, ï¿½%iï¿½		Print an integer as a signed decimal number. ï¿½%dï¿½ and ï¿½%iï¿½ are synonymous
+ï¿½%uï¿½			Print an integer as an unsigned decimal number.
+ï¿½%xï¿½, ï¿½%Xï¿½		Print an integer as an unsigned hexadecimal number. ï¿½%xï¿½ uses lower-case letters and ï¿½%Xï¿½ uses upper-case.
+ï¿½%cï¿½			Print a single character.
+ï¿½%sï¿½			Print a string.
+ï¿½%nï¿½			Get the number of characters printed so far.
 
 
 
@@ -746,10 +746,24 @@ ENDF(	cstring_sprintf		)
 //*  	number of successfuly scaned format fields
 //*	 format:
 //*		' ' - any number of spaces
-//* 	'%' - [*] [width] [{h | l | ll | I64 | L}]type
+//* 	'%' - [*] [width] type
 //* 			* - field is scanned but not stored
-//*				type:
-//*					n - store the number of input characters processed to *int
+//*	 type:
+//*		n - Store the number of input characters processed to *int
+//*		d - Matches an optionally signed decimal integer;
+//*		i - Matches an optionally signed integer
+//*		u - Matches an unsigned decimal integer
+//*		x - Matches an unsigned hexadecimal integer
+//*		s - Matches a sequence of non-white-space characters. The input string
+//*			stops at space or at the maximum field width, whichever occurs first
+//*		c - Matches a sequence of characters whose length is specified by the
+//*			maximum field width (default 1).
+//*		[ - Matches a non-empty sequence of characters. The sequence is defined
+//*			by the codes between the brackets [].  Codes can include:
+//*				x 	- single char (other than ']', '^', '-')
+//*				x-y - range
+//*				^x 	- any char but x
+//*				^x-y - any char not in this range
 //*
 //*----------------------------------------------------------------------------
 
@@ -795,11 +809,10 @@ _bad_sscanf:
 
 
 _scanf_n:
-		ldr			r4, [r2, #4]!
-		cbz			r4, _scanf_n_d
+		cbz			r7, _scanf_n_d
 		ldr			r3, [sp, #4*4]
 		subs		r3, r0
-		str			r3, [r4]
+		str			r3, [r7]
 _scanf_n_d:
 		b			_sloop
 
@@ -808,9 +821,10 @@ _check_sformat:
 		cmp			r3, #'%'
 		beq			_check_schar
 		movs		r4, #0				//r4 = width
-		subs		r7, r3, #'*'
-		IT			EQ
+		subs		r7, r3, #'*'		//r7 = null or &param
+		ITE			EQ
 		ldrbeq		r3, [r1], #1
+		ldrne		r7, [r2, #4]!
 		cmp			r3, #'n'
 		beq			_scanf_n
 		movs		r5, #10
@@ -819,7 +833,6 @@ _check_swidth:
 		bls			_get_swidth
 _check_stype:
 
-		ldr			r12, [r2, #4]!
 		cmp			r3, #'c'
 		beq			_sscanf_c
 		cmp			r3, #'['
@@ -845,18 +858,18 @@ _skip_white:
 		bne			_failed_sscanf
 
 _sscanf_s:
-		cmp			r12, #0
+		cmp			r7, #0
 		IT			NE
-		strbne		r6, [r12], #1
+		strbne		r6, [r7], #1
 		ldrb		r6, [r0, #1]!
 		subs		r4, #1
 		IT			NE
 		cmpne		r6, #' '
 		bhi			_sscanf_s
 		movs		r6, #0
-		cmp			r12, #0
+		cmp			r7, #0
 		IT			NE
-		strbne		r6, [r12]
+		strbne		r6, [r7]
 		b			_sloop
 
 _get_swidth:
@@ -874,9 +887,9 @@ _b_bad_sscanf:
 
 _sscanf_c:
 		ldrb		r6, [r0], #1
-		cmp			r12, #0
+		cmp			r7, #0
 		IT			NE
-		strbne		r6, [r12], #1
+		strbne		r6, [r7], #1
 		cmp			r6, #0
 		beq			_failed_sscanf
 		subs		r4, r4, #1
@@ -901,7 +914,7 @@ _sscanf_u_loop1:
 		beq			_sscanf_u_done
 		subs		r3, #'0'			// x >= 0
 		ITTT		HS
-		rsbshs		r7, r3, #9			// 9 >= 0
+		rsbshs		r12, r3, #9			// 9 >= 0
 		addhs		r6, r6, r6, lsl #2
 		addhs		r6, r3, r6, lsl #1
 		bhs			_sscanf_u_loop
@@ -910,9 +923,9 @@ _sscanf_u_done:
 		cmp			r5, #'-'		//if negative
 		IT			EQ
 		rsbeq		r6, r6, #0
-		cmp			r12, #0			//if ptr != null
+		cmp			r7, #0			//if ptr != null
 		IT			NE
-		strne		r6, [r12]
+		strne		r6, [r7]
 		b			_sloop
 
 _sscanf_i:
@@ -968,22 +981,19 @@ _sscanf_X_loop:
 
 
 _sscanf_set:
-		cmp			r7, #0
-		IT			NE
-		movne		r7, #1
+		movs		r12, #1
 		mov			r3, r1
 _sscanf_set_loop:
 		mov			r1, r3
-		ldrb		r6, [r0], #1
+		ldrb		r6, [r0]
+		cbz			r6, _sscanf_set_done
 _sscanf_set_next:
 		ldrb		r5, [r1], #1
 _sscanf_set_next1:
 		cmp			r5, #0
-		beq			_failed_sscanf
+		beq			_failed_sscanf		//missing ']'
 		cmp			r5, #']'
-		IT			NE
-		cmpne		r6, #0
-		beq			_sscanf_set_done
+		beq			_sscanf_set_done	// ] or source end
 		cmp			r5, #'^'
 		beq			_sscanf_set_not
 		cmp			r6, r5
@@ -999,18 +1009,19 @@ _sscanf_set_set:
 		bhi			_sscanf_set_next
 
 _sscanf_set_match:
-		cmp			r12, #0
-		ITT			NE
-		addne		r7, r7, #1
-		strbne		r6, [r12], #1
+		adds		r0, #1
+		movs		r12, #2
+		cmp			r7, #0
+		IT			NE
+		strbne		r6, [r7], #1
 		subs		r4, r4, #1
 		bne			_sscanf_set_loop
 _sscanf_set_done:
 		movs		r6, #0
-		cmp			r12, #0
+		cmp			r7, #0
 		IT			NE
-		strbne		r6, [r12]
-		cmp			r7, #1
+		strbne		r6, [r7]
+		cmp			r12, #1
 _sscanf_set_cleanup:
 		bls			_failed_sscanf
 		cmp			r5, #']'
