@@ -354,6 +354,47 @@ FUNC(	strncmp		)
 ENDF(	strncmp		)
 
 //*----------------------------------------------------------------------------
+//*     const char * strstr ( const char * str1, const char * str2 );
+//*     char * strstr (       char * str1, const char * str2 );
+//*
+//*     char* strstr(const char*, const char*);
+//*----------------------------------------------------------------------------
+//* return:
+//*----------------------------------------------------------------------------
+FUNC(  strstr      )
+
+                push            {r4,r5}
+1:
+                mov             r3, r1
+                ldrb            r5, [r3], #1        //first = *str2++
+                cbz             r5, 9f              //found
+2:
+                ldrb            r4, [r0], #1        //r4 = *str1++
+                cbz             r4, 7f              //fail
+                cmp             r4, r5
+                bne             2b
+                //first char matches
+                mov             r2, r0
+3:
+                ldrb            r5, [r3], #1        //r5 = *str2++
+                cbz             r5, 8f              //found (-1)
+                ldrb            r4, [r2], #1        //r4 = *tmp++
+                cbz             r4, 7f              //fail
+                cmp             r4, r5
+                beq             3b
+                // dosn't match
+                b               1b
+7:
+                movs            r0, #1
+8:
+                subs            r0, #1
+9:
+                pop             {r4, r5}
+                bx              lr
+
+ENDF(   strstr     )
+
+//*----------------------------------------------------------------------------
 //*		int *strcasecmp(void *dst, void *src)
 //*----------------------------------------------------------------------------
 //*	return:
@@ -416,19 +457,19 @@ FUNC_SECT(	strncasecmp,	.text.casecmp	)
 ENDF(	strncasecmp		)
 
 //*----------------------------------------------------------------------------
-//*		int toupper(int c)
+//*     int toupper(int c)
 //*----------------------------------------------------------------------------
-//*	return:
+//* return:
 //*----------------------------------------------------------------------------
-FUNC_SECT(	toupper, .text.casecmp		)
+FUNC_SECT(  toupper, .text.casecmp      )
 
-				adr				r2, _char_2_type_
-				ldrb			r1, [r0, r2]
-				lsls			r1, r1, #31				//islower
-				sub				r0, r0, r1, lsr #31-5	//tolower
-				bx				lr
+                adr             r2, _char_2_type_
+                ldrb            r1, [r0, r2]
+                lsls            r1, r1, #31             //islower
+                sub             r0, r0, r1, lsr #31-5   //tolower
+                bx              lr
 
-ENDF(	toupper		)
+ENDF(   toupper     )
 
 //*----------------------------------------------------------------------------
 //*		int tolower(int c)

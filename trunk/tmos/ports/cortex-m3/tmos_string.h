@@ -27,6 +27,7 @@ int strcmp(const void *dst, const void *src);
 int strncmp(const void *dst, const void *src, size_t len);
 int strcasecmp(const char *dst, const char *src);
 int strncasecmp(const char *dst, const char *src, size_t len);
+char* strstr(const char*, const char*);
 
 extern char G_char_2_type_[256];
 int islower(unsigned int c);
