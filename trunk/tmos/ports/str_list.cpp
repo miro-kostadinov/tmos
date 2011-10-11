@@ -124,6 +124,17 @@
 				str_free(storage.ram);
 	}
 
+	/** free allocated memory
+	 *
+	 * @return
+	 */
+	void CSTRING::free()
+	{
+		if(RAM_ADR(storage.adr))
+			if(locked_dec_short(&storage.ram->refs) <= 0)
+				str_free(storage.ram);
+		storage.rom = "";
+	}
 
 
 	//Assign
