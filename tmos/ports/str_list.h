@@ -109,7 +109,8 @@ public:
 	CSTRING(unsigned int size);
 	CSTRING();
 	~CSTRING();
-
+	// free allocated memory
+	void free(void);
 	//Assign
 	CSTRING& assign( const CSTRING& s );
 	CSTRING& assign( const char* s );
