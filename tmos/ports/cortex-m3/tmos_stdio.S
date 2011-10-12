@@ -76,11 +76,22 @@ for s           Specified the maximum numer of characters to be printed.
 FUNC(   tmos_sprintf        )
 
         push        {r2, r3}        // push all params in stack
-        mov         r12, sp         // r12 = va_list
-        sub         sp, #8
+        mov         r2, sp          // r2 = va_list
+        push        {lr}
+        bl          tmos_vsprintf
+        pop         {r1}
+        add         sp, #8
+        bx          r1
+ENDF(   tmos_sprintf        )
+
+//-----------------------------------------------------------------------------
+// int tmos_vsprintf( char *buffer, const char *format, va_list arg );
+// stack usage 32+4 bytes
+FUNC(   tmos_vsprintf        )
+        sub         sp, #12
         push        {r0, r4, r5, r6, r7}
 
-
+        mov         r12, r2         // r12 = va_list
         ldrb        r3, [r1], #1    // r3 = format charachter
         cbz         r3, _end_loop
         cmp         r3, #'%'
@@ -155,7 +166,7 @@ _unk_format:
 _end_loop:
         strb        r3, [r0]
         pop         {r1, r4, r5, r6, r7}
-        add         sp, #8+8
+        add         sp, #12
         subs        r0, r0, r1
         bx          lr
 
@@ -350,13 +361,7 @@ _print_left_minus:
         b           _print_precision
 
 
-
-
-
-
-
-
-ENDF(   tmos_sprintf        )
+ENDF(   tmos_vsprintf        )
 
 
 #if defined(realloc_swi) && defined(malloc_swi)
