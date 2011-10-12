@@ -44,6 +44,13 @@ extern "C" char end;
 
 #if TRACE_MEMORY_LEVEL >= TRACE_DEFAULT_LEVEL
 
+void trace_sleep(void)
+{
+	unsigned int task_time = CURRENT_TASK->time;
+	tsk_sleep(2);
+	CURRENT_TASK->time = task_time;
+}
+
 void mm_info1( void )
 {
 	unsigned short* ptr = (unsigned short*)&end;
@@ -137,6 +144,7 @@ void* tsk_malloc(unsigned int size)
 		TRACE("\r\nERROR:[%s+%d]", buf, size);
 
 	}
+	trace_sleep();
 	is_dynamic_mem(ptr);
 	return ptr;
 }
@@ -161,6 +169,7 @@ void* tsk_malloc_clear(unsigned int size)
 		TRACE("\r\nERROR:[%s+%d]", buf, size);
 
 	}
+	trace_sleep();
 	if(ptr)
 		memclr(ptr, size);
 	is_dynamic_mem(ptr);
@@ -187,6 +196,7 @@ void  tsk_free(void* ptr)
 			*buf = *((int*)ptr1);
 			buf[1] = 0;
 			TRACE_MEMORY("\r\n-%x[%s %x>%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
+			trace_sleep();
 		}
 	}
 }
@@ -225,6 +235,7 @@ void* tsk_realloc(void* ptr, unsigned int size)
 			TRACE_MEMORY("\r\n+%x[%s %x=%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
 		}
 	}
+	trace_sleep();
 	return ptr;
 }
 
