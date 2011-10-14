@@ -1179,16 +1179,12 @@ const char& CSTRING::operator[]( unsigned int index ) const
 }
 
 /**
- * Format - using sprintf style
- *
- *  No capacity is required. The function allocates/reallocates the storage
- *
- *  @note format() works as append function. Call clear() for assign behavior
+ * Appends formatted data string
  *
  * @param fmt
  * @return
  */
-int CSTRING::format(const char *fmt, ...)
+int CSTRING::appendf(const char *fmt, ...)
 {
 	va_list args;
 	int len1, len2;
@@ -1206,6 +1202,32 @@ int CSTRING::format(const char *fmt, ...)
 	}
 
 	return len2;
+}
+
+/**
+ * Assigns formated data string
+ *
+ * @param fmt
+ * @return
+ */
+int CSTRING::format(const char *fmt, ...)
+{
+	va_list args;
+	int len;
+
+	va_start(args, fmt);
+	clear();
+	len = tmos_vprintf_len(fmt, args);
+	if(reserve(len))
+	{
+		len = tmos_vsprintf(storage.ram->buf, fmt, args);
+		storage.ram->len = len;
+	} else
+	{
+		len = 0;
+	}
+
+	return len;
 }
 
 /** @} ingroup lib_cstring  */
