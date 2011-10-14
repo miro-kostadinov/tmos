@@ -70,7 +70,7 @@ for s           Specified the maximum numer of characters to be printed.
 
 //-----------------------------------------------------------------------------
 //int tmos_sprintf( char *buffer, const char *format, ... );
-// stack usage 32+4 bytes
+// stack usage 32+12 bytes
                                     // r0 = *buf
                                     // r1 = *format
 FUNC(   tmos_sprintf        )
@@ -86,7 +86,7 @@ ENDF(   tmos_sprintf        )
 
 //-----------------------------------------------------------------------------
 // int tmos_vsprintf( char *buffer, const char *format, va_list arg );
-// stack usage 32+4 bytes
+// stack usage 32 bytes
 FUNC(   tmos_vsprintf        )
         sub         sp, #12
         push        {r0, r4, r5, r6, r7}
@@ -169,8 +169,6 @@ _end_loop:
         add         sp, #12
         subs        r0, r0, r1
         bx          lr
-
-
 
 
 _flag_n:
@@ -281,7 +279,6 @@ _print_hex_loop:
         b           _print_numeric
 
 
-
 _print_d:
         cmp         r5, #0
         ITT         MI
@@ -363,6 +360,148 @@ _print_left_minus:
 
 ENDF(   tmos_vsprintf        )
 
+
+//-----------------------------------------------------------------------------
+// int tmos_vprintf_len( const char *format, va_list arg );
+// stack usage 32 bytes
+FUNC(   tmos_vprintf_len        )
+                                    //r0 = format
+                                    //r1 = arguments
+        push        {r4, r5, r6, r7}
+        mov         r2, r0          //r2 = format
+        movs        r0, #0          //r0 = result
+
+_vpl_loop:
+        ldrb        r3, [r2], #1    // r3 = format charachter
+        adds        r0, #1
+        cbz         r3, _vpl__end_loop
+        cmp         r3, #'%'
+        bne         _vpl_loop
+
+        ldrb        r3, [r2], #1    // r3 = format charachter
+        cmp         r3, #'%'
+        beq         _vpl_loop
+        subs        r0, #1
+
+        //--- process flags [-] [0] [n]
+        cmp         r3, #'n'
+        beq         _vpl_loop
+        movs        r4, #0          // r4 = width
+        movs        r6, #0          // r6 = precision
+        movs        r7, #10
+
+        cmp         r3, #'-'
+        IT          EQ
+        ldrbeq      r3, [r2], #1
+
+        cmp         r3, #'0'
+        IT          EQ
+        ldrbeq      r3, [r2], #1
+
+        cmp         r3,  #'*'
+        beq         _vpl_get_param_width
+
+_vpl_check_width:
+        cmp         r3, #'9'
+        bls         _vpl_get_width
+
+_vpl_check_precision:
+        cmp         r3, #'.'
+        beq         _vpl_get_precision
+
+        //--- process type [d] [i] [u] [x] [X] [c] [s]
+_vpl_check_type:
+        ldr         r5, [r1], #4       //r5=argument
+        cmp         r3, #'c'
+        beq         _vpl_print_c
+        cmp         r3, #'s'
+        beq         _vpl_print_s
+        cmp         r3, #'d'
+        IT          NE
+        cmpne       r3, #'i'
+        beq         _vpl_print_num
+        cmp         r3, #'u'
+        beq         _vpl_print_num
+        cmp         r3, #'p'
+        beq         _vpl_print_num
+        cmp         r3, #'x'
+        beq         _vpl_print_num
+        cmp         r3, #'X'
+        beq         _vpl_print_num
+_vpl_unk_format:
+        adds        r0, #1
+_vpl__end_loop:
+        pop         {r4, r5, r6, r7}
+        bx          lr
+
+
+_vpl_get_param_width:
+        ldr         r4, [r1], #4
+        ldrb        r3, [r2], #1
+        b           _vpl_check_precision
+
+_vpl_get_width:
+        subs        r5, r3, #'0'
+        blo         _vpl_check_precision
+        mla         r4, r4, r7, r5
+        ldrb        r3, [r2], #1
+        b           _vpl_check_width
+
+_vpl_get_precision:
+        ldrb        r3, [r2], #1
+        cmp         r3, #'*'
+        beq         _vpl_get_param_precision
+
+_vpl_get_precision_val:
+        cmp         r3, #'9'
+        bhi         _vpl_check_type
+        subs        r3, #'0'
+        blo         _vpl_unk_format
+        mla         r6, r6, r7, r3
+        ldrb        r3, [r2], #1
+        b           _vpl_get_precision_val
+
+_vpl_get_param_precision:
+        ldr         r6, [r1], #4
+        ldrb        r3, [r2], #1
+        b           _vpl_check_type
+
+_vpl_print_c:
+        cbz         r5, _vpl_add_width
+        movs        r5, #1
+        b           _vpl_add_len
+
+_vpl_print_s:
+        cbz         r5, _vpl_add_width    // "%s",NULL
+        mov         r7, r5
+_vpl_print_get_len:
+        ldrb        r3, [r5], #1
+        cmp         r3, #0
+        bne         _vpl_print_get_len
+        subs        r5, r7                //r5 = strlen(arg)
+        subs        r5, #1
+
+        cbz         r6, _vpl_add_len      // Precision==0
+        cmp         r5, r6
+        IT          HI
+        movhi       r5, r6                //r5 = len = min(len, precsion)
+_vpl_add_len:
+        cmp         r5, r4
+        IT          HI
+        movhi       r4, r5                //r4 = max(width, len)
+_vpl_add_width:
+        add         r0, r4
+        b           _vpl_loop
+
+
+_vpl_print_num:
+        movs        r5, #11
+        cmp         r5, r6
+        bhs         _vpl_add_len
+        mov         r5, r6                // r5 = max(12, precision)
+        b           _vpl_add_len
+
+ENDF(   tmos_vprintf_len        )
 
 #if defined(realloc_swi) && defined(malloc_swi)
 //-----------------------------------------------------------------------------
