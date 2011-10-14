@@ -186,6 +186,7 @@ public:
 	unsigned int atoi();
 	unsigned int find_in_list(STR_LIST sl, unsigned int* dwRead) const;
 	int format(const char *fmt, ...);
+	int appendf(const char *fmt, ...);
 };
 
 CSTRING operator+(const CSTRING& s1, const CSTRING& s2 );
