@@ -15,6 +15,7 @@
 #endif
 
 int tmos_sprintf(char *buf, const char *format, ...);
+int tmos_vprintf_len( const char *format, va_list arg );
 int tmos_vsprintf(char *buffer, const char *format, va_list arg);
 
 int tmos_sscanf(const char *buf, const char *format, ...);
