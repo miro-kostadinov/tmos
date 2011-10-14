@@ -185,6 +185,7 @@ public:
 
 	unsigned int atoi();
 	unsigned int find_in_list(STR_LIST sl, unsigned int* dwRead) const;
+	int format(const char *fmt, ...);
 };
 
 CSTRING operator+(const CSTRING& s1, const CSTRING& s2 );
@@ -374,31 +375,6 @@ inline bool operator>=(const char* s1, const CSTRING& s2) {
 	return (s2.compare(s1) < 0);
 }
 
-/** CSTRING format (written in assembly)
- *
- */
-
-extern "C" str_storage * cstring_sprintf( str_storage *buffer, const char *format, ... );
-
-/** Format - using sprintf style
- *
- * @param cstr
- * @param fmt
- * @param args
- * @return
- *  No capacity is required. The function allocates/reallocates the storage
- *
- *  @note format() works as append function. Call clear() for assign behavior
- *  Examples:
- *  @code
- *	CSTRING s;						//s = ""
- *
- *	cstr_format(s, "%d", 2);  		//s = "2"
- *  cstr_format(s, " + %d", 3);		//s = "2 + 3"
- *  @endcode
- */
-
-#define cstr_format(cstr, fmt, args...) cstr.storage.ram = cstring_sprintf(cstr.get_storage(), fmt, ## args)
 
 
 #endif /* STR_LIST_H_ */
