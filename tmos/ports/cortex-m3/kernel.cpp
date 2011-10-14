@@ -208,11 +208,6 @@ extern "C" void __cxa_pure_virtual()
 	TRACE_ERROR("\r\nERROR: pure virtual function is called!");
 }
 
-/* Dummy function to avoid linker complaints */
-extern "C" void __aeabi_unwind_cpp_pr0(void)
-{
-};
-
 /*-----------------------------------------------------------
  * TASK API
  *----------------------------------------------------------*/
