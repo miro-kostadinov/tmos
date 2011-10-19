@@ -12,6 +12,10 @@
 #include <dacc_drv.h>
 #include <pmc_drv.h>
 
+/** Turn off the DACC peripheral
+ *
+ * @param drv_info
+ */
 static void DACC_off(DACC_INFO drv_info)
 {
    	drv_isr_disable(&drv_info->info);
@@ -19,6 +23,11 @@ static void DACC_off(DACC_INFO drv_info)
     drv_pmc_disable(&drv_info->info);
 }
 
+/** Turn on the DACC peripheral
+ *
+ * @param drv_info
+ * @param pMode
+ */
 static void DACC_on(DACC_INFO drv_info, DRV_DACC_MODE pMode)
 {
     Dacc* pDacc;
@@ -55,7 +64,12 @@ static void START_TX_HND(Dacc*	pDacc, HANDLE hnd)
     hnd->res = RES_BUSY;
 }
 
-
+/** DACC Driver DCR routine
+ *
+ * @param drv_info
+ * @param reason
+ * @param param
+ */
 void DACC_DCR(DACC_INFO drv_info, unsigned int reason, HANDLE param)
 {
   	DACC_DRIVER_DATA drv_data = drv_info->drv_data;
@@ -105,6 +119,11 @@ void DACC_DCR(DACC_INFO drv_info, unsigned int reason, HANDLE param)
     }
 }
 
+/** DACC Driver DSR routine
+ *
+ * @param drv_info
+ * @param hnd
+ */
 void DACC_DSR(DACC_INFO drv_info, HANDLE hnd)
 {
   	DACC_DRIVER_DATA drv_data = drv_info->drv_data;
@@ -124,6 +143,10 @@ void DACC_DSR(DACC_INFO drv_info, HANDLE hnd)
     	svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 }
 
+/** DACC Driver Interrupt
+ *
+ * @param drv_info
+ */
 void DACC_ISR(DACC_INFO drv_info )
 {
   	DACC_DRIVER_DATA drv_data = drv_info->drv_data;

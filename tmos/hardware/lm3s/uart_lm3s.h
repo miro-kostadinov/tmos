@@ -16,79 +16,79 @@
 extern "C"
 {
 #endif
-	/*----------       Asynchronous Serial (UART)                     -----------*/
-	// <g> Asynchronous Serial (UART)
-	struct UART_Type
-	{
-	    __IO uint32_t DR;               //!< Data Register
-	    __IO uint32_t RSR;              //!< Receive Status Register (read)
-	#define ECR RSR                     //!< Error Clear Register (write)
-	         uint8_t  RESERVED1[16];	//!< doc!
-	    __I  uint32_t FR;               //!< Flag Register (read only)
-	         uint8_t  RESERVED2[4];		//!< doc!
-	    __IO uint32_t ILPR;             //!< UART IrDA Low-Power Register
-	    __IO uint32_t IBRD;             //!< Integer Baud Rate Divisor Reg
-	    __IO uint32_t FBRD;             //!< Fractional Baud Rate Divisor Reg
-	    __IO uint32_t LCRH;             //!< UART Line Control
-	    __IO uint32_t CTL;              //!< Control Register
-	    __IO uint32_t IFLS;             //!< Interrupt FIFO Level Select Reg
-	    __IO uint32_t IM;               //!< Interrupt Mask Set/Clear Reg
-	    __I  uint32_t RIS;              //!< Raw Interrupt Status Register
-	    __I  uint32_t MIS;              //!< Masked Interrupt Status Register
-	    __O  uint32_t ICR;              //!< Interrupt Clear Register
-	    __IO uint32_t DMACTL;           //!< UART DMA Control
-	         uint8_t  RESERVED3[68];	//!< doc!
-	    __IO uint32_t LCTL;             //!< UART LIN Control
-	    __I  uint32_t LSS;              //!< UART LIN Snap Shot
-	    __I  uint32_t LTIM;             //!< UART LIN Timer
-	    void UARTParityModeSet(unsigned long ulParity);
-	    unsigned long UARTParityModeGet(void);
-	    void UARTFIFOLevelSet(unsigned long ulTxLevel, unsigned long ulRxLevel);
-	    void UARTFIFOLevelGet( unsigned long *pulTxLevel, unsigned long *pulRxLevel );
-	    void UARTConfigSetExpClk(unsigned long ulUARTClk, unsigned long ulBaud, unsigned long ulConfig);
-	    void UARTConfigGetExpClk(unsigned long ulUARTClk, unsigned long *pulBaud, unsigned long *pulConfig);
-	    void UARTEnable(void);
-	    void UARTDisable(void);
-	    void UARTFIFODisable(void);
-	    void UARTFIFOEnable(void);
-	    void UARTEnableSIR(int bLowPower);
-	    void UARTDisableSIR(void);
-	    void UARTSmartCardEnable(void);
-	    void UARTSmartCardDisable(void);
-	    void UARTModemControlSet(unsigned long ulControl);
-	    void UARTModemControlClear(unsigned long ulControl);
-	    unsigned long UARTModemControlGet(void);
-	    unsigned long UARTModemStatusGet(void);
-	    void UARTFlowControlSet(unsigned long ulMode);
-	    unsigned long UARTFlowControlGet(void);
-	    void UARTTxIntModeSet(unsigned long ulMode);
-	    unsigned long UARTTxIntModeGet(void);
-	    int UARTCharsAvail(void);
-	    int UARTSpaceAvail(void);
-	    long UARTCharGetNonBlocking(void);
-	    long UARTCharGet(void);
-	    int UARTCharPutNonBlocking(unsigned char ucData);
-	    void UARTCharPut(unsigned char ucData);
-	    void UARTBreakCtl(int bBreakState);
-	    int UARTBusy(void);
-	    void UARTIntEnable(unsigned long ulIntFlags);
-	    void UARTIntDisable(unsigned long ulIntFlags);
-	    unsigned long UARTIntStatus(int bMasked);
-	    void UARTIntClear(unsigned long ulIntFlags);
-	    void UARTDMAEnable(unsigned long ulDMAFlags);
-	    void UARTDMADisable(unsigned long ulDMAFlags);
-	    unsigned long UARTRxErrorGet(void);
-	    void UARTRxErrorClear(void);
-//	    void UARTReset(void);
-//	    unsigned long UARTGetPeripheral(void);
-	    void RxEnable(void);
-	    void RxDisable(void);
-	    void TxEnable(void);
-	    void TxDisable(void);
-	    unsigned long DMA_GetRxChannel(void);
-	    unsigned long DMA_GetTxChannel(void);
-	};
-	// </g>
+
+
+/*----------       Asynchronous Serial (UART)                     -----------*/
+/// Asynchronous Serial (UART)
+struct UART_Type
+{
+	__IO uint32_t DR;               //!< Data Register
+	__IO uint32_t RSR;              //!< Receive Status Register (read)
+#define ECR RSR                     //!< Error Clear Register (write)
+		 uint8_t  RESERVED1[16];	//!< doc!
+	__I  uint32_t FR;               //!< Flag Register (read only)
+		 uint8_t  RESERVED2[4];		//!< doc!
+	__IO uint32_t ILPR;             //!< UART IrDA Low-Power Register
+	__IO uint32_t IBRD;             //!< Integer Baud Rate Divisor Reg
+	__IO uint32_t FBRD;             //!< Fractional Baud Rate Divisor Reg
+	__IO uint32_t LCRH;             //!< UART Line Control
+	__IO uint32_t CTL;              //!< Control Register
+	__IO uint32_t IFLS;             //!< Interrupt FIFO Level Select Reg
+	__IO uint32_t IM;               //!< Interrupt Mask Set/Clear Reg
+	__I  uint32_t RIS;              //!< Raw Interrupt Status Register
+	__I  uint32_t MIS;              //!< Masked Interrupt Status Register
+	__O  uint32_t ICR;              //!< Interrupt Clear Register
+	__IO uint32_t DMACTL;           //!< UART DMA Control
+		 uint8_t  RESERVED3[68];	//!< doc!
+	__IO uint32_t LCTL;             //!< UART LIN Control
+	__I  uint32_t LSS;              //!< UART LIN Snap Shot
+	__I  uint32_t LTIM;             //!< UART LIN Timer
+	void UARTParityModeSet(unsigned long ulParity);
+	unsigned long UARTParityModeGet(void);
+	void UARTFIFOLevelSet(unsigned long ulTxLevel, unsigned long ulRxLevel);
+	void UARTFIFOLevelGet( unsigned long *pulTxLevel, unsigned long *pulRxLevel );
+	void UARTConfigSetExpClk(unsigned long ulUARTClk, unsigned long ulBaud, unsigned long ulConfig);
+	void UARTConfigGetExpClk(unsigned long ulUARTClk, unsigned long *pulBaud, unsigned long *pulConfig);
+	void UARTEnable(void);
+	void UARTDisable(void);
+	void UARTFIFODisable(void);
+	void UARTFIFOEnable(void);
+	void UARTEnableSIR(int bLowPower);
+	void UARTDisableSIR(void);
+	void UARTSmartCardEnable(void);
+	void UARTSmartCardDisable(void);
+	void UARTModemControlSet(unsigned long ulControl);
+	void UARTModemControlClear(unsigned long ulControl);
+	unsigned long UARTModemControlGet(void);
+	unsigned long UARTModemStatusGet(void);
+	void UARTFlowControlSet(unsigned long ulMode);
+	unsigned long UARTFlowControlGet(void);
+	void UARTTxIntModeSet(unsigned long ulMode);
+	unsigned long UARTTxIntModeGet(void);
+	int UARTCharsAvail(void);
+	int UARTSpaceAvail(void);
+	long UARTCharGetNonBlocking(void);
+	long UARTCharGet(void);
+	int UARTCharPutNonBlocking(unsigned char ucData);
+	void UARTCharPut(unsigned char ucData);
+	void UARTBreakCtl(int bBreakState);
+	int UARTBusy(void);
+	void UARTIntEnable(unsigned long ulIntFlags);
+	void UARTIntDisable(unsigned long ulIntFlags);
+	unsigned long UARTIntStatus(int bMasked);
+	void UARTIntClear(unsigned long ulIntFlags);
+	void UARTDMAEnable(unsigned long ulDMAFlags);
+	void UARTDMADisable(unsigned long ulDMAFlags);
+	unsigned long UARTRxErrorGet(void);
+	void UARTRxErrorClear(void);
+	void RxEnable(void);
+	void RxDisable(void);
+	void TxEnable(void);
+	void TxDisable(void);
+	unsigned long DMA_GetRxChannel(void);
+	unsigned long DMA_GetTxChannel(void);
+};
+
 //*****************************************************************************
 //
 // Values that can be passed to UARTIntEnable, UARTIntDisable, and UARTIntClear

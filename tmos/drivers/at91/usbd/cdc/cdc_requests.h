@@ -138,7 +138,7 @@
 #endif                     /* IAR */
 
 /**
- * \typedef CDCLineCoding
+ * \struct _CDCLineCoding
  * \brief Format of the data returned when a GetLineCoding request is received.
  */
 typedef struct _CDCLineCoding {
@@ -164,17 +164,6 @@ typedef struct _CDCLineCoding {
  *         Functions
  *----------------------------------------------------------------------------*/
 
-extern uint8_t CDCSetControlLineStateRequest_IsDtePresent(
-    const USBGenericRequest *request);
-
-extern uint8_t CDCSetControlLineStateRequest_ActivateCarrier(
-    const USBGenericRequest *request);
-
-extern void CDCLineCoding_Initialize(CDCLineCoding *lineCoding,
-                                     uint32_t bitrate,
-                                     uint8_t stopbits,
-                                     uint8_t parity,
-                                     uint8_t databits);
 
 
 /**@}*/

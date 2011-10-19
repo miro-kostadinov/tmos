@@ -24,6 +24,7 @@
  extern "C" {
 #endif
 
+/** SUPC Driver Info structure **/
 struct SUPC_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info

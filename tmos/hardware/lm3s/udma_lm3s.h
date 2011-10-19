@@ -22,7 +22,7 @@ extern "C"
 #endif
 
 /*----------       DMA Controller (UDMA)                          -----------*/
-// <g> DMA Controller (UDMA)
+/// DMA Controller (UDMA)
 struct UDMA_Type
 {
 	__I  uint32_t STAT;             //!< DMA Status
@@ -73,7 +73,7 @@ struct UDMA_Type
 // </g>
 
 /*----------       DMA Channel Control Structure (UDMA_CTRL)      -----------*/
-// <g> DMA Channel Control Structure (UDMA_CTRL)
+/// DMA Channel Control Structure (UDMA_CTRL)
 typedef struct
 {
 	__IO uint32_t SRCENDP;          //!< DMA Channel Source Address End Pointer

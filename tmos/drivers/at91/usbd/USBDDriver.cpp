@@ -71,6 +71,7 @@ WEAK void USBDDriverCallbacks_InterfaceSettingChanged(
  * initializing all endpoints.
  * \param pDriver  Pointer to a USBDDriver instance.
  * \param cfgnum  Configuration number to set.
+ * @param hnd
  */
 static void SetConfiguration(USBDDriver *pDriver, uint8_t cfgnum, HANDLE hnd)
 {
@@ -124,12 +125,10 @@ static void SetConfiguration(USBDDriver *pDriver, uint8_t cfgnum, HANDLE hnd)
 
 
 /**
- * Sends the requested USB descriptor to the host if available, or STALLs  the
- * request.
- * \param pDriver  Pointer to a USBDDriver instance.
- * \param type  Type of the requested descriptor
- * \param index  Index of the requested descriptor.
- * \param length  Maximum number of bytes to return.
+ * Sends requested descriptor
+ * @param pDriver Pointer to a USBDDriver instance.
+ * @param pRequest
+ * @param hnd
  */
 static void GetDescriptor(
     const USBDDriver *pDriver,
@@ -283,8 +282,9 @@ static void GetDescriptor(
 }
 
 /**
- * Sends the current status of the device to the host.
- * \param pDriver  Pointer to a USBDDriver instance.
+ * Sends the device status
+ * @param pDriver  Pointer to a USBDDriver instance.
+ * @param hnd
  */
 static void GetDeviceStatus(const USBDDriver *pDriver, HANDLE hnd)
 {
@@ -327,6 +327,7 @@ static void GetDeviceStatus(const USBDDriver *pDriver, HANDLE hnd)
 /**
  * Sends the current status of an endpoints to the USB host.
  * \param bEndpoint  Endpoint number.
+ * @param hnd
  */
 static void GetEndpointStatus(uint8_t bEndpoint, HANDLE hnd)
 {
@@ -359,9 +360,10 @@ static void GetEndpointStatus(uint8_t bEndpoint, HANDLE hnd)
  * Sets the active setting of the given interface if the configuration supports
  * it; otherwise, the control pipe is STALLed. If the setting of an interface
  * changes.
- * \parma pDriver  Pointer to a USBDDriver instance.
- * \parma infnum  Interface number.
- * \parma setting  New active setting for the interface.
+ * @param pDriver Pointer to a USBDDriver instance.
+ * @param infnum Interface number.
+ * @param setting New active setting for the interface.
+ * @param hnd
  */
 static void SetInterface(
     USBDDriver *pDriver,
@@ -396,6 +398,7 @@ static void SetInterface(
  * control pipe.
  * \param pDriver  Pointer to a USBDDriver instance.
  * \param infnum  Interface number.
+ * @param hnd
  */
 static void GetInterface(
     const USBDDriver *pDriver,
@@ -420,6 +423,7 @@ static void GetInterface(
  * Handles the given request if it is standard, otherwise STALLs it.
  * \param pDriver  Pointer to a USBDDriver instance.
  * \param pRequest  Pointer to a USBGenericRequest instance.
+ * @param hnd
  */
 void USBDDriver_RequestHandler(
     USBDDriver *pDriver,
@@ -640,3 +644,5 @@ void USBDDriver_Initialize(
 		memclr(pInterfaces, sizeof(*pInterfaces));
 	}
 }
+
+/** @} addtogroup usbd_interface */

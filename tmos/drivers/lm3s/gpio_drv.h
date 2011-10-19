@@ -12,13 +12,14 @@
 
 #define PORTS		9
 
-
+/** GPIO Driver data structure **/
 struct GPIO_DRIVER_DATA
 {
 	HANDLE 			waiting;		//!< doc!
 	unsigned char	sreg_val;		//!< doc!
 };
 
+/** GPIO Driver Info structure **/
 struct GPIO_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;		//!< doc!
@@ -36,6 +37,7 @@ void dsr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, HANDLE hnd);
 void isr_GPIO_driver(GPIO_DRIVER_INFO * drv_info );
 
 extern "C" {
+/** Pin description **/
 union PIN_DESC_u
 {
 	struct{

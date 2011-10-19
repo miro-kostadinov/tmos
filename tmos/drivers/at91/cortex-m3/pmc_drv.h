@@ -24,6 +24,7 @@
  extern "C" {
 #endif
 
+/** PMC Driver Info structure **/
 struct PMC_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info
@@ -34,7 +35,7 @@ struct PMC_DRIVER_INFO
 	unsigned int	CFG_BOOT_CLK;		//!< boot clock
 };
 
-/** PMC Driver Info */
+/** PMC Driver Info **/
 typedef const PMC_DRIVER_INFO* PMC_INFO;
 
 void PMC_DCR(PMC_INFO drv_info, unsigned int reason, HANDLE hnd);

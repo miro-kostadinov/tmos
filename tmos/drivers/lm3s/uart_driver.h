@@ -22,6 +22,7 @@
 #define UART_RX_TIMEOUT			  1
 #define UART_HW_FLOWCTRL		  2
 
+/** UART Driver mode structure **/
 struct UART_DRIVER_MODE
 {
 	unsigned int baudrate;		//!< doc!
@@ -32,6 +33,7 @@ struct UART_DRIVER_MODE
 
 #define RX_BUF_SIZE	(256)
 
+/** UART Driver data structure **/
 struct UART_DRIVER_DATA
 {
 	unsigned int cnt;			//!< doc!
@@ -44,6 +46,7 @@ struct UART_DRIVER_DATA
 	struct UART_DRIVER_MODE mode;	//!< doc!
 };
 
+/** UART Driver Info structure **/
 struct UART_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;	//!< doc!

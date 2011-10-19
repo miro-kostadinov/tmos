@@ -38,7 +38,7 @@ extern "C"
 
 #define CURRENT_TIME (PMAIN_TASK->time)
 
-
+/** helper union abstraction for a register **/
 typedef union
 {
 	unsigned int 	as_int;			/**< as int				*/
@@ -56,6 +56,7 @@ typedef union
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 typedef void     (*TASK_FUNCTION)(void);
 
+/** part of the task context which is stacked **/
 typedef struct
 {
 	word_reg 		r0;		/**< r0			*/
@@ -69,6 +70,7 @@ typedef struct
 } TASK_STACKED_CTX_STRU, *TASK_STACKED_CTX;
 
 typedef struct TASK_STRU_t Task;
+/** Task structure (task control block) **/
 typedef struct TASK_STRU_t
 {
     //Task Control Block
@@ -98,6 +100,7 @@ typedef struct TASK_STRU_t
 #endif
 } TASK_STRU;
 
+/** Task description structure which can be used to initialize a task **/
 typedef struct
 {
 	Task 			*tsk;		/**< pointer to the task		*/

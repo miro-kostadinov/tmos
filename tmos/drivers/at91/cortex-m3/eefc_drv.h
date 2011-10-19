@@ -24,6 +24,7 @@
  extern "C" {
 #endif
 
+/** EEFC Driver Info structure **/
 struct EEFC_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info

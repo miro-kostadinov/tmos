@@ -20,6 +20,8 @@
   memory mapped structure for Nested Vectored Interrupt Controller (NVIC)
   @{
  */
+
+/** NVIC **/
 struct NVIC_Type
 {
   __IO uint32_t ISER[8];    	/*!< Offset: 0x000  Interrupt Set Enable Register           */
@@ -60,6 +62,7 @@ void NVIC_DecodePriority (uint32_t Priority, uint32_t PriorityGroup, uint32_t* p
   memory mapped structure for Interrupt Type
   @{
  */
+/** InterruptType **/
 typedef struct
 {
        uint32_t RESERVED0; /*!<			  									  */

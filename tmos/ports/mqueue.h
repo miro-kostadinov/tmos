@@ -10,6 +10,7 @@
 
 #include <tmos.h>
 
+/** Message queue class **/
 template <class T, int max_size>
 class mqueue
 {
@@ -22,16 +23,19 @@ class mqueue
 public:
 	mqueue(): size(max_size), in2(1), in(0), out(0) {};
 
+	/** checks if the queue is empty **/
 	bool empty()
 	{
 		return (in == out);
 	}
 
+	/** checks if the queue is full **/
 	bool full()
 	{
 		return (in2 == out);
 	}
 
+	/** Push item in the queue **/
 	bool push(T item)
 	{
 		if(in2 != out)
@@ -45,6 +49,7 @@ public:
 		return (false);
 	}
 
+	/** pop item from the queue **/
 	bool pop(T& item)
 	{
 		if(in != out)
@@ -73,16 +78,19 @@ class fmqueue
 public:
 	fmqueue(): in(0), out(0) {};
 
+	/** checks if the queue is empty **/
 	bool empty()
 	{
 		return (in == out);
 	}
 
+	/** checks if the queue is full **/
 	bool full()
 	{
 		return (((in+1) & size_mask) == out);
 	}
 
+	/** Push item in the queue **/
 	bool push(T item)
 	{
 		unsigned in2;
@@ -96,6 +104,7 @@ public:
 		return (false);
 	}
 
+	/** pop item from the queue **/
 	bool pop(T& item)
 	{
 		if(in != out)
@@ -107,6 +116,7 @@ public:
 		return (false);
 	}
 
+	/** top element in the queue **/
 	T top()
 	{
 		if(in != out)

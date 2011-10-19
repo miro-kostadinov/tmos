@@ -85,7 +85,7 @@
  *------------------------------------------------------------------------------*/
 
 /**
- * \typedef CDCDSerialDriverConfigurationDescriptors
+ * \struct _CDCDSerialDriverConfigurationDescriptors
  * \brief Configuration descriptor list for a device implementing a
  *        CDC serial driver.
  */
@@ -112,10 +112,10 @@ typedef struct _CDCDSerialDriverConfigurationDescriptors {
     /** Data IN endpoint descriptor. */
     USBEndpointDescriptor dataIn;
 
-} __attribute__ ((packed)) CDCDSerialDriverConfigurationDescriptors;
+} __attribute__ ((packed)) CDCDSerialDriverConfigurationDescriptors; //!< doc
 
 /**
- * \typedef CDCDSerialDriverConfigurationDescriptorsOTG
+ * \struct _CDCDSerialDriverConfigurationDescriptorsOTG
  * \brief Configuration descriptor list for a device implementing a
  *        CDC serial OTG driver.
  */
@@ -123,7 +123,7 @@ typedef struct _CDCDSerialDriverConfigurationDescriptorsOTG {
 
     /** Standard configuration descriptor. */
     USBConfigurationDescriptor configuration;
-    /* OTG descriptor */
+    /** OTG descriptor */
     USBOtgDescriptor otgDescriptor;
     /** Communication interface descriptor. */
     USBInterfaceDescriptor  communication;
@@ -146,97 +146,6 @@ typedef struct _CDCDSerialDriverConfigurationDescriptorsOTG {
 
 } __attribute__ ((packed)) CDCDSerialDriverConfigurationDescriptorsOTG;
 
-/*------------------------------------------------------------------------------
- *      Exported functions
- *------------------------------------------------------------------------------*/
-//
-//extern void CDCDSerialDriver_Initialize(
-//    const USBDDriverDescriptors *pDescriptors);
-//
-//extern void CDCDSerialDriver_ConfigurationChangedHandler(uint8_t cfgnum);
-//
-//extern void CDCDSerialDriver_RequestHandler(
-//    const USBGenericRequest *request);
-//
-//extern uint8_t CDCDSerialDriver_LineCodingIsToChange(
-//    CDCLineCoding * pLineCoding);
-//
-//extern void CDCDSerialDriver_ControlLineStateChanged(
-//    uint8_t DTR,uint8_t RTS);
-//
-///**
-// * Sends a data buffer through the virtual COM port created by the CDC
-// * device serial driver. This function behaves exactly like USBD_Write.
-// * \param data Pointer to the data buffer to send.
-// * \param size Size of the data buffer in bytes.
-// * \param callback Optional callback function to invoke when the transfer
-// *                 finishes.
-// * \param argument Optional argument to the callback function.
-// * \return USBD_STATUS_SUCCESS if the read operation has been started normally;
-// *         otherwise, the corresponding error code.
-// */
-//static inline uint32_t CDCDSerialDriver_Write(
-//    void *data,
-//    uint32_t size,
-//    TransferCallback callback,
-//    void *argument)
-//{
-//    return CDCDSerial_Write(data, size, callback, argument);
-//}
-//
-///**
-// * Receives data from the host through the virtual COM port created by
-// * the CDC device serial driver. This function behaves like USBD_Read.
-// * \param data Pointer to the data buffer to put received data.
-// * \param size Size of the data buffer in bytes.
-// * \param callback Optional callback function to invoke when the transfer
-// *                 finishes.
-// * \param argument Optional argument to the callback function.
-// * \return USBD_STATUS_SUCCESS if the read operation has been started normally;
-// *         otherwise, the corresponding error code.
-// */
-//static inline uint32_t CDCDSerialDriver_Read(
-//    void *data,
-//    uint32_t size,
-//    TransferCallback callback,
-//    void *argument)
-//{
-//    return CDCDSerial_Read(data, size, callback, argument);
-//}
-//
-///**
-// * Copy current line coding settings to pointered space.
-// * \param pLineCoding Pointer to CDCLineCoding instance.
-// */
-//static inline void CDCDSerialDriver_GetLineCoding(CDCLineCoding * pLineCoding)
-//{
-//    CDCDSerial_GetLineCoding(pLineCoding);
-//}
-//
-///**
-// * Returns the current control line state of the RS-232 line.
-// */
-//static inline uint8_t CDCDSerialDriver_GetControlLineState(void)
-//{
-//    return CDCDSerial_GetControlLineState();
-//}
-//
-///**
-// * Returns the current status of the RS-232 line.
-// */
-//static inline uint16_t CDCDSerialDriver_GetSerialState(void)
-//{
-//    return CDCDSerial_GetSerialState();
-//}
-//
-///**
-// * Sets the current serial state of the device to the given value.
-// * \param serialState  New device state.
-// */
-//static inline void CDCDSerialDriver_SetSerialState(uint16_t serialState)
-//{
-//    CDCDSerial_SetSerialState(serialState);
-//}
 
 /**@}*/
 

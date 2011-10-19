@@ -284,11 +284,6 @@
  *      Types
  *---------------------------------------------------------------------------*/
 
-/*
- *          Function types
- */
-
-typedef uint32_t (*USBDescriptorParseFunction)(void *descriptor, void *parseArg);
 
 
 /*
@@ -306,20 +301,20 @@ typedef uint32_t (*USBDescriptorParseFunction)(void *descriptor, void *parseArg)
 
 
 /**
- \typedef USBGenericDescriptor
- \brief Holds the few fields shared by all USB descriptors.
+ * USBGenericDescriptor
+ * Holds the few fields shared by all USB descriptors.
  */
 typedef struct _USBGenericDescriptor {
 
-    /**  Length of the descriptor in bytes. */
+    /**  Length of the descriptor in bytes. **/
     uint8_t bLength;
-    /**  Descriptor type. */
+    /**  Descriptor type. **/
     uint8_t bDescriptorType;
 
 } __attribute__ ((packed)) USBGenericDescriptor; /* GCC */
 
 /**
- * \typedef USBDeviceDescriptor
+ * USBDeviceDescriptor
  * \brief USB standard device descriptor structure.
  */
 typedef struct _USBDeviceDescriptor {
@@ -356,7 +351,7 @@ typedef struct _USBDeviceDescriptor {
 } __attribute__ ((packed)) USBDeviceDescriptor; /* GCC */
 
 /**
- * \typedef USBOtgDescriptor
+ *  USBOtgDescriptor
  * \brief USB On-The-Go descriptor struct.
  */
 typedef struct _USBOtgDescriptor {
@@ -371,7 +366,7 @@ typedef struct _USBOtgDescriptor {
 } __attribute__ ((packed)) USBOtgDescriptor; /* GCC */
 
 /**
- * \typedef USBDeviceQualifierDescriptor
+ * USBDeviceQualifierDescriptor
  * \brief Alternate device descriptor indicating the capabilities of the device
  *        in full-speed, if currently in high-speed; or in high-speed, if it is
  *        currently in full-speed. Only relevant for devices supporting the
@@ -401,7 +396,7 @@ typedef struct _USBDeviceQualifierDescriptor {
 } __attribute__ ((packed)) USBDeviceQualifierDescriptor; /* GCC */
 
 /**
- * \typedef USBConfigurationDescriptor
+ * USBConfigurationDescriptor
  * \brief USB standard configuration descriptor structure.
  */
 typedef struct _USBConfigurationDescriptor {
@@ -428,23 +423,23 @@ typedef struct _USBConfigurationDescriptor {
 } __attribute__ ((packed)) USBConfigurationDescriptor; /* GCC*/
 
 /**
- * \typedef USBInterfaceAssociationDescriptor
+ * USBInterfaceAssociationDescriptor
  * \brief
  */
 typedef struct _USBInterfaceAssociationDescriptor {
 
-   unsigned char bLength;
-   unsigned char bDescriptorType;
-   unsigned char bFirstInterface;
-   unsigned char bInterfaceCount;
-   unsigned char bFunctionClass;
-   unsigned char bFunctionSubClass;
-   unsigned char bFunctionProtocol;
-   unsigned char iFunction;
+   unsigned char bLength;				//!< Length
+   unsigned char bDescriptorType;		//!< doc!
+   unsigned char bFirstInterface;		//!< doc!
+   unsigned char bInterfaceCount;		//!< doc!
+   unsigned char bFunctionClass;		//!< doc!
+   unsigned char bFunctionSubClass;		//!< doc!
+   unsigned char bFunctionProtocol;		//!< doc!
+   unsigned char iFunction;				//!< doc!
 } __attribute__ ((packed)) USBInterfaceAssociationDescriptor; /* GCC*/
 
 /**
- * \typedef USBInterfaceDescriptor
+ * USBInterfaceDescriptor
  * \brief USB standard interface descriptor structure.
  */
 typedef struct _USBInterfaceDescriptor {
@@ -471,7 +466,7 @@ typedef struct _USBInterfaceDescriptor {
 } __attribute__ ((packed)) USBInterfaceDescriptor; /* GCC */
 
 /**
- * \typedef USBEndpointDescriptor
+ * \struct _USBEndpointDescriptor
  * \brief USB standard endpoint descriptor structure.
  */
 typedef struct _USBEndpointDescriptor {
@@ -507,43 +502,6 @@ extern void USBConfigurationDescriptor_Parse(
     USBInterfaceDescriptor **interfaces,
     USBEndpointDescriptor **endpoints,
     USBGenericDescriptor **others);
-/*
-extern uint32_t USBGenericDescriptor_GetLength(
-    const USBGenericDescriptor *descriptor);
-
-extern uint8_t USBGenericDescriptor_GetType(
-    const USBGenericDescriptor *descriptor);
-
-extern USBGenericDescriptor *USBGenericDescriptor_GetNextDescriptor(
-    const USBGenericDescriptor *descriptor);
-
-extern USBGenericDescriptor *USBGenericDescriptor_Parse(
-    const USBGenericDescriptor * descriptor,
-    uint32_t totalLength,
-    USBDescriptorParseFunction parseFunction,
-    void * parseArg);
-
-
-extern uint32_t USBConfigurationDescriptor_GetTotalLength(
-    const USBConfigurationDescriptor *configuration);
-
-extern uint8_t USBConfigurationDescriptor_GetNumInterfaces(
-    const USBConfigurationDescriptor *configuration);
-
-
-extern uint8_t USBEndpointDescriptor_GetDirection(
-    const USBEndpointDescriptor *endpoint);
-
-extern uint8_t USBEndpointDescriptor_GetType(
-    const USBEndpointDescriptor *endpoint);
-
-extern uint16_t USBEndpointDescriptor_GetMaxPacketSize(
-    const USBEndpointDescriptor *endpoint);
-
-extern uint8_t USBEndpointDescriptor_GetInterval(
-    const USBEndpointDescriptor *endpoint);
-
-*/
 
 /** @}*/
 /**@}*/

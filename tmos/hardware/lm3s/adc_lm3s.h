@@ -25,6 +25,7 @@ extern "C"
 {
 #endif
 
+/// ADC_SEQ
 struct ADC_SEQ
 {
 	__IO uint32_t SSMUX;           /**< Multiplexer select 0 register	*/
@@ -36,7 +37,7 @@ struct ADC_SEQ
 		 uint8_t  RESERVED[8];	   /**< doc! */
 };
 /*----------       Analog to Digital Converter (ADC)              -----------*/
-// <g> Analog to Digital Converter (ADC)
+/// Analog to Digital Converter (ADC)
 struct ADC_Type
 {
 	__IO uint32_t ACTSS;            /**< Active sample register	*/

@@ -76,23 +76,23 @@ typedef struct {
   RoReg UDP_FRM_NUM;  //!< (Udp Offset: 0x000) Frame Number Register */
   RwReg UDP_GLB_STAT; //!< (Udp Offset: 0x004) Global State Register */
   RwReg UDP_FADDR;    //!< (Udp Offset: 0x008) Function Address Register */
-  RwReg Reserved1[1];
+  RwReg Reserved1[1]; //!< reserved
   WoReg UDP_IER;      //!< (Udp Offset: 0x010) Interrupt Enable Register */
   WoReg UDP_IDR;      //!< (Udp Offset: 0x014) Interrupt Disable Register */
   RoReg UDP_IMR;      //!< (Udp Offset: 0x018) Interrupt Mask Register */
   RoReg UDP_ISR;      //!< (Udp Offset: 0x01C) Interrupt Status Register */
   WoReg UDP_ICR;      //!< (Udp Offset: 0x020) Interrupt Clear Register */
-  RwReg Reserved2[1];
+  RwReg Reserved2[1]; //!< reserved
   RwReg UDP_RST_EP;   //!< (Udp Offset: 0x028) Reset Endpoint Register */
-  RwReg Reserved3[1];
+  RwReg Reserved3[1]; //!< reserved
   RwReg UDP_CSR[8];   //!< (Udp Offset: 0x030) Endpoint Control and Status Register */
   RwReg UDP_FDR[8];   //!< (Udp Offset: 0x050) Endpoint FIFO Data Register */
-  RwReg Reserved4[1];
+  RwReg Reserved4[1]; //!< reserved
   RwReg UDP_TXVC;     //!< (Udp Offset: 0x074) Transceiver Control Register */
 } Udp;
 #endif /* __ASSEMBLY__ */
 /* -------- UDP_FRM_NUM : (UDP Offset: 0x000) Frame Number Register -------- */
-#define UDP_FRM_NUM_FRM_NUM_Pos 0
+#define UDP_FRM_NUM_FRM_NUM_Pos 0	//!< FRM_NUM bit position
 #define UDP_FRM_NUM_FRM_NUM_Msk (0x7ffu << UDP_FRM_NUM_FRM_NUM_Pos) //!< (UDP_FRM_NUM) Frame Number as Defined in the Packet Field Formats */
 #define UDP_FRM_NUM_FRM_ERR (0x1u << 16) //!< (UDP_FRM_NUM) Frame Error */
 #define UDP_FRM_NUM_FRM_OK (0x1u << 17) //!< (UDP_FRM_NUM) Frame OK */
@@ -103,8 +103,9 @@ typedef struct {
 #define UDP_GLB_STAT_RSMINPR (0x1u << 3) //!< (UDP_GLB_STAT)  */
 #define UDP_GLB_STAT_RMWUPE (0x1u << 4) //!< (UDP_GLB_STAT) Remote Wake Up Enable */
 /* -------- UDP_FADDR : (UDP Offset: 0x008) Function Address Register -------- */
-#define UDP_FADDR_FADD_Pos 0
+#define UDP_FADDR_FADD_Pos 0	//!< FADD bit position
 #define UDP_FADDR_FADD_Msk (0x7fu << UDP_FADDR_FADD_Pos) //!< (UDP_FADDR) Function Address Value */
+/// set macro
 #define UDP_FADDR_FADD(value) ((UDP_FADDR_FADD_Msk & ((value) << UDP_FADDR_FADD_Pos)))
 #define UDP_FADDR_FEN (0x1u << 8) //!< (UDP_FADDR) Function Enable */
 /* -------- UDP_IER : (UDP Offset: 0x010) Interrupt Enable Register -------- */
@@ -190,7 +191,7 @@ typedef struct {
 #define UDP_CSR_FORCESTALL (0x1u << 5) //!< (UDP_CSR[8]) Force Stall (used by Control, Bulk and Isochronous Endpoints) */
 #define UDP_CSR_RX_DATA_BK1 (0x1u << 6) //!< (UDP_CSR[8]) Receive Data Bank 1 (only used by endpoints with ping-pong attributes) */
 #define UDP_CSR_DIR (0x1u << 7) //!< (UDP_CSR[8]) Transfer Direction (only available for control endpoints) */
-#define UDP_CSR_EPTYPE_Pos 8
+#define UDP_CSR_EPTYPE_Pos 8	//!< EPTYPE bit position
 #define UDP_CSR_EPTYPE_Msk (0x7u << UDP_CSR_EPTYPE_Pos) //!< (UDP_CSR[8]) Endpoint Type */
 #define   UDP_CSR_EPTYPE_CTRL (0x0u << 8) //!< (UDP_CSR[8]) Control */
 #define   UDP_CSR_EPTYPE_ISO_OUT (0x1u << 8) //!< (UDP_CSR[8]) Isochronous OUT */
@@ -201,12 +202,14 @@ typedef struct {
 #define   UDP_CSR_EPTYPE_INT_IN (0x7u << 8) //!< (UDP_CSR[8]) Interrupt IN */
 #define UDP_CSR_DTGLE (0x1u << 11) //!< (UDP_CSR[8]) Data Toggle */
 #define UDP_CSR_EPEDS (0x1u << 15) //!< (UDP_CSR[8]) Endpoint Enable Disable */
-#define UDP_CSR_RXBYTECNT_Pos 16
+#define UDP_CSR_RXBYTECNT_Pos 16	//!< RXBYTECNT bit position
 #define UDP_CSR_RXBYTECNT_Msk (0x7ffu << UDP_CSR_RXBYTECNT_Pos) //!< (UDP_CSR[8]) Number of Bytes Available in the FIFO */
+/// set macro
 #define UDP_CSR_RXBYTECNT(value) ((UDP_CSR_RXBYTECNT_Msk & ((value) << UDP_CSR_RXBYTECNT_Pos)))
 /* -------- UDP_FDR[8] : (UDP Offset: 0x050) Endpoint FIFO Data Register -------- */
-#define UDP_FDR_FIFO_DATA_Pos 0
+#define UDP_FDR_FIFO_DATA_Pos 0 	//!< FIFO_FATA bit position
 #define UDP_FDR_FIFO_DATA_Msk (0xffu << UDP_FDR_FIFO_DATA_Pos) //!< (UDP_FDR[8]) FIFO Data Value */
+/// set macro
 #define UDP_FDR_FIFO_DATA(value) ((UDP_FDR_FIFO_DATA_Msk & ((value) << UDP_FDR_FIFO_DATA_Pos)))
 /* -------- UDP_TXVC : (UDP Offset: 0x074) Transceiver Control Register -------- */
 #define UDP_TXVC_TXVDIS (0x1u << 8) //!< (UDP_TXVC) Transceiver Disable */

@@ -17,7 +17,7 @@
  * @{
  *
  *
- * @file     drivers/at91/usb/usb_drv.h
+ * @file     drivers/at91/usbd/usbd_drv.h
  * @ingroup	 DRV_AT91_USBD
  * @brief    USBD driver header
  *
@@ -56,15 +56,15 @@ typedef enum _USBRC {
     USBRC_HW_NOT_SUPPORTED = 0xFE  /**< Failed due to HW not supported */
 } USBRC;
 
-#define USB_SETUP_READ_TOUT		200
-#define USB_SETUP_WRITE_TOUT	200
+#define USB_SETUP_READ_TOUT		200		//!< read timeout for setups
+#define USB_SETUP_WRITE_TOUT	200		//!< write timeout for setups
 
-#define DCR_USB_STALL					0x01
-#define DCR_USB_SET_ADDRESS				0x02
-#define DCR_USB_SET_CONFIGURATION		0x03
-#define DCR_USB_CONFIGUREENDPOINT		0x04
-#define DCR_USB_HALT					0x05
-#define DCR_USB_UNHALT					0x06
+#define DCR_USB_STALL					0x01	//!< doc
+#define DCR_USB_SET_ADDRESS				0x02	//!< doc
+#define DCR_USB_SET_CONFIGURATION		0x03	//!< doc
+#define DCR_USB_CONFIGUREENDPOINT		0x04	//!< doc
+#define DCR_USB_HALT					0x05	//!< doc
+#define DCR_USB_UNHALT					0x06	//!< doc
 
 
 /*    Constants: Endpoint states	*/
@@ -74,7 +74,7 @@ typedef enum _USBRC {
 #define UDP_ENDPOINT_SENDING        4 //!< Endpoint is sending data.
 #define UDP_ENDPOINT_RECEIVING      8 //!< Endpoint is receiving data.
 #define UDP_ENDPOINT_RECEIVING_OFF 16 //!< Endpoint is receiving data (rxfifo_cnt).
-#define UDP_ENDPOINT_BUSY		(UDP_ENDPOINT_SENDING | UDP_ENDPOINT_RECEIVING)
+#define UDP_ENDPOINT_BUSY		(UDP_ENDPOINT_SENDING | UDP_ENDPOINT_RECEIVING)//!< doc
 
 /*   Constants: USB device API return values */
 #define USBD_STATUS_SUCCESS	  RES_SIG_OK	//!< Indicates the operation was successful.
@@ -90,27 +90,26 @@ typedef enum _USBRC {
 #define USBD_STATE_ADDRESS      4 //!< The device has been given an address on the bus.
 #define USBD_STATE_CONFIGURED	5 //!< A valid configuration has been selected.
 
-
+/** Endpoint data structure */
 struct Endpoint
 {
-	unsigned char state;
-	unsigned char bank;
-	unsigned short size;
-	unsigned int rxfifo_cnt;
-//		HANDLE receiving;
-//		HANDLE sending;
-//		HANDLE control;
-	HANDLE pending;
+	unsigned char state;		//!< endpoint state
+	unsigned char bank;			//!< current RAM bank
+	unsigned short size;		//!< endpoint size
+	unsigned int rxfifo_cnt;	//!< bytes in rxfifo
+	HANDLE pending;				//!< pending handles
 };
 
+/** USBD Driver Data structure **/
 struct USBD_DRIVER_DATA
 {
-	unsigned char	deviceState;	//!< USBD_STATE_XXX
-	unsigned char	previousDeviceState;
+	unsigned char	deviceState;			//!< USBD_STATE_XXX
+	unsigned char	previousDeviceState;	//!< previous deviceState
 	Endpoint		endpoints[CHIP_USB_NUMENDPOINTS]; //!< Endpoint structures
 	USBDDriver		usbdDriver;		//!< USBD driver
 };
 
+/** USBD Driver Mode structure **/
 struct DRV_USBD_MODE_STRU
 {
 	unsigned int	baudrate;	//!< baudrate for the mode
@@ -118,12 +117,13 @@ struct DRV_USBD_MODE_STRU
 /** UART Mode */
 typedef const DRV_USBD_MODE_STRU * DRV_USBD_MODE;
 
+/** USBD Driver Info structure **/
 struct USBD_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;		//!< standard driver info
 	Udp *				hw_base;	//!< pointer to the hardware peripheral
 	USBD_DRIVER_DATA* 	drv_data;	//!< pointer to the driver data
-	const USBDDriverDescriptors * drv_descriptors;
+	const USBDDriverDescriptors * drv_descriptors;	//!< device descriptors
 };
 /** USART Driver Info */
 typedef const USBD_DRIVER_INFO* USBD_INFO;
@@ -134,6 +134,7 @@ void USBD_ISR(USBD_INFO drv_info );
 
 void USBD_Stall(HANDLE hnd);
 
+/** called to isnstall a minidriver **/
 extern "C" void usb_install_minidrv(USBD_INFO drv_info);
 
 

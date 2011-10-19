@@ -38,8 +38,8 @@
  * \section Usage
  *
  * Please refer to the corresponding application note.
- * - \ref usbd_framework AT91 USB device framework
- * - \ref usbd_api USBD API
+ * -  usbd_framework AT91 USB device framework
+ * -  usbd_api USBD API
  *
  */
 

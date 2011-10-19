@@ -24,6 +24,7 @@
  extern "C" {
 #endif
 
+/** RTC Driver Info structure **/
 struct RTC_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info

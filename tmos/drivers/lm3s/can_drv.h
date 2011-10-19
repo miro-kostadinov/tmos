@@ -4,10 +4,12 @@
 
 #include <can_lm3s.h>
 
+/** CAN Driver mode structure **/
 struct CAN_MODE_STRU
 {
 };
 
+/** CAN Driver data strucutre **/
 struct CAN_DRIVER_DATA
 {
     HANDLE			waiting;	//!< Receive queue
@@ -15,12 +17,13 @@ struct CAN_DRIVER_DATA
     unsigned char	cnt;		//!< number of open handles
 };
 
+/** CAN Driver Info structure **/
 struct CAN_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info
 	CAN_Type *			hw_base;		//!< pointer to the hardware peripheral
 	CAN_DRIVER_DATA *	drv_data;		//!< pointer to the driver data
-	GPIO_STRU 			CAN_pins;
+	GPIO_STRU 			CAN_pins;		//!< pins used
 };
 /** CAN Driver Info */
 typedef const CAN_DRIVER_INFO* CAN_INFO;

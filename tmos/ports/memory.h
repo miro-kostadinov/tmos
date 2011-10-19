@@ -22,30 +22,35 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
+/** auto pointer reference **/
 template<class Y> struct auto_ptr_ref
 {
-	Y* yp;
+	Y* yp; 	//!< reference
+	/** constructor **/
 	auto_ptr_ref(Y* rhs) :
 		yp(rhs)
 	{
 	}
 };
 
+/** Auto pointer class **/
 template<class T>
 class auto_ptr
 {
 private:
 	T* ap; //refers to the actual owned object (if any)
 public:
-	typedef T element_type;
-	//constructor
+	typedef T element_type;	//!< element type
+	/** constructor **/
 	explicit auto_ptr(T* ptr = 0):
 		ap(ptr)
 	{
 	}
 
-	//copy constructors (with implicit conversion)
-	//- note: nonconstant parameter
+	//@{
+	/** copy constructors (with implicit conversion)
+	 * @note: nonconstant parameter
+	 */
 	auto_ptr(auto_ptr& rhs) :
 		ap(rhs. release())
 	{
@@ -55,9 +60,12 @@ public:
 		ap(rhs.release())
 	{
 	}
+	//@}
 
-	//assignments (with implicit conversion)
-	//- note: nonconstant parameter
+	//@{
+	/** assignments (with implicit conversion)
+	 * @note: nonconstant parameter
+	 */
 	auto_ptr& operator=(auto_ptr& rhs)
 	{
 		reset(rhs.release());
@@ -69,6 +77,7 @@ public:
 		reset(rhs.release());
 		return (*this);
 	}
+	//@}
 
 	//destructor
 	~auto_ptr()
@@ -76,7 +85,8 @@ public:
 		delete ap;
 	}
 
-	//value access
+	//@{
+	/** value access **/
 	T* get() const
 	{
 		return (ap);
@@ -89,8 +99,9 @@ public:
 	{
 		return (ap);
 	}
+	//@}
 
-	//release ownership
+	///release ownership
 	T* release()
 	{
 		T* tmp(ap);
@@ -98,7 +109,7 @@ public:
 		return (tmp);
 	}
 
-	//reset value
+	///reset value
 	void reset(T* ptr = 0)
 	{
 		if (ap != ptr)
@@ -108,8 +119,8 @@ public:
 		}
 	}
 
-	/* special conversions with auxiliary type to enable copies
-	 and assignments
+	//@{
+	/** special conversions with auxiliary type to enable copies and assignments
 	 */
 	auto_ptr(auto_ptr_ref<T> rhs) :
 		ap(rhs.yp)
@@ -130,6 +141,7 @@ public:
 	{
 		return (auto_ptr<Y> (release()));
 	}
+	//@}
 };
 
 

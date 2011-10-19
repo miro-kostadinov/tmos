@@ -454,8 +454,6 @@ tBoolean EthernetSpaceAvail(MAC_Type* mac)
 
 //*****************************************************************************
 //
-//! \internal
-//!
 //! Internal function for reading a packet from the Ethernet controller.
 //!
 //! \param mac is the base address of the controller.
@@ -683,8 +681,6 @@ long EthernetPacketGet(MAC_Type* mac, unsigned char *pucBuf, long lBufLen)
 
 //*****************************************************************************
 //
-//! \internal
-//!
 //! Internal function for sending a packet to the Ethernet controller.
 //!
 //! \param mac is the base address of the controller.
@@ -898,78 +894,6 @@ long EthernetPacketPut(MAC_Type* mac, unsigned char *pucBuf, long lBufLen)
     //
     return(EthernetPacketPutInternal(mac, pucBuf, lBufLen));
 }
-
-//*****************************************************************************
-//
-//! Registers an interrupt handler for an Ethernet interrupt.
-//!
-//! \param mac is the base address of the controller.
-//! \param pfnHandler is a pointer to the function to be called when the
-//! enabled Ethernet interrupts occur.
-//!
-//! This function sets the handler to be called when the Ethernet interrupt
-//! occurs.  This will enable the global interrupt in the interrupt controller;
-//! specific Ethernet interrupts must be enabled via EthernetIntEnable().  It
-//! is the interrupt handler's responsibility to clear the interrupt source.
-//!
-//! \sa IntRegister() for important information about registering interrupt
-//! handlers.
-//!
-//! \return None.
-//
-//*****************************************************************************
-//void EthernetIntRegister(MAC_Type* mac, void(*pfnHandler)(void))
-//{
-//    //
-//    // Check the arguments.
-//    //
-//    ASSERT(mac);
-//    ASSERT(pfnHandler != 0);
-//
-//    //
-//    // Register the interrupt handler.
-//    //
-//    IntRegister(INT_ETH, pfnHandler);
-//
-//    //
-//    // Enable the Ethernet interrupt.
-//    //
-//    IntEnable(INT_ETH);
-//}
-
-//*****************************************************************************
-//
-//! Unregisters an interrupt handler for an Ethernet interrupt.
-//!
-//! \param mac is the base address of the controller.
-//!
-//! This function unregisters the interrupt handler.  This will disable the
-//! global interrupt in the interrupt controller so that the interrupt handler
-//! no longer is called.
-//!
-//! \sa IntRegister() for important information about registering interrupt
-//! handlers.
-//!
-//! \return None.
-//
-//*****************************************************************************
-//void EthernetIntUnregister(MAC_Type* mac)
-//{
-//    //
-//    // Check the arguments.
-//    //
-//    ASSERT(mac);
-//
-//    //
-//    // Disable the interrupt.
-//    //
-//    IntDisable(INT_ETH);
-//
-//    //
-//    // Unregister the interrupt handler.
-//    //
-//    IntUnregister(INT_ETH);
-//}
 
 //*****************************************************************************
 //

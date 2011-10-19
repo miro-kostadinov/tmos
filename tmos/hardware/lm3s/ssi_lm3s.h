@@ -17,7 +17,7 @@ extern "C"
 {
 #endif
 /*----------       Synchronous Serial Interface (SSI)             -----------*/
-// <g> Synchronous Serial Interface (SSI)
+/// Synchronous Serial Interface (SSI)
 struct SSI_Type
 {
 	__IO uint32_t CR0;              //!< Control register 0

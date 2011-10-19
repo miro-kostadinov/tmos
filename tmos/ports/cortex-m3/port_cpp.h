@@ -131,6 +131,20 @@ extern "C" void __cxa_pure_virtual(void);
 
 
 void usr_task_init_static(TASK_DESCRIPTION const * desc, int bStart);
+
+/**
+ * Creates a task using the dynamic memory
+ * Examples:
+ * @code
+ * 		Task* task;
+ *
+ *      task = usr_task_create_dynamic("CANT", (TASK_FUNCTION) can_thread, 90,
+ *				CAN_TASK_STACK_SIZE);
+ *		if (task)
+ *			svc_task_schedule(task);
+ * @endcode
+ * @return
+ */
 Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
 		unsigned char priority, unsigned int stack_words);
 

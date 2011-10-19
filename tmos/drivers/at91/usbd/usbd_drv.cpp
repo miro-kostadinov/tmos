@@ -24,7 +24,6 @@
  *
  *  This page lists the macros to access UDP CSR register.
  *
- *  \comment
  *  In a preemptive environment, set or clear the flag and wait for a time of
  *  1 UDPCK clock cycle and 1 peripheral clock cycle. However, RX_DATA_BK0,
  *  TXPKTRDY, RX_DATA_BK1 require wait times of 3 UDPCK clock cycles and
@@ -45,7 +44,7 @@
 /**
  *  Sets the specified bit(s) in the UDP_CSR register.
  *
- *  \param endpoint The endpoint number of the CSR to process.
+ *  \param csr register.
  *  \param flags The bitmap to set to 1.
  */
 void SET_CSR(RwReg* csr, uint32_t flags)
@@ -65,7 +64,7 @@ void SET_CSR(RwReg* csr, uint32_t flags)
 /**
  *  Clears the specified bit(s) in the UDP_CSR register.
  *
- *  \param endpoint The endpoint number of the CSR to process.
+ *  \param csr register.
  *  \param flags The bitmap to clear to 0.
  */
 void CLEAR_CSR(RwReg* csr, uint32_t flags)
@@ -88,14 +87,14 @@ void CLEAR_CSR(RwReg* csr, uint32_t flags)
  *      Internal Functions
  *---------------------------------------------------------------------------*/
 
-/* Configure the pull-up on D+ and disconnect it */
+/** Configure the pull-up on D+ and disconnect it **/
 void USB_PULLUP_DISABLE(USBD_INFO drv_info)
 {
 //	PIO_CfgInput(USB_STAT_PIN);
 	drv_info->hw_base->UDP_TXVC &= ~(uint32_t)UDP_TXVC_PUON;
 }
 
-/* Configure the pull-up on D+ and enable it */
+/** Configure the pull-up on D+ and enable it **/
 void USB_PULLUP_ENABLE(USBD_INFO drv_info)
 {
 	//PIO_CfgOutput0(USB_STAT_PIN);
@@ -162,8 +161,8 @@ static inline void UDP_DisableTransceiver(Udp* pUDP)
 /**
  * Handles a completed transfer on the given endpoint, invoking the
  * configured callback if any.
- * \param bEndpoint Number of the endpoint for which the transfer has completed.
- * \param bStatus   Status code returned by the transfer operation
+ * \param endpoint the endpoint for which the transfer has completed.
+ * \param status   Status code returned by the transfer operation
  */
 static HANDLE UDP_EndOfTransfer(Endpoint *endpoint, unsigned int status)
 {
@@ -188,10 +187,9 @@ static HANDLE UDP_EndOfTransfer(Endpoint *endpoint, unsigned int status)
 	return (hnd);
 }
 
-/*
-    Function: UDP_DisableEndpoints
-        Disables all endpoints of the UDP peripheral except Control endpoint 0.
-*/
+/**
+ * Disables all endpoints of the UDP peripheral except Control endpoint 0.
+ */
 static void UDP_DisableEndpoints(USBD_DRIVER_DATA* drv_data)
 {
     Endpoint *endpoint;
@@ -208,14 +206,12 @@ static void UDP_DisableEndpoints(USBD_DRIVER_DATA* drv_data)
     }
 }
 
-
-/*
-    Function: UDP_WritePayload
-        Writes a data payload into the current FIFO buffer of the UDP.
-
-    Parameters:
-        eptnum - Number of the endpoint which is sending data.
-*/
+/**
+ * Writes a data payload into FIFO buffer of the UDP.
+ * @param dst
+ * @param hnd
+ * @param size
+ */
 static void UDP_WritePayload(RwReg *dst, HANDLE hnd, int size)
 {
     unsigned char *src;
@@ -248,14 +244,13 @@ static void UDP_WritePayload(RwReg *dst, HANDLE hnd, int size)
     }
 }
 
-/*
-    Function: UDP_ReadPayload
-        Reads a data payload from the current FIFO buffer of an endpoint.
-
-    Parameters:
-        eptnum - Endpoint number.
-        size - Size of the data to read.
-*/
+/**
+ * Reads a data payload from the current FIFO buffer of an endpoint.
+ * @param pEndpoint
+ * @param src
+ * @param size
+ * @return
+ */
 static bool UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size)
 {
 	HANDLE hnd;
@@ -300,6 +295,14 @@ static bool UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size)
 
 }
 
+/**
+ * Reads a data payload
+ * @param pEndpoint
+ * @param src
+ * @param size
+ * @param hnd
+ * @return
+ */
 static bool svc_UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size, HANDLE hnd)
 {
 	size_t dwRead;
@@ -340,9 +343,9 @@ static bool svc_UDP_ReadPayload(Endpoint *pEndpoint, RwReg *src, size_t size, HA
     return (false);
 
 }
+
 /**
  * Clears the correct reception flag (bank 0 or bank 1) of an endpoint
- * \param bEndpoint Index of endpoint
  */
 static void UDP_ClearRxFlag(RwReg *pCSR, Endpoint *pEndpoint, unsigned int bEndpoint)
 {
@@ -365,7 +368,8 @@ static void UDP_ClearRxFlag(RwReg *pCSR, Endpoint *pEndpoint, unsigned int bEndp
 
 /**
  * Received SETUP packet from endpoint 0 FIFO
- * \param pRequest Generic USB SETUP request sent over Control endpoints
+ * @param pRequest Generic USB SETUP request sent over Control endpoints
+ * @param reg
  */
 static void UDP_ReadRequest(USBGenericRequest *pRequest, RwReg* reg)
 {
@@ -381,7 +385,9 @@ static void UDP_ReadRequest(USBGenericRequest *pRequest, RwReg* reg)
 /**
  * Endpoint interrupt handler.
  * Handle IN/OUT transfers, received SETUP packets and STALLing
- * \param bEndpoint Index of endpoint
+ * @param pUDP
+ * @param pEndpoint
+ * @param bEndpoint Index of endpoint
  */
 static void UDP_EndpointHandler(Udp* pUDP, Endpoint *pEndpoint, uint8_t bEndpoint)
 {
@@ -582,10 +588,10 @@ static void UDP_EndpointHandler(Udp* pUDP, Endpoint *pEndpoint, uint8_t bEndpoin
     }
 }
 
-/*
-    Function: UDP_ResetEndpoints
-        Resets all the endpoints of the UDP peripheral.
-*/
+/**
+ * Resets all the endpoints of the UDP peripheral.
+ * @param drv_data
+ */
 static void USBD_ResetEndpoints(USBD_DRIVER_DATA* drv_data)
 {
     Endpoint *endpoint;
@@ -611,7 +617,8 @@ static void USBD_ResetEndpoints(USBD_DRIVER_DATA* drv_data)
 
 /**
  * Configures an endpoint according to its Endpoint Descriptor.
- * \param pDescriptor Pointer to an Endpoint descriptor.
+ * @param drv_info
+ * @param pDescriptor Pointer to an Endpoint descriptor.
  */
 static void USBD_ConfigureEndpoint(USBD_INFO drv_info, const USBEndpointDescriptor *pDescriptor)
 {
@@ -682,17 +689,11 @@ static void USBD_ConfigureEndpoint(USBD_INFO drv_info, const USBEndpointDescript
     TRACE_USB("CfgEp%d ", bEndpoint);
 }
 
-/*
-    Function: USBD_Stall
-        Causes the given endpoint to acknowledge the next packet it receives
-        with a STALL handshake.
-
-    Parameters:
-        eptnum - Endpoint number.
-
-    Returns:
-        USBD_STATUS_SUCCESS or USBD_STATUS_LOCKED.
-*/
+/**
+ * Causes the given endpoint to acknowledge the next packet it receives
+ * with a STALL handshake.
+ * @param hnd
+ */
 void USBD_Stall(HANDLE hnd)
 {
 	// note: Stall will be performed for the last endpoint used by this handle!!
@@ -701,6 +702,10 @@ void USBD_Stall(HANDLE hnd)
 	hnd->hcontrol(DCR_HANDLE);
 }
 
+/**
+ * Suspend
+ * @param drv_info
+ */
 void USBD_SUSPEND(USBD_INFO drv_info)
 {
 	TRACE1_USB_DEBUG("\r\nSUSPEND!\r\n");
@@ -726,9 +731,10 @@ void USBD_SUSPEND(USBD_INFO drv_info)
  * \brief Reset endpoints and disable them.
  * -# Terminate transfer if there is any, with given status;
  * -# Reset the endpoint & disable it.
- * \param bmEPs    Bitmap for endpoints to reset.
- * \param bStatus  Status passed to terminate transfer on endpoint.
- * \param bKeepCfg 1 to keep old endpoint configuration.
+ * @param drv_info
+ * @param bmEPs		Bitmap for endpoints to reset.
+ * @param bStatus	Status passed to terminate transfer on endpoint.
+ * @param bKeepCfg	1 to keep old endpoint configuration.
  * \note Use USBD_HAL_ConfigureEP() to configure and enable endpoint
          if not keeping old configuration.
  * \sa USBD_HAL_ConfigureEP().
@@ -811,7 +817,10 @@ static void USBD_HAL_Activate(USBD_INFO drv_info)
     UDP_EnableTransceiver(drv_info->hw_base);
 }
 
-
+/**
+ * Poweron
+ * @param drv_info
+ */
 void USBD_POWERON(USBD_INFO drv_info)
 {
 	USBD_DRIVER_DATA* drv_data = drv_info->drv_data;
@@ -838,34 +847,7 @@ void USBD_POWERON(USBD_INFO drv_info)
 	}
 }
 
-/*
-bool try_cancel_transfer(HANDLE * list, HANDLE hnd)
-{
-	HANDLE prev, next;
-
-    if((prev = *list))
-    {
-    	if( prev == hnd )
-    	{
-    		*list = hnd->next;
-			svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
-			return (true);
-    	}
-    	while((next=prev->next))
-    	{
-	    	if( next == hnd )
-	    	{
-	    		prev->next = hnd->next;
-				svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
-				return (true);
-	    	}
-	    	prev = next;
-    	}
-    }
-    return (0);
-}
-*/
-
+/** USBD Driver DCR routine **/
 void USBD_DCR(USBD_INFO drv_info, unsigned int reason, HANDLE param)
 {
     USBD_DRIVER_DATA* drv_data = drv_info->drv_data;
@@ -1071,6 +1053,7 @@ void USBD_DCR(USBD_INFO drv_info, unsigned int reason, HANDLE param)
     }
 }
 
+/** USBD Driver DSR routine **/
 void USBD_DSR(USBD_INFO drv_info, HANDLE hnd)
 {
 	unsigned char eptnum;
@@ -1183,6 +1166,7 @@ void USBD_DSR(USBD_INFO drv_info, HANDLE hnd)
 	svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 }
 
+/** USBD Driver Interrupt **/
 void USBD_ISR(USBD_INFO drv_info)
 {
 	unsigned int status;

@@ -42,6 +42,7 @@
 #include <uart.h>
 #include <pio_drv.h>
 
+/** UART Driver data structure **/
 struct UART_DRIVER_DATA_STRU
 {
 	unsigned short	buf_size;	//!< size of the rx_buf
@@ -62,7 +63,7 @@ typedef UART_DRIVER_DATA_STRU* UART_DRIVER_DATA;
  extern "C" {
 #endif
 
-
+/** UART Driver mode structure **/
 struct DRV_UART_MODE_STRU
 {
     unsigned int	baudrate;	//!< baudrate for the mode
@@ -73,6 +74,7 @@ struct DRV_UART_MODE_STRU
 /** UART Mode */
 typedef const DRV_UART_MODE_STRU * DRV_UART_MODE;
 
+/** UART Driver Info structure **/
 struct UART_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info

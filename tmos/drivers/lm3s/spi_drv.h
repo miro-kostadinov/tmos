@@ -10,13 +10,14 @@
 
 #include <ssi_lm3s.h>
 
+/** SPI Driver mode structure **/
 struct SPI_DRIVER_MODE
 {
     unsigned int	cs_pin;		//!< doc!
     unsigned int	cr0_reg;	//!< doc!
 };
 
-
+/** SPI Driver data structure **/
 struct SPI_DRIVER_DATA
 {
     HANDLE			waiting;	//!< waiting to be processed
@@ -26,6 +27,7 @@ struct SPI_DRIVER_DATA
 	unsigned short 	buffered;	//!< doc!
 };
 
+/** SPI Driver Info structure **/
 struct SPI_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< doc!

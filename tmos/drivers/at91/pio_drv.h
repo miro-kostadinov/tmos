@@ -30,28 +30,32 @@
 #include <tmos.h>
 #include <pio.h>
 
-// port value
-#define	PORT_A			0
-#define	PORT_B			1
-#define	PORT_C			2
+//{@ port value
+#define	PORT_A			0	//!< port A
+#define	PORT_B			1	//!< port B
+#define	PORT_C			2	//!< port C
+//@}
 
-// pio mode
-#define PIOMODE_PER		0x01
-#define PIOMODE_OER		0x02
-#define PIOMODE_IFER	0x04
-#define PIOMODE_SODR	0x08
-#define PIOMODE_IER		0x10
-#define PIOMODE_MDER	0x20
-#define PIOMODE_PPUER	0x40
-#define PIOMODE_BSR1	0x80
-#define PIOMODE_BSR2	0x100
+//{@ pio mode
+#define PIOMODE_PER		0x01	//!< doc!
+#define PIOMODE_OER		0x02	//!< output enable
+#define PIOMODE_IFER	0x04	//!< doc!
+#define PIOMODE_SODR	0x08	//!< doc!
+#define PIOMODE_IER		0x10	//!< doc!
+#define PIOMODE_MDER	0x20	//!< doc!
+#define PIOMODE_PPUER	0x40	//!< doc!
+#define PIOMODE_BSR1	0x80	//!< doc!
+#define PIOMODE_BSR2	0x100	//!< doc!
+//@}
 
+/** GPIO struct **/
 struct GPIO_STRU
 {
-	unsigned int 	mask;
-	unsigned short 	mode;
-	unsigned char	port;
+	unsigned int 	mask;	//!< doc!
+	unsigned short 	mode;	//!< doc!
+	unsigned char	port;	//!< doc!
 };
+/** PIN Description **/
 typedef const GPIO_STRU* PIN_DESC;
 
 void PIO_CfgOutput(PIN_DESC pins);
@@ -71,7 +75,7 @@ unsigned int PIO_Read(PIN_DESC pins);
 
 bool pio_open(HANDLE hnd, PIN_DESC pins);
 
-
+/** PIO Driver Data structure **/
 struct PIO_DRIVER_DATA_STRU
 {
     unsigned char	cnt;		//!< number of open handles
@@ -80,6 +84,7 @@ struct PIO_DRIVER_DATA_STRU
 /** PIO DRIVER DATA pointer type */
 typedef PIO_DRIVER_DATA_STRU* PIO_DRIVER_DATA;
 
+/** PIO Driver Info structure **/
 struct PIO_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info

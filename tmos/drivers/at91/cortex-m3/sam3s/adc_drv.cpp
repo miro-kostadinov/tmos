@@ -12,6 +12,10 @@
 #include <adc_drv.h>
 #include <pmc_drv.h>
 
+/**
+ * Turns off the ADC peripheral
+ * @param drv_info
+ */
 static void ADC_off(ADC_INFO drv_info)
 {
    	drv_isr_disable(&drv_info->info);
@@ -19,6 +23,10 @@ static void ADC_off(ADC_INFO drv_info)
     drv_pmc_disable(&drv_info->info);
 }
 
+/**
+ * Turns off the ADC peripheral
+ * @param drv_info
+ */
 static void ADC_on(ADC_INFO drv_info)
 {
     Adc* pADC;
@@ -36,7 +44,12 @@ static void ADC_on(ADC_INFO drv_info)
    	drv_isr_enable(&drv_info->info);
 }
 
-
+/**
+ * ADC driver DCR routine
+ * @param drv_info
+ * @param reason
+ * @param param
+ */
 void ADC_DCR(ADC_INFO drv_info, unsigned int reason, HANDLE param)
 {
   	ADC_DRIVER_DATA drv_data = drv_info->drv_data;
@@ -74,6 +87,11 @@ void ADC_DCR(ADC_INFO drv_info, unsigned int reason, HANDLE param)
     }
 }
 
+/**
+ * ADC Driver routine
+ * @param drv_info
+ * @param hnd
+ */
 void ADC_DSR(ADC_INFO drv_info, HANDLE hnd)
 {
   	ADC_DRIVER_DATA drv_data = drv_info->drv_data;
@@ -93,6 +111,10 @@ void ADC_DSR(ADC_INFO drv_info, HANDLE hnd)
     	svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 }
 
+/**
+ * ADC Driver Interrupt
+ * @param drv_info
+ */
 void ADC_ISR(ADC_INFO drv_info )
 {
     unsigned int res;

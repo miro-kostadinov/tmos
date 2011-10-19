@@ -460,6 +460,13 @@ RES_CODE CHandle::tsk_read_write(void *d, const void *s, unsigned int l)
 	return (tsk_start_and_wait());
 }
 
+/**
+ * Read & write (swap) locked operation
+ * @param d
+ * @param s
+ * @param l
+ * @return
+ */
 RES_CODE CHandle::tsk_read_write_locked(void *d, const void *s, unsigned int l)
 {
 	if(!complete())

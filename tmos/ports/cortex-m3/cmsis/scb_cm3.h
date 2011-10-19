@@ -19,6 +19,8 @@
   memory mapped structure for System Control Block (SCB)
   @{
  */
+
+/** SCB **/
 struct SCB_Type
 {
   __I  uint32_t CPUID;   /*!< Offset: 0x00  CPU ID Base Register                                  */

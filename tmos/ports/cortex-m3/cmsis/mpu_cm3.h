@@ -13,6 +13,7 @@
 #ifndef MPU_CM3_H_
 #define MPU_CM3_H_
 
+/** MPU **/
 struct MPU_Type
 {
   __I  uint32_t TYPE;	/*!< Offset: 0x00  MPU Type Register                              */

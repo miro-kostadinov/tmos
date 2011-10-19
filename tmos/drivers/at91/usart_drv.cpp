@@ -103,7 +103,7 @@ void USART_CFG(USART_INFO drv_info, DRV_UART_MODE pMode)
 
 /** Start receiving to rx_buf
  *
- * @param pUart
+ * @param pUsart
  * @param drv_data
  */
 static void START_RX_BUF(Usart*	pUsart, UART_DRIVER_DATA drv_data)

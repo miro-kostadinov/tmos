@@ -45,7 +45,7 @@ extern "C"
 #endif
 
 /*----------       Ethernet Controller (MAC)                      -----------*/
-// <g> Ethernet Controller (MAC)
+/// Ethernet Controller (MAC)
 typedef struct
 {
     __IO uint32_t MACRIS;       //!< 00 (__I) Ethernet MAC Raw Interrupt Status
@@ -68,7 +68,6 @@ typedef struct
     __IO uint32_t MACLED;       //!< 40 LED Encoding
     __IO uint32_t MDIX;         //!< 44 Ethernet PHY MDIX
 } MAC_Type;
-// </g>
 
 
 //*****************************************************************************
