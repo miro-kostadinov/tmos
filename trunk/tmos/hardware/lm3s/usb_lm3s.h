@@ -25,20 +25,20 @@
 
 #include <tmos_types.h>
 
-// Internal struct for USB host device to endpoint mapping
+/// Internal struct for USB host device to endpoint mapping
 typedef struct
 {
     __IO uint8_t  USBTXFUNCADDR;	//!< (off 0x0) USB Transmit Functional Address Endpoint 0-15
-         uint8_t  reserved1;
+         uint8_t  reserved1;		//!< reserved
     __IO uint8_t  USBTXHUBADDR;	   	//!< (off 0x2) USB Transmit Hub Address Endpoint 0-15
     __IO uint8_t  USBTXHUBPORT;	   	//!< (off 0x3) USB Transmit Hub Port Endpoint 0-15
     __IO uint8_t  USBRXFUNCADDR;	//!< (off 0x4) USB Receive Functional Address Endpoint 1-15
-         uint8_t  reserved2;
+         uint8_t  reserved2;		//!< reserved
     __IO uint8_t  USBRXHUBADDR;	   	//!< (off 0x6) USB Receive Hub Address Endpoint 1-15
     __IO uint8_t  USBRXHUBPORT;	   	//!< (off 0x7) USB Receive Hub Port Endpoint 1-15
 } USBHOSTFUNS_t;
 
-// Internal struct for USB device endpoint mapping
+/// Internal struct for USB device endpoint mapping
 typedef struct
 {
 /*
@@ -68,11 +68,11 @@ typedef struct
 	__IO uint8_t  USBTXINTERVAL;	//!< (off 0xB) USB Host Transmit Interval Endpoint 0-15
 	__IO uint8_t  USBRXTYPE;		//!< (off 0xC) USB Host Configure Receive Type Endpoint 1-15
 	__IO uint8_t  USBRXINTERVAL;	//!< (off 0xD) USB Host Receive Polling Interval Endpoint 1-15
-		uint8_t   reserved[2];
+		uint8_t   reserved[2];		//!< reserved
 
 } USBDEVICEEP_t;
 
-// Internal struct for USB request packet counters
+/// Internal struct for USB request packet counters
 typedef struct
 {
 /*
@@ -80,13 +80,14 @@ typedef struct
  *
 */
     __IO uint16_t USBRQPKTCOUNT;   	//!< (off 0x0) USB Request Packet Count in Block Transfer Endpoint 1-15
-         uint8_t  reserved[2];
+         uint8_t  reserved[2];		//!< reserved
 
 } USBRPCNT_t;
 
 //=============================================================================
 //			       Universal Serial Bus Controller (USB)
 //=============================================================================
+/** USB controller **/
 typedef struct
 {
     __IO uint8_t  USBFADDR;			//!< (off 0x000) USB Device Functional Address
@@ -100,28 +101,28 @@ typedef struct
     __I  uint16_t USBFRAME;			//!< (off 0x00C) USB Frame Value
     __IO uint8_t  USBEPIDX;			//!< (off 0x00E) USB Endpoint Index
     __IO uint8_t  USBTEST;			//!< (off 0x00F) USB Test Mode
-         uint8_t  reserved1[16];
+         uint8_t  reserved1[16];	//!< reserved
     __IO uint32_t USBFIFO[16];		//!< (off 0x020) USB FIFO Endpoint 0-15
     __IO uint8_t  USBDEVCTL;		//!< (off 0x060) USB Device Control
-         uint8_t  reserved2;
+         uint8_t  reserved2;		//!< reserved
     __IO uint8_t  USBTXFIFOSZ;		//!< (off 0x062) USB Transmit Dynamic FIFO Sizing
     __IO uint8_t  USBRXFIFOSZ;		//!< (off 0x063) USB Receive Dynamic FIFO Sizing
     __IO uint16_t USBTXFIFOADD; 	//!< (off 0x064) USB Transmit FIFO Start Address
     __IO uint16_t USBRXFIFOADD; 	//!< (off 0x066) USB Receive FIFO Start Address
-         uint8_t  reserved3[18];
+         uint8_t  reserved3[18];	//!< reserved
     __IO uint8_t  USBCONTIM;		//!< (off 0x07A) USB Connect Timing
     __IO uint8_t  USBVPLEN;			//!< (off 0x07B) USB OTG VBus Pulse Timing
-         uint8_t  reserved4;
+         uint8_t  reserved4;		//!< reserved
     __IO uint8_t  USBFSEOF;			//!< (off 0x07D) USB Full-Speed Last Transaction to End of Frame Timing
     __IO uint8_t  USBLSEOF;			//!< (off 0x07E) USB Low-Speed Last Transaction to End of Frame Timing
-         uint8_t  reserved5;
+         uint8_t  reserved5;		//!< reserved
     USBHOSTFUNS_t HOST_EP[16];		//!< (0ff 0x080) USB Host endpoints mapping
     USBDEVICEEP_t DEVICE_EP[16];	//!< (0ff 0x100) USB Device endpoints mapping
-         uint8_t  reserved6[256];
+         uint8_t  reserved6[256];	//!< reserved
     USBRPCNT_t	  HOST_PC[16];		//!< (0ff 0x300) USB Request Packet Count in Block Transfer
     __IO uint16_t USBRXDPKTBUFDIS;  //!< (off 0x340) USB Receive Double Packet Buffer Disable
     __IO uint16_t USBTXDPKTBUFDIS;  //!< (off 0x342) USB Transmit Double Packet Buffer Disable
-         uint8_t  reserved7[188];
+         uint8_t  reserved7[188];	//!< reserved
     __IO uint32_t USBEPC;			//!< (off 0x400) USB External Power Control
     __I  uint32_t USBEPCRIS;		//!< (off 0x404) USB External Power Control Raw Interrupt Status
     __IO uint32_t USBEPCIM;			//!< (off 0x408) USB External Power Control Interrupt Mask
@@ -130,12 +131,12 @@ typedef struct
     __IO uint32_t USBDRIM; 			//!< (off 0x414) USB Device RESUME Interrupt Mask
     __O  uint32_t USBDRISC; 		//!< (off 0x418) USB Device RESUME Interrupt Status and Clear
     __IO uint32_t USBGPCS; 			//!< (off 0x41C) USB General-Purpose Control and Status
-    	 uint32_t reserved8[4];
+    	 uint32_t reserved8[4];		//!< reserved
     __IO uint32_t USBVDC; 			//!< (off 0x430) USB VBUS Droop Control
     __I  uint32_t USBVDCRIS; 		//!< (off 0x434) USB VBUS Droop Control Raw Interrupt Status
     __IO uint32_t USBVDCIM; 		//!< (off 0x438) USB VBUS Droop Control Interrupt Mask
     __IO uint32_t USBVDCISC; 		//!< (off 0x43C) USB VBUS Droop Control Interrupt Status and Clear
-    	 uint32_t reserved9;
+    	 uint32_t reserved9;		//!< reserved
     __I  uint32_t USBIDVRIS; 		//!< (off 0x444) USB ID Valid Detect Raw Interrupt Status
     __IO uint32_t USBIDVIM; 		//!< (off 0x448) USB ID Valid Detect Interrupt Mask
     __IO uint32_t USBIDVISC; 		//!< (off 0x44C) USB ID Valid Detect Interrupt Status and Clear
@@ -791,5 +792,6 @@ typedef struct
 
 #define USB0         ((USB_Type *)USB0_BASE)	//!< doc!
 
+ /** @} defgroup lm3s_usb_api USB */
 
 #endif /* USB_LM3S_H_ */

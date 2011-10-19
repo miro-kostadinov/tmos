@@ -23,12 +23,14 @@
 #include <ssc.h>
 #include <pio_drv.h>
 
+/** SSC Driver mode structure **/
 struct SSC_MODE_STRU
 {
-	GPIO_STRU 		cs_pin;
-	unsigned int 	baudrate;
+	GPIO_STRU 		cs_pin;		//!< Chip select pin
+	unsigned int 	baudrate;	//!< Baudrate
 };
 
+/** SSC Driver data structure **/
 struct SSC_DRIVER_DATA_STRU
 {
     HANDLE			pending;	//!< Receive queue
@@ -38,12 +40,13 @@ struct SSC_DRIVER_DATA_STRU
 /** SSC DRIVER DATA pointer type */
 typedef SSC_DRIVER_DATA_STRU* SSC_DRIVER_DATA;
 
+/** SSC Driver Info structure **/
 struct SSC_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info
 	Ssc *				hw_base;		//!< pointer to the hardware peripheral
 	SSC_DRIVER_DATA 	drv_data;		//!< pointer to the driver data
-	GPIO_STRU 			ssc_pins;
+	GPIO_STRU 			ssc_pins;		//!< pins used
 };
 /** SSC Driver Info */
 typedef const SSC_DRIVER_INFO* SSC_INFO;

@@ -15,7 +15,7 @@
 
 
 
-//*****************************************************************************
+//******************************************************************************
 //
 //! Erases a single 1KB block of internal flash.
 //!
@@ -26,7 +26,7 @@
 //!
 //! \return None
 //
-//*****************************************************************************
+//******************************************************************************
 void FLASHC_Type::erase_page(unsigned long ulAddress)
 {
     FMA = ulAddress;
@@ -81,6 +81,7 @@ void FLASHC_Type::write(unsigned long ulDstAddr, const unsigned char *pucSrcData
     }
 }
 
+/** write user registers **/
 void FLASHC_Type::write_user(unsigned long ulReg, unsigned long ulData)
 {
     FMA = ulReg;
@@ -95,6 +96,7 @@ void FLASHC_Type::write_user(unsigned long ulReg, unsigned long ulData)
     }
 }
 
+/** fast write **/
 void FLASHC_Type::fast_write(unsigned long ulDstAddr, const unsigned char *pucSrcData,
 		unsigned long ulLength)
 {

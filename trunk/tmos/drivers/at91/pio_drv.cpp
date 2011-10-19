@@ -16,6 +16,11 @@
 //*		Helper functions - can be used without driver.
 //*----------------------------------------------------------------------------
 
+/**
+ * Get PIO base
+ * @param pins
+ * @return
+ */
 Pio* get_pio_base(PIN_DESC pins)
 {
 	unsigned int res;
@@ -24,6 +29,10 @@ Pio* get_pio_base(PIN_DESC pins)
 	return ((Pio*)(res + (unsigned)PIOA));
 }
 
+/**
+ * Configure a pin set as output(s)
+ * @param pins
+ */
 void PIO_CfgOutput(PIN_DESC pins)
 {
 	Pio* pPio = get_pio_base(pins);
@@ -34,6 +43,7 @@ void PIO_CfgOutput(PIN_DESC pins)
     pPio->PIO_PUDR = mask;		// disable pullup
 }
 
+/** Configure as output and assert low **/
 void PIO_CfgOutput0(PIN_DESC pins)
 {
 	Pio* pPio = get_pio_base(pins);
@@ -45,6 +55,7 @@ void PIO_CfgOutput0(PIN_DESC pins)
 	pPio->PIO_OER = mask;		// Configure in Output
 }
 
+/** Configure as output and assert high **/
 void PIO_CfgOutput1(PIN_DESC pins)
 {
 	Pio* pPio = get_pio_base(pins);
@@ -56,6 +67,7 @@ void PIO_CfgOutput1(PIN_DESC pins)
     pPio->PIO_PUDR = mask;		// disable pullup
 }
 
+/** Configure as input pin(s) **/
 void PIO_CfgInput(PIN_DESC pins)
 {
 	Pio* pPio = get_pio_base(pins);
@@ -68,6 +80,7 @@ void PIO_CfgInput(PIN_DESC pins)
 	pPio->PIO_MDDR = mask; 		// Disable Multidrive
 }
 
+/** Configure as input pin(s) with pull-up**/
 void PIO_CfgInputPull(PIN_DESC pins)
 {
 	Pio* pPio = get_pio_base(pins);
@@ -80,6 +93,7 @@ void PIO_CfgInputPull(PIN_DESC pins)
     pPio->PIO_PUER = mask;		// enable pullup
 }
 
+/** Configure as peripheral **/
 void PIO_CfgPeriph(PIN_DESC pins)
 {
 	get_pio_base(pins)->PIO_PDR = pins->mask;	// Set in PIO mode
@@ -102,6 +116,12 @@ void PIO_CfgPeriphA(PIN_DESC pins)
     pio->PIO_PDR = mask;
 }
 
+/**
+ * \brief Configures one or more pin(s) of a PIO controller as being controlled by
+ * peripheral B.
+ *
+ * \param pins  PIN DESCRIPTION
+ */
 void PIO_CfgPeriphB(PIN_DESC pins)
 {
 	Pio* pio = get_pio_base(pins);
@@ -112,6 +132,12 @@ void PIO_CfgPeriphB(PIN_DESC pins)
     pio->PIO_PDR = mask;
 }
 
+/**
+ * \brief Configures one or more pin(s) of a PIO controller as being controlled by
+ * peripheral C.
+ *
+ * \param pins  PIN DESCRIPTION
+ */
 void PIO_CfgPeriphC(PIN_DESC pins)
 {
 	Pio* pio = get_pio_base(pins);
@@ -122,6 +148,12 @@ void PIO_CfgPeriphC(PIN_DESC pins)
     pio->PIO_PDR = mask;
 }
 
+/**
+ * \brief Configures one or more pin(s) of a PIO controller as being controlled by
+ * peripheral D.
+ *
+ * \param pins  PIN DESCRIPTION
+ */
 void PIO_CfgPeriphD(PIN_DESC pins)
 {
 	Pio* pio = get_pio_base(pins);
@@ -132,26 +164,31 @@ void PIO_CfgPeriphD(PIN_DESC pins)
     pio->PIO_PDR = mask;
 }
 
+/** Configure as open drain output **/
 void PIO_CfgOD(PIN_DESC pins)
 {
     get_pio_base(pins)->PIO_MDER = pins->mask; 		// Multidrive
 }
 
+/** Set output high **/
 void PIO_SetOutput(PIN_DESC pins)
 {
     get_pio_base(pins)->PIO_SODR = pins->mask;
 }
 
+/** assert output low **/
 void PIO_ClrOutput(PIN_DESC pins)
 {
     get_pio_base(pins)->PIO_CODR = pins->mask;
 }
 
+/** Read pin **/
 unsigned int PIO_Read(PIN_DESC pins)
 {
     return (get_pio_base(pins)->PIO_PDSR & pins->mask);
 }
 
+/** Open handle for pio **/
 bool pio_open(HANDLE hnd, PIN_DESC pins)
 {
 	return (hnd->tsk_open((DRIVER_INDEX)(PIOA_IRQn + pins->port), pins));
@@ -162,9 +199,10 @@ bool pio_open(HANDLE hnd, PIN_DESC pins)
 //*			PIO driver
 //*----------------------------------------------------------------------------
 
-#define PIOHND_WAITING		0x01
-#define PIOHND_INTPENDING	0x02
+#define PIOHND_WAITING		0x01	//!< the handle is waiting for read
+#define PIOHND_INTPENDING	0x02	//!< handle can read
 
+/** return pio data **/
 static void piohnd_read(HANDLE hnd, Pio* pPio)
 {
 	PIN_DESC pins = (PIN_DESC)hnd->mode.as_voidptr;
@@ -175,7 +213,7 @@ static void piohnd_read(HANDLE hnd, Pio* pPio)
 }
 
 
-
+/** PIO Driver DCR routine **/
 void PIO_DCR(PIO_INFO drv_info, unsigned int reason, HANDLE param)
 {
 	PIO_DRIVER_DATA drv_data;
@@ -304,6 +342,7 @@ void PIO_DCR(PIO_INFO drv_info, unsigned int reason, HANDLE param)
 	}
 }
 
+/** PIO Driver DSR routine **/
 void PIO_DSR(PIO_INFO drv_info, HANDLE hnd)
 {
 	Pio* pPio = drv_info->hw_base;
@@ -340,6 +379,7 @@ void PIO_DSR(PIO_INFO drv_info, HANDLE hnd)
     svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 }
 
+/** PIO Driver Interrupt routine **/
 void PIO_ISR(PIO_INFO drv_info )
 {
   	unsigned int pin_ints;

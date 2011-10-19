@@ -127,7 +127,7 @@
 /** \addtogroup usbd_audio_config USB Audio General Configure
  *      @{
  * This page lists definitions for USB Audio Devices Drivers.
- * - \ref
+ * -
  */
 #if defined(at91sam7s) || defined(at91sam9xe)
  /** Sample rate in Hz. */

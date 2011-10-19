@@ -13,13 +13,10 @@
 //+			CCache
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-//*----------------------------------------------------------------------------
-//								getc()
-//								---------------
-//	Return:
-//		error: 0, success - symbol
-//
-//*----------------------------------------------------------------------------
+/**
+ * Reads single character from the cached object
+ * @return  : 0, success - symbol
+ */
 char CCache::getc()
 {
 	char c;
@@ -36,6 +33,11 @@ char CCache::getc()
 	return (0);
 }
 
+/**
+ * Reads single character from the cached object
+ * @param c - reference to store the character
+ * @return RES_OK or error returned from load()
+ */
 RES_CODE CCache::getc(char& c)
 {
 	RES_CODE res;
@@ -52,6 +54,11 @@ RES_CODE CCache::getc(char& c)
 	return (res);
 }
 
+/**
+ * Reads print character (skip white spaces) from the chached object
+ * @param c - reference to store the character
+ * @return RES_OK or error returned from load()
+ */
 RES_CODE CCache::get_pc(char&c)
 {
 	RES_CODE res;
@@ -69,6 +76,10 @@ RES_CODE CCache::get_pc(char&c)
 	return (res);
 }
 
+/**
+ * Skip white spaces
+ * @return RES_OK or error returned from load()
+ */
 RES_CODE CCache::skip_ws()
 {
 	RES_CODE res;
@@ -92,13 +103,10 @@ RES_CODE CCache::skip_ws()
 
 }
 
-//*----------------------------------------------------------------------------
-//								ungetc()
-//								---------------
-//	Return:
-//		error: 0, success - symbol
-//
-//*----------------------------------------------------------------------------
+/**
+ * Undo last read (if possible)
+ * @return true if the symbol was restored
+ */
 bool CCache::ungetc()
 {
 	if (pos > buf.c_str())
@@ -110,9 +118,11 @@ bool CCache::ungetc()
 	return (false);
 }
 
-//*----------------------------------------------------------------------------
-//*			read line
-//*----------------------------------------------------------------------------
+/**
+ * Read a line from the cached object
+ * @param var - CSTRING where to store the line
+ * @return RES_OK or error returned from load()
+ */
 RES_CODE CCache::readline(CSTRING& var)
 {
 	unsigned int res;
@@ -143,15 +153,23 @@ RES_CODE CCache::readline(CSTRING& var)
 	return (res);
 }
 
-//*----------------------------------------------------------------------------
-//*			read line timed
-//*----------------------------------------------------------------------------
+/**
+ * Read a line from the cached object for a given time
+ * @param str - CSTRING where to store the line
+ * @param time - timeout limit
+ * @return
+ */
 RES_CODE CCache::readline(CSTRING& str, unsigned int time)
 {
 	CURRENT_TASK->time = CURRENT_TIME + time;
 	return (readline(str));
 }
 
+/**
+ *  Default cache load method
+ *
+ * @return
+ */
 RES_CODE CCache::load()
 {
 	pos = NULL;
@@ -166,16 +184,16 @@ RES_CODE CCache::load()
 	return RES_OK;
 }
 
-//*----------------------------------------------------------------------------
-//			get_name()
-//								---------------
-//	Return: RES_OK if the char was skipped, RES_EOF if no more tags, errors..
-//
-//	Description:
-//		Name	   		::=   	NameStartChar (NameChar)*
-//		NameStartChar	::=   	":" | [A-Z] | "_" | [a-z]	//add "?"
-//		NameChar	   	::=   	NameStartChar | "-" | "." | [0-9]
-//*----------------------------------------------------------------------------
+/**
+ * Reads a name from the cache
+ *
+ * Description:
+ * 		Name	   		::=   	NameStartChar (NameChar)*
+ * 		NameStartChar	::=   	":" | [A-Z] | "_" | [a-z]	//add "?"
+ * 		NameChar	   	::=   	NameStartChar | "-" | "." | [0-9]
+ * @param var
+ * @return RES_OK if the char was skipped, RES_EOF if no more tags, errors..
+ */
 RES_CODE CCache::get_name(CSTRING& var)
 {
 	char ch;
@@ -222,9 +240,11 @@ RES_CODE CCache::get_name(CSTRING& var)
 	return (res);
 }
 
-//*----------------------------------------------------------------------------
-//*			buffer
-//*----------------------------------------------------------------------------
+/**
+ * Puts a string in the cache line
+ * @param var
+ * @return
+ */
 RES_CODE CCache::buffer(CSTRING &var)
 {
 	unsigned int len;
@@ -249,14 +269,11 @@ RES_CODE CCache::buffer(CSTRING &var)
 	return RES_OK;
 }
 
-//*----------------------------------------------------------------------------
-//			match()
-//								---------------
-//	Description:
-//		Strips the white space and then tries to read and match.
-//	Return: RES_OK if str matches. Otherwise the cache is restored
-//
-//*----------------------------------------------------------------------------
+/**
+ * Strips the white space and then tries to read and match.
+ * @param str
+ * @return RES_OK if str matches. Otherwise the cache is restored
+ */
 RES_CODE CCache::match(const char* str)
 {
 	RES_CODE res;
@@ -297,6 +314,11 @@ RES_CODE CCache::match(const char* str)
 	return (res);
 }
 
+/**
+ * Match name
+ * @param str
+ * @return
+ */
 RES_CODE CCache::match_name(const char* str)
 {
 	RES_CODE res;
@@ -336,11 +358,14 @@ RES_CODE CCache::match_name(const char* str)
 
 	return (res);
 }
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //+			CCachedHandle
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
+/**
+ * Load (virtual) from handle
+ * @return
+ */
 RES_CODE CCachedHandle::load()
 {
 	unsigned int len;

@@ -10,30 +10,37 @@
 
 #define CACHE_DEFAULT_SIZE	40
 
+/** Cache base class
+ *
+ */
 struct CCache
 {
 	//-- members
-	CSTRING buf; // buffer holding the cached content
-	CSTRING next; // buffer holding queued content
-	const char* pos; // position to read from buf
-	unsigned int size; // cache line size
+	CSTRING buf; 		//!< buffer holding the cached content
+	CSTRING next; 		//!< buffer holding queued content
+	const char* pos; 	//!< position to read from buf
+	unsigned int size;  //!< cache line size
 
-	//--constructors
+	/** Default constructor	**/
 	CCache() :
 			buf(), next(), pos(NULL), size(CACHE_DEFAULT_SIZE)
 	{
 	}
 	;
+
+	/** Construct from CSTRING **/
 	CCache(const CSTRING& s) :
 		buf(s), next(), pos(buf.c_str()), size(CACHE_DEFAULT_SIZE)
 	{
 	}
 	;
+	/** Construct from char* 	**/
 	CCache(const char *str) :
 		buf(str), next(), pos(buf.c_str()), size(CACHE_DEFAULT_SIZE)
 	{
 	}
 	;
+	/** Construct with custom buffer size **/
 	CCache(unsigned int sz) :
 		buf(sz), next(), pos(0), size(sz)
 	{
@@ -59,9 +66,11 @@ protected:
 
 };
 
+/** Cached handle **/
 struct CCachedHandle: CCache
 {
-	HANDLE hnd;
+	HANDLE hnd;		//!< handle to be cached
+	/// Constructor
 	CCachedHandle(HANDLE h, unsigned int sz) :
 		CCache(sz), hnd(h)
 	{

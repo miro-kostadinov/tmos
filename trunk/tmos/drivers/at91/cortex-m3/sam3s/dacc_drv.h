@@ -18,6 +18,7 @@
 
 #include <dacc.h>
 
+/** DACC Driver mode structure, used to open handles **/
 struct DRV_DACC_MODE_STRU
 {
     unsigned int	DACC_MR;	//!< DACC_MR register value
@@ -26,14 +27,17 @@ struct DRV_DACC_MODE_STRU
 /** DACC Mode */
 typedef const DRV_DACC_MODE_STRU * DRV_DACC_MODE;
 
+/** DACC Driver Data structure **/
 struct DACC_DRIVER_DATA_STRU
 {
     unsigned char	cnt;		//!< number of open handles
-    HANDLE			pending;
+    HANDLE			pending;	//!< list with handles, the first is pending,
+    							//!< the rest are waiting.
 };
 /** DACC DRIVER DATA pointer type */
 typedef DACC_DRIVER_DATA_STRU* DACC_DRIVER_DATA;
 
+/** DACC Driver Info structure **/
 struct DACC_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info

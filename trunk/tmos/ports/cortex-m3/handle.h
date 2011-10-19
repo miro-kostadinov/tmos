@@ -19,6 +19,12 @@
 typedef struct CHandle *HANDLE;
 typedef void (*HND_CALLBACK)(HANDLE hnd, unsigned int status);
 
+/** Handle client
+ * Typically a handle is open from a task, so the client is a task.
+ * it is possible though to be a callback or driver.
+ *
+ * @note it is recommended to use only tasks as clients
+ */
 union HND_CLIENTS {
 	Task *task; /**< as task pointer	*/
 	unsigned int drv_index; /**< as driver	*/
@@ -29,6 +35,9 @@ union HND_CLIENTS {
 #error "this swi is required"
 #endif
 
+/** Handle class
+ * The handles are used for communication between tasks(clients) and drivers
+ */
 struct CHandle {
 	//----- members  ---------------------------//
 	DRIVER_INDEX drv_index; /**< Driver index	*/

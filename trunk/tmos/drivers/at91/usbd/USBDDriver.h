@@ -40,7 +40,6 @@
  *       USBDDriver_Initialize.
  *    -# When a USB SETUP request is received, forward it to the standard
  *       driver using USBDDriver_RequestHandler.
- *    -# Check the Remote Wakeup setting via USBDDriver_IsRemoteWakeUpEnabled.
  */
 
 #ifndef USBDDRIVER_H
@@ -70,7 +69,7 @@
  *------------------------------------------------------------------------------*/
 
 /**
- * \typedef USBDDriverDescriptors
+ * \struct _USBDDriverDescriptors
  * \brief List of all descriptors used by a USB device driver. Each descriptor
  *        can be provided in two versions: full-speed and high-speed. Devices
  *        which are not high-speed capable do not need to provided high-speed
@@ -99,10 +98,10 @@ typedef struct _USBDDriverDescriptors {
     /** Number of string descriptors in list */
     uint8_t numStrings;
 
-} USBDDriverDescriptors;
+} USBDDriverDescriptors; //!< _USBDDriverDescriptors
 
 /**
- * \typedef USBDDriver
+ * \struct _USBDDriver
  * \brief USB device driver structure, holding a list of descriptors identifying
  *        the device as well as the driver current state.
  */
@@ -118,7 +117,7 @@ typedef struct _USBDDriver {
     uint8_t isRemoteWakeUpEnabled;
     /** Features supported by OTG */
     uint8_t otg_features_supported;
-} USBDDriver;
+} USBDDriver; //!< _USBDDriver
 
 /*------------------------------------------------------------------------------
  *         Exported functions
@@ -128,15 +127,9 @@ typedef struct _USBDDriver {
 void USBDDriver_Initialize(USBDDriver *pDriver,
 		const USBDDriverDescriptors *pDescriptors, uint8_t *pInterfaces);
 
-USBConfigurationDescriptor* USBDDriver_GetCfgDescriptors(USBDDriver * pDriver,
-		uint8_t cfgNum);
-
 void USBDDriver_RequestHandler(USBDDriver *pDriver,
 		const USBGenericRequest *pRequest, HANDLE hnd);
 
-uint8_t USBDDriver_IsRemoteWakeUpEnabled(const USBDDriver *pDriver);
-uint8_t USBDDriver_returnOTGFeatures(const USBDDriver *pDriver);
-void USBDDriver_clearOTGFeatures(USBDDriver *pDriver);
 void USBDDriverCallbacks_ConfigurationChanged(uint8_t cfgnum);
 void USBDDriverCallbacks_InterfaceSettingChanged(uint8_t interface,
 		uint8_t setting);

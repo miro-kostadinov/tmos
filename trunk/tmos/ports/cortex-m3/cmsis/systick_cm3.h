@@ -20,6 +20,8 @@
   memory mapped structure for SysTick
   @{
  */
+
+/** SysTick **/
 struct SysTick_Type
 {
   __IO uint32_t CTRL;                         /*!< Offset: 0x00  SysTick Control and Status Register */

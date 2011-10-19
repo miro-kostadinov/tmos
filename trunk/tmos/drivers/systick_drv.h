@@ -31,6 +31,7 @@
  extern "C" {
 #endif
 
+ /** SYSTICK Driver Info structure **/
 struct SYSTICK_DRIVER_INFO
 {
 	DRIVER_INFO_Type info;				//!< standard driver info

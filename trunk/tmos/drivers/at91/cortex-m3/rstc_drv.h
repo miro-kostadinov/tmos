@@ -24,12 +24,13 @@
  extern "C" {
 #endif
 
+/** RSTC Driver Info structure **/
 struct RSTC_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info
 	Rstc*				hw_base;		//!< pointer to the hardware peripheral
 };
-/** EEFC Driver Info */
+/** RSTC Driver Info */
 typedef const RSTC_DRIVER_INFO* RSTC_INFO;
 
 void RSTC_DCR(RSTC_INFO drv_info, unsigned int reason, HANDLE hnd);

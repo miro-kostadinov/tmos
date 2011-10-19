@@ -18,7 +18,7 @@ extern "C"
 #define USE_AHB_PERIPHERAL			/**< doc! */
 #endif
 /*----------       General Purpose Input/Output (GPIO)            -----------*/
-// <g> General Purpose Input/Output (GPIO)
+/// General Purpose Input/Output (GPIO)
 struct GPIO_Type
 {
 	__IO uint32_t DATA_Bits[256];   /**< Bit specific data registers	*/

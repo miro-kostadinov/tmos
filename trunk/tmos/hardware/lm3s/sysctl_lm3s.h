@@ -14,7 +14,7 @@
 
 
 /*----------       System Controller (SYSCTL)                     -----------*/
-// <g> System Controller (SYSCTL)
+/// System Controller (SYSCTL)
 struct SYSCTL_Type
 {
     __I  uint32_t DID0;             //!< Device identification register 0

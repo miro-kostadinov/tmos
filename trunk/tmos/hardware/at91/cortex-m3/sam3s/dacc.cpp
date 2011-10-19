@@ -29,7 +29,7 @@
 /**************************************************************************//**
  * @ingroup	 SAM3S_DACC
  * @file
- * @brief    Implementation of Digital-to-Analog Converter Controller (DACC).
+ * Implementation of Digital-to-Analog Converter Controller (DACC).
  *
  */
 
@@ -39,40 +39,28 @@
 
 #include <tmos.h>
 #include "series_cpp.h"
-//#include "chip.h"
-//#include <stdint.h>
-//#include <assert.h>
 
 /*----------------------------------------------------------------------------
  *        Exported functions
  *----------------------------------------------------------------------------*/
 
 /**
-  * \brief Initialize the DACC controller
-  * \param pDACC Pointer to an DACC instance.
-  * \param idDACC identifier of DAC peripheral
-  * \param trgEn trigger mode, free running mode or external Hardware trigger
-  * \param word transfer size,word or half word
-  * \param trgSel hardware trigger selection
-  * \param sleepMode sleep mode selection
-  * \param mck value of MCK in Hz
-  * \param refresh refresh period
-  * \param user_sel user channel selection ,0 or 1
-  * \param tag_mode tag for channel number
-  * \param startup value of the start up time (in DACCClock) (see datasheet)
-*/
-extern void DACC_Initialize( Dacc* pDACC,
-                             uint8_t idDACC,
-                             uint8_t trgEn,
-                             uint8_t trgSel,
-                             uint8_t word,
-                             uint8_t sleepMode,
-                             uint32_t mck,
-                             uint8_t refresh,    /* refresh period */
-                             uint8_t user_sel,   /* user channel selection */
-                             uint32_t tag_mode,  /* using tag for channel number */
-                             uint32_t startup
-                            )
+ * Initialize the DACC controller
+ * @param pDACC Pointer to an DACC instance.
+ * @param idDACC identifier of DAC peripheral
+ * @param trgEn trigger mode, free running mode or external Hardware trigger
+ * @param trgSel hardware trigger selection
+ * @param word transfer size,word or half word
+ * @param sleepMode sleep mode selection
+ * @param mck value of MCK in Hz
+ * @param refresh refresh period
+ * @param user_sel user channel selection ,0 or 1
+ * @param tag_mode tag for channel number
+ * @param startup value of the start up time (in DACCClock) (see datasheet)
+ */
+void DACC_Initialize(Dacc* pDACC, uint8_t idDACC, uint8_t trgEn, uint8_t trgSel,
+		uint8_t word, uint8_t sleepMode, uint32_t mck, uint8_t refresh,
+		uint8_t user_sel, uint32_t tag_mode, uint32_t startup)
 {
     ASSERT( 1024*refresh*1000/(mck>>1) < 20 ) ;
 

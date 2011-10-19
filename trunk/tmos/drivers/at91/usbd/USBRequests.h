@@ -293,7 +293,7 @@ typedef struct {
 
 /**
  * Returns the request code of the given request.
- * \param request Pointer to a USBGenericRequest instance.
+ * \param r Pointer to a USBGenericRequest instance.
  * \return Request code.
  * \sa "USB Request Codes"
  */
@@ -304,7 +304,7 @@ typedef struct {
 
 /**
  * Returns the wValue field of the given request.
- * \param request - Pointer to a USBGenericRequest instance.
+ * \param r Pointer to a USBGenericRequest instance.
  * \return Request value.
  */
 //extern uint16_t USBGenericRequest_GetValue(
@@ -314,7 +314,7 @@ typedef struct {
 
 /**
  * Returns the expected length of the data phase following a request.
- * \param request Pointer to a USBGenericRequest instance.
+ * \param r Pointer to a USBGenericRequest instance.
  * \return Length of data phase.
  */
 //extern uint16_t USBGenericRequest_GetLength(
@@ -324,7 +324,7 @@ typedef struct {
 
 /**
  * Returns the wIndex field of the given request.
- * \param request Pointer to a USBGenericRequest instance.
+ * \param r Pointer to a USBGenericRequest instance.
  * \return Request index;
  */
 //extern uint16_t USBGenericRequest_GetIndex(
@@ -333,7 +333,7 @@ typedef struct {
 
 /**
  * Returns the direction of the data transfer following the given request.
- * \param request Pointer to a USBGenericRequest instance.
+ * \param r Pointer to a USBGenericRequest instance.
  * \return Transfer direction.
  * \sa "USB Request Directions"
  */
@@ -346,7 +346,7 @@ typedef struct {
 /**
  * Returns the type of the descriptor requested by the host given the
  * corresponding GET_DESCRIPTOR request.
- * \param request Pointer to a USBGenericDescriptor instance.
+ * \param r Pointer to a USBGenericDescriptor instance.
  * \return Type of the requested descriptor.
  */
 //extern uint8_t USBGetDescriptorRequest_GetDescriptorType(
@@ -358,7 +358,7 @@ typedef struct {
 /**
  * Returns the index of the requested descriptor, given the corresponding
  * GET_DESCRIPTOR request.
- * \param request Pointer to a USBGenericDescriptor instance.
+ * \param r Pointer to a USBGenericDescriptor instance.
  * \return Index of the requested descriptor.
  */
 //extern uint8_t USBGetDescriptorRequest_GetDescriptorIndex(
@@ -371,7 +371,7 @@ typedef struct {
 /**
  * Indicates which interface is targetted by a GET_INTERFACE or
  * SET_INTERFACE request.
- * \param request Pointer to a USBGenericRequest instance.
+ * \param r Pointer to a USBGenericRequest instance.
  * \return Interface number.
  */
 //extern uint8_t USBInterfaceRequest_GetInterface(
@@ -383,7 +383,7 @@ typedef struct {
 /**
  * Indicates the new alternate setting that the interface targetted by a
  * SET_INTERFACE request should use.
- * \param request Pointer to a USBGenericRequest instance.
+ * \param r Pointer to a USBGenericRequest instance.
  * \return New active setting for the interface.
  */
 //extern uint8_t USBInterfaceRequest_GetAlternateSetting(
@@ -394,7 +394,7 @@ typedef struct {
 
 /**
  * Returns the endpoint number targetted by a given request.
- * \param request Pointer to a USBGenericRequest instance.
+ * \param r Pointer to a USBGenericRequest instance.
  * \return Endpoint number.
  */
 //extern uint8_t USBGenericRequest_GetEndpointNumber(
@@ -405,7 +405,7 @@ typedef struct {
 
 /**
  * Returns the intended recipient of a given request.
- * \param request Pointer to a USBGenericRequest instance.
+ * \param r Pointer to a USBGenericRequest instance.
  * \return Request recipient.
  * \sa "USB Request Recipients"
  */
@@ -418,7 +418,7 @@ typedef struct {
 /**
  *  Returns the feature selector of a given CLEAR_FEATURE or SET_FEATURE
  *  request.
- *  \param request Pointer to a USBGenericRequest instance.
+ *  \param r Pointer to a USBGenericRequest instance.
  *  \return Feature selector.
  */
 //extern uint8_t USBFeatureRequest_GetFeatureSelector(
@@ -430,7 +430,7 @@ typedef struct {
 /**
  * Returns the number of the configuration that should be set in response
  * to the given SET_CONFIGURATION request.
- * \param request Pointer to a USBGenericRequest instance.
+ * \param r Pointer to a USBGenericRequest instance.
  * \return Number of the requested configuration.
  */
 //extern uint8_t USBSetConfigurationRequest_GetConfiguration(
@@ -443,16 +443,6 @@ typedef struct {
  *      Exported Functions
  *---------------------------------------------------------------------------*/
 
-extern uint8_t USBGenericRequest_GetType(
-    const USBGenericRequest *request);
-
-
-extern uint8_t USBSetAddressRequest_GetAddress(
-    const USBGenericRequest *request);
-
-
-extern uint8_t USBFeatureRequest_GetTestSelector(
-    const USBGenericRequest *request);
 
 /** @}*/
 /**@}*/

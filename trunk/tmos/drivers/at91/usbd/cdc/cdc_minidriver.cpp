@@ -103,15 +103,6 @@ void cdc_thread(USBD_INFO drv_info, uint8_t bInterfaceNb)
                       bInterfaceNb, 2);
 
 
-//    cdcdriver->lineCoding = CDCLineCoding__SETLINECODING;
-//    // Initialize Abstract Control Model attributes
-//    CDCLineCoding_Initialize(cdcdriver,
-//                             115200,
-//                             CDCLineCoding_ONESTOPBIT,
-//                             CDCLineCoding_NOPARITY,
-//                             8);
-//    cdcdriver->isCarrierActivated = 0;
-//    cdcdriver->serialState = 0;
 
     for(;;)
     {

@@ -37,7 +37,22 @@ typedef const char* STR_LIST;
  * @endcode
  */
 #define SZ(item) # item "\0"
+
+/**
+ * Search a string with list of options to match
+ * @param str string to scan
+ * @param sl list of possible matches
+ * @param dwRead matched symbols (position in the string)
+ * @return index of the matched item or 0
+ */
 unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead);
+
+/**
+ * Return the position of the list item at specific position
+ * @param sl string list
+ * @param pos position
+ * @return
+ */
 const char* szlist_at(STR_LIST sl, unsigned int pos);
 
 
@@ -45,12 +60,9 @@ const char* szlist_at(STR_LIST sl, unsigned int pos);
 // 					 CString
 //	or something alike...
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/*
- *
- *
- *
- */
 
+
+/** storage for CSTRING **/
 struct str_storage
 {
 	volatile short refs;	/**< refference counter	*/

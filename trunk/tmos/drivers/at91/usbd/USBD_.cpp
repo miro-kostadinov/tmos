@@ -33,7 +33,7 @@
  *
  *  Implementation of USB device functions on a UDP controller.
  *
- *  See \ref usbd_api "USBD API Methods".
+ *  See  usbd_api "USBD API Methods".
  */
 
 

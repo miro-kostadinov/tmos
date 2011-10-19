@@ -193,22 +193,38 @@ void sys_SetNewClock(PMC_INFO drv_info, unsigned int new_clk)
 
 }
 
+/**
+ * Enables the interrupt for a given driver
+ * @param drv_info
+ */
 void drv_isr_enable(DRIVER_INFO drv_info)
 {
 	NVIC->NVIC_SetPriority(drv_info->drv_index, drv_info->isr_priority);
 	NVIC->NVIC_EnableIRQ(drv_info->drv_index);
 }
 
+/** Disables the interrupt for a given driver
+ *
+ * @param drv_info
+ */
 void drv_isr_disable(DRIVER_INFO drv_info)
 {
 	NVIC->NVIC_DisableIRQ(drv_info->drv_index);
 }
 
+/** Enables the pmc/clock for a given driver
+ *
+ * @param drv_info
+ */
 void drv_pmc_enable(DRIVER_INFO drv_info)
 {
 	PMC_EnablePeripheral(drv_info->peripheral_indx);
 }
 
+/** Disables the pmc/clock for a given driver
+ *
+ * @param drv_info
+ */
 void drv_pmc_disable(DRIVER_INFO drv_info)
 {
 	PMC_DisablePeripheral(drv_info->peripheral_indx);
@@ -227,7 +243,7 @@ void PMC_DCR(PMC_INFO drv_info, unsigned int reason, HANDLE hnd)
 }
 
 /**
- * DSR
+ * PMC Driver DSR
  * @param drv_info
  * @param hnd
  */
@@ -237,7 +253,7 @@ void PMC_DSR(PMC_INFO drv_info, HANDLE hnd)
 }
 
 /**
- * ISR
+ * PMC Driver ISR
  * @param drv_info
  */
 void PMC_ISR(PMC_INFO drv_info )

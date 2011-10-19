@@ -21,6 +21,8 @@
   memory mapped structure for Instrumentation Trace Macrocell (ITM)
   @{
  */
+
+/** ITM **/
 typedef struct
 {
   __O  union
@@ -118,6 +120,7 @@ typedef struct
   memory mapped structure for Core Debug Register
   @{
  */
+/** CoreDebug **/
 typedef struct
 {
   __IO uint32_t DHCSR;                        /*!< Offset: 0x00  Debug Halting Control and Status Register    */

@@ -40,185 +40,6 @@
  *------------------------------------------------------------------------------*/
 #include <tmos.h>
 #include <cdc_serial_port.h>
-//#include <CDCDescriptors.h>
-//#include <USBLib_Trace.h>
-
-/*------------------------------------------------------------------------------
- *         Types
- *------------------------------------------------------------------------------*/
-
-///** Parse data extention for descriptor parsing  */
-//typedef struct _CDCDParseData {
-//    /** Pointer to CDCDSerialPort instance */
-//    CDCDSerialPort * pCdcd;
-//    /** Pointer to found interface descriptor */
-//    USBInterfaceDescriptor * pIfDesc;
-//
-//} CDCDParseData;
-
-/*------------------------------------------------------------------------------
- *         Internal variables
- *------------------------------------------------------------------------------*/
-
-///** Line coding values */
-//static CDCLineCoding lineCoding;
-
-/*------------------------------------------------------------------------------
- *         Internal functions
- *------------------------------------------------------------------------------*/
-
-///**
-// * Parse descriptors: Interface, Bulk IN/OUT, Interrupt IN.
-// * \param desc Pointer to descriptor list.
-// * \param arg  Argument, pointer to AUDDParseData instance.
-// */
-//static uint32_t _Interfaces_Parse(USBGenericDescriptor *pDesc,
-//                                  CDCDParseData * pArg)
-//{
-//    CDCDSerialPort *pCdcd = pArg->pCdcd;
-//
-//    /* Not a valid descriptor */
-//    if (pDesc->bLength == 0)
-//        return USBRC_PARAM_ERR;
-//
-//    /* Find interface descriptor */
-//    if (pDesc->bDescriptorType == USBGenericDescriptor_INTERFACE) {
-//        USBInterfaceDescriptor *pIf = (USBInterfaceDescriptor*)pDesc;
-//
-//        /* Obtain interface from descriptor */
-//        if (pCdcd->bInterfaceNdx == 0xFF) {
-//            /* First interface is communication */
-//            if (pIf->bInterfaceClass ==
-//                CDCCommunicationInterfaceDescriptor_CLASS) {
-//                pCdcd->bInterfaceNdx = pIf->bInterfaceNumber;
-//                pCdcd->bNumInterface = 2;
-//            }
-//            /* Only data interface */
-//            else if(pIf->bInterfaceClass == CDCDataInterfaceDescriptor_CLASS) {
-//                pCdcd->bInterfaceNdx = pIf->bInterfaceNumber;
-//                pCdcd->bNumInterface = 1;
-//            }
-//            pArg->pIfDesc = pIf;
-//        }
-//        else if (pCdcd->bInterfaceNdx <= pIf->bInterfaceNumber
-//            &&   pCdcd->bInterfaceNdx + pCdcd->bNumInterface
-//                                       > pIf->bInterfaceNumber) {
-//            pArg->pIfDesc = pIf;
-//        }
-//    }
-//
-//    /* Parse valid interfaces */
-//    if (pArg->pIfDesc == 0)
-//        return (0);
-//
-//    /* Find endpoint descriptors */
-//    if (pDesc->bDescriptorType == USBGenericDescriptor_ENDPOINT) {
-//        USBEndpointDescriptor *pEp = (USBEndpointDescriptor*)pDesc;
-//        switch(pEp->bmAttributes & 0x3) {
-//            case USBEndpointDescriptor_INTERRUPT:
-//                if (pEp->bEndpointAddress & 0x80)
-//                    pCdcd->bIntInPIPE = pEp->bEndpointAddress & 0x7F;
-//                break;
-//            case USBEndpointDescriptor_BULK:
-//                if (pEp->bEndpointAddress & 0x80)
-//                    pCdcd->bBulkInPIPE = pEp->bEndpointAddress & 0x7F;
-//                else
-//                    pCdcd->bBulkOutPIPE = pEp->bEndpointAddress;
-//        }
-//    }
-//
-//    if (    pCdcd->bInterfaceNdx != 0xFF
-//        &&  pCdcd->bBulkInPIPE != 0
-//        &&  pCdcd->bBulkOutPIPE != 0)
-//        return USBRC_FINISHED;
-//
-//    return (0);
-//}
-
-///**
-// * Callback function which should be invoked after the data of a
-// * SetLineCoding request has been retrieved. Sends a zero-length packet
-// * to the host for acknowledging the request.
-// * \param pCdcd Pointer to CDCDSerialPort instance.
-// */
-//static void _SetLineCodingCallback(CDCDSerialPort * pCdcd)
-//{
-//    uint32_t exec = 1;
-//    if (pCdcd->fEventHandler) {
-//        uint32_t rc = pCdcd->fEventHandler(
-//                                        CDCDSerialPortEvent_SETLINECODING,
-//                                        (uint32_t)(&lineCoding),
-//                                        pCdcd->pArg);
-//        if (rc == USBD_STATUS_SUCCESS) {
-//            pCdcd->lineCoding.dwDTERate   = lineCoding.dwDTERate;
-//            pCdcd->lineCoding.bCharFormat = lineCoding.bCharFormat;
-//            pCdcd->lineCoding.bParityType = lineCoding.bParityType;
-//            pCdcd->lineCoding.bDataBits   = lineCoding.bDataBits;
-//        }
-//        else
-//            exec = 0;
-//    }
-//    if (exec)   USBD_Write(0, 0, 0, 0, 0);
-//    else        USBD_Stall(0);
-//}
-//
-///**
-// * Receives new line coding information from the USB host.
-// * \param pCdcd Pointer to CDCDSerialPort instance.
-// */
-//static void _SetLineCoding(CDCDSerialPort * pCdcd)
-//{
-//    TRACE_INFO_WP("sLineCoding ");
-//
-//    USBD_Read(0,
-//              (void *) & (lineCoding),
-//              sizeof(CDCLineCoding),
-//              (TransferCallback)_SetLineCodingCallback,
-//              (void*)pCdcd);
-//}
-//
-///**
-// * Sends the current line coding information to the host through Control
-// * endpoint 0.
-// * \param pCdcd Pointer to CDCDSerialPort instance.
-// */
-//static void _GetLineCoding(CDCDSerialPort * pCdcd)
-//{
-//    TRACE_INFO_WP("gLineCoding ");
-//
-//    USBD_Write(0,
-//               (void *) &(pCdcd->lineCoding),
-//               sizeof(CDCLineCoding),
-//               0,
-//               0);
-//}
-
-///**
-// * Changes the state of the serial driver according to the information
-// * sent by the host via a SetControlLineState request, and acknowledges
-// * the request with a zero-length packet.
-// * \param pCdcd Pointer to CDCDSerialPort instance.
-// * \param request Pointer to a USBGenericRequest instance.
-// */
-//static void _SetControlLineState(
-//    CDCDSerialPort * pCdcd,
-//    const USBGenericRequest *request)
-//{
-//    uint8_t DTR, RTS;
-//
-//    DTR = ((request->wValue & CDCControlLineState_DTR) > 0);
-//    RTS = ((request->wValue & CDCControlLineState_RTS) > 0);
-//    TRACE_INFO_WP("sControlLineState(%d, %d) ", DTR, RTS);
-//
-//    pCdcd->bControlLineState = (uint8_t)request->wValue;
-//    USBD_Write(0, 0, 0, 0, 0);
-//
-//    if (pCdcd->fEventHandler)
-//        pCdcd->fEventHandler(CDCDSerialPortEvent_SETCONTROLLINESTATE,
-//
-//                             (uint32_t)pCdcd->bControlLineState,
-//                             pCdcd->pArg);
-//}
 
 /*------------------------------------------------------------------------------
  *         Exported functions
@@ -229,6 +50,7 @@
  * \param pCdcd Pointer to CDCDSerialPort instance.
  * \param pUsbd Pointer to USBDDriver instance.
  * \param fEventHandler Pointer to event handler function.
+ * \param pArg
  * \param firstInterface First interface index for the function
  *                       (0xFF to parse from descriptors).
  * \param numInterface   Number of interfaces for the function.
@@ -258,11 +80,6 @@ void CDCDSerialPort_Initialize(CDCDSerialPort * pCdcd,
     pCdcd->wSerialState      = 0;
 
 
-//    CDCLineCoding_Initialize(&(pCdcd->lineCoding),
-//                             115200,
-//                             CDCLineCoding_ONESTOPBIT,
-//                             CDCLineCoding_NOPARITY,
-//                             8);
 
     CDCLineCoding *lineCoding = &pCdcd->lineCoding;
     lineCoding->dwDTERate = 115200;
@@ -271,32 +88,6 @@ void CDCDSerialPort_Initialize(CDCDSerialPort * pCdcd,
     lineCoding->bDataBits = 8;
 
 }
-
-///**
-// * Parse CDC Serial Port information for CDCDSerialPort instance.
-// * Accepted interfaces:
-// * - Communication Interface + Data Interface
-// * - Data Interface ONLY
-// * \param pCdcd        Pointer to CDCDSerialPort instance.
-// * \param pDescriptors Pointer to descriptor list.
-// * \param dwLength     Descriptor list size in bytes.
-// */
-//USBGenericDescriptor *CDCDSerialPort_ParseInterfaces(
-//    CDCDSerialPort *pCdcd,
-//    USBGenericDescriptor *pDescriptors,
-//    uint32_t dwLength)
-//{
-//    CDCDParseData parseData;
-//
-//    parseData.pCdcd   = pCdcd;
-//    parseData.pIfDesc = 0;
-//
-//    return USBGenericDescriptor_Parse(
-//                    pDescriptors, dwLength,
-//                    (USBDescriptorParseFunction)_Interfaces_Parse,
-//                    &parseData);
-//}
-
 
 ///**
 // * Handles CDC-specific SETUP requests. Should be called from a

@@ -116,7 +116,7 @@ typedef struct _CDCDSerialPort {
     uint16_t       wSerialState;
     /** Serial port linecoding */
     CDCLineCoding  lineCoding;
-
+    /** reserved */
     uint8_t  bReserved;
 } CDCDSerialPort;
 

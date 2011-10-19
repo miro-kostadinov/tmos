@@ -34,7 +34,7 @@
  *
  *  \section Usage
  *
- *  -# Configurate the pins for DACC
+ *  -# Configure the pins for DACC
  *  -# Initialize the DACC with DACC_Initialize().
  *  -# Select the active channel using DACC_EnableChannel()
  *  -# Start the conversion with DACC_StartConversion()
@@ -100,7 +100,7 @@
  /* ============================================================================= */
 
  #ifndef __ASSEMBLY__
- /** \brief Dacc hardware registers */
+ /** Dacc hardware registers */
  typedef struct {
    WoReg DACC_CR;       //!< (Dacc Offset: 0x00) Control Register
    RwReg DACC_MR;       //!< (Dacc Offset: 0x04) Mode Register
@@ -324,18 +324,9 @@
 /*------------------------------------------------------------------------------
  *         Exported functions
  *------------------------------------------------------------------------------*/
-extern void DACC_Initialize( Dacc* pDACC,
-                     uint8_t idDACC,
-                     uint8_t trgEn,
-                     uint8_t trgSel,
-                     uint8_t word,
-                     uint8_t sleepMode,
-                     uint32_t mck,
-                     uint8_t refresh,	//!< refresh period
-                     uint8_t user_sel,	//!< user channel selection
-                     uint32_t tag_mode,	//!< using tag for channel number
-                     uint32_t startup
-                     );
+extern void DACC_Initialize(Dacc* pDACC, uint8_t idDACC, uint8_t trgEn,
+		uint8_t trgSel, uint8_t word, uint8_t sleepMode, uint32_t mck,
+		uint8_t refresh, uint8_t user_sel, uint32_t tag_mode, uint32_t startup);
 
 
 extern void DACC_SetConversionData( Dacc* pDACC, uint32_t dwData ) ;

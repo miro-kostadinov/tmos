@@ -1,8 +1,8 @@
-/**************************************************************************//**
+/*******************************************************************************
  * @ingroup	 hardware_lm3s
  * @defgroup lm3s_flash Flash
  * @{
- * @file     lm3s/flash_inc.h
+ * @file     lm3s/flash_lm3s.h
  * @brief    Macros used when accessing the flash controller.
  *
  * Copyright (c) 2006-2009 Luminary Micro, Inc.  All rights reserved.
@@ -32,9 +32,9 @@
 #define __HW_FLASH_H__
 
 
-#ifdef __cplusplus
 #include <tmos_types.h>
-/*----------       FLASH controller            -----------*/
+
+///   FLASH controller
 struct FLASHC_Type
 {
 	__IO uint32_t FMA;		//!< (FMC Offset: 0x000 )Memory address register
@@ -354,7 +354,6 @@ struct FLASHC_Type
 #define FLASH_USECRL_MASK       0x000000FF  //!< Clock per uSec
 #define FLASH_USECRL_SHIFT      0			//!< doc!
 
-#endif
 
 #endif // __HW_FLASH_H__
 /** @} defgroup lm3s_flash */

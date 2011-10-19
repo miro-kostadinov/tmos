@@ -13,7 +13,11 @@
 #include <platform_drv.h>
 #include <fam_cpp.h>
 
-// Enable SSC
+/** Enable SSC
+ *
+ * @param drv_info
+ * @param mode
+ */
 static void SSC_ENABLE(SSC_INFO drv_info, const SSC_MODE_STRU* mode)
 {
 	Ssc* pSSC;
@@ -58,6 +62,7 @@ static void SSC_ENABLE(SSC_INFO drv_info, const SSC_MODE_STRU* mode)
 	drv_isr_enable(&drv_info->info);
 }
 
+/** SSC Driver DCR routine  **/
 void SSC_DCR(SSC_INFO drv_info, unsigned int reason, HANDLE param)
 {
 	switch (reason)
@@ -84,6 +89,7 @@ void SSC_DCR(SSC_INFO drv_info, unsigned int reason, HANDLE param)
 	}
 }
 
+/** SSC Driver DSR routine **/
 void SSC_DSR(SSC_INFO drv_info, HANDLE hnd)
 {
 	SSC_DRIVER_DATA drv_data = drv_info->drv_data;
@@ -107,6 +113,7 @@ void SSC_DSR(SSC_INFO drv_info, HANDLE hnd)
 
 }
 
+/** SSC Driver interrupt **/
 void SSC_ISR(SSC_INFO drv_info)
 {
 	Ssc* pSSC;

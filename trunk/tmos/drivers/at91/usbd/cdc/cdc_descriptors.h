@@ -177,13 +177,8 @@
  *         Types
  *----------------------------------------------------------------------------*/
 
-#ifdef __ICCARM__          /* IAR */
-#pragma pack(1)            /* IAR */
-#define __attribute__(...) /* IAR */
-#endif                     /* IAR */
-
 /**
- * \typedef CDCHeaderDescriptor
+ * \struct _CDCHeaderDescriptor
  * \brief Marks the beginning of the concatenated set of functional descriptors
  *        for the interface.
  */
@@ -201,7 +196,7 @@ typedef struct _CDCHeaderDescriptor {
 } __attribute__ ((packed)) CDCHeaderDescriptor; /* GCC */
 
 /**
- * \typedef CDCUnionDescriptor
+ * \struct _CDCUnionDescriptor
  * \brief Describes the relationship between a group of interfaces that can
  *        be considered to form a functional unit.
  */
@@ -221,7 +216,7 @@ typedef struct _CDCUnionDescriptor {
 } __attribute__ ((packed)) CDCUnionDescriptor; /* GCC */
 
 /**
- * \typedef CDCCallManagementDescriptor
+ * \struct _CDCCallManagementDescriptor
  * \brief Describes the processing of calls for the communication class
  *        interface.
  */
@@ -243,7 +238,7 @@ typedef struct _CDCCallManagementDescriptor {
 } __attribute__ ((packed)) CDCCallManagementDescriptor; /* GCC */
 
 /**
- * \typedef CDCAbstractControlManagementDescriptor
+ * \struct _CDCAbstractControlManagementDescriptor
  * \brief Describes the command supported by the communication interface class
  *        with the Abstract Control Model subclass code.
  */
@@ -261,9 +256,6 @@ typedef struct _CDCAbstractControlManagementDescriptor {
 
 } __attribute__ ((packed)) CDCAbstractControlManagementDescriptor; /* GCC */
 
-#ifdef __ICCARM__          /* IAR */
-#pragma pack()             /* IAR */
-#endif                     /* IAR */
 
 /*----------------------------------------------------------------------------
  *         Functions

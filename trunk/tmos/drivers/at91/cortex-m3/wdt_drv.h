@@ -24,6 +24,7 @@
  extern "C" {
 #endif
 
+/** WDT Driver Info structure **/
 struct WDT_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info

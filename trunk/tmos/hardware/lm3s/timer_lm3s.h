@@ -19,7 +19,7 @@ extern "C"
 #endif
 
 /*----------       General Purpose Timer (TIMER)                  -----------*/
-// <g> General Purpose Timer (TIMER)
+/// General Purpose Timer (TIMER)
 struct TIMER_Type
 {
 	__IO uint32_t CFG;              //!< Configuration register

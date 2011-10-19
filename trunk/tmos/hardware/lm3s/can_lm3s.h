@@ -46,54 +46,53 @@ extern "C"
 
 
 /*----------       Controller Area Network (CAN)                  -----------*/
-// <g> Controller Area Network (CAN)
+///  Controller Area Network (CAN)
 typedef struct
 {
-    __IO uint32_t CTL;              // Control register
-    __IO uint32_t STS;              // Status register
-    __I  uint32_t ERR;              // Error register
-    __IO uint32_t BIT;              // Bit Timing register
-    __I  uint32_t INT;              // Interrupt register
-    __IO uint32_t TST;              // Test register
-    __IO uint32_t BRPE;             // Baud Rate Prescaler register
-         uint8_t  RESERVED0[4];
-    __IO uint32_t IF1CRQ;           // Interface 1 Command Request reg.
-    __IO uint32_t IF1CMSK;          // Interface 1 Command Mask reg.
-    __IO uint32_t IF1MSK1;          // Interface 1 Mask 1 register
-    __IO uint32_t IF1MSK2;          // Interface 1 Mask 2 register
-    __IO uint32_t IF1ARB1;          // Interface 1 Arbitration 1 reg.
-    __IO uint32_t IF1ARB2;          // Interface 1 Arbitration 2 reg.
-    __IO uint32_t IF1MCTL;          // Interface 1 Message Control reg.
-    __IO uint32_t IF1DA1;           // Interface 1 DataA 1 register
-    __IO uint32_t IF1DA2;           // Interface 1 DataA 2 register
-    __IO uint32_t IF1DB1;           // Interface 1 DataB 1 register
-    __IO uint32_t IF1DB2;           // Interface 1 DataB 2 register
-         uint8_t  RESERVED1[52];
-    __IO uint32_t IF2CRQ;           // Interface 2 Command Request reg.
-    __IO uint32_t IF2CMSK;          // Interface 2 Command Mask reg.
-    __IO uint32_t IF2MSK1;          // Interface 2 Mask 1 register
-    __IO uint32_t IF2MSK2;          // Interface 2 Mask 2 register
-    __IO uint32_t IF2ARB1;          // Interface 2 Arbitration 1 reg.
-    __IO uint32_t IF2ARB2;          // Interface 2 Arbitration 2 reg.
-    __IO uint32_t IF2MCTL;          // Interface 2 Message Control reg.
-    __IO uint32_t IF2DA1;           // Interface 2 DataA 1 register
-    __IO uint32_t IF2DA2;           // Interface 2 DataA 2 register
-    __IO uint32_t IF2DB1;           // Interface 2 DataB 1 register
-    __IO uint32_t IF2DB2;           // Interface 2 DataB 2 register
-         uint8_t  RESERVED2[84];
-    __I  uint32_t TXRQ1;            // Transmission Request 1 register
-    __I  uint32_t TXRQ2;            // Transmission Request 2 register
-         uint8_t  RESERVED3[24];
-    __I  uint32_t NWDA1;            // New Data 1 register
-    __I  uint32_t NWDA2;            // New Data 2 register
-         uint8_t  RESERVED4[24];
-    __I  uint32_t MSG1INT;          // CAN Message 1 Interrupt Pending
-    __I  uint32_t MSG2INT;          // CAN Message 2 Interrupt Pending
-         uint8_t  RESERVED5[24];
-    __I  uint32_t MSG1VAL;          // CAN Message 1 Valid
-    __I  uint32_t MSG2VAL;          // CAN Message 2 Valid
+    __IO uint32_t CTL;              //!< Control register
+    __IO uint32_t STS;              //!< Status register
+    __I  uint32_t ERR;              //!< Error register
+    __IO uint32_t BIT;              //!< Bit Timing register
+    __I  uint32_t INT;              //!< Interrupt register
+    __IO uint32_t TST;              //!< Test register
+    __IO uint32_t BRPE;             //!< Baud Rate Prescaler register
+         uint8_t  RESERVED0[4];		//!< reserved
+    __IO uint32_t IF1CRQ;           //!< Interface 1 Command Request reg.
+    __IO uint32_t IF1CMSK;          //!< Interface 1 Command Mask reg.
+    __IO uint32_t IF1MSK1;          //!< Interface 1 Mask 1 register
+    __IO uint32_t IF1MSK2;          //!< Interface 1 Mask 2 register
+    __IO uint32_t IF1ARB1;          //!< Interface 1 Arbitration 1 reg.
+    __IO uint32_t IF1ARB2;          //!< Interface 1 Arbitration 2 reg.
+    __IO uint32_t IF1MCTL;          //!< Interface 1 Message Control reg.
+    __IO uint32_t IF1DA1;           //!< Interface 1 DataA 1 register
+    __IO uint32_t IF1DA2;           //!< Interface 1 DataA 2 register
+    __IO uint32_t IF1DB1;           //!< Interface 1 DataB 1 register
+    __IO uint32_t IF1DB2;           //!< Interface 1 DataB 2 register
+         uint8_t  RESERVED1[52];	//!< reserved
+    __IO uint32_t IF2CRQ;           //!< Interface 2 Command Request reg.
+    __IO uint32_t IF2CMSK;          //!< Interface 2 Command Mask reg.
+    __IO uint32_t IF2MSK1;          //!< Interface 2 Mask 1 register
+    __IO uint32_t IF2MSK2;          //!< Interface 2 Mask 2 register
+    __IO uint32_t IF2ARB1;          //!< Interface 2 Arbitration 1 reg.
+    __IO uint32_t IF2ARB2;          //!< Interface 2 Arbitration 2 reg.
+    __IO uint32_t IF2MCTL;          //!< Interface 2 Message Control reg.
+    __IO uint32_t IF2DA1;           //!< Interface 2 DataA 1 register
+    __IO uint32_t IF2DA2;           //!< Interface 2 DataA 2 register
+    __IO uint32_t IF2DB1;           //!< Interface 2 DataB 1 register
+    __IO uint32_t IF2DB2;           //!< Interface 2 DataB 2 register
+         uint8_t  RESERVED2[84];	//!< reserved
+    __I  uint32_t TXRQ1;            //!< Transmission Request 1 register
+    __I  uint32_t TXRQ2;            //!< Transmission Request 2 register
+         uint8_t  RESERVED3[24];	//!< reserved
+    __I  uint32_t NWDA1;            //!< New Data 1 register
+    __I  uint32_t NWDA2;            //!< New Data 2 register
+         uint8_t  RESERVED4[24];	//!< reserved
+    __I  uint32_t MSG1INT;          //!< CAN Message 1 Interrupt Pending
+    __I  uint32_t MSG2INT;          //!< CAN Message 2 Interrupt Pending
+         uint8_t  RESERVED5[24];	//!< reserved
+    __I  uint32_t MSG1VAL;          //!< CAN Message 1 Valid
+    __I  uint32_t MSG2VAL;          //!< CAN Message 2 Valid
 } CAN_Type;
-// </g>
 
 
 #define CAN0                ((CAN_Type *)CAN0_BASE)

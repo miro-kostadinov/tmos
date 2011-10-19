@@ -18,15 +18,21 @@
 
 #include <adc.h>
 
+/** ADC Driver Data structure
+ *
+ */
 struct ADC_DRIVER_DATA_STRU
 {
     unsigned char	cnt;		//!< number of open handles
-    HANDLE			waiting;
-    HANDLE			pending;
+    HANDLE			waiting;	//!< List with waiting handles
+    HANDLE			pending;	//!< List with pending handles
 };
 /** UART DRIVER DATA pointer type */
 typedef ADC_DRIVER_DATA_STRU* ADC_DRIVER_DATA;
 
+/** ADC Driver Info structure
+ *
+ */
 struct ADC_DRIVER_INFO
 {
 	DRIVER_INFO_Type 	info;			//!< standard driver info
