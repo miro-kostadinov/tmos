@@ -20,7 +20,7 @@ local_h_src-y 	+= fam_cpp.h fam_inc.h memmap_inc.h sysctl_lm3s.h uart_lm3s.h
 local_h_src-y 	+= gpio_lm3s.h udma_lm3s.h ssi_lm3s.h adc_lm3s.h gpio_inc.h 
 local_h_src-y 	+= udma_inc.h ssi_inc.h uart_inc.h sysctl_inc.h types_lm3s.h
 local_h_src-y 	+= timer_lm3s.h  timer_inc.h flash_lm3s.h ethernet_lm3s.h
-local_h_src-y 	+=  ethernet_inc.h rom_lm3s.h usb_lm3s.h 
+local_h_src-y 	+=  ethernet_inc.h rom_lm3s.h usb_lm3s.h wdt_lm3s.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
