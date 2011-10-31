@@ -20,16 +20,19 @@ WEAK void backlight_thread(LCD_MODULE *lcd)
      	PIO_SetOutput(lcd->pins[BKLT_PIN_INDX]);
      	if(tsk_wait_signal(SIG_BACKLIGHT_TASK, backlight_time ))
      		continue;
-     	// reduce the current consumption to 5%
-     	int t = 20;
-     	while(!tsk_test_signal(SIG_BACKLIGHT_TASK))
+     	if(backlight_time)
      	{
-         	PIO_SetOutput(lcd->pins[BKLT_PIN_INDX]);
-         	tsk_sleep(t);
-           	PIO_ClrOutput(lcd->pins[BKLT_PIN_INDX]);
-           	tsk_sleep(20 - t--);
-           	if(!t)
-           		t=1;
+			// reduce the current consumption to 5%
+			int t = 20;
+			while(!tsk_test_signal(SIG_BACKLIGHT_TASK))
+			{
+				PIO_SetOutput(lcd->pins[BKLT_PIN_INDX]);
+				tsk_sleep(t);
+				PIO_ClrOutput(lcd->pins[BKLT_PIN_INDX]);
+				tsk_sleep(20 - t--);
+				if(!t)
+					t=1;
+			}
      	}
        	tsk_get_signal(SIG_BACKLIGHT_TASK);
     }
