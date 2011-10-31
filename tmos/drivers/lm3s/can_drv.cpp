@@ -40,9 +40,10 @@ void CAN_DCR(CAN_INFO drv_info, unsigned int reason, HANDLE param)
             task = usr_task_create_dynamic("CANT", (TASK_FUNCTION) can_thread, 90,
 				CAN_TASK_STACK_SIZE);
 			if (task)
+			{
 				svc_task_schedule(task);
-
-            task->sp->r0.as_cvoidptr = drv_info;
+				task->sp->r0.as_cvoidptr = drv_info;
+			}
             break;
 
 	    case DCR_OPEN:
