@@ -68,7 +68,8 @@ extern "C" void HardFaultIsr(void)
     exception_record.MMFAR = mem_adr;
     exception_record.BFAR = bus_adr;
     exception_record.cur_task = (unsigned int)CURRENT_TASK;
-    if( ((unsigned int)CURRENT_TASK > SRAM_BASE) && ((char*)CURRENT_TASK < &end) )
+    if (((unsigned int) CURRENT_TASK > SRAM_BASE)
+			&& ((unsigned int) CURRENT_TASK < (SRAM_BASE + RAM_SIZE)))
     {
     	exception_record.task_name = CURRENT_TASK->name[0]
 				+ (CURRENT_TASK->name[1] << 8) + (CURRENT_TASK->name[2] << 16)
