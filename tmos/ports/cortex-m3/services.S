@@ -23,6 +23,7 @@
 #include "port_asm.h"
 #include "port_inc.h"
 #include "cmsis_inc.h"
+#include "swi_tab.h"
 
 
 //------------------------------------------------------------------------------
@@ -304,10 +305,14 @@ FUNC(	svc_task_suspend	)
 
 				m_TRemove		r0, r2, r3
 				m_TCleanup		r0
+#ifdef free_swi
 				push			{r0,lr}
 				subs			r0, #4
 				bl				svc_free
 				pop				{r3,lr}
+#else
+				mov				r3, r0
+#endif
                 movs			r0, #TSKSTATE_SUSPEND
 				b				s_susp_task
 
