@@ -13,9 +13,9 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= gpio_drv.cpp spi_drv.cpp uart_driver.cpp
+local_cpp_src-y	+= gpio_drv.cpp spi_drv.cpp uart_driver.cpp wdt_drv.cpp
 
-local_h_src-y 	+= gpio_drv.h spi_drv.h uart_driver.h tmos_drivers.h
+local_h_src-y 	+= gpio_drv.h spi_drv.h uart_driver.h tmos_drivers.h wdt_drv.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
