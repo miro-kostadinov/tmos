@@ -205,6 +205,12 @@ struct SCB_Type
 #define SCB_CFSR_MEMFAULTSR_Pos             0                                             /*!< SCB CFSR: Memory Manage Fault Status Register Position */
 #define SCB_CFSR_MEMFAULTSR_Msk            (0xFFul << SCB_CFSR_MEMFAULTSR_Pos)            /*!< SCB CFSR: Memory Manage Fault Status Register Mask */
 
+/* MMFSR memory manage exception */
+#define SCB_CFSR_MMFSR_MMARVALID			(1ul<< 7)									 /*1< SCB CFSR MMFSR MMARVALID: Memory manage fault flag valid address in MMFAR */
+
+/* BFSR bus fault exception */
+#define SCB_CFSR_BFSR_BFARVALID				(1ul<< 15)									 /*1< SCB CFSR BFSR BFARVALID: Bus fault flag valid address in BFAR */
+
 /* SCB Hard Fault Status Registers Definitions */
 #define SCB_HFSR_DEBUGEVT_Pos              31                                             /*!< SCB HFSR: DEBUGEVT Position */
 #define SCB_HFSR_DEBUGEVT_Msk              (1ul << SCB_HFSR_DEBUGEVT_Pos)                 /*!< SCB HFSR: DEBUGEVT Mask */
