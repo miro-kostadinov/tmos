@@ -44,12 +44,17 @@ extern "C"
 		unsigned int BFAR;  //!< Bus Fault Address Register
 		unsigned int cur_task;
 		unsigned int task_name;
+		unsigned int reset_cause;
+		unsigned int restart_cause;
 	} EXCEPTION_RECORD_STRU;
 	extern volatile EXCEPTION_RECORD_STRU exception_record;
 	#endif
+
+	void FaultHandler( void );
 }
 #else
 extern volatile __no_init unsigned int system_clock_frequency;
+void FaultHandler( void );
 #endif
 
 

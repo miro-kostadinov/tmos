@@ -43,7 +43,7 @@ volatile __no_init EXCEPTION_RECORD_STRU exception_record;
 
 extern char end;
 
-extern "C" void HardFaultIsr(void)
+extern "C" void FaultHandler( void )
 {
     volatile unsigned int i=1;
     unsigned status = SCB->CFSR;
@@ -64,6 +64,7 @@ extern "C" void HardFaultIsr(void)
     SCB->CFSR = status;
 
 #if USE_EXCEPTION_RECORD
+    exception_record.restart_cause = __get_IPSR();
     exception_record.CFSR = status;
     exception_record.MMFAR = mem_adr;
     exception_record.BFAR = bus_adr;

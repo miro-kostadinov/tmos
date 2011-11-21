@@ -156,12 +156,14 @@ FUNC(	sys_call_static_ctors	)
 
 ENDF(	sys_call_static_ctors	)
 
+				.extern FaultHandler
+
 //*----------------------------------------------------------------------------
 //*			NMI handler
 //*----------------------------------------------------------------------------
 FUNC(	sys_nmi_handler		)
 
-				b 			sys_nmi_handler
+				b 			FaultHandler
 
 ENDF(	sys_nmi_handler		)
 
@@ -169,11 +171,10 @@ ENDF(	sys_nmi_handler		)
 //*----------------------------------------------------------------------------
 //*			Hard Fault handler
 //*----------------------------------------------------------------------------
-				.extern HardFaultIsr
 
 FUNC(	sys_hard_fault_handler		)
 
-				b			HardFaultIsr
+				b			FaultHandler
 
 ENDF(	sys_hard_fault_handler		)
 
@@ -183,7 +184,7 @@ ENDF(	sys_hard_fault_handler		)
 //*----------------------------------------------------------------------------
 FUNC(	sys_mpu_handler		)
 
-				b			HardFaultIsr
+				b			FaultHandler
 
 ENDF(	sys_mpu_handler		)
 
@@ -193,7 +194,7 @@ ENDF(	sys_mpu_handler		)
 //*----------------------------------------------------------------------------
 FUNC(	sys_bus_fault_handler	)
 
-				b 			HardFaultIsr
+				b 			FaultHandler
 
 ENDF(	sys_bus_fault_handler	)
 
@@ -203,7 +204,7 @@ ENDF(	sys_bus_fault_handler	)
 //*----------------------------------------------------------------------------
 FUNC(	sys_usage_fault_handler		)
 
-				b 			sys_usage_fault_handler
+				b 			FaultHandler
 
 ENDF(	sys_usage_fault_handler		)
 
