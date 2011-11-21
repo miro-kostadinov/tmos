@@ -67,7 +67,7 @@ void wdt_thread(WDT_INFO drv_info)
 	}
 
 }
-#define WDT_TASK_STACK_SIZE 5
+#define WDT_TASK_STACK_SIZE 15
 
 /**
  * Watchdog DCR
@@ -154,38 +154,7 @@ void WDT_DSR(WDT_INFO drv_info, HANDLE hnd)
  */
 void WDT_ISR(WDT_INFO drv_info )
 {
-    volatile unsigned int i=1;
-
-#if (TRACE_IS != TRACE_DISABLED) || defined(USE_EXCEPTION_RECORD)
-    TRACELN1("\r\nWatchdog!!!");
-#endif
-
-
-#if USE_EXCEPTION_RECORD
-    exception_record.CFSR = 0;
-    exception_record.MMFAR = 0;
-    exception_record.BFAR = 0;
-    exception_record.cur_task = (unsigned int)CURRENT_TASK;
-    if (((unsigned int) CURRENT_TASK > SRAM_BASE)
-			&& ((unsigned int) CURRENT_TASK < (SRAM_BASE + RAM_SIZE)))
-    {
-    	exception_record.task_name = CURRENT_TASK->name[0]
-				+ (CURRENT_TASK->name[1] << 8) + (CURRENT_TASK->name[2] << 16)
-				+ (CURRENT_TASK->name[3] << 24);
-	} else
-    {
-    	exception_record.task_name = 0;
-    }
-#endif
-
-    if(restart_on_exception)
-    {
-    	// stop systick
-		SysTick->CTRL = 0;
-		LowLevelReboot();
-    }
-
-    while(i){}
+	FaultHandler();
 }
 
 
