@@ -66,5 +66,7 @@
 #define USE_LWIP_1_4		1
 
 #define USE_EXCEPTION_RECORD 1
+#define USE_MEMORY_TRACKING	1
+
 
 #endif /* BRD_CFG_H_ */
