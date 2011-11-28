@@ -2,8 +2,8 @@
 #===============	            PARAMS                      	===============#
 SVN			 ?= svn
 CVS			 ?= cvs
-COUNTER_FILE ?= versions.txt 
-TARGET_VER_FILE ?= targets/$(CFG_TARGET)/versions.txt 
+COUNTER_FILE ?= versions.h 
+TARGET_VER_FILE ?= targets/$(CFG_TARGET)/versions.h 
 
 #===============	            MACROS                      	===============#
 #repository command
@@ -164,7 +164,7 @@ sync: $(COUNTER_FILES)
 	@echo
 	@echo Updating from the repository...
 	$(REP) update
-	@if $(REP) status | grep / ; then echo Synchronize first!; exit 1 ; fi
+	@if $(REP) status; then echo Synchronize first!; exit 1 ; fi
 	
 $(COUNTER_FILE):
 	@if ! test -f $(COUNTER_FILE); then echo creating file: $(COUNTER_FILE); \
