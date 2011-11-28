@@ -27,7 +27,7 @@ CFG_MCU 	?= LM3S5B91_C1
 DEBUG 		?= dwarf-2
 
 
-#===============	Project settings		===============#
+#=========================   Project settings       ===========================#
 
 # Select Target CPU
 
@@ -37,7 +37,7 @@ DEBUG 		?= dwarf-2
 BOARD_TYPE  ?= HW_VER_11
 
 
-#===============	TMOS settings		===============#
+#========================    TMOS settings		===============================#
 
 # memcmp() memset() memclr() memcpy() memmove() strcpy() strncpy() strlen()
 # strchr() strrchr() strpbrk() islower() isupper() strcmp() strncmp() strcasecmp()
@@ -75,7 +75,7 @@ USE_USB			?=y
 USE_GPIO_EXPANDER ?=y
 
 
-##########################################################################
+################################################################################
 
 # local sources
 local_as_src-y	:=
@@ -104,3 +104,7 @@ modules += $(sub_modules)
 
 include $(addsuffix /module.mk,$(sub_modules))
 
+#========================     Versioning          =============================#
+DEP_PROJECTS := 
+
+include boards/release.mk
