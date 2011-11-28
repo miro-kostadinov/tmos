@@ -172,7 +172,7 @@ $(COUNTER_FILE):
 	echo "$(PRINT_VERSIONS2)";\
 	svn add $(COUNTER_FILE) ; fi
 	
-check_counters:	
+check_counters: $(COUNTER_FILE)	
 	@if [ -n "$(DO_TAG)" ] ; then \
 	echo ;echo Updating version file: $(COUNTER_FILE); \
 	echo "$(PRINT_VERSIONS)";\
