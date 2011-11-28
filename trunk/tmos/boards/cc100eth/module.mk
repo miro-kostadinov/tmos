@@ -79,7 +79,7 @@ USE_GPIO_EXPANDER ?=y
 USE_LWIP_1_4	?=y
 
 
-##########################################################################
+################################################################################
 
 # local sources
 local_as_src-y	:=
@@ -107,4 +107,9 @@ sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
 
 include $(addsuffix /module.mk,$(sub_modules))
+
+#========================     Versioning          =============================#
+DEP_PROJECTS := 
+
+include boards/release.mk
 

@@ -85,13 +85,14 @@ endef
 define PRINT_VERSIONS2
 $(foreach i,$(DEP_PROJECTS),$(shell echo $(i) $(call GET_VERSION,$(i))>> $(COUNTER_FILE)))
 endef
-REP_INFO := $(shell $(REP) info >$(OUT_DIR)/svn.info)
+REP_INFO := $(if $(filter all,$(MAKECMDGOALS))$(filter clean,$(MAKECMDGOALS)),,$(shell $(REP) info >$(OUT_DIR)/svn.info))
 REP_ROOT := $(lastword $(shell grep "Repository Root:" $(OUT_DIR)/svn.info))
 REP_URL := $(lastword $(shell grep "URL:" $(OUT_DIR)/svn.info))
 REP_FOLDER := $(lastword $(subst /, ,$(REP_URL)))
 
 TAG_REQUESTED := $(filter tag,$(MAKECMDGOALS))$(filter release,$(MAKECMDGOALS))
-TAG_THIS := $(shell if test $(call REP_VER,/trunk/$(REP_FOLDER)) -gt $(call REP_VER,/tags/$(REP_FOLDER)); then echo do; fi)
+TAG_THIS := $(if $(filter all,$(MAKECMDGOALS))$(filter clean,$(MAKECMDGOALS)),\
+,$(shell if test $(call REP_VER,/trunk/$(REP_FOLDER)) -gt $(call REP_VER,/tags/$(REP_FOLDER)); then echo do; fi))
 TAG_DEP_PROJ := $(foreach i,$(DEP_PROJECTS),$(call CHECK_TAG,$(i)))
 DO_TAG :=$(if $(TAG_REQUESTED),$(if $(TAG_THIS)$(TAG_DEP_PROJ),do,),$(if $(filter test-release,$(MAKECMDGOALS)),y,))
 
@@ -152,11 +153,11 @@ endif
 
 
 # Release
-release: check_counters all $(DO_PACKAGE) tag  
+release: sync check_counters all $(DO_PACKAGE) tag  
 
 force-release: check_counters all $(DO_PACKAGE)   
 
-test-release: check_counters all $(DO_PACKAGE) tag
+test-release: sync check_counters all $(DO_PACKAGE) tag
 
 #sync
 sync: $(COUNTER_FILES)
@@ -169,7 +170,7 @@ $(COUNTER_FILE):
 	@if ! test -f $(COUNTER_FILE); then echo creating file: $(COUNTER_FILE); \
 	echo "$(PRINT_VERSIONS)";\
 	echo "$(PRINT_VERSIONS2)";\
-	echo svn add $(COUNTER_FILE) ; fi
+	svn add $(COUNTER_FILE) ; fi
 	
 check_counters:	
 	@if [ -n "$(DO_TAG)" ] ; then \
@@ -190,8 +191,8 @@ tag: $(COUNTER_FILES)
 	echo Tagging: $(F_VERSION) "->" $(REP_VERSION); \
 	echo "$(PRINT_VERSIONS)";\
 	echo "$(PRINT_VERSIONS2)";\
-	echo svn commit -m "$(LOG)" $(COUNTER_FILE); \
-	echo svn copy -m "$(LOG)" . $(REP_ROOT)/tags/$(REP_FOLDER)/$(REP_VERSION); fi
+	svn commit -m "$(LOG)" $(COUNTER_FILE); \
+	svn copy -m "$(LOG)" . $(REP_ROOT)/tags/$(REP_FOLDER)/$(REP_VERSION); fi
 
 postbuild += trace
 

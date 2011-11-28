@@ -101,3 +101,7 @@ modules += $(sub_modules)
 
 include $(addsuffix /module.mk,$(sub_modules))
 
+#========================     Versioning          =============================#
+DEP_PROJECTS := 
+
+include boards/release.mk
