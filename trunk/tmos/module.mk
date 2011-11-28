@@ -16,6 +16,7 @@ local_cpp_src-y	:=
 
 local_h_src-y 	:= 
 
+local_h_src-y 	+= versions.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
