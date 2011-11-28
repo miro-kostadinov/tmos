@@ -164,7 +164,7 @@ sync: $(COUNTER_FILES)
 	@echo
 	@echo Updating from the repository...
 	$(REP) update
-	@if $(REP) status; then echo Synchronize first!; exit 1 ; fi
+	@if $(REP) status | grep "M"; then echo Synchronize first!; exit 1 ; fi
 	
 $(COUNTER_FILE):
 	@if ! test -f $(COUNTER_FILE); then echo creating file: $(COUNTER_FILE); \
