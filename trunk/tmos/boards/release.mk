@@ -93,7 +93,7 @@ REP_FOLDER := $(lastword $(subst /, ,$(REP_URL)))
 TAG_REQUESTED := $(filter tag,$(MAKECMDGOALS))$(filter release,$(MAKECMDGOALS))
 TAG_THIS := $(if $(filter all,$(MAKECMDGOALS))$(filter clean,$(MAKECMDGOALS)),\
 ,$(shell if test $(call REP_VER,/trunk/$(REP_FOLDER)) -gt $(call REP_VER,/tags/$(REP_FOLDER)); then echo do; fi))
-TAG_DEP_PROJ := $(foreach i,$(DEP_PROJECTS),$(call CHECK_TAG,$(i)))
+TAG_DEP_PROJ :=$(strip $(foreach i,$(DEP_PROJECTS),$(call CHECK_TAG,$(i))))
 DO_TAG :=$(if $(TAG_REQUESTED),$(if $(TAG_THIS)$(TAG_DEP_PROJ),do,),$(if $(filter test-release,$(MAKECMDGOALS)),y,))
 
 F_TIME :=$(call FILE_ITEM,$(COUNTER_FILE),TIME)
@@ -198,5 +198,5 @@ postbuild += trace
 
 trace:
 	@echo 
-	@echo Project: $(REP_FOLDER) version: $(VERSION).$(INTERMEDIATE) 
+	@echo Project: $(REP_FOLDER) version: $(DEV_VERSION)$(VERSION).$(INTERMEDIATE) 
 	
