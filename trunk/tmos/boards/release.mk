@@ -55,7 +55,7 @@ endef
 #						------------
 # $(call CHECK_TAG, projetc)
 define CHECK_TAG
-$(call DIFRENT,$(call GET_VERSION,$1),$(call FILE_ITEM,$(COUNTER_FILE),$1),$1)
+$(call DIFRENT,$(call GET_VERSION,$1),$(call FILE_ITEM,$(TARGET_VER_FILE),$1),$1)
 endef
 
 
@@ -79,12 +79,21 @@ echo VERSION $(VERSION).$(INTERMEDIATE) >> $(COUNTER_FILE))
 endef
 
 #-------------------------------------------------------------------------------
-#						PRINT_VERSIONS2()
+#						PRINT_TARG_VER()
 #						------------
-# $(call PRINT_VERSIONS2)
-define PRINT_VERSIONS2
-$(foreach i,$(DEP_PROJECTS),$(shell echo $(i) $(call GET_VERSION,$(i))>> $(COUNTER_FILE)))
+# $(call PRINT_TARG_VER)
+define PRINT_TARG_VER
+$(shell echo DEV_VER $(DEV_VERSION) > $(TARGET_VER_FILE);)
 endef
+
+#-------------------------------------------------------------------------------
+#						PRINT_TARG_VER2()
+#						------------
+# $(call PRINT_TARG_VER2)
+define PRINT_TARG_VER2
+$(foreach i,$(DEP_PROJECTS),$(shell echo $(i) $(call GET_VERSION,$(i))>> $(TARGET_VER_FILE)))
+endef
+
 REP_INFO := $(if $(filter all,$(MAKECMDGOALS))$(filter clean,$(MAKECMDGOALS)),,$(shell $(REP) info >$(OUT_DIR)/svn.info))
 REP_ROOT := $(lastword $(shell grep "Repository Root:" $(OUT_DIR)/svn.info))
 REP_URL := $(lastword $(shell grep "URL:" $(OUT_DIR)/svn.info))
@@ -120,13 +129,10 @@ REP_VERSION := $(VERSION).$(INTERMEDIATE)
 LOG := ver $(REP_VERSION) $(OUT_NAME)
 
 # generate version string
-COUNTER_FILES := $(COUNTER_FILE)
+COUNTER_FILES := $(COUNTER_FILE) $(if $(DEP_PROJECTS),$(TARGET_VER_FILE),)
 DO_PACKAGE :=
+
 ifneq ($(BUILD_LIB),y)
-
-COUNTER_FILES += $(TARGET_VER_FILE)
-
-#LDFLAGS += -Wl,--defsym,__BUILD_VERSION=$(DEV_VERSION)$(VERSION)
 DEV_VERSION :=$(call FILE_ITEM,$(TARGET_VER_FILE),DEV_VER)
 objects += $(OUT_DIR)version.op
 
@@ -142,8 +148,6 @@ $(TARGET_VER_FILE):
 	@if ! test -f $(TARGET_VER_FILE); then \
 	echo ERROR: missing target version file: $(TARGET_VER_FILE); \
 	exit 1; fi
-
-
 endif
 
 
@@ -169,14 +173,14 @@ sync: $(COUNTER_FILES)
 $(COUNTER_FILE):
 	@if ! test -f $(COUNTER_FILE); then echo creating file: $(COUNTER_FILE); \
 	echo "$(PRINT_VERSIONS)";\
-	echo "$(PRINT_VERSIONS2)";\
 	svn add $(COUNTER_FILE) ; fi
 	
-check_counters: $(COUNTER_FILE)	
+check_counters: 	
 	@if [ -n "$(DO_TAG)" ] ; then \
-	echo ;echo Updating version file: $(COUNTER_FILE); \
+	echo ;echo Updating version files: $(COUNTER_FILES); \
 	echo "$(PRINT_VERSIONS)";\
-	echo "$(PRINT_VERSIONS2)"; fi
+	echo "$(PRINT_TARG_VER)";\
+	echo "$(PRINT_TARG_VER2)"; fi
 	
 package:
 	@echo
@@ -190,11 +194,13 @@ tag: $(COUNTER_FILES)
 	@if [ -n "$(DO_TAG)" ] ; then \
 	echo Tagging: $(F_VERSION) "->" $(REP_VERSION); \
 	echo "$(PRINT_VERSIONS)";\
-	echo "$(PRINT_VERSIONS2)";\
-	svn commit -m "$(LOG)" $(COUNTER_FILE); \
+	echo "$(PRINT_TARG_VER)";\
+	echo "$(PRINT_TARG_VER2)";\
+	svn commit -m "$(LOG)" $(COUNTER_FILES); \
 	svn copy -m "$(LOG)" . $(REP_ROOT)/tags/$(REP_FOLDER)/$(REP_VERSION); fi
 
 postbuild += trace
+prebuild += $(COUNTER_FILES)
 
 trace:
 	@echo 
