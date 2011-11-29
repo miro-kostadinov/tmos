@@ -110,6 +110,7 @@ include $(addsuffix /module.mk,$(sub_modules))
 
 #========================     Versioning          =============================#
 DEP_PROJECTS := 
+TARGET_VER_FILE := $(subdirectory)versions.h 
 
 include boards/release.mk
 
