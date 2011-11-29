@@ -203,10 +203,10 @@ endif
 PROJECT = $(OUT_DIR)$(OUT_NAME)
 LIBNAME = $(OUT_DIR)lib$(OUT_NAME)
 
-###########################   rules    ############################################
+###########################   rules    #########################################
 
-.PHONY: begin end all clean sizebefore sizeafter build elf hex bin lib lss sym clean \
-		clean_list $(modules)/module.mk makefile headers
+.PHONY: begin end all clean sizebefore sizeafter build elf hex bin lib lss sym \
+		clean clean_list $(modules)/module.mk makefile headers
 
 # Default target.
 all: begin sizebefore $(prebuild) build $(postbuild) sizeafter end
@@ -261,12 +261,15 @@ $(LIBNAME).a: $(objects)
 	@echo Creating load file for Flash: $@
 	$(OBJCOPY) -O -hex $< $@
 
+
 # Create final output file (.bin) from ELF output file.
+DO_COPY_TFTP := $(lastword $(subst \\, ,$(TFTP_PATH)))
 $(PROJECT).bin: %.bin: %.elf
 	@echo
 	@echo Creating load file for Flash: $@
 	$(OBJCOPY) -O binary $< $@
-	cp $@ $(TFTP_PATH)$(@F)
+	@if test "$(DO_COPY_TFTP)"; then echo copy...$(shell cp $@ $(TFTP_PATH)$(@F)); fi
+	
 
 	
 # Create extended listing file from ELF output file.
