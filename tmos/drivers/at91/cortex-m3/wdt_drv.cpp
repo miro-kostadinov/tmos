@@ -1,5 +1,5 @@
 /**************************************************************************//**
- * @file     wdt_drv.cpp
+ * @file     drivers/at91/cortex-m3/wdt_drv.cpp
  * @ingroup  DRV_AT91_WDT
  * @brief    WDT driver implementation
  * @version  V3.00

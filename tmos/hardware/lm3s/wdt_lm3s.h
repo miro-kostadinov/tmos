@@ -19,7 +19,7 @@
 //==============================================================================
 #ifndef __ASSEMBLY__
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 #include <tmos_types.h>
@@ -89,4 +89,5 @@ typedef struct
 #define WDT1         ((WDT_Type *)WATCHDOG1_BASE)	//!< Watchdog 0
 
 #endif /* WDT_LM3S_H_ */
- /** @} defgroup lm3s_wdt Watchdog */
+/** @} defgroup lm3s_wdt Watchdog */
+/** @} defgroup lm3s_wdt Watchdog */

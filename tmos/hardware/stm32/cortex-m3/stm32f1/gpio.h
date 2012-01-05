@@ -4,7 +4,7 @@
  * Interface for GPIO
  * @{
  *
- * @file     hardware/stm32/cortex-m3/gpio.h
+ * @file     hardware/stm32/cortex-m3/stm32f1/gpio.h
  * @ingroup	 STM32F1_GPIO
  * @brief    GPIO header
  *

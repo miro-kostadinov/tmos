@@ -50,10 +50,12 @@ extern "C"
 	extern volatile EXCEPTION_RECORD_STRU exception_record;
 	#endif
 
+	/** Cortex M3 Fault Handler (implemented in exceptions.S **/
 	void FaultHandler( void );
 }
 #else
 extern volatile __no_init unsigned int system_clock_frequency;
+/** Cortex M3 Fault Handler (implemented in exceptions.S **/
 void FaultHandler( void );
 #endif
 
