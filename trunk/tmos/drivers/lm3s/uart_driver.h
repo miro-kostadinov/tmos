@@ -10,14 +10,12 @@
 
 //#include "gpio_drv.h"
 #include <uart_lm3s.h>
+#include <gpio_lm3s.h>
 
-#define UART_LIST_ALL_PINS 0
-#define RTS_PIN	0
-#define CTS_PIN	1
-
-#define UART_LIST_RX_TX_PINS	  2
-#define RX_PIN	2
-#define TX_PIN	3
+#define RX_PIN	0
+#define TX_PIN	1
+#define RTS_PIN	2
+#define CTS_PIN	3
 
 #define UART_RX_TIMEOUT			  1
 #define UART_HW_FLOWCTRL		  2
@@ -49,11 +47,10 @@ struct UART_DRIVER_DATA
 /** UART Driver Info structure **/
 struct UART_DRIVER_INFO
 {
-	DRIVER_INFO_Type 	info;	//!< doc!
-	UART_Type *	   	 	hw_base;	//!< doc!
-
-	unsigned int 		uart_pins[5]; //!< pin RTS, pin CTS, pin Rx , pin Tx,
-	UART_DRIVER_DATA * 	drv_data;	//!< doc!
+	DRIVER_INFO_Type  info;			//!< Standard driver info
+	UART_Type *	   	  hw_base;		//!< UART Hardware registers
+	PIN_DESC	 	  uart_pins[5]; //!< pins: Rx, Tx, RTS, CTS, 0
+	UART_DRIVER_DATA* drv_data;		//!< driver data
 };
 
 void dcr_SerialDriver(UART_DRIVER_INFO* driver, unsigned int reason, HANDLE hnd);

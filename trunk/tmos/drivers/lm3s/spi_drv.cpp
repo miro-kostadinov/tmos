@@ -43,7 +43,7 @@ static void SPI_ENABLE(SPI_DRIVER_INFO* drv_info)
 	//		4. Configure the PMCn fields in the GPIOPCTL register to assign the SSI signals to the appropriate
 	//		pins. See page 357 and Table 24-5 on page 1045.
 
-	PIO_Cfg_List((PIN_DESC*)drv_info->spi_pins);
+	PIO_Cfg_List(drv_info->spi_pins);
 
 	pSPI = drv_info->hw_base;
     pSPI->CR1 = SSI_CR1_EOT;

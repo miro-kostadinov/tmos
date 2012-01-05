@@ -2,13 +2,14 @@
  * spi_drv.h
  *
  *  Created on: 2010-4-21
- *      Author: Diado
+ *      Author: Miroslav Kostadinov
  */
 
 #ifndef SPI_DRV_H_
 #define SPI_DRV_H_
 
 #include <ssi_lm3s.h>
+#include <gpio_lm3s.h>
 
 /** SPI Driver mode structure **/
 struct SPI_DRIVER_MODE
@@ -33,7 +34,7 @@ struct SPI_DRIVER_INFO
 	DRIVER_INFO_Type 	info;			//!< doc!
 	SSI_Type *			hw_base;		//!< doc!
 	SPI_DRIVER_DATA * 	drv_data;		//!< doc!
-	unsigned int	 	spi_pins[4];	//!< doc!
+	PIN_DESC		 	spi_pins[4];	//!< zero terminated PIN_DESC list
 
 };
 
