@@ -1,7 +1,7 @@
 #ifndef	LCD_H
 #define	LCD_H
 
-#include <tmos_drivers.h>
+#include <hardware_cpp.h>
 #include <fonts.h>
 #include <stdgui.h>
 

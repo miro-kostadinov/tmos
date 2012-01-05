@@ -18,7 +18,6 @@
 #include <mcu_inc.h>
 #include "memmap_inc.h"
 #include "sysctl_inc.h"
-#include "gpio_inc.h"
 #include "ssi_inc.h"
 #include "uart_inc.h"
 #include "timer_inc.h"

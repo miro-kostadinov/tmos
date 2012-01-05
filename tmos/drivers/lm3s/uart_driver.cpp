@@ -174,10 +174,7 @@ static void dcr_cancel_handle(UART_DRIVER_INFO* drv_info,
 				SYSCTL->SysCtlPeripheralDeepSleepDisable(drv_info->info.peripheral_indx);
 			    SYSCTL->SysCtlPeripheralSleepDisable(drv_info->info.peripheral_indx);
 
-				if(drv_data->mode.hw_flow)
-					PIO_Free_List((PIN_DESC *)&drv_info->uart_pins[UART_LIST_ALL_PINS]);
-				else
-					PIO_Free_List((PIN_DESC *)&drv_info->uart_pins[UART_LIST_RX_TX_PINS]);
+				PIO_Free_List(drv_info->uart_pins);
 		}
 	}
 
@@ -218,16 +215,8 @@ void dcr_SerialDriver(UART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hn
 				{
 					// Enable AND Reset the UART peripheral
 					SysCtlPeripheralReset(drv_info->info.peripheral_indx);
-					if(drv_data->mode.hw_flow)
-					{
-						PIO_Cfg_List((PIN_DESC *)&drv_info->uart_pins[UART_LIST_ALL_PINS]);
-						ConfigureUart(drv_info, drv_data, uart_mode);
-					}
-					else
-					{
-						PIO_Cfg_List((PIN_DESC *)&drv_info->uart_pins[UART_LIST_RX_TX_PINS]);
-						ConfigureUart(drv_info, drv_data, uart_mode);
-					}
+					PIO_Cfg_List(drv_info->uart_pins);
+					ConfigureUart(drv_info, drv_data, uart_mode);
 					START_RX_BUF(Uart, drv_info, drv_data);
 				}
 				drv_data->cnt++;
