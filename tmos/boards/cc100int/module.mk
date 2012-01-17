@@ -107,6 +107,6 @@ TARGET_VER_FILE := $(subdirectory)versions.h
 
 ifneq "$(MAKECMDGOALS)" "clean"
 ifneq "$(MAKECMDGOALS)" "all"
-include targets/release.mk
+include boards/release.mk
 endif
 endif
