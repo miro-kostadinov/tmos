@@ -90,6 +90,11 @@ bool CHandle::tsk_open(DRIVER_INDEX index, const void * m)
 	{
 		unsigned int sig;
 
+		if( !(res & FLG_CLOSED))
+		{
+			TRACELN_ERROR("Handle is already open:%x", this);
+			close();
+		}
 	    drv_index = index;
 	    mode.as_voidptr = (void*)m;
 	    client.task = CURRENT_TASK;
