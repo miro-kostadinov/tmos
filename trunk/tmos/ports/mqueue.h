@@ -54,9 +54,12 @@ public:
 	{
 		if(in != out)
 		{
-			item = items[out++];
-			if(out == size)
-				out=0;
+			unsigned out2;
+			item = items[out];
+			out2 = out +1;
+			if(out2 == size)
+				out2=0;
+			out = out2;
 			return (true);
 		}
 		return (false);
@@ -109,8 +112,8 @@ public:
 	{
 		if(in != out)
 		{
-			item = items[out++];
-			out &= size_mask;
+			item = items[out];
+			out = (out+1) & size_mask;
 			return (true);
 		}
 		return (false);
