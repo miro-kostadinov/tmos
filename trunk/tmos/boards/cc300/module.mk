@@ -72,6 +72,9 @@ USE_USB			?=y
 # GPIO output expander (shift register)
 USE_GPIO_EXPANDER ?=y
 
+#net
+USE_NET			?=y
+
 
 ################################################################################
 
