@@ -42,6 +42,9 @@ void PIO_Cfg(PIN_DESC cfg)
 			port_base->GPIOCR |= pin_pattern;
 		}
 
+		// Set default output level
+		port_base->GPIODATA[pin_pattern] = (cfg & PD_ACTIVE_HIGH)?pin_pattern:0;
+
 	    // Set the output drive strength.
 		(&port_base->GPIODR2R)[PD_STRENGTH_Get(cfg)] |= pin_pattern;
 
@@ -60,7 +63,7 @@ void PIO_Cfg(PIN_DESC cfg)
 		port_base->GPIOPDR = ((cfg & PD_PULL_DOWN) ?
 				(port_base->GPIOPDR | pin_pattern) :
 				(port_base->GPIOPDR & ~pin_pattern));
-		port_base->GPIODEN = ((cfg & PD_PUSH_PULL) ?
+		port_base->GPIODEN = ((cfg & (PD_PUSH_PULL | PD_MODE_OD)) ?
 				(port_base->GPIODEN | pin_pattern) :
 				(port_base->GPIODEN & ~pin_pattern));
 
@@ -119,6 +122,19 @@ void PIO_Cfg_List(PIN_DESC * list )
 	while(*list)
 	{
 		PIO_Cfg(*list);
+		list++;
+	}
+}
+
+/**
+ * Configure a list of pins as inputs
+ * @param list
+ */
+void PIO_CfgInput_List(PIN_DESC * list )
+{
+	while(*list)
+	{
+		PIO_CfgInput(*list);
 		list++;
 	}
 }
@@ -269,6 +285,24 @@ void PIO_CfgOutput0(PIN_DESC pins)
 {
 	PIO_Cfg((pins & ~PD_AFSEL) | PD_OUTPUT);
 	PIO_Write(pins, 0);
+}
+
+/**
+ * Configure pins as output and drive active level
+ * @param pins
+ */
+void PIO_Assert(PIN_DESC pins)
+{
+	PIO_Cfg((pins & ~PD_AFSEL) | PD_OUTPUT);
+}
+
+/**
+ * Configure pins as output and drive inactive level
+ * @param pins
+ */
+void PIO_Deassert(PIN_DESC pins)
+{
+	PIO_Cfg( ((pins & ~PD_AFSEL) | PD_OUTPUT) ^ PD_ACTIVE_HIGH);
 }
 
 
