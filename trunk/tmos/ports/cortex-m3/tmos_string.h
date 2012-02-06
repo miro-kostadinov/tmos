@@ -49,6 +49,7 @@ int toupper(int c);
 #define IS_UPPER(c) 	(G_char_2_type_[(unsigned)c] & FLAG_IS_UPPER)
 #define IS_ALPHA(c) 	(G_char_2_type_[(unsigned)c] & FLAG_IS_ALPHA)
 #define IS_ALPHANUM(c) 	(G_char_2_type_[(unsigned)c] & FLAG_IS_ALPHANUM)
+#define IS_PUNC(c) 		(G_char_2_type_[(unsigned)c] & FLAG_IS_PUNC)
 #define IS_DIGIT(c) 	(G_char_2_type_[(unsigned)c] & FLAG_IS_NUMBER)
 #define IS_XDIGIT(c) 	(G_char_2_type_[(unsigned)c] & FLAG_IS_HEX)
 
