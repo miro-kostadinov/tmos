@@ -124,6 +124,10 @@ typedef unsigned int PIN_DESC;
 #define PD_LOW_LEVEL        (PD_INT_ENABLE | PD_INT_SENSE) //!< interrupt on low level
 #define PD_HIGH_LEVEL       (PD_INT_ENABLE | PD_INT_SENSE | PD_INT_EVENT) //!< interrupt on high level
 
+/// Pin definition bit 2 = Active level
+#define PD_ACTIVE_HIGH 	  	(1 << 2)
+#define PD_ACTIVE_LOW 	  	(0 << 2)
+
 //*****************************************************************************
 //
 // Values that can be passed to Pin_Configure, Pin_Write, Pin_Read as the PIN_DESC parameter.
@@ -872,6 +876,7 @@ void PIO_CfgOutput1(PIN_DESC pins);
 void PIO_CfgOutput0(PIN_DESC pins);
 void PIO_CfgInput(PIN_DESC pins);
 void PIO_Cfg_List(PIN_DESC * list);
+void PIO_CfgInput_List(PIN_DESC * list);
 void PIO_Free(PIN_DESC cfg);
 void PIO_Free_List(PIN_DESC* list);
 
@@ -879,6 +884,8 @@ pio_set PIO_Read(PIN_DESC pins);
 void PIO_Write(PIN_DESC pins, unsigned int val);
 void PIO_SetOutput(PIN_DESC pins);
 void PIO_ClrOutput(PIN_DESC pins);
+void PIO_Assert(PIN_DESC pins);
+void PIO_Deassert(PIN_DESC pins);
 
 // Virtual PIO functions which must be implemented from the application
 /**
