@@ -16,7 +16,7 @@ void ConfigureUart(UART_DRIVER_INFO * drv_info, UART_DRIVER_DATA * drv_data, UAR
 	Uart->UARTFIFOLevelSet(UART_FIFO_TX4_8, UART_FIFO_RX4_8);
 //	Uart->UARTTxIntModeSet(UART_TXINT_MODE_FIFO);//UART_TXINT_MODE_EOT);
 	Uart->UARTTxIntModeSet(UART_TXINT_MODE_EOT);
-	if(drv_data->mode.hw_flow && drv_info->info.drv_index == UART1_IRQn)
+	if(uart_mode->hw_flow && drv_info->info.drv_index == UART1_IRQn)
 		Uart->UARTFlowControlSet(UART_FLOWCONTROL_TX |UART_FLOWCONTROL_RX);
 	Uart->UARTConfigSetExpClk(SYSCTL->SysCtlClockGet(), uart_mode->baudrate, uart_mode->mode); // enable uart
 	Uart->UARTEnable();
@@ -95,7 +95,7 @@ static inline void START_TX_HND(UART_Type * Uart, HANDLE hnd)
 static inline void START_TX_HND(UART_Type * Uart, HANDLE hnd)
 {
 	Uart->UARTIntDisable(UART_INT_TX);
-	Uart->UARTTxIntModeSet(UART_TXINT_MODE_EOT);
+//	Uart->UARTTxIntModeSet(UART_TXINT_MODE_EOT);
 	if(Uart->UARTSpaceAvail() && hnd->len)
 	{
 		Uart->DR = *hnd->src.as_charptr++;
