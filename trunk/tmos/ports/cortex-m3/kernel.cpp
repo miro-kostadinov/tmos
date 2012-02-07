@@ -167,6 +167,8 @@ extern "C" void sys_kernel_init( void)
 
     // initialize main task
     usr_task_init_static(&main_task_desc, false);
+    main_task.tlist = &main_task;
+
     //extra initialization needed for main_task
     main_task.time = 0;								// current time is 000000000
     main_task.state = TSKSTATE_READY;				// leave it suspend ???

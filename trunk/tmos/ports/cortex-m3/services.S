@@ -113,7 +113,7 @@ FUNC(	svc_send_signal		)
                 str				r3, [r2, #tsk_sp_r0]
                 bics			r1, r3
                 str				r1, [r0, #tsk_signal]
-                b				svc_task_schedule
+                b				svc_task_sch
 
 ENDF(	svc_send_signal		)
 
@@ -121,7 +121,10 @@ ENDF(	svc_send_signal		)
 //------------------------------------------------------------------------------
 //void task_schedule(Task *task)
 FUNC(	svc_task_schedule	)
-
+                ldr             r2, [REG_MTASK, #tsk_tlist]
+                str             r2, [r0, #tsk_tlist]
+                str             r0, [REG_MTASK, #tsk_tlist]
+svc_task_sch:
 				m_RERemove		r0, r2, r3			//?
 				m_TRemove		r0, r2, r3
 				m_TCleanup		r0
@@ -303,6 +306,19 @@ ENDF(	sys_get_signal		)
 // void task_suspend(Task *task)
 FUNC(	svc_task_suspend	)
 
+                mov             r1, REG_MTASK
+s_susp_tlist:
+                ldr             r2, [r1, #tsk_tlist]
+                cmp             r0, r2
+                beq             s_susp_lfound
+                mov             r1, r2
+                cmp             r1, REG_MTASK
+                bne             s_susp_tlist
+                beq             s_susp_nfound
+s_susp_lfound:
+                ldr             r2, [r2, #tsk_tlist]
+                str             r2, [r1, #tsk_tlist]
+s_susp_nfound:
 				m_TRemove		r0, r2, r3
 				m_TCleanup		r0
 #ifdef free_swi
