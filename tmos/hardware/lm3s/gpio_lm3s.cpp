@@ -42,8 +42,9 @@ void PIO_Cfg(PIN_DESC cfg)
 			port_base->GPIOCR |= pin_pattern;
 		}
 
-		// Set default output level
-		port_base->GPIODATA[pin_pattern] = (cfg & PD_ACTIVE_HIGH)?pin_pattern:0;
+		// Set default output level. This has no effect if the pin is not yet
+		// configured as output
+		port_base->GPIODATA[pin_pattern] = (cfg & PD_ACTIVE_HIGH)?0:pin_pattern;
 
 	    // Set the output drive strength.
 		(&port_base->GPIODR2R)[PD_STRENGTH_Get(cfg)] |= pin_pattern;
@@ -81,6 +82,14 @@ void PIO_Cfg(PIN_DESC cfg)
 	            (port_base->GPIODIR | pin_pattern) :
 	            (port_base->GPIODIR & ~pin_pattern));
 
+		// If GPIODEN is set and a pin then becomes an output a feedback circuit
+		// will sense the level of the pin before it becomes an output and keep
+		// the pin at that level after it becomes an output.
+		// We do not want to keep the current level but to set the default from
+		// the configuration
+		port_base->GPIODATA[pin_pattern] = (cfg & PD_ACTIVE_HIGH)?0:pin_pattern;
+
+
 		//	Select GPIO/peripheral
 		port_base->GPIOAFSEL = ((cfg & PD_AFSEL) ?
 	            (port_base->GPIOAFSEL | pin_pattern) :
@@ -109,6 +118,10 @@ void PIO_Cfg(PIN_DESC cfg)
 			port_base->GPIOLOCK = GPIO_LOCK_KEY_DD;
 			port_base->GPIOCR &= ~pin_pattern;
 		}
+	} else
+	{
+		//for virtual ports just set the default level
+		PIO_Deassert(cfg);
 	}
 }
 
@@ -293,7 +306,7 @@ void PIO_CfgOutput0(PIN_DESC pins)
  */
 void PIO_Assert(PIN_DESC pins)
 {
-	PIO_Cfg((pins & ~PD_AFSEL) | PD_OUTPUT);
+	PIO_Write(pins, (pins & PD_ACTIVE_HIGH) ? PD_PINS_Get(pins):0);
 }
 
 /**
@@ -302,7 +315,7 @@ void PIO_Assert(PIN_DESC pins)
  */
 void PIO_Deassert(PIN_DESC pins)
 {
-	PIO_Cfg( ((pins & ~PD_AFSEL) | PD_OUTPUT) ^ PD_ACTIVE_HIGH);
+	PIO_Write(pins, (pins & PD_ACTIVE_HIGH) ? 0:PD_PINS_Get(pins));
 }
 
 
