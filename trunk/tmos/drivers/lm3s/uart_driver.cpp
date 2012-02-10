@@ -95,7 +95,7 @@ static inline void START_TX_HND(UART_Type * Uart, HANDLE hnd)
 static inline void START_TX_HND(UART_Type * Uart, HANDLE hnd)
 {
 	Uart->UARTIntDisable(UART_INT_TX);
-//	Uart->UARTTxIntModeSet(UART_TXINT_MODE_EOT);
+	Uart->UARTTxIntModeSet(UART_TXINT_MODE_EOT);
 	if(Uart->UARTSpaceAvail() && hnd->len)
 	{
 		Uart->DR = *hnd->src.as_charptr++;
