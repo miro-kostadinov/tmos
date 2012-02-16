@@ -472,6 +472,7 @@ ENDF(	sys_isr_contol		)
 //------------------------------------------------------------------------------
 //void usr_trace_str(const char *buf);
 FUNC(	usr_trace_str		)
+.weak usr_trace_str
 
 				movs			r1, #ITM_BASE
 1:
@@ -494,6 +495,7 @@ ENDF(	usr_trace_str		)
 //------------------------------------------------------------------------------
 //void usr_trace_char(char c);
 FUNC(	usr_trace_char		)
+.weak usr_trace_char
 
 				movs			r1, #ITM_BASE + (TRACE_PORT * 4)
 				cbz				r0, 2f
