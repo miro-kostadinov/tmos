@@ -132,7 +132,7 @@ TASK_DECLARE_STATIC(usbdrv_task, "USBH", (void (*)(void))usbdrv_thread, 60, 400 
 
 void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
 {
-//	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 
 	switch(reason)
     {
@@ -148,9 +148,22 @@ void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
         	break;
 
 
-    	case DCR_CLOSE:
         case DCR_CANCEL:
+        {
+        	unsigned char eptnum;
+            Endpoint *endpoint;
 
+            eptnum = param->mode0;
+    		endpoint = &(drv_data->endpoints[eptnum]);
+    		if(param->svc_list_cancel(endpoint->pending))
+    		{
+    			return;
+    		}
+
+    		break;
+        }
+
+    	case DCR_CLOSE:
         case DCR_OPEN:
 		  {
 
