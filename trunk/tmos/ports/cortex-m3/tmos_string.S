@@ -311,7 +311,7 @@ ENDF(	isupper		)
 //* 		does not match has a greater value in str1 than in str2
 //*----------------------------------------------------------------------------
 FUNC(	strcmp		)
-				cbz				r0, 3f
+				cbz				r0, 4f
 				cbz				r1, 3f
 1:
 				ldrb			r2, [r0], #1
@@ -323,6 +323,11 @@ FUNC(	strcmp		)
 				subs			r0, r2, r3
   				bx				lr
 3:
+                ldrb            r0, [r0]
+4:
+                cbz             r1, 5f
+                ldrb            r1, [r1]
+5:
 				subs			r0, r1
   				bx				lr
 ENDF(	strcmp		)
