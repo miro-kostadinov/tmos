@@ -14,9 +14,9 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= CSocket.cpp 
+local_cpp_src-y	+= csocket.cpp url.cpp
 
-local_h_src-y 	+= CSocket.h
+local_h_src-y 	+= csocket.h url.h
 
 
 #updating global variables

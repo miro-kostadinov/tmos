@@ -6,7 +6,21 @@
  */
 
 #include <tmos.h>
-#include "CSocket.h"
+#include "csocket.h"
+
+bool CSocket::open(const sock_mode* smode)
+{
+	if(tsk_open(smode->driver, smode) == RES_OK)
+	{
+		set_res_cmd(SOCK_CMD_OPEN);
+		tsk_start_and_wait();
+		if(res == RES_OK)
+			return true;
+
+		CHandle::close();
+	}
+	return false;
+}
 
 /**
  * Associate a socket with a port and address.
@@ -64,20 +78,37 @@ RES_CODE CSocket::listen(int backlog)
  * @param port
  * @return
  */
-RES_CODE CSocket::connect(unsigned int ip_adr, unsigned int port)
+RES_CODE CSocket::connect(const char* ip_adr, unsigned int port)
 {
 	if(complete())
 	{
-		src.as_int = ip_adr;
+		src.as_charptr = (char*) ip_adr;
 		dst.as_int = port;
-		set_res_cmd(SOCK_CMD_BIND_ADR);
+		set_res_cmd(SOCK_CMD_CONNECT_ADR);
 		tsk_start_and_wait();
 	}
 	return (res);
 }
 
 /**
- * Initiate a connection to a remote host.
+ * Initiate a connection to a remote link.
+ * @param link
+ * @return
+ */
+RES_CODE CSocket::connect(CURL& link)
+{
+	if(complete())
+	{
+		src.as_ccharptr = link.host.c_str();
+		dst.as_int = link.port;
+		set_res_cmd(SOCK_CMD_CONNECT_URL);
+		tsk_start_and_wait();
+	}
+	return (res);
+}
+
+/**
+ * Initiate a connection to a remote url.
  * @param url
  * @return
  */
@@ -85,9 +116,16 @@ RES_CODE CSocket::connect(const char* url)
 {
 	if(complete())
 	{
-		src.as_charptr = (char*) url;
-		set_res_cmd(SOCK_CMD_BIND_URL);
-		tsk_start_and_wait();
+		CURL link;
+
+		res = link.url_parse(url);
+		if(res == RES_OK)
+		{
+			src.as_ccharptr = link.host.c_str();
+			dst.as_int = link.port;
+			set_res_cmd(SOCK_CMD_CONNECT_URL);
+			tsk_start_and_wait();
+		}
 	}
 	return (res);
 }
@@ -131,4 +169,15 @@ RES_CODE CSocket::close()
 	return (res);
 }
 
+RES_CODE CSocket::gethostbyname(CSTRING& ip_adr, const char* url)
+{
+	if(complete())
+	{
+		src.as_charptr = (char*) url;
+		dst.as_voidptr = &ip_adr;
+		set_res_cmd(SOCK_CMD_GET_HOST);
+		tsk_start_and_wait();
+	}
+	return (res);
+}
 
