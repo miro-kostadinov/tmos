@@ -443,7 +443,7 @@ static void low_level_init(struct netif *netif)
 	/* device capabilities */
 	/* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
 	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP
-			| NETIF_FLAG_LINK_UP;
+			;//| NETIF_FLAG_LINK_UP;
 
 	/* Do whatever else is needed to initialize interface. */
 	/* Disable all Ethernet Interrupts. */
@@ -519,7 +519,17 @@ static void lwIPServiceTimers(struct netif *netif)
             // harmless.
             //
         	mac->MDIX  ^= MAC_MDIX_EN;
-        }
+       	    if (netif->flags & NETIF_FLAG_LINK_UP)
+			{
+#if LWIP_DHCP
+                autoip_stop(netif);
+                dhcp_start(netif);
+#endif
+				netif_set_link_down(netif);
+			}
+		}
+		else
+			netif_set_link_up(netif);
         //
         // Reset the MDIX timer.
         //
