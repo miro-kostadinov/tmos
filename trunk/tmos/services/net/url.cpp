@@ -562,13 +562,13 @@ const char* CURL::url_get_userinfo (const char *url)
 //	Description:
 // 		Parse a URL. URL_LINK is assumed to be cleared
 //*----------------------------------------------------------------------------
-RES_CODE CURL::url_parse(const char* url)
+NET_CODE CURL::url_parse(const char* url)
 {
 	CSTRING s;
 	//parse the scheme
 	url = url_scheme(url, &url_flags);
 	if(!url || (url_flags & URL_FLAG_SCHEME_MASK) > URL_FLAG_SCHEME_HTTP)
-		return RES_ERROR;
+		return NET_ERR_URL_SCHEME;
 
 	port = 0;
 	if (!port)
@@ -593,10 +593,10 @@ RES_CODE CURL::url_parse(const char* url)
 #ifdef ENABLE_IPV6
 		surl = strchr(surl, ']');
 		if(!p)
-			return RES_ERROR;
+			return NET_ERR_URL_INVALID;
 		/* Check if the IPv6 address is valid. */
 		if (!is_valid_ipv6_address(s->buf+1, surl))
-		return RES_ERROR;/
+		return NET_ERR_URL_INVALID;
 
 		/* Continue parsing after the closing ']'. */
 		host = CSTRING(s->buf, surl - s->buf + 1);
@@ -608,10 +608,10 @@ RES_CODE CURL::url_parse(const char* url)
 		if (!strchr (":/;?#", *surl))
 		{
 			/* Trailing garbage after []-delimited IPv6 address. */
-			return RES_ERROR;//PE_INVALID_HOST_NAME;
+			return NET_ERR_URL_INVALID;//PE_INVALID_HOST_NAME;
 		}
 #else
-		return RES_ERROR;//PE_IPV6_NOT_SUPPORTED;
+		return NET_ERR_URL_INVALID;//PE_IPV6_NOT_SUPPORTED;
 #endif
 	}
 
@@ -633,17 +633,17 @@ RES_CODE CURL::url_parse(const char* url)
 				surl++;
 			}
 			if(!*surl)
-				return RES_OK;
+				return NET_OK;
 
 			/* http://host:12randomgarbage/blah */
 			/*               ^                  */
 			if(*surl != '/')
 			{
-				return RES_ERROR;
+				return NET_ERR_URL_INVALID;
 			}
 			if(surl[1])
 				path = surl+1;
-			return RES_OK;
+			return NET_OK;
 		}
 
 		if(s[0] == '.')
@@ -677,7 +677,7 @@ RES_CODE CURL::url_parse(const char* url)
 				}
 			}
 	}
-	return RES_OK;
+	return NET_OK;
 }
 
 //*----------------------------------------------------------------------------
@@ -708,14 +708,14 @@ RES_CODE CURL::url_parse(const char* url)
 //
 //*----------------------------------------------------------------------------
 
-RES_CODE CURL::url_resolve(CURL & old_link)
+NET_CODE CURL::url_resolve(CURL & old_link)
 {
 	//If the relative URL has a scheme, it's interpreted as a complete absolute URL by itself.
 	//Step 2
 	//        b) If the embedded URL starts with a scheme name, it is
 	//           interpreted as an absolute URL and we are done.
 	if(url_flags & URL_FLAG_SCHEME_MASK)
-		return RES_OK;
+		return NET_OK;
 	else
 	{
 	//        c) Otherwise, the embedded URL inherits the scheme of
@@ -728,7 +728,7 @@ RES_CODE CURL::url_resolve(CURL & old_link)
 	//        Step 7.  Otherwise, the embedded URL inherits the <net_loc>
 	//        (if any) of the base URL.
 	if(!host.empty())
-		return RES_OK;
+		return NET_OK;
 	host = old_link.host;
 	port = old_link.port;
 	if(user.empty())
@@ -742,7 +742,7 @@ RES_CODE CURL::url_resolve(CURL & old_link)
 	if(!path.empty())
 	{
 		if(path[0] == '/')
-			return RES_OK;
+			return NET_OK;
 	} else
 	{
 
@@ -755,7 +755,7 @@ RES_CODE CURL::url_resolve(CURL & old_link)
 		//           step 7; otherwise, it inherits the <params> of the base
 		//           URL (if any) and
 		if(!params.empty())
-			return RES_OK;
+			return NET_OK;
 		params = old_link.params;
 
 		//        b) if the embedded URL's <query> is non-empty, we skip to
@@ -763,7 +763,7 @@ RES_CODE CURL::url_resolve(CURL & old_link)
 		//           URL (if any) and we skip to step 7.
 		if(query.empty())
 			query = old_link.query;
-		return RES_OK;
+		return NET_OK;
 	}
 
 	//Step 6: The last segment of the base URL's path (anything
@@ -778,7 +778,7 @@ RES_CODE CURL::url_resolve(CURL & old_link)
 			  CSTRING s(old_link.path.c_str(), last_slash - old_link.path.c_str() + 1);
 
 
-				//		  The following operations are then applied, in order, to the new path:
+				//	  The following operations are then applied, in order, to the new path:
 			  while(s.length() && path.length())
 			  {
 				  if(path[0] == '.')
@@ -813,8 +813,6 @@ RES_CODE CURL::url_resolve(CURL & old_link)
 						  if(last_slash)
 						  {
 							  s.erase(last_slash - s.c_str(), s.length());
-							  //s->len = last_slash - s->buf;
-							  //s->buf[s->len] = 0;
 						  } else
 						  {
 							  s.clear();
@@ -829,9 +827,8 @@ RES_CODE CURL::url_resolve(CURL & old_link)
 			  if(s.length())
 			  {
 				  s += path;
-				  //if(!s)
-				 //	  return RES_OUT_OF_MEMORY;
-				 // pcstr_assign(&new_link->path, s);
+				  if(!s.storage.rom)
+				 	  return NET_ERR_OUT_OF_MEMORY;
 				  path = s;
 			  }
 		  }
@@ -845,6 +842,6 @@ RES_CODE CURL::url_resolve(CURL & old_link)
 			  path.erase(0, 2);
 		  }
 	}
-	return RES_OK;
+	return NET_OK;
 }
 

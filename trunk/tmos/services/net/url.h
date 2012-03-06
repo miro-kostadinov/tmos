@@ -8,6 +8,8 @@
 #ifndef URL_H_
 #define URL_H_
 
+#include <tmos.h>
+#include "net_err.h"
 
 /* Default port definitions */
 #define DEFAULT_HTTP_PORT 		80
@@ -50,8 +52,8 @@ public:
 	{
 	}
 	CURL& operator= (CURL& url);
-	RES_CODE url_parse(const char* url);
-	RES_CODE url_resolve(CURL& old_link);
+	NET_CODE url_parse(const char* url);
+	NET_CODE url_resolve(CURL& old_link);
 };
 
 

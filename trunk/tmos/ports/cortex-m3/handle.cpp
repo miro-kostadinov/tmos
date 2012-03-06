@@ -90,6 +90,7 @@ bool CHandle::tsk_open(DRIVER_INDEX index, const void * m)
 	{
 		unsigned int sig;
 
+		error = 0;
 		if( !(res & FLG_CLOSED))
 		{
 			TRACELN_ERROR("Handle is already open:%x", this);
