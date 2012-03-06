@@ -8,18 +8,26 @@
 #include <tmos.h>
 #include "csocket.h"
 
-bool CSocket::open(const sock_mode* smode)
+NET_CODE CSocket::open(const sock_mode* smode)
 {
-	if(tsk_open(smode->driver, smode) == RES_OK)
+	if(!this)
+		return NET_ERR_OUT_OF_MEMORY;
+
+	error = NET_ERR_HANDLE_OPEN;
+
+	if(tsk_open(smode->driver, smode))
 	{
 		set_res_cmd(SOCK_CMD_OPEN);
 		tsk_start_and_wait();
 		if(res == RES_OK)
-			return true;
-
-		CHandle::close();
+		{
+			return NET_OK;
+		} else
+		{
+			CHandle::close();
+		}
 	}
-	return false;
+	return error;
 }
 
 /**
@@ -78,16 +86,22 @@ RES_CODE CSocket::listen(int backlog)
  * @param port
  * @return
  */
-RES_CODE CSocket::connect(const char* ip_adr, unsigned int port)
+NET_CODE CSocket::connect(const char* ip_adr, unsigned int port)
 {
+	NET_CODE result = NET_IDLE;
+
 	if(complete())
 	{
 		src.as_charptr = (char*) ip_adr;
 		dst.as_int = port;
 		set_res_cmd(SOCK_CMD_CONNECT_ADR);
 		tsk_start_and_wait();
+		if(res == RES_OK)
+			result = NET_OK;
+		else
+			result = error;
 	}
-	return (res);
+	return (result);
 }
 
 /**
@@ -95,16 +109,22 @@ RES_CODE CSocket::connect(const char* ip_adr, unsigned int port)
  * @param link
  * @return
  */
-RES_CODE CSocket::connect(CURL& link)
+NET_CODE CSocket::connect(CURL& link)
 {
+	NET_CODE result = NET_IDLE;
+
 	if(complete())
 	{
 		src.as_ccharptr = link.host.c_str();
 		dst.as_int = link.port;
 		set_res_cmd(SOCK_CMD_CONNECT_URL);
 		tsk_start_and_wait();
+		if(res == RES_OK)
+			result = NET_OK;
+		else
+			result = error;
 	}
-	return (res);
+	return (result);
 }
 
 /**
@@ -112,22 +132,28 @@ RES_CODE CSocket::connect(CURL& link)
  * @param url
  * @return
  */
-RES_CODE CSocket::connect(const char* url)
+NET_CODE CSocket::connect(const char* url)
 {
+	NET_CODE result = NET_IDLE;
+
 	if(complete())
 	{
 		CURL link;
 
-		res = link.url_parse(url);
-		if(res == RES_OK)
+		result = link.url_parse(url);
+		if(result == RES_OK)
 		{
 			src.as_ccharptr = link.host.c_str();
 			dst.as_int = link.port;
 			set_res_cmd(SOCK_CMD_CONNECT_URL);
 			tsk_start_and_wait();
+			if(res == RES_OK)
+				result = NET_OK;
+			else
+				result = error;
 		}
 	}
-	return (res);
+	return (result);
 }
 
 /**

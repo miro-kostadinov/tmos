@@ -58,13 +58,13 @@ struct CSocket: public CHandle
 	CSocket(): CHandle(), sock_state(SOCKET_CLOSED), sock_id(SOCKET_ID_INVALID) {};
 	~CSocket() { close(); };
 
-	bool open(const sock_mode* smode);
+	NET_CODE open(const sock_mode* smode);
 	RES_CODE bind(unsigned int ip_adr, unsigned int port);
 	RES_CODE bind(const char* url);
 	RES_CODE listen(int backlog);
-	RES_CODE connect(const char* ip_adr, unsigned int port);
-	RES_CODE connect(CURL& link);
-	RES_CODE connect(const char* url);
+	NET_CODE connect(const char* ip_adr, unsigned int port);
+	NET_CODE connect(CURL& link);
+	NET_CODE connect(const char* url);
 	CSocket* accept(unsigned int timeout = 1024*1024);
 	RES_CODE gethostbyname(CSTRING& ip_adr, const char* url);
 	RES_CODE close();
