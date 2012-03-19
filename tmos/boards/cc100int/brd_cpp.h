@@ -91,7 +91,7 @@
     EPI_IRQn				= 53,	/*!<  */
     GPIOPortJ_IRQn			= 54,	/*!<  */
     FILE_DRV_INDX,					//55
-    ECR_DRV_INDX,					//56
+    FD_DRV_INDX,					//56
     SDCARD_DRV_INDX,				//57
     INALID_DRV_INDX	                /*!<  invalid	                         */
 };
