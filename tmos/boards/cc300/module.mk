@@ -55,6 +55,7 @@ USE_TIME		?=y
 USE_TMOS_STDIO	?=y
 
 #CalculateCRC32()
+USE_CRC16		?=y
 USE_CRC32		?=y
 
 # class CCache
