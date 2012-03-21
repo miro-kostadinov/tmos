@@ -177,6 +177,8 @@ public:
     int compare( const CSTRING& str ) const;
     int compare( const char* str ) const;
     int compare( const char* str, unsigned int len ) const;
+    int start_with( const char* str ) const;
+    int start_casewith( const char* str ) const;
     bool find(unsigned int& pos, char val) const;
 
 	char& operator[]( unsigned int index );
