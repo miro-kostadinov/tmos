@@ -731,6 +731,42 @@ int CSTRING::compare( const char* str, unsigned int len ) const
 	return (strncmp(RAM_ADR(storage.adr)?storage.ram->buf: storage.rom, str, len));
 }
 
+/** Check if this starts with str
+ *
+ * @param str
+ * @return
+ */
+int CSTRING::start_with( const char* str ) const
+{
+	unsigned int len;
+
+	len = strlen(str);
+	if(length() >= len)
+	{
+		if(!strncmp(c_str(), str, len))
+			return len;
+	}
+	return 0;
+}
+
+/** Check if this starts with str (case not sensitive)
+ *
+ * @param str
+ * @return
+ */
+int CSTRING::start_casewith( const char* str ) const
+{
+	unsigned int len;
+
+	len = strlen(str);
+	if(length() >= len)
+	{
+		if(!strncasecmp(c_str(), str, len))
+			return len;
+	}
+	return 0;
+}
+
 /**
  * Find char
  * @param pos
