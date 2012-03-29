@@ -650,12 +650,12 @@ NET_CODE CURL::url_parse(const char* url)
 		{
 			path = s.c_str();
 		} else
-			if(s[0] == '/')
+			if(s[0] == '/' && (url_flags & (URL_FLAG_SCHEME_FTP | URL_FLAG_SCHEME_HTTP)))
 			{
 				path = s.c_str();
 			} else
 			{
-				surl = strchr (s.c_str(), '/');
+				surl = strchr (s.c_str()+1, '/');
 				if(surl)
 				{
 					*surl = 0;
@@ -665,21 +665,28 @@ NET_CODE CURL::url_parse(const char* url)
 						host = s.c_str();
 				} else
 				{
-					if(url_flags & (URL_FLAG_SCHEME_FTP | URL_FLAG_SCHEME_HTTP))
-					{
-						//this is host -> http://host.com
-						host = s.c_str();
-					} else
-					{
-						//this is path-> file.com
-						path = s.c_str();
-					}
+					host = s.c_str();
 				}
 			}
 	}
 	return NET_OK;
 }
 
+static void strip_after_last_slash(CSTRING& s)
+{
+	char *last_slash;
+	last_slash = strrchr(s.c_str(), '/');
+
+	if (last_slash)
+	{
+		s.erase(last_slash - s.c_str()+1, s.length());
+	}
+	else
+	{
+		s.clear();
+	}
+
+}
 //*----------------------------------------------------------------------------
 //								url_resolve()
 //								-----------
@@ -728,8 +735,28 @@ NET_CODE CURL::url_resolve(CURL & old_link)
 	//        Step 7.  Otherwise, the embedded URL inherits the <net_loc>
 	//        (if any) of the base URL.
 	if(!host.empty())
-		return NET_OK;
-	host = old_link.host;
+	{
+		if(url_flags & (URL_FLAG_SCHEME_FTP | URL_FLAG_SCHEME_HTTP))
+			return NET_OK;
+
+		if(host[0] == '/' )
+			return NET_OK;
+
+		if(old_link.host == "/")
+			host =  "/" + host;
+		else
+		{
+			if(path.empty())
+				path = host;
+			else
+				path = host + "/" + path;
+			host = old_link.host;
+		}
+
+	} else
+	{
+		host = old_link.host;
+	}
 	port = old_link.port;
 	if(user.empty())
 		user = old_link.user;
@@ -770,78 +797,151 @@ NET_CODE CURL::url_resolve(CURL & old_link)
 	//        following the rightmost slash "/", or the entire path if no
 	//        slash is present) is removed and the embedded URL's path is
 	//        appended in its place.
-	if(!old_link.path.empty())
+	CSTRING s;
+
+	if(url_flags & (URL_FLAG_SCHEME_FTP | URL_FLAG_SCHEME_HTTP))
 	{
-		  char *last_slash = strrchr (old_link.path.c_str(), '/');
-		  if(last_slash)
-		  {
-			  CSTRING s(old_link.path.c_str(), last_slash - old_link.path.c_str() + 1);
-
-
-				//	  The following operations are then applied, in order, to the new path:
-			  while(s.length() && path.length())
-			  {
-				  if(path[0] == '.')
-				  {
-					//        a) All occurrences of "./", where "." is a complete path
-					//           segment, are removed.
-					  if(path[1] == '/')
-					  {
-						  path.erase(0, 2);
-						  continue;
-					  }
-					//        b) If the path ends with "." as a complete path segment,
-					//           that "." is removed.
-					  if(path[1] == 0)
-					  {
-						  path.erase(0, 1);
-						  continue;
-					  }
-					//        c) All occurrences of "<segment>/../", where <segment> is a
-					//           complete path segment not equal to "..", are removed.
-					//           Removal of these path segments is performed iteratively,
-					//           removing the leftmost matching pattern on each iteration,
-					//           until no matching pattern remains.
-					//        d) If the path ends with "<segment>/..", where <segment> is a
-					//           complete path segment not equal to "..", that
-					//           "<segment>/.." is removed.
-					  if(path[1] == '.' && (path[2] == '/' || path[2] == 0) )
-					  {
-						  //s->buf[--s->len] = 0;
-						  s.erase(s.length()-1, 1);
-						  last_slash = strrchr (s.c_str(), '/');
-						  if(last_slash)
-						  {
-							  s.erase(last_slash - s.c_str(), s.length());
-						  } else
-						  {
-							  s.clear();
-						  }
-						  path.erase(0, 3);
-						  continue;
-					  }
-				  }
-				  break;
-			  }
-
-			  if(s.length())
-			  {
-				  s += path;
-				  if(!s.storage.rom)
-				 	  return NET_ERR_OUT_OF_MEMORY;
-				  path = s;
-			  }
-		  }
-	}else
+		s = old_link.path;
+		strip_after_last_slash(s);
+	} else
 	{
-		  while(path[0] == '.')
-		  {
-			  if(path[1] != '/')
-				  break;
-
-			  path.erase(0, 2);
-		  }
+		s = host + "/" + old_link.path;
 	}
+
+	//	  The following operations are then applied, in order, to the new path:
+	for (unsigned int i=0; i< path.length(); i++ )
+	{
+		if(path[i] == '.')
+		{
+			switch(path[i+1])
+			{
+			//        a) All occurrences of "./", where "." is a complete path
+			//           segment, are removed.
+			case '/':
+				path.erase(i, 2);
+				i--;
+				break;
+
+			//        b) If the path ends with "." as a complete path segment,
+			//           that "." is removed.
+			case 0:
+				path.erase(i, 1);
+				break;
+
+			//        c) All occurrences of "<segment>/../", where <segment> is a
+			//           complete path segment not equal to "..", are removed.
+			//           Removal of these path segments is performed iteratively,
+			//           removing the leftmost matching pattern on each iteration,
+			//           until no matching pattern remains.
+			//        d) If the path ends with "<segment>/..", where <segment> is a
+			//           complete path segment not equal to "..", that
+			//           "<segment>/.." is removed.
+			case '.':
+				if ((path[i+2] == '/' || path[i+2] == 0))
+				{
+					//s->buf[--s->len] = 0;
+					s.erase(s.length() - 1, 1);
+					strip_after_last_slash(s);
+					path.erase(i, 3);
+					i--;
+				}
+				break;
+			}
+		}
+	}
+
+	if(url_flags & (URL_FLAG_SCHEME_FTP | URL_FLAG_SCHEME_HTTP))
+	{
+		if (s.length())
+		{
+			s += path;
+			if (!s.storage.rom)
+				return NET_ERR_OUT_OF_MEMORY;
+			path = s;
+		}
+	} else
+	{
+		s.erase(s.length() - 1, 1);
+		if(s.length() < host.length())
+			host = s;
+	}
+
 	return NET_OK;
 }
 
+void CURL::url_print(CSTRING& str)
+{
+	unsigned int i;
+
+	switch(url_flags & URL_FLAG_SCHEME_MASK)
+	{
+	case URL_FLAG_SCHEME_FILE:
+		str += "file://";
+		break;
+
+	case URL_FLAG_SCHEME_FTP:
+		str += "ftp://";
+		break;
+
+	case URL_FLAG_SCHEME_HTTP:
+		str += "http://";
+		break;
+
+	}
+
+	if(!user.empty())
+	{
+		str += CEncode::encode_escapes(user.c_str());
+		if(!password.empty())
+		{
+			str += ':';
+			str += CEncode::encode_escapes(password.c_str());
+		}
+		str += '@';
+	}
+	str += host;
+
+	switch(url_flags & URL_FLAG_SCHEME_MASK)
+	{
+	case URL_FLAG_SCHEME_FTP:
+		i = DEFAULT_FTP_PORT;
+		break;
+
+	case URL_FLAG_SCHEME_HTTP:
+		i = DEFAULT_HTTP_PORT;
+		break;
+	default:
+		i = 0;
+
+	}
+
+	if(port != i)
+	{
+		str += ':';
+		str.appendf("%u/", port);
+	} else
+	{
+		if(!host.empty())
+			if(host[host.length()-1] != '/')
+				str += '/';
+
+	}
+	str += path;
+
+	if(!params.empty())
+	{
+		str += ';';
+		str += params;
+	}
+
+	if(!query.empty())
+	{
+		str += '?';
+		str += query;
+	}
+	if(!fragment.empty())
+	{
+		str += '#';
+		str += fragment;
+	}
+}
