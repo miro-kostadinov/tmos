@@ -228,7 +228,7 @@ static unsigned int usb_hal_ept0_status(USB_CONTROLLER* hw_base)
     {
     	clear &= ~USB_USBTXCSRL0_STALLED;
     }
-    hw_base->DEVICE_EP[0].USBTXCSRL = clear;
+    hw_base->DEVICE_EP[0].USBTXCSRL = clear & ~USB_USBTXCSRL0_DATAEND;
 
     return (status);
 }
@@ -610,6 +610,9 @@ void usb_ack_packet(USB_Type* hw_base, Endpoint* endpoint, unsigned int eptnum)
         // Clear RxPktRdy, and optionally DataEnd, on endpoint zero.
     	hw_base->DEVICE_EP[0].USBTXCSRL = USB_USBTXCSRL0_RXRDYC
 				| (endpoint->rxfifo_cnt ? 0 : USB_USBTXCSRL0_DATAEND);
+
+    	//enable interrupt
+    	hw_base->USBTXIE |= USB_USBTXIE_EP0;
     }
     else
     {
@@ -691,7 +694,7 @@ void usb_b_ept0_handler(USB_DRV_INFO drv_info)
 	            // mark that we have data
 	        	endpoint->state = ENDPOINT_STATE_RECEIVING_OFF;
 	    		endpoint->rxfifo_cnt = size;
-	    		hw_base->USBTXIE &= USB_USBTXIE_EP0;
+//	    		hw_base->USBTXIE &= ~USB_USBTXIE_EP0;
 	        } else
 	        {
 	        	hw_base->DEVICE_EP[0].USBTXCSRL = USB_USBTXCSRL0_RXRDYC;
