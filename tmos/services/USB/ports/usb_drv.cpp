@@ -157,6 +157,13 @@ void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
     		endpoint = &(drv_data->endpoints[eptnum]);
     		if(param->svc_list_cancel(endpoint->pending))
     		{
+    			if(!eptnum)
+    			{
+    				TRACE1_USB("Can!");
+    			}
+    			if(!endpoint->pending && endpoint->state == ENDPOINT_STATE_SENDING)
+    				endpoint->state = ENDPOINT_STATE_IDLE;
+
     			return;
     		}
 
