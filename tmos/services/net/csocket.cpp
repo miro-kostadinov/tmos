@@ -186,12 +186,15 @@ CSocket* CSocket::accept(unsigned int timeout)
  */
 RES_CODE CSocket::close()
 {
-	if(complete())
+	if(res < RES_CLOSED)
 	{
-		set_res_cmd(SOCK_CMD_CLOSE);
-		tsk_start_and_wait();
+		if(complete())
+		{
+			set_res_cmd(SOCK_CMD_CLOSE);
+			tsk_start_and_wait();
+		}
+		CHandle::close();
 	}
-	CHandle::close();
 	return (res);
 }
 
