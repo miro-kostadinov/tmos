@@ -52,10 +52,16 @@ struct sock_gprs_mode: public sock_mode
  */
 struct CSocket: public CHandle
 {
-	unsigned short sock_state;
+	unsigned char sock_state;
+	unsigned char file_mode;
 	unsigned short sock_id;
 
-	CSocket(): CHandle(), sock_state(SOCKET_CLOSED), sock_id(SOCKET_ID_INVALID) {};
+	CSocket() :
+			CHandle(),
+			sock_state(SOCKET_CLOSED),
+			file_mode(0),
+			sock_id(SOCKET_ID_INVALID)
+		{};
 	~CSocket() { close(); };
 
 	NET_CODE open(const sock_mode* smode);
