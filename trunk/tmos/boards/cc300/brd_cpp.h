@@ -94,9 +94,7 @@
     GUI_DRV_INDX,					//56
     FILE_DRV_INDX,					//57
     FD_DRV_INDX,					//58
-    SDCARD0_DRV_INDX,				//59
-    SDCARD1_DRV_INDX,				//60
-    GSM_DRV_INDX,					//61
+    GSM_DRV_INDX,					//59
     INALID_DRV_INDX	                /*!<  invalid	                         */
 };
 
