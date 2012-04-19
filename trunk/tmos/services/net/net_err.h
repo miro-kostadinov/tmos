@@ -26,7 +26,10 @@ typedef unsigned int  NET_CODE;
 #define NET_ERR_SOCK_NOT_CLOSED		0x92	//!< Socket is not closed
 #define NET_ERR_SOCK_CREATE			0x93	//!< Failed to get socket
 #define NET_ERR_SOCK_CONNECT		0x94	//!< Failed to connect socket
-
+#define NET_ERR_SOCK_DISCONNECT		0x95	//!< Host disconnect socket
+#define NET_ERR_SOCK_ABORT			0x96	//!< User disconnect socket
+#define NET_ERR_SOCK_READ			0x97	//!< Failed to read from socket
+#define NET_ERR_SOCK_WRITE			0x97	//!< Failed to write into socket
 //-----------------		URL error codes						 -----------------//
 #define NET_ERR_URL_SCHEME			0xA0	//!< BAD or unsupported URL scheme
 #define NET_ERR_URL_INVALID			0xA1	//!< URL is invalid
