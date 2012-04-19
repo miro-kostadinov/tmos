@@ -31,7 +31,8 @@ typedef unsigned int  NET_CODE;
 #define NET_ERR_URL_SCHEME			0xA0	//!< BAD or unsupported URL scheme
 #define NET_ERR_URL_INVALID			0xA1	//!< URL is invalid
 #define NET_ERR_URL_DNS				0xA2	//!< Failed to resolve the domain address
-#define NET_ERR_HTTP_CODE			0xA3	//!< HTTP code is not 200 OK
+#define NET_ERR_URL_REDIRECTED		0xA3	//!< Redirected
+#define NET_ERR_HTTP_CODE			0xA4	//!< HTTP code is not 200 OK
 
 
 
