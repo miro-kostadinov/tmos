@@ -499,7 +499,7 @@ static CSTRING url_parse_parameters(char *p)
 	return s;
 }
 
-CURL& CURL::operator= (CURL& url)
+CURL& CURL::operator= (const CURL& url)
 {
 	host = url.host;
 	port = url.port;
@@ -805,7 +805,9 @@ NET_CODE CURL::url_resolve(CURL & old_link)
 		strip_after_last_slash(s);
 	} else
 	{
-		s = host + "/" + old_link.path;
+		s = host;
+		if(!old_link.path.empty())
+			s += "/" + old_link.path;
 	}
 
 	//	  The following operations are then applied, in order, to the new path:
@@ -842,6 +844,7 @@ NET_CODE CURL::url_resolve(CURL & old_link)
 					//s->buf[--s->len] = 0;
 					s.erase(s.length() - 1, 1);
 					strip_after_last_slash(s);
+					s.erase(s.length() - 1, 1);
 					path.erase(i, 3);
 					i--;
 				}
@@ -861,8 +864,8 @@ NET_CODE CURL::url_resolve(CURL & old_link)
 		}
 	} else
 	{
-		s.erase(s.length() - 1, 1);
-		if(s.length() < host.length())
+//		s.erase(s.length() - 1, 1);
+//		if(s.length() < host.length())
 			host = s;
 	}
 
@@ -922,7 +925,7 @@ void CURL::url_print(CSTRING& str)
 	} else
 	{
 		if(!host.empty())
-			if(host[host.length()-1] != '/')
+			if(!path.empty())
 				str += '/';
 
 	}
