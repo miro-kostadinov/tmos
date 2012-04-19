@@ -1091,12 +1091,17 @@ CSTRING& CSTRING::erase(unsigned int index, unsigned int count)
 	{
 		if(index < tmp->len)
 		{
-			tmp->len -= count;
-			while(index < tmp->len)
+			if(tmp->len > count)
 			{
-				tmp->buf[index] = tmp->buf[index+count];
-				index++;
+				tmp->len -= count;
+
+				while(index < tmp->len)
+				{
+					tmp->buf[index] = tmp->buf[index+count];
+					index++;
+				}
 			}
+
 			//cut rightmost
 			tmp->len = index;
 			tmp->buf[index] = 0;
