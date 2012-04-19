@@ -82,6 +82,7 @@ struct CHandle {
 	 */
 	void set_res_cmd(unsigned int val) {
 		((unsigned short *) (this))[7] = (val);
+		error = 0;
 	}
 
 	void close();
