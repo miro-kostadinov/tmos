@@ -29,20 +29,40 @@
 
 #define SOCKET_ID_INVALID	0xffff
 
+#define IP_SOCKET_TCP			0
+#define IP_SOCKET_UDP			1
+
 struct sock_mode
 {
+	sock_mode(DRIVER_INDEX drv): driver(drv) {}
 	DRIVER_INDEX	driver;
+};
+
+struct sock_IP_mode: public sock_mode
+{
+	sock_IP_mode(DRIVER_INDEX drv)
+	: sock_mode(drv), sock_type(IP_SOCKET_TCP), port(0) {}
+	sock_IP_mode(DRIVER_INDEX drv, unsigned int s_type, unsigned int s_port)
+	: sock_mode(drv), sock_type(s_type), port(s_port) {}
+	unsigned int sock_type;
+	unsigned int port;
 };
 
 struct apn_stru
 {
+	apn_stru(){};
+	apn_stru(const char * apn_name, const char * apn_user, const char * apn_pass):
+		name(apn_name), user(apn_user), pass(apn_pass) {}
 	CSTRING name;
 	CSTRING user;
 	CSTRING pass;
 };
 
-struct sock_gprs_mode: public sock_mode
+struct sock_gprs_mode: public sock_IP_mode
 {
+	sock_gprs_mode(DRIVER_INDEX drv):sock_IP_mode(drv), apn(NULL) {}
+	sock_gprs_mode(DRIVER_INDEX drv, unsigned int s_type, unsigned int s_port, apn_stru * s_apn)
+	:sock_IP_mode(drv, s_type, s_port), apn(s_apn) {}
 	apn_stru* apn;
 };
 
