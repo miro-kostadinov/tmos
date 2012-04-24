@@ -156,7 +156,7 @@ struct CHandle {
 		return (tsk_write(buf, strlen(buf)));
 	}
 #if USE_CSTRING
-	RES_CODE tsk_write(CSTRING& str)
+	RES_CODE tsk_write(const CSTRING& str)
 	{
 		return (tsk_write(str.c_str(), str.length()));
 	}
