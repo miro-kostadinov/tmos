@@ -26,6 +26,7 @@
 #define SOCKET_CLOSED		0
 #define SOCKET_OPEN			1
 #define SOCKET_CONECTED		3
+#define SOCKET_WRITE_FLAG	4
 
 #define SOCKET_ID_INVALID	0xffff
 
