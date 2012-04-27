@@ -23,6 +23,14 @@
 #include <tmos_string.h>
 #endif
 
+#ifndef USE_TMOS_LLONG
+#define USE_TMOS_LLONG 0
+#endif
+#if USE_TMOS_LLONG
+#include <tmos_llong.h>
+#endif
+
+
 #include <tasks.h>
 #include <swi_tab.h>
 #include <tmos_swi.h>

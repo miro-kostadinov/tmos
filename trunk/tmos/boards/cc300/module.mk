@@ -54,6 +54,9 @@ USE_TIME		?=y
 # sprintf() scanf() 
 USE_TMOS_STDIO	?=y
 
+# use tmos long long operations
+USE_TMOS_LLONG	?=y
+
 #CalculateCRC32()
 USE_CRC16		?=y
 USE_CRC32		?=y
