@@ -198,6 +198,7 @@ public:
 	CSTRING& erase(unsigned int index, unsigned int count);
 
 	unsigned int atoi();
+	long long atoll();
 	unsigned int find_in_list(STR_LIST sl, unsigned int* dwRead) const;
 	int format(const char *fmt, ...);
 	int appendf(const char *fmt, ...);

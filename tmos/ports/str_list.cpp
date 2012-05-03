@@ -1128,6 +1128,18 @@ unsigned int CSTRING::atoi()
 	return (res);
 }
 
+long long CSTRING::atoll()
+{
+	long long res=0;
+	const char *ptr = RAM_ADR(storage.adr)?storage.ram->buf: storage.rom;
+
+	if(ptr)
+	{
+		tmos_sscanf(ptr, "%ld", &res);
+	}
+	return (res);
+}
+
 unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead)
 {
 	unsigned int pos;
