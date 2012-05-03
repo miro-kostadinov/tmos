@@ -21,8 +21,12 @@
 #include "port_asm.h"
 #include "swi_tab.h"
 
-#define PAD_RIGHT 1
-#define PAD_ZERO 2
+#include <brd_cfg.h>
+
+#ifndef USE_TMOS_LLONG
+#define USE_TMOS_LLONG   0
+#endif
+
 
 /*******************************************************************************
     Format specifiers:
@@ -67,6 +71,7 @@ for s           Specified the maximum numer of characters to be printed.
 #define PF_ZERO 0x40
 #define PF_NEG  0x02
 #define PF_LEFT 0x01
+#define PF_LONG 0x04
 
 //-----------------------------------------------------------------------------
 //int tmos_sprintf( char *buffer, const char *format, ... );
@@ -87,66 +92,79 @@ ENDF(   tmos_sprintf        )
 //-----------------------------------------------------------------------------
 // int tmos_vsprintf( char *buffer, const char *format, va_list arg );
 // stack usage 32 bytes
-FUNC(   tmos_vsprintf        )
-        sub         sp, #12
-        push        {r0, r4, r5, r6, r7}
 
-        mov         r12, r2         // r12 = va_list
-        ldrb        r3, [r1], #1    // r3 = format charachter
+#if USE_TMOS_LLONG
+#define VSPRINTF_BUF_SIZE 24
+#else
+#define VSPRINTF_BUF_SIZE 12
+#endif
+
+FUNC(   tmos_vsprintf        )               // r0  r1  r2  r3  r4  r5  r6  r7  r12
+        sub         sp, #VSPRINTF_BUF_SIZE
+        push        {r0, r4, r5, r6, r7}     // dst fmt arg ___ ___ ___ ___ ___ ___
+        mov         r12, r2                  // dst fmt ___ ___ ___ ___ ___ ___ arg*
+        ldrb        r3, [r1], #1             // dst fmt ___  c  ___ ___ ___ ___ arg*
         cbz         r3, _end_loop
         cmp         r3, #'%'
         beq         _check_flags
 
-_copy_format_char:
+_copy_format_char:                           // dst fmt ___  c  ___ ___ ___ ___ arg*
         strb        r3, [r0], #1
-_loop:
-        ldrb        r3, [r1], #1    // r3 = format charachter
+_loop:                                       // dst fmt ___ ___ ___ ___ ___ ___ arg*
+        ldrb        r3, [r1], #1
         cbz         r3, _end_loop
         cmp         r3, #'%'
         bne         _copy_format_char
 
-_check_flags:
+_check_flags:                                // dst fmt ___ '%' ___ ___ ___ ___ arg*
         ldrb        r3, [r1], #1
         cmp         r3, #'%'
         beq         _copy_format_char
 
-        //--- process flags [-] [0] [n]
+        //--- process flags [-] [0] [n]      // dst fmt ___  c  ___ ___ ___ ___ arg*
         cmp         r3, #'n'
         beq         _flag_n
-        movs        r4, #0          // r4 = width
-        movs        r6, #0          // r6 = precision
-        movs        r7, #0          // r7 = printflags
-        movs        r2, #10
+        movs        r4, #0                   // dst fmt ___  c  wdt ___ ___ ___ arg*
+        movs        r6, #0                   // dst fmt ___  c  wdt ___ pre ___ arg*
+        movs        r2, #10                  // dst fmt 10   c  wdt ___ pre ___ arg*
 
         cmp         r3, #'-'
         beq         _flag_left
-
+        movs        r7, #0                   // dst fmt 10   c  wdt ___ pre flg arg*
+                                             // r0  r1  r2  r3  r4  r5  r6  r7  r12
 _check_flag_0:
         cmp         r3, #'0'
         beq         _flag_0
 
-_check_param_width:
+_check_param_width:                          // dst fmt 10   c  wdt ___ pre flg arg*
         cmp         r3,  #'*'
         beq         _get_param_width
 
-_check_width:
+_check_width:                                // dst fmt 10   c  wdt ___ pre flg arg*
         cmp         r3, #'9'
         bls         _get_width
 
-_check_precision:
+_check_precision:                            // dst fmt 10   c  wdt ___ pre flg arg*
         cmp         r3, #'.'
         beq         _get_precision
-
+                                             // r0  r1  r2  r3  r4  r5  r6  r7  r12
         //--- process type [d] [i] [u] [x] [X] [c] [s]
 _check_type:
-        ldr         r5, [r12], #4       //r5=argument
+        ldr         r5, [r12], #4            // dst fmt 10   c  wdt arg pre flg arg*
         cmp         r3, #'c'
         beq         _print_c
         cmp         r3, #'s'
         beq         _print_s
 
+#if USE_TMOS_LLONG
+        cmp         r3, #'l'
+        ITT         EQ
+        addeq       r7, #PF_LONG
+        ldrbeq      r3, [r1], #1
+#endif
+
         str         r6, [sp, #20]
-        add         r6, sp, #20
+        add         r6, sp, #20              // dst fmt 10   c  wdt arg buf flg arg*   pre
         cmp         r3, #'d'
         IT          NE
         cmpne       r3, #'i'
@@ -166,7 +184,7 @@ _unk_format:
 _end_loop:
         strb        r3, [r0]
         pop         {r1, r4, r5, r6, r7}
-        add         sp, #12
+        add         sp, #VSPRINTF_BUF_SIZE
         subs        r0, r0, r1
         bx          lr
 
@@ -178,32 +196,32 @@ _flag_n:
         str         r3, [r2]
         b           _loop
 
-_flag_left:
+_flag_left:                                  // dst fmt 10  '-' wdt ___ pre ___ arg*
         movs        r7, #PF_LEFT
-        ldrb        r3, [r1], #1
+        ldrb        r3, [r1], #1             // dst fmt 10   c  wdt ___ pre flg arg*
         b           _check_flag_0
 
-_flag_0:
+_flag_0:                                     // dst fmt 10  '0' wdt ___ pre flg arg*
         adds        r7, #PF_ZERO
-        ldrb        r3, [r1], #1
+        ldrb        r3, [r1], #1             // dst fmt 10   c  wdt ___ pre flg arg*
         b           _check_param_width
 
-_get_param_width:
+_get_param_width:                            // dst fmt 10  '*' wdt ___ pre flg arg*
         ldr         r4, [r12], #4
-        ldrb        r3, [r1], #1
+        ldrb        r3, [r1], #1             // dst fmt 10   c  wdt ___ pre flg arg*
         b           _check_precision
-
-_get_width:
+                                             // r0  r1  r2  r3  r4  r5  r6  r7  r12
+_get_width:                                  // dst fmt 10   c  wdt ___ pre flg arg*
         subs        r5, r3, #'0'
         blo         _check_precision
         mla         r4, r4, r2, r5
-        ldrb        r3, [r1], #1
+        ldrb        r3, [r1], #1             // dst fmt 10   c  wdt ___ pre flg arg*
         b           _check_width
 
-_get_precision:
+_get_precision:                              // dst fmt 10  '.' wdt ___ pre flg arg*
         ldrb        r3, [r1], #1
         cmp         r3, #'*'
-        beq         _get_param_precision
+        beq         _get_param_precision     // dst fmt 10   c  wdt ___ pre flg arg*
 
 _get_precision_val:
         cmp         r3, #'9'
@@ -214,59 +232,63 @@ _get_precision_val:
         ldrb        r3, [r1], #1
         b           _get_precision_val
 
-_get_param_precision:
+_get_param_precision:                        // dst fmt 10  '*' wdt ___ pre flg arg*
         ldr         r6, [r12], #4
         ldrb        r3, [r1], #1
         b           _check_type
 
-_print_c:
+_print_c:                                    // dst fmt 10  'c' wdt arg pre flg arg*
         cbz         r5, _prints_left_pad
         uxtb        r3, r5
         add         r5, sp, #20
         str         r3, [r5]
 
-_print_s:
+_print_s:                                    // dst fmt 10  's' wdt arg pre flg arg*
         cbz         r5, _prints_left_pad
-        mov         r2, r5
+        mov         r2, r5                   // dst fmt str ___ wdt arg pre flg arg*
 _print_get_len:
         ldrb        r3, [r5], #1
         cmp         r3, #0
         bne         _print_get_len
-        subs        r5, r2                //r5 = L
+        subs        r5, r2                   // dst fmt str ___ wdt len pre flg arg*
         subs        r5, #1
         beq         _prints_left_pad
-        cbz         r6, _prints_pd        //r6 = P
-        cmp         r5, r6
+        cbz         r6, _prints_pd        // precision?
+        cmp         r5, r6                // if(len > pre)
         IT          HI
-        movhi       r5, r6
-        cmp         r4, r6
+        movhi       r5, r6                //  len = pre
+        cmp         r4, r6                // if (wdt > pre)
         IT          HI
-        movhi       r4, r6
-_prints_pd:
-        subs        r4, r5
+        movhi       r4, r6                //  wdt = pre
+_prints_pd:                                  // r0  r1  r2  r3  r4  r5  r6  r7  r12
+        subs        r4, r5                   // dst fmt str ___ w-l len ___ flg arg*
         bls         _prints_copy
         lsrs        r7, #1
         bcs         _prints_copy
         movs        r3, #' '
-_prints_right_pad:
+_prints_right_pad:                           // dst fmt str ' ' w-l len ___ ___ arg*
         strb        r3, [r0], #1
         subs        r4, #1
         bne         _prints_right_pad
-_prints_copy:
+_prints_copy:                                // dst fmt str ' ' 0   len ___ ___ arg*
         ldrb        r3, [r2], #1
         strb        r3, [r0], #1
         subs        r5, #1
         bne         _prints_copy
-_prints_left_pad:
+_prints_left_pad:                            // dst fmt ___ ___ w-l ___ ___ ___ arg*
         subs        r4, #1
         blt         _loop
         movs        r3, #' '
         strb        r3, [r0], #1
         b           _prints_left_pad
 
-
-_print_hex:
+                                             // r0  r1  r2  r3  r4  r5  r6  r7  r12
+_print_hex:                                  // dst fmt ___ 'x' wdt arg buf flg arg*   pre
         subs        r3, #'x'-'a'+10
+#if USE_TMOS_LLONG
+        push        {r0}
+        movs        r0, #8
+#endif
 _print_hex_loop:
         and         r2, r5, #0xF
         cmp         r2, #9
@@ -274,17 +296,96 @@ _print_hex_loop:
         addhi       r2, r2, r3
         addls       r2, #'0'
         strb        r2, [r6, #1]!
+#if USE_TMOS_LLONG
+        subs        r0, #1
+#endif
         lsrs        r5, r5, #4
         bne         _print_hex_loop
-        b           _print_numeric
+
+#if USE_TMOS_LLONG
+        lsrs        r5, r7, #3
+        ITT         cc
+        popcc       {r0}
+        bcc         _print_numeric
+        subs        r7, #PF_LONG
+        ldr         r5, [r12], #4            // dig fmt ___ 'x' wdt arg buf flg arg*  pre
+        cmp         r5, #0
+        ITT          EQ
+        popeq       {r0}
+        beq         _print_numeric
+        movs        r2, #'0'
+1:
+        subs        r0, #1
+        ITT         HS
+        strbhs      r2, [r6, #1]!
+        bhs         1b
+        movs        r0, #8
+        b           _print_hex_loop
+#else
+        b           _print_numeric           // dst fmt ___ ___ wdt  0  buf flg arg*   pre
+#endif
 
 
-_print_d:
+#if USE_TMOS_LLONG
+_print_d:                                    // dst fmt 10  ___ wdt arg buf flg arg*   pre
+        lsrs        r3, r7, #3
+        bcc         _print_d32
+        ldr         r3, [r12], #4
+        cmp         r3, #0
+        bge         _print_u64
+        negs        r5, r5                      // n < 0
+        sbc         r3, r3, r3, lsl #1
+        adds        r7, #PF_NEG
+
+_print_u64:                                  // dst fmt 10  ___ wdt arg buf flg arg*   pre
+        subs        r7, #PF_LONG
+        push        {r0, r1}                 // r0  r1  r2  r3  r4  r5  r6  r7
+        lsr         r1, r5, #16              // n0  n1  10  n2_ wdt ___ buf flg
+        uxth        r0, r5
+
+        cbz         r3, _print_u64_done
+1:
+        udiv        r5, r3, r2
+        mls         r3, r5, r2, r3           // n0  n1  10  t1  wdt m2  buf flg ___
+        add         r3, r1, r3, lsl  #16
+        udiv        r1, r3, r2
+        mls         r3, r1, r2, r3           // n0  n1  10  t1  wdt m2  buf flg ___
+        add         r3, r0, r3, lsl #16
+        udiv        r0, r3, r2
+        mls         r3, r0, r2, r3
+        adds        r3, #'0'
+        strb        r3, [r6, #1]!
+        movs        r3, r5
+        bne         1b
+_print_u64_done:
+        adds        r5, r0, r1, lsl #16
+        pop         {r0, r1}
+        b           _print_u32
+
+_print_d32:
+        cmp         r5, #0
+        bge          _print_u32
+        adds        r7, #PF_NEG
+        rsbs        r5, r5, #0
+        b           _print_u32
+
+_print_u:                                    // dst fmt 10  ___ wdt arg buf flg arg*   pre
+        lsrs        r3, r7, #3
+        ITT         CS
+        ldrcs       r3, [r12], #4
+        bcs         _print_u64
+
+_print_u32:
+
+#else
+_print_d:                                    // dst fmt 10  ___ wdt arg buf flg arg*   pre
         cmp         r5, #0
         ITT         MI
         addmi       r7, #PF_NEG
         rsbmi       r5, r5, #0
-_print_u:
+_print_u:                                    // dst fmt 10  ___ wdt arg buf flg arg*   pre
+#endif
+
         udiv        r3, r5, r2
         mls         r5, r2, r3, r5
         adds        r5, #'0'
@@ -295,16 +396,16 @@ _print_u:
         adds        r3, #'0'
         strb        r3, [r6, #1]!
         cmp         r5, #0
-        bne         _print_u
-_print_numeric:
-        add         r5, sp, #20       //r4 = W
-        ldrb        r2, [r5]          //r2 = P
-        subs        r5, r6, r5        //r5 = L
+        bne         _print_u                 // r0  r1  r2  r3  r4  r5  r6  r7  r12
+_print_numeric:                              // dst fmt ___ ___ wdt ___ buf flg arg*   pre
+        add         r5, sp, #20
+        ldrb        r2, [r5]                 // dst fmt pre ___ wdt ___ buf flg arg*
+        subs        r5, r6, r5               // dst fmt pre ___ wdt len buf flg arg*
         cmp         r2, r5
         ITE         HI
         movhi       r3, r2
         movls       r3, r5            //r3 = max(P,L)
-        subs        r4, r3
+        subs        r4, r3                   // dst fmt pre max w-m len buf flg arg*
         bls         _print_left_align
         lsrs        r3, r7, #1        //c=FL_LEFT
         bcs         _print_left_align
@@ -330,27 +431,27 @@ _print_right_pad_loop:
 _print_left_align:
         lsrs        r3, r7, #2        //c=FL_NEG
         bcs         _print_left_minus
-_print_precision:
+_print_precision:                            // dst fmt pre ___ wdt len buf flg arg*
         subs        r2, r5
         ble         _print_digits
         movs        r3, #'0'
-_print_precision_loop:
+_print_precision_loop:                       // dst fmt pre ___ wdt len buf ___ arg*
         strb        r3, [r0], #1
         subs        r2, #1
         bne         _print_precision_loop
-_print_digits:
+_print_digits:                               // dst fmt ___ ___ w-m len buf ___ arg*
         ldrb        r3, [r6], #-1
         strb        r3, [r0], #1
         subs        r5, #1
         bne         _print_digits
         movs        r3, #' '
-_print_left_pad:
+_print_left_pad:                             // dst fmt ___ ___ w-m ___ ___ ___ arg*
         subs        r4, #1
         blt         _loop
         strb        r3, [r0], #1
         b           _print_left_pad
 
-_print_left_minus:
+_print_left_minus:                           // dst fmt pre ___ wdt len buf flg arg*
         movs        r3, #'-'
         subs        r2, #1
         strb        r3, [r0], #1
@@ -363,15 +464,15 @@ ENDF(   tmos_vsprintf        )
 //-----------------------------------------------------------------------------
 // int tmos_vprintf_len( const char *format, va_list arg );
 // stack usage 32 bytes
-FUNC(   tmos_vprintf_len        )
-                                    //r0 = format
-                                    //r1 = arguments
+FUNC(   tmos_vprintf_len        )   // r0  r1  r2  r3  r4  r5  r6  r7  r12
+                                    // fmt arg
+
         push        {r4, r5, r6, r7}
-        mov         r2, r0          //r2 = format
-        movs        r0, #0          //r0 = result
+        mov         r2, r0          // fmt arg fmt
+        movs        r0, #0          // res arg fmt
 
 _vpl_loop:
-        ldrb        r3, [r2], #1    // r3 = format charachter
+        ldrb        r3, [r2], #1    // res arg fmt c
         adds        r0, #1
         cbz         r3, _vpl__end_loop
         cmp         r3, #'%'
@@ -385,9 +486,9 @@ _vpl_loop:
         //--- process flags [-] [0] [n]
         cmp         r3, #'n'
         beq         _vpl_loop
-        movs        r4, #0          // r4 = width
-        movs        r6, #0          // r6 = precision
-        movs        r7, #10
+        movs        r4, #0          // res arg fmt c wdt
+        movs        r6, #0          // res arg fmt c wdt ___ pre
+        movs        r7, #10         // res arg fmt c wdt ___ pre 10
 
         cmp         r3, #'-'
         IT          EQ
@@ -410,23 +511,24 @@ _vpl_check_precision:
 
         //--- process type [d] [i] [u] [x] [X] [c] [s]
 _vpl_check_type:
-        ldr         r5, [r1], #4       //r5=argument
+        ldr         r5, [r1], #4    // res arg fmt c wdt ___ pre 10
         cmp         r3, #'c'
         beq         _vpl_print_c
         cmp         r3, #'s'
         beq         _vpl_print_s
-        cmp         r3, #'d'
-        IT          NE
-        cmpne       r3, #'i'
-        beq         _vpl_print_num
-        cmp         r3, #'u'
-        beq         _vpl_print_num
-        cmp         r3, #'p'
-        beq         _vpl_print_num
-        cmp         r3, #'x'
-        beq         _vpl_print_num
-        cmp         r3, #'X'
-        beq         _vpl_print_num
+        movs        r5, #11
+#if USE_TMOS_LLONG
+        cmp         r3, #'l'
+        ITTT        EQ
+        addeq       r1, #4
+        addeq       r5, #10
+        ldrbeq      r3, [r1], #1
+#endif
+        cmp         r5, r6
+        bhs         _vpl_add_len
+        mov         r5, r6                // r5 = max(12, precision)
+        b           _vpl_add_len
+
 _vpl_unk_format:
         adds        r0, #1
 _vpl__end_loop:
@@ -493,13 +595,6 @@ _vpl_add_width:
         b           _vpl_loop
 
 
-_vpl_print_num:
-        movs        r5, #11
-        cmp         r5, r6
-        bhs         _vpl_add_len
-        mov         r5, r6                // r5 = max(12, precision)
-        b           _vpl_add_len
-
 ENDF(   tmos_vprintf_len        )
 
 
@@ -540,7 +635,12 @@ FUNC(    tmos_sscanf        )
 
         push        {r0, r2, r3}        // push all params in stack
         mov         r2, sp              // ++r2 = va_list
+#if USE_TMOS_LLONG
+        push        {r4, r5, r6, r7, r8, r9}
+        mov         r12, #10
+#else
         push        {r4, r5, r6, r7}
+#endif
 
 
 _sloop:
@@ -563,7 +663,11 @@ _check_schar:
         beq         _sloop
 _end_sscanf:
 _bad_sscanf:
+#if USE_TMOS_LLONG
+        pop         {r4, r5, r6, r7, r8, r9}
+#else
         pop         {r4, r5, r6, r7}
+#endif
         mov         r3, sp
         subs        r2, r3
         lsrs        r0, r2, #2
@@ -611,13 +715,21 @@ _skip_white:
         addls       r0, #1
         bls         _skip_white
 
-        subs        r5, r3, #'u'
+        movs        r5, #0
+#if USE_TMOS_LLONG
+        movs        r9, #0
+        cmp         r3, #'l'
+        ITT         EQ
+        addeq       r5, #PF_LONG
+        ldrbeq      r3, [r1], #1
+#endif
+        cmp         r3, #'u'
         beq         _sscanf_u
         cmp         r3, #'d'
         beq         _sscanf_d
         cmp         r3, #'i'
         beq         _sscanf_i
-        subs        r5, r3, #'x'
+        cmp         r3, #'x'
         beq         _sscanf_x
         cmp         r3, #'s'
         bne         _failed_sscanf
@@ -633,8 +745,8 @@ _sscanf_s:
         bhi         _sscanf_s
         movs        r6, #0
         cmp         r7, #0
-        IT          NE
-        strbne      r6, [r7]
+        beq         _sloop
+        strb        r6, [r7]
         b           _sloop
 
 _get_swidth:
@@ -662,41 +774,65 @@ _sscanf_c:
         b           _sloop
 
 
-_sscanf_d:
-        cmp         r6, #'-'
+_sscanf_d:                              // r0  r1  r2  r3  r4  r5  r6  r7  r12
+        cmp         r6, #'-'            // src fmt arg ___ wdt      c  par
         ITT         EQ
-        moveq       r5, #'-'
+        addeq       r5, #PF_NEG
         ldrbeq      r6, [r0, #1]!
 _sscanf_u:
         subs        r6, #'0'            // x >= 0
         blo         _failed_sscanf
         cmp         r6, #9              // 9 >= 0
         bhi         _failed_sscanf
-_sscanf_u_loop:
+_sscanf_u_loop:                         // src fmt arg ___ wdt flg res par
         ldrb        r3, [r0, #1]!
-_sscanf_u_loop1:
+_sscanf_u_loop1:                        // src fmt arg  c  wdt flg res par
         subs        r4, #1
         beq         _sscanf_u_done
         subs        r3, #'0'            // x >= 0
+#if USE_TMOS_LLONG
+        blo         _sscanf_u_done
+        cmp         r3, #9
+        bhi         _sscanf_u_done         // r9:r6 -> r8:r6
+        umull       r6, r8, r6, r12        // r8:r6 = r6*10
+        mla         r8, r9, r12, r8        // r8 += r9 *10
+        adds        r6, r3
+        adc         r9, r8, #0             // r9:r6 = r8:r6 + r3
+        b           _sscanf_u_loop
+#else
         ITTT        HS
         rsbshs      r12, r3, #9         // 9 >= 0
         addhs       r6, r6, r6, lsl #2
         addhs       r6, r3, r6, lsl #1
         bhs         _sscanf_u_loop
+#endif
 
 _sscanf_u_done:
-        cmp         r5, #'-'        //if negative
-        IT          EQ
-        rsbeq       r6, r6, #0
         cmp         r7, #0          //if ptr != null
-        IT          NE
-        strne       r6, [r7]
+        beq         _sloop
+        lsrs        r5, #2        //if negative
+#if USE_TMOS_LLONG
+        bcc         1f
+        negs        r6, r6
+        sbc         r9, r9, r9, lsl #1
+1:
+        cbz         r5, 2f
+        str         r9, [r7, #4]
+2:
+        str         r6, [r7]
         b           _sloop
+#else
+        IT          CS
+        negcs       r6, r6
+        str         r6, [r7]
+        b           _sloop
+#endif
+
 
 _sscanf_i:
         cmp         r6, #'-'        //check the sign
         ITT         EQ
-        moveq       r5, #'-'
+        addeq       r5, #PF_NEG
         ldrbeq      r6, [r0, #1]!
         cmp         r6, #'0'
         bne         _sscanf_u       //first digit not '0' goto %u
@@ -728,20 +864,23 @@ _sscanf_X_loop:
         cmp         r3, #'a'
         IT          HS
         subhs       r3, #'a'-'A'
-        subs        r3, r3, #'0'        //  x >= 0
+        subs        r3, r3, #'0'        //  x >= '0'
         blo         _sscanf_u_done
         cmp         r3, #15+7
-        bhi         _sscanf_u_done
+        bhi         _sscanf_u_done      // '0' <= x <= 'F'
 
+        cmp         r3, #9              // 0 .. 22
+        bls         1f                  // 0 .. 9 -> 10 ..22
+        subs        r3, #7              // 3..15
         cmp         r3, #9
-        IT          HI
-        subhi       r3, #7
+        bls         _sscanf_u_done
+1:
+#if USE_TMOS_LLONG
+        lsls        r9, #4
+        add         r9, r9, r6, lsr #28
+#endif
         add         r6, r3, r6, lsl #4
-        IT          HI
-        rsbshi      r3, r3, #10
-        bls         _sscanf_X_loop
-        lsrs        r6, #4
-        b           _sscanf_u_done
+        b           _sscanf_X_loop
 
 
 
