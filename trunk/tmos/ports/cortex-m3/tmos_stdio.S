@@ -681,8 +681,12 @@ _sexit:
 
 _scanf_n:
         cbz         r7, _scanf_n_d
+#if USE_TMOS_LLONG
+        ldr         r3, [sp, #6*4]
+#else
         ldr         r3, [sp, #4*4]
-        subs        r3, r0
+#endif
+        subs        r3, r0, r3
         str         r3, [r7]
 _scanf_n_d:
         b           _sloop
