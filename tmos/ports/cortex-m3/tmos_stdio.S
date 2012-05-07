@@ -633,6 +633,7 @@ ENDF(   tmos_vprintf_len        )
                                         // r1 = *format
 FUNC(    tmos_sscanf        )
 
+        cbz         r0, _sexit
         push        {r0, r2, r3}        // push all params in stack
         mov         r2, sp              // ++r2 = va_list
 #if USE_TMOS_LLONG
@@ -672,6 +673,7 @@ _bad_sscanf:
         subs        r2, r3
         lsrs        r0, r2, #2
         add         sp, #3*4
+_sexit:
         bx          lr
 
 
