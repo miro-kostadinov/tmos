@@ -803,7 +803,7 @@ const char* CSTRING::c_str() const
 	/*
 	 * 	NOTE: NULL can be returned!
 	 */
-	return (RAM_ADR(storage.adr)?storage.ram->buf: storage.rom);
+	return (this?(RAM_ADR(storage.adr)?storage.ram->buf: storage.rom): "");
 }
 
 /**
