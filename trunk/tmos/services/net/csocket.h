@@ -90,7 +90,7 @@ struct CSocket: public CHandle
 	RES_CODE bind(const char* url);
 	RES_CODE listen(int backlog);
 	NET_CODE connect(const char* ip_adr, unsigned int port);
-	NET_CODE connect(CURL& link);
+	NET_CODE connect(const CURL& link);
 	NET_CODE connect(const char* url);
 	CSocket* accept(unsigned int timeout = 1024*1024);
 	RES_CODE gethostbyname(CSTRING& ip_adr, const char* url);

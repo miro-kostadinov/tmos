@@ -109,7 +109,7 @@ NET_CODE CSocket::connect(const char* ip_adr, unsigned int port)
  * @param link
  * @return
  */
-NET_CODE CSocket::connect(CURL& link)
+NET_CODE CSocket::connect(const CURL& link)
 {
 	NET_CODE result = NET_IDLE;
 
