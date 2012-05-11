@@ -715,7 +715,7 @@ static void strip_after_last_slash(CSTRING& s)
 //
 //*----------------------------------------------------------------------------
 
-NET_CODE CURL::url_resolve(CURL & old_link)
+NET_CODE CURL::url_resolve(const CURL & old_link)
 {
 	//If the relative URL has a scheme, it's interpreted as a complete absolute URL by itself.
 	//Step 2
