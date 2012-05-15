@@ -13,9 +13,27 @@ extern "C"
 {
 #endif
 
+typedef struct
+{
+	int64_t quot;
+	int64_t rem;
+} lldiv_t;
+
+typedef struct
+{
+	uint64_t quot;
+	uint64_t rem;
+} ulldiv_t;
+
 unsigned long long udivdi3(unsigned long long u, unsigned long long v);
 long long divdi3(long long u, long long v);
 unsigned long long llabs(long long u);
+
+/* Workaround for __value_in_regs
+ *
+ */
+int64_t tmos_ldivmod(int64_t u, int64_t v, int64_t* rem);
+uint64_t tmos_uldivmod(uint64_t u, uint64_t v, uint64_t* res);
 
 #ifdef __cplusplus
 }

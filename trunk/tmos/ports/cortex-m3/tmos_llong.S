@@ -357,6 +357,36 @@ FUNC(   tmos__udivmoddi4     )
 ENDF(   tmos__udivmoddi4     )
 
 
+//*-----------------------------------------------------------------------------
+//*         Workaround __value_in_regs functions
+//*-----------------------------------------------------------------------------
+
+//int64_t tmos_ldivmod(int64_t u, int64_t v, int64_t* rem);
+FUNC(   tmos_ldivmod     )
+                push            {lr}
+                bl              __aeabi_ldivmod
+                ldr             r12, [sp, #4]
+                cmp             r12, #0
+                beq             1f
+                strd            r2, r3, [r12]
+1:
+                pop             {pc}
+
+ENDF(   tmos_ldivmod     )
+
+
+//uint64_t tmos_uldivmod(uint64_t u, uint64_t v, uint64_t* res);
+FUNC(   tmos_uldivmod     )
+                push            {lr}
+                bl              udivdi3
+                ldr             r12, [sp, #4]
+                cmp             r12, #0
+                beq             1f
+                strd            r2, r3, [r12]
+1:
+                pop             {pc}
+
+ENDF(   tmos_uldivmod     )
 
 
 
