@@ -55,7 +55,7 @@
   .size name, .-name
 
 #define FUNC(name) 			\
-.section .text.&&name, "ax";\
+.section .text.name, "ax";\
 __ALIGN_SHORT; 				\
 .type   name, %function; 	\
 .global name; 				\
