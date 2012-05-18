@@ -638,7 +638,6 @@ FUNC(    tmos_sscanf        )
         mov         r2, sp              // ++r2 = va_list
 #if USE_TMOS_LLONG
         push        {r4, r5, r6, r7, r8, r9}
-        mov         r12, #10
 #else
         push        {r4, r5, r6, r7}
 #endif
@@ -691,18 +690,18 @@ _scanf_n:
 _scanf_n_d:
         b           _sloop
 
-_check_sformat:
-        ldrb        r3, [r1], #1
+_check_sformat:							// r0  r1  r2  r3  r4  r5  r6  r7  r12
+        ldrb        r3, [r1], #1		// src fmt arg f        		   10
         cmp         r3, #'%'
         beq         _check_schar
-        movs        r4, #0              //r4 = width
-        subs        r7, r3, #'*'        //r7 = null or &param
+        mov         r12, #10
+        movs        r4, #0              // src fmt arg f   wdt
+        subs        r7, r3, #'*'        // src fmt arg f   wdt         prm
         ITE         EQ
         ldrbeq      r3, [r1], #1
         ldrne       r7, [r2, #4]!
         cmp         r3, #'n'
         beq         _scanf_n
-        movs        r5, #10
 _check_swidth:
         cmp         r3, #'9'
         bls         _get_swidth
@@ -714,15 +713,15 @@ _check_stype:
         beq         _sscanf_set
 
 _skip_white:
-        ldrb        r6, [r0]
+        ldrb        r6, [r0]			// src fmt arg f   wdt       c  prm  10
         cbz         r6, _failed_sscanf
         cmp         r6, #' '
         IT          LS
         addls       r0, #1
         bls         _skip_white
 
-        movs        r5, #0
-#if USE_TMOS_LLONG
+        movs        r5, #0				// src fmt arg f   wdt flg c  prm  10
+#if USE_TMOS_LLONG						// r0  r1  r2  r3  r4  r5  r6  r7  r12
         movs        r9, #0
         cmp         r3, #'l'
         ITT         EQ
@@ -740,7 +739,7 @@ _skip_white:
         cmp         r3, #'s'
         bne         _failed_sscanf
 
-_sscanf_s:
+_sscanf_s:								// src fmt arg f   wdt flg c  prm  10
         cmp         r7, #0
         IT          NE
         strbne      r6, [r7], #1
@@ -758,7 +757,7 @@ _sscanf_s:
 _get_swidth:
         subs        r6, r3, #'0'
         blo         _check_stype
-        mla         r4, r4, r5, r6
+        mla         r4, r4, r12, r6
         ldrb        r3, [r1], #1
         b           _check_swidth
 
@@ -768,7 +767,7 @@ _failed_sscanf:
 _b_bad_sscanf:
         b           _bad_sscanf
 
-_sscanf_c:
+_sscanf_c:								// src fmt arg f   wdt 10      prm  10
         ldrb        r6, [r0], #1
         cmp         r7, #0
         IT          NE
@@ -781,7 +780,7 @@ _sscanf_c:
 
 
 _sscanf_d:                              // r0  r1  r2  r3  r4  r5  r6  r7  r12
-        cmp         r6, #'-'            // src fmt arg ___ wdt      c  par
+        cmp         r6, #'-'            // src fmt arg ___ wdt flg  c  par
         ITT         EQ
         addeq       r5, #PF_NEG
         ldrbeq      r6, [r0, #1]!
