@@ -142,6 +142,67 @@ const char* LCD_MODULE::draw_text(const char *txt)
     pos_y += font->vspacing;
     return (txt);
 }
+const char* LCD_MODULE::draw_row(const char *txt)
+{
+    unsigned int width,len, pos;
+	unsigned int c;
+
+//	if( (pos_y + font->hight) < offset_y0)
+//		return (NULL);
+
+	while(*txt == ' ')
+		txt++;
+
+    pos = pos_x + font->distance;
+    len = 0;
+    width = 0;
+    while( pos < size_x )
+    {
+        width =pos;
+        if( !(c=txt[len++]) )
+        {
+            break;
+        }
+    	pos += font->spacing;
+    }
+
+    if(!width && len)
+    {
+    	width = pos_x + font->distance + (len-1)*font->spacing;
+    }
+
+
+    if(width)
+    {
+    	len = width -pos_x -font->distance;
+    	if(allign != ALL_LEFT)
+    	{
+            pos = size_x - len;
+    		if(allign == ALL_CENTER)
+    			pos >>= 1;
+    	}
+    	else
+    		pos = pos_x + font->distance;
+
+    	width = pos + len;
+
+    	while( (pos < width) && (c = *txt))
+    	{
+    		txt++;
+    		if(c>0x1f)
+    		{
+                c -= 0x20;
+
+				draw_bitmap(pos, pos_y, font->font_data + c * font->char_bytes,
+						font->width, font->hight);
+    		}
+    		pos += font->spacing;
+    	}
+    }
+
+    pos_y += font->vspacing;
+    return (txt);
+}
 
 
 void LCD_MODULE::clear_rect(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
