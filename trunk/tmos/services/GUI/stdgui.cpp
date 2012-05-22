@@ -493,17 +493,18 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
     		DrawButtons(box, lcd);
     	}
 
+        lcd->set_xy_all(17, ALL_LEFT);
 		buf = box->data.c_str();
 		pos = box->pos;
-    	if(!buf)
-			buf = "";
-        lcd->set_xy_all(17, ALL_LEFT);
-		if( pos > 10 )
-		{
-	        buf += pos -10;
-	        pos = 10;
-		}
-		lcd->draw_text(buf);
+    	if(buf)
+    	{
+    		if( pos > 10 )
+    		{
+    	        buf += pos -10;
+    	        pos = 10;
+    		}
+    		lcd->draw_row(buf);
+    	}
 		if(box->flags & (TXT_FLAGS_CURSOR|TXT_FLAGS_CONST))
 		{
 			pos = 2 + pos * lcd->font->spacing;
