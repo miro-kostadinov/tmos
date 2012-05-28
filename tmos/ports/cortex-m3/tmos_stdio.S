@@ -780,6 +780,9 @@ _sscanf_c:								// src fmt arg f   wdt 10      prm  10
 
 
 _sscanf_d:                              // r0  r1  r2  r3  r4  r5  r6  r7  r12
+        cmp         r6, #'+'            // src fmt arg ___ wdt flg  c  par
+        IT          EQ
+        ldrbeq      r6, [r0, #1]!
         cmp         r6, #'-'            // src fmt arg ___ wdt flg  c  par
         ITT         EQ
         addeq       r5, #PF_NEG
