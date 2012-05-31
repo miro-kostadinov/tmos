@@ -73,6 +73,9 @@ USE_GUI			?=y
 # GUI
 USE_USB			?=y
 
+# AES TMOS
+USE_AES_TMOS	?=y
+
 # GPIO output expander (shift register)
 USE_GPIO_EXPANDER ?=y
 
