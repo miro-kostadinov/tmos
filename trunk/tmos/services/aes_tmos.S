@@ -337,19 +337,19 @@ FUNC(	aes_tmos_en_key		)
     // (rnd mod nk == 4) and (nk > 6)
     ldr     st, [out, #-4]
     uxtb    tmp, st
-    ldrb    acc, [sbox, tmp]
+    ldrb    acc, [sbox, tmp]            //acc = FSb[ ( st ) & 0xFF ]
 
     uxtb    tmp, st, ror #8
     ldrb    tmp, [sbox, tmp]
-    orrs    acc, acc, tmp, lsl #8
+    orrs    acc, acc, tmp, lsl #8       //acc ^= FSb[ ( st >> 8 ) & 0xFF ] << 8
 
     uxtb    tmp, st, ror #16
     ldrb    tmp, [sbox, tmp]
-    orrs    acc, acc, tmp, lsl #16
+    orrs    acc, acc, tmp, lsl #16      //acc ^= FSb[ ( st >> 16 ) & 0xFF ] << 16
 
 	lsrs    tmp, st, #24
     ldrb    tmp, [sbox, tmp]
-    orrs    acc, acc, tmp, lsl #24
+    orrs    acc, acc, tmp, lsl #24      //acc ^= FSb[ ( st >> 24 ) & 0xFF ] << 24
     b       3b  //drain
 
 
@@ -372,7 +372,6 @@ _rcon_table_:
 #undef rcon
  ENDF(	aes_tmos_en_key	)
 
-//void aes_tmos_en_key(const aes_context* ctxt, unsigned char* input, unsigned key_size);
 //-----------------------------------------------------------------------------
 //void aes_tmos_de_key(const aes_context* ctxt, unsigned char* input, unsigned key_size);
 
@@ -433,7 +432,211 @@ Rtab 		    .req    r7      // pointer to inverse table
 
 ENDF(	aes_tmos_de_key	)
 
+//-----------------------------------------------------------------------------
+//void aes_tmos_en_ecb(const aes_context* ctxt, unsigned char* input,
+//      unsigned char* output, unsigned blocks);
 
+FUNC(   aes_tmos_en_ecb     )
+#define key     r0
+#define lut     r1
+#define tmp     r2
+#define Y0      r3
+
+#define X0      r4
+#define X1      r5
+#define X2      r6
+#define X3      r7
+
+#define Y1      r8
+#define Y2      r9
+#define tmp2    r12
+#define rnd     r14
+
+    .save   {r0-r9, lr}
+    push    {r0-r9, lr}
+
+1: // Encript loop
+    ldmia   r1!, {X0, X1, X2, X3}       // Copy cipher text block
+    str     r1, [sp, #4]
+
+    ldr     lut, [r0, #AES_CONTEXT_FT] //lut
+    ldr     rnd, [r0], #AES_CONTEXT_KEY//rnds, key
+    adds    rnd, #5
+
+    // add round key
+    ldm     key!, {tmp, Y0, Y1, Y2}
+    eors    X0, tmp
+    eors    X1, Y0
+    eors    X2, Y1
+    eors    X3, Y2
+
+
+2:  //block loop            key, lut, rnd, X0-X3
+    // 1. column
+    uxtb    tmp, X0                     // Y0 =  FTO[ ( X0       ) & 0xFF ]
+    ldr     Y0, [lut, tmp, lsl #2]
+
+    uxtb    tmp, X1, ror #8             // Y0 ^= FT1[ ( X1 >>  8 ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    Y0, Y0, tmp, ror #24
+
+    uxtb    tmp, X2, ROR #16            // Y0 ^= FT2[ ( X2 >>  16 ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    Y0, Y0, tmp, ror #16
+
+    lsrs    tmp, X3, #24                // Y0 ^= FT3[ ( X3 >>  24 ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    Y0, Y0, tmp, ror #8
+
+    // 2. column
+    uxtb    tmp, X1                     // Y1 =  FT0[ ( X1        ) & 0xFF ]
+    ldr     Y1, [lut, tmp, lsl #2]
+
+    uxtb    tmp, X2, ror #8             // Y1 ^= FT1[ ( X0 >>  8  ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    Y1, Y1, tmp, ror #24
+
+    uxtb    tmp, X3, ror #16            // Y1 ^= FT2[ ( X3 >>  16 ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    Y1, Y1, tmp, ror #16
+
+    lsrs    tmp, X0, #24                // Y1 ^= FT3[ ( X2 >>  24 ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    Y1, Y1, tmp, ror #8
+
+    // 3. column
+    uxtb    tmp, X2                     // Y2 =  FT0[ ( X2        ) & 0xFF ]
+    ldr     Y2, [lut, tmp, lsl #2]
+
+    uxtb    tmp, X3, ror #8             // Y2 ^= FT1[ ( X1 >>  8  ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    Y2, Y2, tmp, ror #24
+
+    uxtb    tmp, X0, ror #16            // Y2 ^= FT2[ ( X0 >>  16 ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    Y2, Y2, tmp, ror #16
+
+    lsrs    tmp, X1, #24                // Y2 ^= FT3[ ( X3 >>  24 ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    Y2, Y2, tmp, ror #8
+
+    // 4. column
+    uxtb    tmp, X3                     // X3 =  FT0[ ( X3        ) & 0xFF ]
+    ldr     X3, [lut, tmp, lsl #2]
+
+    uxtb    tmp, X0, ror #8             // X3 ^= FT1[ ( X2 >>  8  ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    X3, X3, tmp, ror #24
+
+    uxtb    tmp, X1, ror #16            // X3 ^= FT2[ ( X1 >>  16 ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    X3, X3, tmp, ror #16
+
+    lsrs    tmp, X2, #24                // X3 ^= FT3[ ( X0 >>  24 ) & 0xFF ]
+    ldr     tmp, [lut, tmp, lsl #2]
+    eors    X3, X3, tmp, ror #8
+
+    // add round key
+    ldm     key!, { tmp, tmp2 }
+    eors    X0, Y0, tmp
+    eors    X1, Y1, tmp2
+    ldm     key!, { tmp, Y0 }
+    eors    X2, Y2, tmp
+    eors    X3, Y0
+
+    // decrement counter
+    subs    rnd, #1     // do all the rounds,
+    bne     2b          // except the last one
+
+
+    // last round
+    ldr     tmp, [sp]
+    ldr     lut, [tmp, #AES_CONTEXT_SB]
+
+    // 1. column
+    uxtb    tmp, X0                     // Y0 =  FSb[ ( X0       ) & 0xFF ]
+    ldrb    Y0, [lut, tmp]
+
+    uxtb    tmp, X1, ror #8             // Y0 |= FSb[ ( X3 >>  8 ) & 0xFF ] <<  8
+    ldrb    tmp, [lut, tmp]
+    orr     Y0, Y0, tmp, lsl #8
+
+    uxtb    tmp, X2, ror #16            // Y0 |= FSb[ ( X2 >> 16 ) & 0xFF ] << 16
+    ldrb    tmp, [lut, tmp]
+    orr     Y0, Y0, tmp, lsl #16
+
+    lsrs    tmp, X3, #24
+    ldrb    tmp, [lut, tmp]             // Y0 |= FSb[ ( X1 >> 16 ) & 0xFF ] << 24
+    orrs    Y0, Y0, tmp, lsl #24
+
+    // 2. column
+    uxtb    tmp, X1                     // Y1 =  FSb[ ( X1       ) & 0xFF ]
+    ldrb    Y1, [lut, tmp]
+
+    uxtb    tmp, X2, ror #8             // Y1 |= FSb[ ( X0 >>  8 ) & 0xFF ] <<  8
+    ldrb    tmp, [lut, tmp]
+    orrs    Y1, Y1, tmp, lsl #8
+
+    uxtb    tmp, X3, ror #16            // Y1 |= FSb[ ( X3 >> 16 ) & 0xFF ] << 16
+    ldrb    tmp, [lut, tmp]
+    orrs    Y1, Y1, tmp, lsl #16
+
+    lsrs    tmp, X0, #24
+    ldrb    tmp, [lut, tmp]             // Y1 |= FSb[ ( X2 >> 16 ) & 0xFF ] << 24
+    orrs    Y1, Y1, tmp, lsl #24
+
+    // 3. column
+    uxtb    tmp, X2                     // Y2 =  FSb[ ( X2       ) & 0xFF ]
+    ldrb    Y2, [lut, tmp]
+
+    uxtb    tmp, X3, ror #8             // Y2 |= FSb[ ( X1 >>  8 ) & 0xFF ] <<  8
+    ldrb    tmp, [lut, tmp]
+    orrs    Y2, Y2, tmp, lsl #8
+
+    uxtb    tmp, X0, ror #16            // Y2 |= FSb[ ( X0 >> 16 ) & 0xFF ] << 16
+    ldrb    tmp, [lut, tmp]
+    orrs    Y2, Y2, tmp, lsl #16
+
+    lsrs    tmp, X1, #24
+    ldrb    tmp, [lut, tmp]             // Y2 |= FSb[ ( X3 >> 16 ) & 0xFF ] << 24
+    orrs    Y2, Y2, tmp, lsl #24
+
+    // 4. column
+    uxtb    tmp, X3                     // X3 =  FSb[ ( X3       ) & 0xFF ]
+    ldrb    X3, [lut, tmp]
+
+    uxtb    tmp, X0, ror #8             // X3 |= FSb[ ( X2 >>  8 ) & 0xFF ] <<  8
+    ldrb    tmp, [lut, tmp]
+    orrs    X3, X3, tmp, lsl #8
+
+    uxtb    tmp, X1, ror #16            // X3 |= FSb[ ( X1 >> 16 ) & 0xFF ] << 16
+    ldrb    tmp, [lut, tmp]
+    orrs    X3, X3, tmp, lsl #16
+
+    lsrs    tmp, X2, #24
+    ldrb    tmp, [lut, tmp]             // X3 |= FSb[ ( X0 >> 16 ) & 0xFF ] << 24
+    orrs    X3, X3, tmp, lsl #24
+
+    // add round key
+    ldm     key!, { tmp, tmp2 }
+    eors    X0, Y0, tmp
+    eors    X1, Y1, tmp2
+    ldm     key!, { tmp, Y0 }
+    eors    X2, Y2, tmp
+    eors    X3, Y0
+
+    ldmia   sp, {r0-r3}                 //r0=ctxt, r1=input, r2=output, r3=blocks
+    stmia   r2!, {X0-X3}
+//    pop     {r0-r9, pc}
+    subs    r3, #1
+    IT      EQ
+    popeq   {r0-r9, pc}
+    str     r2, [sp, #8]
+    str     r3, [sp, #12]
+    b       1b                          // Decript loop
+
+
+ENDF(   aes_tmos_en_ecb     )
 
 
 .end

@@ -55,6 +55,8 @@ typedef struct
 void aes_tmos_en_key(const aes_context* ctxt, unsigned char* input, unsigned key_size);
 void aes_tmos_de_key(const aes_context* ctxt, unsigned char* input, unsigned key_size);
 
+void aes_tmos_en_ecb(const aes_context* ctxt, const unsigned char* input,
+		unsigned char* output, unsigned blocks);
 void aes_tmos_de_ecb(const aes_context* ctxt, const unsigned char* input,
 		unsigned char* output, unsigned blocks);
 
