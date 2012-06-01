@@ -25,6 +25,10 @@
   #define ENC_ROUNDS           	(ENC_BSIZE + 6)
 #endif
 
+#define AES_128_KEY_SIZE		4
+#define AES_192_KEY_SIZE		6
+#define AES_256_KEY_SIZE		8
+
 
 // AES CONTEXT structure offsets
 #define AES_CONTEXT_RNDS		0
