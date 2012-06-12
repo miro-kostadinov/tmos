@@ -60,8 +60,8 @@ class SHA1
          *  Returns the message digest
          */
         bool Result(unsigned *message_digest_array);
-
         bool Result(CSTRING& message_digest);
+        bool Result(char* message_digest);
 
         /*
          *  Provide input to SHA1
@@ -98,6 +98,7 @@ class SHA1
         int Message_Block_Index;            // Index into message block array
 
         bool Computed;                      // Is the digest computed?
+    protected:
         bool Corrupted;                     // Is the message digest corruped?
         
 };

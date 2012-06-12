@@ -28,12 +28,21 @@
 #ifndef _BASE32_H_
 #define _BASE32_H_
 
-#include <stdint.h>
+#include <tmos.h>
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 int base32_decode(const uint8_t *encoded, uint8_t *result, int bufSize)
-    __attribute__((visibility("hidden")));
+    /*__attribute__((visibility("hidden")))*/;
 int base32_encode(const uint8_t *data, int length, uint8_t *result,
                   int bufSize)
-    __attribute__((visibility("hidden")));
+    /*__attribute__((visibility("hidden")))*/;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _BASE32_H_ */

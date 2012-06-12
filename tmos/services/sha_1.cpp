@@ -180,6 +180,33 @@ bool SHA1::Result(CSTRING& message_digest)
     return (true);
 }
 
+bool SHA1::Result(char* message_digest)
+{
+    int i;                                  // Counter
+
+    if (Corrupted || !message_digest)
+    {
+        return (false);
+    }
+
+    if (!Computed)
+    {
+        PadMessage();
+        Computed = true;
+    }
+
+    for(i = 0; i < 5; i++)
+    {
+    	message_digest[0] = (H[i] >> 24) & 0xFF;
+    	message_digest[1] = (H[i] >> 16) & 0xFF;
+    	message_digest[2] = (H[i] >> 8 ) & 0xFF;
+    	message_digest[3] = (H[i] & 0xFF);
+        message_digest += sizeof(int);
+    }
+
+    return (true);
+}
+
 /*  
  *  Input
  *
