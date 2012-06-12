@@ -67,6 +67,9 @@ USE_CACHE		?=y
 # SHA-1 class
 USE_SHA_1		?=y
 
+# base 32 
+USE_BASE32		?=y
+
 # GUI
 USE_GUI			?=y
 
