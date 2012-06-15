@@ -994,7 +994,7 @@ CSTRING CSTRING::substr( unsigned int index, unsigned int size ) const
 	len = length();
 	if(index < len)
 	{
-		len -= - index;		//available
+		len -= index;		//available
 		if(len > size)
 			len = size;		//requested
 	} else
