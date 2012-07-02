@@ -1116,7 +1116,7 @@ CSTRING& CSTRING::erase(unsigned int index, unsigned int count)
  *
  * @return
  */
-unsigned int CSTRING::atoi()
+unsigned int CSTRING::atoi() const
 {
 	unsigned int res=0;
 	const char *ptr = RAM_ADR(storage.adr)?storage.ram->buf: storage.rom;
@@ -1128,7 +1128,7 @@ unsigned int CSTRING::atoi()
 	return (res);
 }
 
-long long CSTRING::atoll()
+long long CSTRING::atoll() const
 {
 	long long res=0;
 	const char *ptr = RAM_ADR(storage.adr)?storage.ram->buf: storage.rom;
