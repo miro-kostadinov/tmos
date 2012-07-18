@@ -33,8 +33,6 @@ DEBUG 		?= dwarf-2
 
 
 # Select Target board
-#BOARD_TYPE  = HW_VER_10
-BOARD_TYPE  ?= HW_VER_11
 
 
 #========================    TMOS settings		===============================#
