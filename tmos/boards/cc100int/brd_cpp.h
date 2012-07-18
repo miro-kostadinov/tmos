@@ -93,6 +93,7 @@
     FILE_DRV_INDX,					//55
     FD_DRV_INDX,					//56
     SDCARD_DRV_INDX,				//57
+    GSM_DRV_INDX,					//58
     INALID_DRV_INDX	                /*!<  invalid	                         */
 };
 

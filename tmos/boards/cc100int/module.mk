@@ -27,7 +27,7 @@ CFG_MCU 	?= LM3S5B91_C1
 DEBUG 		?= dwarf-2
 
 
-#===============	Project settings		===============#
+#=========================   Project settings       ===========================#
 
 # Select Target CPU
 
@@ -35,7 +35,7 @@ DEBUG 		?= dwarf-2
 # Select Target board
 
 
-#===============	TMOS settings		===============#
+#========================    TMOS settings		===============================#
 
 # memcmp() memset() memclr() memcpy() memmove() strcpy() strncpy() strlen()
 # strchr() strrchr() strpbrk() islower() isupper() strcmp() strncmp() strcasecmp()
@@ -72,7 +72,11 @@ USE_USB			?=y
 # GPIO output expander (shift register)
 USE_GPIO_EXPANDER ?=n
 
-##########################################################################
+#net
+USE_NET			?=y
+
+
+################################################################################
 
 # local sources
 local_as_src-y	:=
