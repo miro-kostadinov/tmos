@@ -12,12 +12,7 @@
 #define BRD_CFG_H_
 
 
-#define HW_VER_11			1
-
 #define HW_KEY_VER		    2
-
-
-
 
 #define KEY_DOWN_CODE		0x00
 #define KEY_REPEAT_CODE		0x80
@@ -63,6 +58,7 @@
 #define USE_GUI				1
 #define USE_USB				1
 #define	USE_GPIO_EXPANDER 	1
+#define USE_NET				1
 
 #define USE_EXCEPTION_RECORD 1
 #define USE_MEMORY_TRACKING	1
