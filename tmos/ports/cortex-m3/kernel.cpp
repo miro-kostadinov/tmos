@@ -157,7 +157,7 @@ extern "C" void sys_kernel_init( void)
     ITM->TER |= 0xFFFFFFFF ;					//Trace Enable = all stimulus ports
     ITM->TPR = 0x0;								//Trace Privilege = all
 
-	TRACELN1("===== "__DATE__ " === " __TIME__ " =====    "); //few more spaces (a clock change follows)
+	TRACELN1("===== " __DATE__ " === " __TIME__ " =====    "); //few more spaces (a clock change follows)
 #endif
 
 	//------------- initialize dynamic memory  ---------------//

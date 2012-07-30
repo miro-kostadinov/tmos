@@ -22,6 +22,7 @@ struct usb_interface
 	unsigned char bAlternativeSetting;
 
 	usb_interface(unsigned char bAS): bAlternativeSetting(bAS){};
+	virtual ~usb_interface(){};
 
 	virtual void Initialize(const USBInterfaceDescriptor* ds, int size) =0;
 	virtual void RequestHandler(const void* drv,
