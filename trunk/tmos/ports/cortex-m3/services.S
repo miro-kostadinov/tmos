@@ -276,7 +276,7 @@ FUNC(	sys_drv_service_wait  )
 				ldrb			r0, [r0, #HND_SIGNAL]
 				b				sys_get_signal
 
-ENDF(	svc_drv_service_wait  )
+ENDF(	sys_drv_service_wait  )
 
 //------------------------------------------------------------------------------
 //unsigned int get_signal(unsigned int signal);
@@ -630,7 +630,7 @@ FUNC(	locked_add_short		)
 				bne				1b
 				mov				r0, r3
 				bx				lr
-ENDF(	locked_inc_short		)
+ENDF(	locked_add_short		)
 
 //------------------------------------------------------------------------------
 //unsigned int  locked_dec_short(volatile unsigned short* Addend);

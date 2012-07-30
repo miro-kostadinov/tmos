@@ -338,7 +338,7 @@ smf_exit:		bx				lr
 				strh			r2, [r1, r3, lsl #2]//nf->pf= nf-c
 				movs			r0, #0
 				bx				lr
-ENDF(	svc_free_pool		)
+ENDF(	svc_pool_free		)
 
 
 

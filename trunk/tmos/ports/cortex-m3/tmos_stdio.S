@@ -104,7 +104,8 @@ FUNC(   tmos_vsprintf        )               // r0  r1  r2  r3  r4  r5  r6  r7  
         push        {r0, r4, r5, r6, r7}     // dst fmt arg ___ ___ ___ ___ ___ ___
         mov         r12, r2                  // dst fmt ___ ___ ___ ___ ___ ___ arg*
         ldrb        r3, [r1], #1             // dst fmt ___  c  ___ ___ ___ ___ arg*
-        cbz         r3, _end_loop
+        cmp         r3, #0
+        beq         _end_loop
         cmp         r3, #'%'
         beq         _check_flags
 
