@@ -51,16 +51,16 @@ typedef unsigned int PIN_DESC;
 #define PD_PORT_Pos			20						//!< port bits position
 #define PD_PORT_Msk			(0xF << PD_PORT_Pos)	//!< port bits mask
 #define PD_PORT_Get(x)		(0xF & ((x) >> PD_PORT_Pos)) //!< port value
-#define	PD_PORT_A			(0 << PD_PORT_Pos)		//!< port A
-#define	PD_PORT_B			(1 << PD_PORT_Pos)		//!< port B
-#define	PD_PORT_C			(2 << PD_PORT_Pos)		//!< port C
-#define	PD_PORT_D			(3 << PD_PORT_Pos)		//!< port D
-#define	PD_PORT_E			(4 << PD_PORT_Pos)		//!< port E
-#define	PD_PORT_F			(5 << PD_PORT_Pos)		//!< port F
-#define	PD_PORT_G			(6 << PD_PORT_Pos)		//!< port G
-#define	PD_PORT_H			(7 << PD_PORT_Pos)		//!< port H
-#define	PD_PORT_J			(8 << PD_PORT_Pos)		//!< port J
-#define PD_PORT_V           (0xF << PD_PORT_Pos)	//!< virtual port V
+#define	PD_PORT_A			((unsigned int)0 << PD_PORT_Pos)		//!< port A
+#define	PD_PORT_B			((unsigned int)1 << PD_PORT_Pos)		//!< port B
+#define	PD_PORT_C			((unsigned int)2 << PD_PORT_Pos)		//!< port C
+#define	PD_PORT_D			((unsigned int)3 << PD_PORT_Pos)		//!< port D
+#define	PD_PORT_E			((unsigned int)4 << PD_PORT_Pos)		//!< port E
+#define	PD_PORT_F			((unsigned int)5 << PD_PORT_Pos)		//!< port F
+#define	PD_PORT_G			((unsigned int)6 << PD_PORT_Pos)		//!< port G
+#define	PD_PORT_H			((unsigned int)7 << PD_PORT_Pos)		//!< port H
+#define	PD_PORT_J			((unsigned int)8 << PD_PORT_Pos)		//!< port J
+#define PD_PORT_V           ((unsigned int)0xF << PD_PORT_Pos)	//!< virtual port V
 #define PD_LAST_PORT		8						//!< number of physical ports
 
 /// Pin definition bits 19:16 = pin mux
