@@ -84,6 +84,8 @@ const char* LCD_MODULE::draw_text(const char *txt)
 
 //	if( (pos_y + font->hight) < offset_y0)
 //		return (NULL);
+	if(!txt)
+		return NULL;
 
 	while(*txt == ' ')
 		txt++;
