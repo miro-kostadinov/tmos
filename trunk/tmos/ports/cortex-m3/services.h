@@ -47,6 +47,8 @@ void* locked_set_if_null(void* pointer, void* value);
 #ifdef __cplusplus
 void TRACE_BUF(const void* buf, unsigned int len, unsigned int color);
 void TRACE_BUF(const void* buf, unsigned int len, unsigned int c1, unsigned int c2);
+void TRACE_TEXT(const void* buf, unsigned int len);
+void TRACE_TEXT(const void* buf, unsigned int len, unsigned int color);
 #endif
 
 #define TC_BRIGHT				1
