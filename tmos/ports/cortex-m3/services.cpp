@@ -68,3 +68,38 @@ void TRACE_BUF(const void* buf, unsigned int len, unsigned int c1, unsigned int 
 	TRACE_BUF(buf, len);
 	TRACE1("\e[m");
 }
+
+void TRACE_TEXT(const void* buf, unsigned int len)
+{
+	const char* str = (const char*)buf;
+
+	while(len--)
+	{
+		if(*str < ' ' && *str != '\t' && *str != '\r' && *str != '\n')
+		{
+			TRACE("{%02X}", *str);
+		} else
+		{
+			TRACE_CHAR(*str);
+		}
+		str++;
+	}
+}
+
+void TRACE_TEXT(const void* buf, unsigned int len, unsigned int color)
+{
+	TRACE1("\e[");
+	if(color <100)
+	{
+		if(color>9)
+		{
+			TRACE_CHAR('0'+ (color/10));
+			color %= 10;
+		}
+		TRACE_CHAR('0'+ color);
+	}
+	TRACE_CHAR('m');
+	TRACE_TEXT(buf, len);
+	TRACE1("\e[m");
+}
+
