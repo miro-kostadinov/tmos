@@ -72,6 +72,7 @@ static inline void STOP_RX_HND(UART_Type *Uart, UART_DRIVER_INFO * drv_info, HAN
 {
 	STOP_RX(Uart);
 	drv_info->drv_data->hnd_rcv = hnd->next;
+	hnd->dst.as_int += hnd->len - drv_info->drv_data->rx_remaining;
 	hnd->len = drv_info->drv_data->rx_remaining;
 	usr_HND_SET_STATUS(hnd, RES_SIG_OK);
   	if( (hnd=drv_info->drv_data->hnd_rcv) )
