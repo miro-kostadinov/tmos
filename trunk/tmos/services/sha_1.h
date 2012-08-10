@@ -70,7 +70,7 @@ class SHA1
                     unsigned            length);
         void Input( const char  *message_array,
                     unsigned    length);
-        void Input(CSTRING& message);
+        void Input(const CSTRING& message);
 
     private:
 

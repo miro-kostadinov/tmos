@@ -290,7 +290,7 @@ void SHA1::Input(   const char  *message_array,
 {
     Input((unsigned char *) message_array, length);
 }
-void SHA1::Input(CSTRING& message)
+void SHA1::Input(const CSTRING& message)
 {
 	Input(message.c_str(), message.length());
 }
