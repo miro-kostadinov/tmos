@@ -270,28 +270,19 @@ void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd)
 
 //	    TRACE_USB(" Read%d(%d) ", eptnum, hnd->len);
 
-		switch(endpoint->state)
+		if(endpoint->state == ENDPOINT_STATE_RECEIVING_OFF)
 		{
-
-		case ENDPOINT_STATE_RECEIVING_OFF:
     		endpoint->rxfifo_cnt = usb_read_payload(ENTPOINT_FIFO(drv_info->hw_base,
 					eptnum), hnd, endpoint->rxfifo_cnt);
-            if (endpoint->rxfifo_cnt)
-            {
-            	svc_HND_SET_STATUS(hnd, RES_SIG_OK);
-            }
-            else
+            if (endpoint->rxfifo_cnt == 0)
             {
             	usb_ack_packet(drv_info->hw_base, endpoint, eptnum);
             	endpoint->state = ENDPOINT_STATE_IDLE;
-            	if(hnd->len)
-            		svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
-            	else
-                	svc_HND_SET_STATUS(hnd, RES_SIG_OK);
             }
-            break;
+		}
 
-		default:
+		if(hnd->len)
+		{
 		    if( (prev=endpoint->pending) )	//receiving
 		    {
 		    	while(prev->next)
@@ -302,8 +293,11 @@ void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd)
 
 		    // Enable interrupt on endpoint
 		    ENTPOINT_ENABLE_INT(drv_info->hw_base, eptnum);
-		    break;
+		} else
+		{
+        	svc_HND_SET_STATUS(hnd, RES_SIG_OK);
 		}
+
 	    return;
     }
 
