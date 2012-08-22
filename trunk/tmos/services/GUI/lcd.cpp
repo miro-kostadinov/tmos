@@ -221,7 +221,6 @@ void LCD_MODULE::lcd_single_window(GUI_CB callback)
 	CWindow win;
 
 	win.mode.as_voidptr = (void*)callback;
-    win.next = &win;
-    win.prev = &win;
+    win.next = NULL;
     redraw_screen(&win);
 }

@@ -10,6 +10,7 @@
 #include <tmos.h>
 #include "gui_drv.h"
 #include <stdgui.h>
+#include <lcd.h>
 
 //*----------------------------------------------------------------------------
 //*			Portable
@@ -70,8 +71,8 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	{
 		tsk_sleep(10);
 	}
-	desktop->next = desktop;
-	desktop->prev = desktop;
+	desktop->next = NULL;
+	top = desktop;
 	desktop->rect.x1 = drv_info->lcd->size_x;
 	desktop->rect.y1 = drv_info->lcd->size_y;
 
@@ -110,22 +111,14 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	        win = (WINDOW)gui_hnd.dst.as_voidptr;
 			if(win)
 			{
-				WINDOW obj;
-
-			    top = (WINDOW)desktop->next;
-
-                desktop->next = win;
-			    obj = desktop;
+                top->next = win;
                 do
                 {
-                	win->rect.x1 = drv_info->lcd->size_x;
-                	win->rect.y1 = drv_info->lcd->size_y;
-                    win->prev = obj;
-                    obj = win;
-    				win->callback(NULL , WM_INIT);
-                } while( (win = (WINDOW)win->next) );
-                obj->next = top;
-                top->prev = obj;
+                	top = (WINDOW)top->next;
+                	top->rect.x1 = drv_info->lcd->size_x;
+                	top->rect.y1 = drv_info->lcd->size_y;
+                	top->callback(NULL , WM_INIT);
+                } while( top->next );
 			}
 			gui_hnd.tsk_start_read(NULL, 0);
 			redraw = 1;
@@ -138,7 +131,6 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			drv_info->lcd->backlight_signal();
         	key_hnd.res &= ~FLG_SIGNALED;
             //send to top
-            top = (WINDOW)desktop->next;
             tmp = top->callback(key_hnd.src.as_int , WM_KEY);
 			if(tmp & FLG_BUSY)	//FLG_BUSY returned to redraw
 			{
@@ -150,10 +142,10 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
         }
 
         // 3)  command loop
+        top = NULL;
         win = desktop;
         do
         {
-          	top = win->prev;
           	// check for pending commands
             if(win->mode0 & FLG_OK)
             {
@@ -169,16 +161,19 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
             }
 
             //check for complete (close object)
-            if((win->mode0 | win->mode1) & FLG_SIGNALED)
+            if(top && ((win->mode0 | win->mode1) & FLG_SIGNALED) )
             {
             	top->next = win->next;
-                ((WINDOW)win->next)->prev = top;
                 usr_HND_SET_STATUS(win, win->mode1 | FLG_SIGNALED);
+                win = (WINDOW)top->next;
 				redraw = 1;
+            }else
+            {
+                top = win;
+                win = (WINDOW)win->next;
             }
 
-             win = top;
-        } while (win != desktop);
+        } while (win );
 
         // 3) draw loop
 		if(redraw)

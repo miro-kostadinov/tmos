@@ -186,23 +186,21 @@ extern char end;
 
 void EM6125::redraw_screen(WINDOW desktop)
 {
-    WINDOW win;
     WINDOW top;
 
 	clear_screen();
-	win = desktop;
-	do
+	while(desktop)
 	{
-		top = win->prev;
-		if( (top == desktop) || (win->rect.as_int != top->rect.as_int) )
+		top = (WINDOW)desktop->next;
+		if( (!top) || (desktop->rect.as_int != top->rect.as_int) )
 		{
 			frame_y0 = 0;
 			set_font(&FNT7x9);
-			win->callback((unsigned int)this, WM_DRAW);
+			desktop->callback((unsigned int)this, WM_DRAW);
 		}
 
-		win = top;
-	} while(win != desktop);
+		desktop = top;
+	}
 
 	draw_hline(0, cpu_usage, 78);
 #if USE_MEMORY_TRACKING
