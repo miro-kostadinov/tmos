@@ -227,10 +227,10 @@ void SPFD5414D::redraw_screen(WINDOW desktop)
     	frame_y1 = frame_y0+1;
     	clear_screen();
     	win = desktop;
-    	do
+    	while(win)
     	{
-    		top = win->prev;
-    		if( (top == desktop) || (win->rect.as_int != top->rect.as_int) )
+    		top = (WINDOW)win->next;
+    		if( (!top) || (win->rect.as_int != top->rect.as_int) )
     		{
     			set_font(&FNT7x9);
     			color = PIX_WHITE;
@@ -238,7 +238,7 @@ void SPFD5414D::redraw_screen(WINDOW desktop)
     		}
 
     		win = top;
-    	} while(win != desktop);
+    	}
 
     	update_screen();
     }

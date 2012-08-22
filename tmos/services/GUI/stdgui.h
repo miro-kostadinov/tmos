@@ -29,7 +29,7 @@ struct CWindow : CHandle
 
 	// common edns
     RECT_STRU		rect;
-	WINDOW			prev;					//up in Z-order
+//	WINDOW			prev;					//up in Z-order
 	RES_CODE	callback(unsigned int param, unsigned int msg)
 	{
 		return (((GUI_CB)mode.as_voidptr)(this, param, msg));
