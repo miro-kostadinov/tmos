@@ -43,16 +43,20 @@ TASK_DECLARE_STATIC(backlight_task, "BLIT", (void (*)(void))backlight_thread, 10
 
 void LCD_MODULE::lcd_init(GUI_CB splash)
 {
-	// LCD Reset (using lcd_hnd to talk with the MSP driver)
+#if GUI_DISPLAYS > 1
+	if(display == 1)
+#endif
+	{
+		usr_task_init_static(&backlight_task_desc, false);
+		backlight_task.sp->r0.as_voidptr = this;
+		usr_task_schedule(backlight_task_desc.tsk);
+	}
 
-	usr_task_init_static(&backlight_task_desc, false);
-	backlight_task.sp->r0.as_voidptr = this;
-	usr_task_schedule(backlight_task_desc.tsk);
-    PIO_CfgOutput0(pins[RST_PIN_INDX]);
+	// LCD Reset
+	PIO_CfgOutput0(pins[RST_PIN_INDX]);
 	tsk_sleep(20);
 	PIO_SetOutput(pins[RST_PIN_INDX]);
-    tsk_sleep(20);
-
+	tsk_sleep(20);
 
     //LCD Handle initialization (LCD attached to SPI)
     lcd_hnd->tsk_safe_open(lcd_hnd->drv_index, lcd_hnd->mode.as_voidptr);

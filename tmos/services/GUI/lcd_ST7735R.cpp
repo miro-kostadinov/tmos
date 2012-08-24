@@ -143,7 +143,6 @@ void ST7735R::lcd_init(GUI_CB splash)
     if(splash)
     {
     	lcd_single_window(splash);
-    	tsk_sleep(3000);
     }
 }
 

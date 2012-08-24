@@ -43,6 +43,11 @@ WEAK_C RES_CODE splashdlg_cb(WINDOW obj, LCD_MODULE* lcd, unsigned int msg)
 	return (0);
 }
 
+WEAK_C int detect_displays(GUI_DRIVER_INFO* drv_info)
+{
+	return (int)drv_info->lcd[0];
+}
+
 
 //*----------------------------------------------------------------------------
 //*			GUI Task
@@ -55,16 +60,19 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     unsigned int res, tmp, redraw;
     WINDOW win;
     WINDOW top;
+#if GUI_DISPLAYS > 1
+    WINDOW top0;		//top for display0
+#endif
     WINDOW desktop;		//main_dlg;
     CHandle key_hnd;
     CHandle gui_hnd;
 
-    //wait for static constructors (lcd object)
-    while(!drv_info->lcd)
-    	tsk_sleep(10);
-
     //prevent these signals not to be used from task handles
     ALLOCATE_SIGNAL(SIG_GUI_TASK);
+
+    //wait for static constructors (lcd object)
+    while(!detect_displays(drv_info))
+    	tsk_sleep(10);
 
     // start desktop
 	while( !(desktop = tsk_new_window(maindlg_cb)) )
@@ -73,16 +81,22 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	}
 	desktop->next = NULL;
 	top = desktop;
-	desktop->rect.x1 = drv_info->lcd->size_x;
-	desktop->rect.y1 = drv_info->lcd->size_y;
+#if GUI_DISPLAYS > 1
+	top0 = desktop;
+	desktop->displays = 0xff;
+#endif
+	desktop->rect.x1 = drv_info->lcd[0]->size_x;
+	desktop->rect.y1 = drv_info->lcd[0]->size_y;
 
-	drv_info->lcd->lcd_init((GUI_CB)splashdlg_cb);
+	for(int i=0; i<GUI_DISPLAYS; i++)
+	{
+		if(drv_info->lcd[i])
+			drv_info->lcd[i]->lcd_init((GUI_CB)splashdlg_cb);
+	}
+	tsk_sleep(3000);
 
 
-//#if USE_EXCEPTION_RECORD
-//	if(!exception_record.CFSR)
-//#endif
-		init_main_menu();
+	init_main_menu();
 
 
     // start key handle
@@ -101,12 +115,12 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     	redraw = res>>8;;
 
 		if(!res)
-			redraw =1;
+			redraw = 0xFF;
 
         // 1) get waiting objects
 		if(res & gui_hnd.signal)
         {
-			drv_info->lcd->backlight_signal();
+			drv_info->lcd[0]->backlight_signal();
         	gui_hnd.res &= ~FLG_SIGNALED;
 	        win = (WINDOW)gui_hnd.dst.as_voidptr;
 			if(win)
@@ -115,34 +129,54 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
                 do
                 {
                 	top = (WINDOW)top->next;
-                	top->rect.x1 = drv_info->lcd->size_x;
-                	top->rect.y1 = drv_info->lcd->size_y;
+                	top->rect.x1 = desktop->rect.x1;
+                	top->rect.y1 = desktop->rect.y1;
                 	top->callback(NULL , WM_INIT);
+					#if GUI_DISPLAYS > 1
+                		redraw |= top->displays;
+                		if(top->displays & 1)
+                			top0 = top;
+					#endif
                 } while( top->next );
 			}
 			gui_hnd.tsk_start_read(NULL, 0);
-			redraw = 1;
+			#if GUI_DISPLAYS == 1
+				redraw |= 1;
+			#endif
         }
 
 
         // 2) check keyboard
         if(res &  key_hnd.signal)
         {
-			drv_info->lcd->backlight_signal();
+			drv_info->lcd[0]->backlight_signal();
         	key_hnd.res &= ~FLG_SIGNALED;
             //send to top
-            tmp = top->callback(key_hnd.src.as_int , WM_KEY);
-			if(tmp & FLG_BUSY)	//FLG_BUSY returned to redraw
-			{
-				tmp ^= FLG_BUSY;
-				redraw = 1;
-			}
-			top->mode1 = tmp;
+			#if GUI_DISPLAYS > 1
+				tmp = top0->callback(key_hnd.src.as_int , WM_KEY);
+				if(tmp & FLG_BUSY)	//FLG_BUSY returned to redraw
+				{
+					tmp ^= FLG_BUSY;
+					redraw |= top0->displays;
+				}
+				top0->mode1 = tmp;
+			#else
+				tmp = top->callback(key_hnd.src.as_int , WM_KEY);
+				if(tmp & FLG_BUSY)	//FLG_BUSY returned to redraw
+				{
+					tmp ^= FLG_BUSY;
+					redraw |= 1;
+				}
+				top->mode1 = tmp;
+			#endif
             key_hnd.tsk_start_read(&key_hnd.src.as_int, 1);
         }
 
         // 3)  command loop
         top = NULL;
+		#if GUI_DISPLAYS > 1
+        top0 = NULL;
+		#endif
         win = desktop;
         do
         {
@@ -154,7 +188,11 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 				if(tmp & FLG_BUSY)	//FLG_BUSY returned to redraw
 				{
 					tmp ^= FLG_BUSY;
-					redraw = 1;
+					#if GUI_DISPLAYS > 1
+						redraw |= win->displays;
+					#else
+						redraw |= 1;
+					#endif
 				}
 	            win->mode1 = tmp;
 
@@ -164,22 +202,33 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
             if(top && ((win->mode0 | win->mode1) & FLG_SIGNALED) )
             {
             	top->next = win->next;
+				#if GUI_DISPLAYS > 1
+					redraw |= win->displays;
+				#else
+					redraw |= 1;
+				#endif
                 usr_HND_SET_STATUS(win, win->mode1 | FLG_SIGNALED);
                 win = (WINDOW)top->next;
-				redraw = 1;
             }else
             {
                 top = win;
+				#if GUI_DISPLAYS > 1
+                	if(top->displays & 1)
+                		top0 = top;
+				#endif
                 win = (WINDOW)win->next;
             }
 
         } while (win );
 
         // 3) draw loop
-		if(redraw)
-		{
-			drv_info->lcd->redraw_screen(desktop);
-		}
+    	for(int i=0; i<GUI_DISPLAYS; i++)
+    	{
+    		if( (redraw & (1<<i)) && drv_info->lcd[i])
+    		{
+    			drv_info->lcd[i]->redraw_screen(desktop);
+    		}
+    	}
     }
 
 }
