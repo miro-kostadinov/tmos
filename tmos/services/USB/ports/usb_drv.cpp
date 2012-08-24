@@ -148,6 +148,7 @@ void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
         	break;
 
 
+    	case DCR_CLOSE:
         case DCR_CANCEL:
         {
         	unsigned char eptnum;
@@ -155,8 +156,9 @@ void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
 
             eptnum = param->mode0;
     		endpoint = &(drv_data->endpoints[eptnum]);
-    		if(param->svc_list_cancel(endpoint->pending))
+    		if(param->list_remove(endpoint->pending))
     		{
+    			svc_HND_SET_STATUS(param, FLG_SIGNALED | (param->res & FLG_OK));
     			if(!eptnum)
     			{
     				TRACE1_USB("Can!");
@@ -170,7 +172,6 @@ void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
     		break;
         }
 
-    	case DCR_CLOSE:
         case DCR_OPEN:
 		  {
 
