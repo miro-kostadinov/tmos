@@ -56,32 +56,26 @@ unsigned int usb_read_payload(volatile void* src, HANDLE hnd, unsigned int size)
 
     TRACE_USB("(%d)", size);
 
-    while(size && hnd)
-    {
-    	dwRead = size;
-    	if(dwRead > hnd->len)
-    	{
-    		dwRead = hnd->len;
-    	}
-    	hnd->len -= dwRead;
-    	size -= dwRead;
+	dwRead = size;
+	if(dwRead > hnd->len)
+	{
+		dwRead = hnd->len;
+	}
+	hnd->len -= dwRead;
+	size -= dwRead;
 
-    	while(dwRead>3)
-    	{
-    		dwRead -= 4;
-    	    *hnd->dst.as_intptr++ = *(volatile int*)src;
-    	}
-    	while(dwRead--)
-    	{
-    	    *hnd->dst.as_byteptr++ = *(volatile char*)src;
-    	}
+	while(dwRead>3)
+	{
+		dwRead -= 4;
+		*hnd->dst.as_intptr++ = *(volatile int*)src;
+	}
+	while(dwRead--)
+	{
+		*hnd->dst.as_byteptr++ = *(volatile char*)src;
+	}
 
-    	if(!hnd->len)
-    	{
-    		hnd=NULL;
+	hnd->res = RES_BUSY | FLG_OK;
 
-    	}
-    }
     return (size);
 }
 
