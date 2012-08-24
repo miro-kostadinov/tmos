@@ -192,11 +192,19 @@ void EM6125::redraw_screen(WINDOW desktop)
 	while(desktop)
 	{
 		top = (WINDOW)desktop->next;
-		if( (!top) || (desktop->rect.as_int != top->rect.as_int) )
+		#if GUI_DISPLAYS > 1
+		while(top && !(display & top->displays))
+			top = (WINDOW) top->next;
+
+		if(display & desktop->displays)
+		#endif
 		{
-			frame_y0 = 0;
-			set_font(&FNT7x9);
-			desktop->callback((unsigned int)this, WM_DRAW);
+			if( (!top) || (desktop->rect.as_int != top->rect.as_int) )
+			{
+				frame_y0 = 0;
+				set_font(&FNT7x9);
+				desktop->callback((unsigned int)this, WM_DRAW);
+			}
 		}
 
 		desktop = top;

@@ -46,6 +46,8 @@
 #define WM_KEY				0x03
 #define WM_INIT				0x04
 
+#define GUI_DISPLAYS		2
+
 
 #define USE_TMOS_STRING		1
 #define USE_CSTRING			1

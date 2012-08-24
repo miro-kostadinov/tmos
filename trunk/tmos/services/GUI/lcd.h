@@ -54,6 +54,9 @@ struct LCD_MODULE
 	unsigned int color;
 	HANDLE lcd_hnd;
 	const PIN_DESC* pins;
+#if GUI_DISPLAYS > 1
+	unsigned char	display;
+#endif
 
 	LCD_MODULE(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p) :
 		size_x(x), size_y(y), lcd_hnd(hnd), pins(p)

@@ -5,6 +5,10 @@
 #define GUI_LANGUAGES	2
 #endif
 
+#ifndef GUI_DISPLAYS
+#define GUI_DISPLAYS	1
+#endif
+
 extern unsigned int current_laguage;
 
 //----- GUI Objects
@@ -29,7 +33,11 @@ struct CWindow : CHandle
 
 	// common edns
     RECT_STRU		rect;
-//	WINDOW			prev;					//up in Z-order
+#if GUI_DISPLAYS > 1
+    unsigned char	displays;		// bitmask for displays
+    CWindow():displays(1){};
+#endif
+
 	RES_CODE	callback(unsigned int param, unsigned int msg)
 	{
 		return (((GUI_CB)mode.as_voidptr)(this, param, msg));

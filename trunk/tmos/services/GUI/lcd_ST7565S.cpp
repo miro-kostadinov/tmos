@@ -92,7 +92,6 @@ void ST7565S::lcd_init(GUI_CB splash)
     if(splash)
     {
     	lcd_single_window(splash);
-    	tsk_sleep(3000);
     }
 
 }
@@ -261,12 +260,20 @@ void ST7565S::redraw_screen(WINDOW desktop)
     	while(win)
     	{
     		top = (WINDOW)win->next;
-    		if( (!top) || (win->rect.as_int != top->rect.as_int) )
-    		{
-    			set_font(&FNT7x9);
-    			color = PIX_WHITE;
-    			win->callback((unsigned int)this, WM_DRAW);
-    		}
+			#if GUI_DISPLAYS > 1
+			while(top && !(display & top->displays))
+				top = (WINDOW) top->next;
+
+			if(display & desktop->displays)
+			#endif
+			{
+				if( (!top) || (win->rect.as_int != top->rect.as_int) )
+				{
+					set_font(&FNT7x9);
+					color = PIX_WHITE;
+					win->callback((unsigned int)this, WM_DRAW);
+				}
+			}
 
     		win = top;
     	}
