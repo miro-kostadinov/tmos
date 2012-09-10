@@ -91,7 +91,7 @@ const char* LCD_MODULE::draw_text(const char *txt)
 	if(!txt)
 		return NULL;
 
-	while(*txt == ' ')
+	while(*txt == ' ' || *txt =='\r' || *txt == '\n')
 		txt++;
 
     pos = pos_x + font->distance;
@@ -99,14 +99,12 @@ const char* LCD_MODULE::draw_text(const char *txt)
     width = 0;
     while( pos < size_x )
     {
-        if( !(c=txt[len++]) )
-        {
-            width =pos;
-            break;
-        }
+    	c=txt[len++];
         if( !IS_ALPHANUM(c))
         {
         	width = pos;
+        	if(c == 0 || c =='\r' || c == '\n')
+        		break;
         }
     	pos += font->spacing;
     }
@@ -226,5 +224,8 @@ void LCD_MODULE::lcd_single_window(GUI_CB callback)
 
 	win.mode.as_voidptr = (void*)callback;
     win.next = NULL;
+#if GUI_DISPLAYS > 1
+    win.displays = display;
+#endif
     redraw_screen(&win);
 }
