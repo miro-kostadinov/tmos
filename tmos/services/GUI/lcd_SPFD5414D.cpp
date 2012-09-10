@@ -249,14 +249,19 @@ void SPFD5414D::redraw_screen(WINDOW desktop)
 
     	update_screen();
     }
-	color = PIX_LIGHTGRAY;
-	draw_hline(0, (cpu_usage*127)/100, 127);
-#if USE_MEMORY_TRACKING
-	unsigned int mem_use;
-	mem_use = (SRAM_BASE + RAM_SIZE - (unsigned int)&end)>>2;
-	mem_use = (PMAIN_TASK->aloc_mem * (size_x-1))/mem_use;
-	invert_hline(size_x-1-mem_use, size_x-1, 127);
+#if GUI_DISPLAYS > 1
+	if (display == 2)
 #endif
+	{
+		color = PIX_LIGHTGRAY;
+		draw_hline(0, (cpu_usage*127)/100, 127);
+#if USE_MEMORY_TRACKING
+		unsigned int mem_use;
+		mem_use = (SRAM_BASE + RAM_SIZE - (unsigned int)&end)>>2;
+		mem_use = (PMAIN_TASK->aloc_mem * (size_x-1))/mem_use;
+		invert_hline(size_x-1-mem_use, size_x-1, 127);
+#endif
+	}
 	update_screen();
 
 }
