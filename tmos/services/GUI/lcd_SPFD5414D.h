@@ -67,6 +67,7 @@ struct TFT_CHECK
 	unsigned int tft_read();
 
 	unsigned int read_id();
+	unsigned int id();
 };
 
 #endif /* LCD_SPFD5414D_H_ */
