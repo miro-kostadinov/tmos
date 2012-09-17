@@ -271,22 +271,23 @@ void TFT_CHECK::delay(unsigned int time)
 {
 	if(time)
 	{
-		unsigned int start_time, elapsed;
-		start_time = CURRENT_TIME;
-		do
-		{
-			elapsed = CURRENT_TIME - start_time;
-			if(elapsed < 0)
-				elapsed += 0x80000000;
-		} while(elapsed < time);
+		tsk_sleep(time);
+//		unsigned int start_time, elapsed;
+//		start_time = CURRENT_TIME;
+//		do
+//		{
+//			elapsed = CURRENT_TIME - start_time;
+//			if(elapsed < 0)
+//				elapsed += 0x80000000;
+//		} while(elapsed < time);
 	}
-	else
-	{
-		for(int i=0; i<200; i++)
-		{
-			asm volatile ("nop");
-		}
-	}
+//	else
+//	{
+//		for(int i=0; i<200; i++)
+//		{
+//			asm volatile ("nop");
+//		}
+//	}
 }
 
 void TFT_CHECK::tft_write( unsigned int value)
@@ -349,21 +350,26 @@ unsigned int TFT_CHECK::tft_read( )
 
 unsigned int TFT_CHECK::read_id()
 {
-	unsigned int res =0;
 
-//    PIO_CfgOutput0(pins[RST_PIN_INDX]);
-//	delay();
-//	PIO_SetOutput(pins[RST_PIN_INDX]);
-//	for(res=0; res < 1000; res++)
-//		delay();
+    PIO_CfgOutput0(pins[RST_PIN_INDX]);
+	delay(1);
+	PIO_SetOutput(pins[RST_PIN_INDX]);
 	delay(150);
     PIO_CfgOutput0(pins[SCL_PIN_INDX]);
-	PIO_CfgOutput0(pins[CSX_PIN_INDX]);
 
+	PIO_CfgOutput0(pins[CSX_PIN_INDX]);
 	tft_write(TFT_SLPOUT);
 	PIO_SetOutput(pins[CSX_PIN_INDX]);
 	delay(150);
-	PIO_ClrOutput(pins[CSX_PIN_INDX]);
+	return id();
+}
+
+unsigned int TFT_CHECK::id()
+{
+	unsigned int res =0;
+
+	PIO_CfgOutput0(pins[SCL_PIN_INDX]);
+	PIO_CfgOutput0(pins[CSX_PIN_INDX]);
 	tft_write(TFT_RDDID);
 	res = tft_read();	//2A
 	res <<= 8;
@@ -371,8 +377,7 @@ unsigned int TFT_CHECK::read_id()
 	res <<= 8;
 	res |= tft_read(); //2A4033
 	PIO_SetOutput(pins[CSX_PIN_INDX]);
-	return (res);
+	return res;
 }
-
 
 
