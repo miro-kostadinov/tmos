@@ -62,9 +62,9 @@ struct apn_stru
 struct sock_gprs_mode: public sock_IP_mode
 {
 	sock_gprs_mode(DRIVER_INDEX drv):sock_IP_mode(drv), apn(NULL) {}
-	sock_gprs_mode(DRIVER_INDEX drv, unsigned int s_type, unsigned int s_port, apn_stru * s_apn)
+	sock_gprs_mode(DRIVER_INDEX drv, unsigned int s_type, unsigned int s_port, const apn_stru * s_apn)
 	:sock_IP_mode(drv, s_type, s_port), apn(s_apn) {}
-	apn_stru* apn;
+	const apn_stru* apn;
 };
 
 /**
