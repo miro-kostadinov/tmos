@@ -717,6 +717,26 @@ CMessageBox* status_box_show(const char *msg)
 	return (NULL);
 }
 
+CMessageBox* status_box_show(const char *msg, unsigned int displays)
+{
+	CMessageBox* msg_hnd;
+
+	msg_hnd = new CMessageBox();
+	if(msg_hnd)
+	{
+		msg_hnd->displays = displays;
+		msg_hnd->msg_text = msg;
+		if(msg_hnd->tsk_window_init((GUI_CB)statusbox_cb))
+		{
+			msg_hnd->rect.y0 += 10;
+			msg_hnd->tsk_window_show();
+			return (msg_hnd);
+		}
+		delete msg_hnd;
+	}
+	return (NULL);
+}
+
 CMessageBox* status_box_show(CSTRING& msg)
 {
 	CMessageBox* msg_hnd;
@@ -724,6 +744,26 @@ CMessageBox* status_box_show(CSTRING& msg)
 	msg_hnd = new CMessageBox();
 	if(msg_hnd)
 	{
+		msg_hnd->msg_text = msg;
+		if(msg_hnd->tsk_window_init((GUI_CB)statusbox_cb))
+		{
+			msg_hnd->rect.y0 += 10;
+			msg_hnd->tsk_window_show();
+			return (msg_hnd);
+		}
+		delete msg_hnd;
+	}
+	return (NULL);
+}
+
+CMessageBox* status_box_show(CSTRING& msg, unsigned int displays)
+{
+	CMessageBox* msg_hnd;
+
+	msg_hnd = new CMessageBox();
+	if(msg_hnd)
+	{
+		msg_hnd->displays = displays;
 		msg_hnd->msg_text = msg;
 		if(msg_hnd->tsk_window_init((GUI_CB)statusbox_cb))
 		{

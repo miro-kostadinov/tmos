@@ -47,6 +47,7 @@
 #define WM_INIT				0x04
 
 #define GUI_DISPLAYS		2
+#define GUI_DEFAULT_DISP	2
 
 
 #define USE_TMOS_STRING		1
