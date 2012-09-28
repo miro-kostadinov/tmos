@@ -1,12 +1,18 @@
 #ifndef STDGUI_H
 #define STDGUI_H
 
+#include <tmos.h>
+
 #ifndef GUI_LANGUAGES
 #define GUI_LANGUAGES	2
 #endif
 
 #ifndef GUI_DISPLAYS
 #define GUI_DISPLAYS	1
+#endif
+
+#ifndef GUI_DEFAULT_DISP
+#define GUI_DEFAULT_DISP 0xFF
 #endif
 
 extern unsigned int current_laguage;
@@ -35,7 +41,7 @@ struct CWindow : CHandle
     RECT_STRU		rect;
 #if GUI_DISPLAYS > 1
     unsigned char	displays;		// bitmask for displays
-    CWindow():displays(1){};
+    CWindow():displays(GUI_DEFAULT_DISP){};
 #endif
 
 	RES_CODE	callback(unsigned int param, unsigned int msg)
@@ -142,7 +148,9 @@ struct CGetBox: CWindow
 //----- status box
 void status_box_free(CMessageBox* msg_hnd);
 CMessageBox* status_box_show(const char *msg);
+CMessageBox* status_box_show(const char *msg, unsigned int displays);
 CMessageBox* status_box_show(CSTRING& msg);
+CMessageBox* status_box_show(CSTRING& msg, unsigned int displays);
 
 RES_CODE msg_box(const char *msg);
 RES_CODE msg_box(CSTRING& msg);
