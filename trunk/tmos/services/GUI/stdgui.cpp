@@ -724,7 +724,10 @@ CMessageBox* status_box_show(const char *msg, unsigned int displays)
 	msg_hnd = new CMessageBox();
 	if(msg_hnd)
 	{
+#if GUI_DISPLAYS > 1
 		msg_hnd->displays = displays;
+#endif
+
 		msg_hnd->msg_text = msg;
 		if(msg_hnd->tsk_window_init((GUI_CB)statusbox_cb))
 		{
@@ -763,7 +766,9 @@ CMessageBox* status_box_show(CSTRING& msg, unsigned int displays)
 	msg_hnd = new CMessageBox();
 	if(msg_hnd)
 	{
+#if GUI_DISPLAYS > 1
 		msg_hnd->displays = displays;
+#endif
 		msg_hnd->msg_text = msg;
 		if(msg_hnd->tsk_window_init((GUI_CB)statusbox_cb))
 		{
