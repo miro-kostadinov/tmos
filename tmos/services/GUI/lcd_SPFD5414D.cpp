@@ -352,9 +352,17 @@ unsigned int TFT_CHECK::read_id()
 {
 
     PIO_CfgOutput0(pins[RST_PIN_INDX]);
-	delay(1);
+	delay(5);
 	PIO_SetOutput(pins[RST_PIN_INDX]);
 	delay(150);
+
+	PIO_CfgOutput0(pins[CSX_PIN_INDX]);
+	delay(5);
+	tft_write(TFT_SWRESET);
+	delay(5);
+	PIO_SetOutput(pins[CSX_PIN_INDX]);
+	delay(5);
+
     PIO_CfgOutput0(pins[SCL_PIN_INDX]);
 
 	PIO_CfgOutput0(pins[CSX_PIN_INDX]);
