@@ -35,8 +35,11 @@
 
 struct sock_mode
 {
-	sock_mode(DRIVER_INDEX drv): driver(drv) {}
+	sock_mode(DRIVER_INDEX drv): driver(drv), interface(0) {};
+	sock_mode(DRIVER_INDEX drv, unsigned char inf):
+		driver(drv), interface(inf) {};
 	DRIVER_INDEX	driver;
+	unsigned char interface;
 };
 
 struct sock_IP_mode: public sock_mode
@@ -45,7 +48,9 @@ struct sock_IP_mode: public sock_mode
 	: sock_mode(drv), sock_type(IP_SOCKET_TCP), port(0) {}
 	sock_IP_mode(DRIVER_INDEX drv, unsigned int s_type, unsigned int s_port)
 	: sock_mode(drv), sock_type(s_type), port(s_port) {}
-	unsigned int sock_type;
+	sock_IP_mode(DRIVER_INDEX drv, unsigned char inf, unsigned int s_type, unsigned int s_port)
+	: sock_mode(drv, inf), sock_type(s_type), port(s_port) {}
+	unsigned char sock_type;
 	unsigned int port;
 };
 
@@ -64,6 +69,8 @@ struct sock_gprs_mode: public sock_IP_mode
 	sock_gprs_mode(DRIVER_INDEX drv):sock_IP_mode(drv), apn(NULL) {}
 	sock_gprs_mode(DRIVER_INDEX drv, unsigned int s_type, unsigned int s_port, const apn_stru * s_apn)
 	:sock_IP_mode(drv, s_type, s_port), apn(s_apn) {}
+	sock_gprs_mode(DRIVER_INDEX drv, unsigned char inf, unsigned int s_type, unsigned int s_port, const apn_stru * s_apn)
+	:sock_IP_mode(drv, inf, s_type, s_port), apn(s_apn) {}
 	const apn_stru* apn;
 };
 
