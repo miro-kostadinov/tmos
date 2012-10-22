@@ -35,6 +35,15 @@ volatile __no_init unsigned int system_clock_frequency;
 
 #if USE_EXCEPTION_RECORD
 volatile __no_init EXCEPTION_RECORD_STRU exception_record;
+
+extern "C" unsigned int exception_crc(const unsigned int* record)
+{
+	unsigned int crc=0;
+    for(int i = sizeof(EXCEPTION_RECORD_STRU); i>4; i-=4)
+        crc += *record++;
+
+    return crc;
+}
 #endif
 
 //*----------------------------------------------------------------------------
@@ -43,9 +52,8 @@ volatile __no_init EXCEPTION_RECORD_STRU exception_record;
 
 extern char end;
 
-extern "C" void FaultHandler( void )
+void process_exception()
 {
-    volatile unsigned int i=1;
     unsigned status = SCB->CFSR;
 
 #if (TRACE_IS != TRACE_DISABLED) || defined(USE_EXCEPTION_RECORD)
@@ -79,7 +87,16 @@ extern "C" void FaultHandler( void )
     {
     	exception_record.task_name = 0;
     }
+    exception_record.record_crc = exception_crc((const unsigned int*)&exception_record);
 #endif
+
+}
+
+extern "C" void FaultHandler( void )
+{
+    volatile unsigned int i=1;
+
+    process_exception();
 
     if(restart_on_exception)
     {
@@ -87,7 +104,6 @@ extern "C" void FaultHandler( void )
 		SysTick->CTRL = 0;
 		LowLevelReboot();
     }
-
 
     while(i){}
 }
