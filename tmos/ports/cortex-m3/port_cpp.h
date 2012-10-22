@@ -54,7 +54,9 @@ extern "C"
 		unsigned int task_name;
 		unsigned int reset_cause;
 		unsigned int restart_cause;
+		unsigned int record_crc;
 	} EXCEPTION_RECORD_STRU;
+	unsigned int exception_crc(const unsigned int* record);
 	extern volatile EXCEPTION_RECORD_STRU exception_record;
 	#endif
 
