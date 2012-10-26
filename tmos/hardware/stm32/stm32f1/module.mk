@@ -1,6 +1,6 @@
 ##########################################################################
 #
-#	Make include for hardware/stm32/cortex-m3
+#	Make include for hardware/stm32/stm32f1
 #	
 #   Platform: MPOS rev.3.0	
 #
@@ -9,12 +9,11 @@
 
 # local sources
 local_as_src-y	:=  
- 
 local_c_src-y 	:= 
-
 local_cpp_src-y	:= 
+local_h_src-y 	:= 
 
-local_h_src-y 	:= platform_cpp.h platform_inc.h 
+local_h_src-y 	+= series_inc.h series_cpp.h gpio_f1.h rcc_f1.h flash_f1.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -26,7 +25,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 inc_dirs += $(subdirectory) 
 
 #submodules
-local_modules-y :=  $(CFG_SERIES)
+local_modules-y :=  $(CFG_MCU)
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)

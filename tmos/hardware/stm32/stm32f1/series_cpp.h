@@ -17,8 +17,8 @@
 #include <tmos_types.h>
 
 #include "mcu_cpp.h"
-
-
+#include "rcc_f1.h"
+#include "flash_f1.h"
 
 #endif /* SERIES_CPP_H_ */
 /** @} ingroup hardware_sam3s */

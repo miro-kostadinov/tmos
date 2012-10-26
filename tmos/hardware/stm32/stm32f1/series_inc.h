@@ -7,7 +7,7 @@
  * @author	 Miroslav Kostadinov
  *
  * @defgroup hardware_stm32f1 STM32F1 series
- * @ingroup	 stm32_cortex_m3
+ * @ingroup	 hardware_stm32
  * Source and definitions for STM32F1 series mcu's
  *
  *
