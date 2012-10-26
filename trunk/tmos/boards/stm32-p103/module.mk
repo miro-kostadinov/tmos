@@ -21,7 +21,7 @@ BUILD_HEX	?= n
 CFG_CORE 	?= cortex-m3
 CFG_FAMILY	?= stm32
 CFG_SERIES	?= stm32f1
-CFG_MCU 	?= STM32F103
+CFG_MCU 	?= STM32F103RB
 
 
 # Debugging format.
@@ -48,26 +48,41 @@ USE_CSTRING		?=y
 USE_TMOS_STDLIB	?=y
 
 # class CTime
-USE_TIME		?=y
+USE_TIME		?=n
 
 # sprintf() scanf() 
 USE_TMOS_STDIO	?=y
 
+# use tmos long long operations
+USE_TMOS_LLONG	?=n
+
 #CalculateCRC32()
-USE_CRC32		?=y
+USE_CRC16		?=n
+USE_CRC32		?=n
 
 # class CCache
-USE_CACHE		?=y
+USE_CACHE		?=n
 
 # SHA-1 class
-USE_SHA_1		?=y
+USE_SHA_1		?=n
+
+# base 32 
+USE_BASE32		?=n
 
 # GUI
-USE_GUI			?=y
+USE_GUI			?=n
 
 # GUI
-USE_USB			?=y
+USE_USB			?=n
 
+# AES TMOS
+USE_AES_TMOS	?=n
+
+# GPIO output expander (shift register)
+USE_GPIO_EXPANDER ?=n
+
+#net
+USE_NET			?=n
 
 
 ################################################################################
@@ -103,4 +118,8 @@ include $(addsuffix /module.mk,$(sub_modules))
 DEP_PROJECTS := 
 TARGET_VER_FILE := $(subdirectory)versions.h 
 
+ifneq "$(MAKECMDGOALS)" "clean"
+ifneq "$(MAKECMDGOALS)" "all"
 include boards/release.mk
+endif
+endif

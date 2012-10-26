@@ -15,6 +15,6 @@
 #ifndef FAM_INC_H_
 #define FAM_INC_H_
 
-#include <platform_inc.h>
+#include <series_inc.h>
 
 #endif /* FAM_INC_H_ */

@@ -15,7 +15,7 @@ local_h_src-y 	:=
 
 local_cpp_src-y	+= 
 
-local_h_src-y 	+= fam_cpp.h fam_inc.h 
+local_h_src-y 	+= fam_cpp.h fam_inc.h gpio_stm32.h 
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -27,7 +27,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 inc_dirs += $(subdirectory) 
 
 #submodules
-local_modules-y :=  $(CFG_CORE)
+local_modules-y :=  $(CFG_SERIES)
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
