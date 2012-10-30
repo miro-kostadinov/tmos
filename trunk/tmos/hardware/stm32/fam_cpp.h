@@ -17,6 +17,7 @@
 #include <hardware_inc.h>
 
 #include "series_cpp.h"
+#include <gpio_stm32.h>
 
 
 
