@@ -10,6 +10,21 @@
 
 #include <series_cpp.h>
 
+/*******************************************************************************
+ * @defgroup STD_PIO Standard PIO definitions
+ * @{
+ ******************************************************************************/
+
+/** Pin set **/
+typedef unsigned char pio_set;
+
+/** Pin definition **/
+typedef unsigned int pio_def;
+
+/** Pin configuration **/
+typedef unsigned int PIN_DESC;
+
+
 
 /// Pin definition bits 31:30 = MODE
 #define PD_MODE_Pos 		30						//!< mode bits position
@@ -97,7 +112,7 @@
 #define	PD_PORT_F			(5 << PD_PORT_Pos)		//!< port F
 #define	PD_PORT_G			(6 << PD_PORT_Pos)		//!< port G
 #define	PD_PORT_H			(7 << PD_PORT_Pos)		//!< port H
-#define	PD_PORT_I			(8 << PD_PORT_Pos)		//!< port J
+#define	PD_PORT_I			(8 << PD_PORT_Pos)		//!< port I
 #define PD_PORT_V           (0xF << PD_PORT_Pos)	//!< virtual port V
 #define PD_LAST_PORT		8						//!< number of physical ports
 
@@ -127,6 +142,170 @@
 
 
 
+
+
+/// Values that can be used in pin definitions
+
+#define PD_PA0				(PD_PORT_A | PD_PIN_0)	//!< pin PA0
+#define PD_PA1				(PD_PORT_A | PD_PIN_1)	//!< pin PA1
+#define PD_PA2				(PD_PORT_A | PD_PIN_2)	//!< pin PA2
+#define PD_PA3				(PD_PORT_A | PD_PIN_3)	//!< pin PA3
+#define PD_PA4				(PD_PORT_A | PD_PIN_4)	//!< pin PA4
+#define PD_PA5				(PD_PORT_A | PD_PIN_5)	//!< pin PA5
+#define PD_PA6				(PD_PORT_A | PD_PIN_6)	//!< pin PA6
+#define PD_PA7				(PD_PORT_A | PD_PIN_7)	//!< pin PA7
+#define PD_PA8				(PD_PORT_A | PD_PIN_8)	//!< pin PA8
+#define PD_PA9				(PD_PORT_A | PD_PIN_9)	//!< pin PA9
+#define PD_PA10				(PD_PORT_A | PD_PIN_10)	//!< pin PA10
+#define PD_PA11				(PD_PORT_A | PD_PIN_11)	//!< pin PA11
+#define PD_PA12				(PD_PORT_A | PD_PIN_12)	//!< pin PA12
+#define PD_PA13				(PD_PORT_A | PD_PIN_13)	//!< pin PA13
+#define PD_PA14				(PD_PORT_A | PD_PIN_14)	//!< pin PA14
+#define PD_PA15				(PD_PORT_A | PD_PIN_15)	//!< pin PA15
+
+#define PD_PB0				(PD_PORT_B | PD_PIN_0)	//!< pin PB0
+#define PD_PB1				(PD_PORT_B | PD_PIN_1)	//!< pin PB1
+#define PD_PB2				(PD_PORT_B | PD_PIN_2)	//!< pin PB2
+#define PD_PB3				(PD_PORT_B | PD_PIN_3)	//!< pin PB3
+#define PD_PB4				(PD_PORT_B | PD_PIN_4)	//!< pin PB4
+#define PD_PB5				(PD_PORT_B | PD_PIN_5)	//!< pin PB5
+#define PD_PB6				(PD_PORT_B | PD_PIN_6)	//!< pin PB6
+#define PD_PB7				(PD_PORT_B | PD_PIN_7)	//!< pin PB7
+#define PD_PB8				(PD_PORT_B | PD_PIN_8)	//!< pin PB8
+#define PD_PB9				(PD_PORT_B | PD_PIN_9)	//!< pin PB9
+#define PD_PB10				(PD_PORT_B | PD_PIN_10)	//!< pin PB10
+#define PD_PB11				(PD_PORT_B | PD_PIN_11)	//!< pin PB11
+#define PD_PB12				(PD_PORT_B | PD_PIN_12)	//!< pin PB12
+#define PD_PB13				(PD_PORT_B | PD_PIN_13)	//!< pin PB13
+#define PD_PB14				(PD_PORT_B | PD_PIN_14)	//!< pin PB14
+#define PD_PB15				(PD_PORT_B | PD_PIN_15)	//!< pin PB15
+
+#define PD_PC0				(PD_PORT_C | PD_PIN_0)	//!< pin PC0
+#define PD_PC1				(PD_PORT_C | PD_PIN_1)	//!< pin PC1
+#define PD_PC2				(PD_PORT_C | PD_PIN_2)	//!< pin PC2
+#define PD_PC3				(PD_PORT_C | PD_PIN_3)	//!< pin PC3
+#define PD_PC4				(PD_PORT_C | PD_PIN_4)	//!< pin PC4
+#define PD_PC5				(PD_PORT_C | PD_PIN_5)	//!< pin PC5
+#define PD_PC6				(PD_PORT_C | PD_PIN_6)	//!< pin PC6
+#define PD_PC7				(PD_PORT_C | PD_PIN_7)	//!< pin PC7
+#define PD_PC8				(PD_PORT_C | PD_PIN_8)	//!< pin PC8
+#define PD_PC9				(PD_PORT_C | PD_PIN_9)	//!< pin PC9
+#define PD_PC10				(PD_PORT_C | PD_PIN_10)	//!< pin PC10
+#define PD_PC11				(PD_PORT_C | PD_PIN_11)	//!< pin PC11
+#define PD_PC12				(PD_PORT_C | PD_PIN_12)	//!< pin PC12
+#define PD_PC13				(PD_PORT_C | PD_PIN_13)	//!< pin PC13
+#define PD_PC14				(PD_PORT_C | PD_PIN_14)	//!< pin PC14
+#define PD_PC15				(PD_PORT_C | PD_PIN_15)	//!< pin PC15
+
+#define PD_PD0				(PD_PORT_D | PD_PIN_0)	//!< pin PD0
+#define PD_PD1				(PD_PORT_D | PD_PIN_1)	//!< pin PD1
+#define PD_PD2				(PD_PORT_D | PD_PIN_2)	//!< pin PD2
+#define PD_PD3				(PD_PORT_D | PD_PIN_3)	//!< pin PD3
+#define PD_PD4				(PD_PORT_D | PD_PIN_4)	//!< pin PD4
+#define PD_PD5				(PD_PORT_D | PD_PIN_5)	//!< pin PD5
+#define PD_PD6				(PD_PORT_D | PD_PIN_6)	//!< pin PD6
+#define PD_PD7				(PD_PORT_D | PD_PIN_7)	//!< pin PD7
+#define PD_PD8				(PD_PORT_D | PD_PIN_8)	//!< pin PD8
+#define PD_PD9				(PD_PORT_D | PD_PIN_9)	//!< pin PD9
+#define PD_PD10				(PD_PORT_D | PD_PIN_10)	//!< pin PD10
+#define PD_PD11				(PD_PORT_D | PD_PIN_11)	//!< pin PD11
+#define PD_PD12				(PD_PORT_D | PD_PIN_12)	//!< pin PD12
+#define PD_PD13				(PD_PORT_D | PD_PIN_13)	//!< pin PD13
+#define PD_PD14				(PD_PORT_D | PD_PIN_14)	//!< pin PD14
+#define PD_PD15				(PD_PORT_D | PD_PIN_15)	//!< pin PD15
+
+#define PD_PE0				(PD_PORT_E | PD_PIN_0)	//!< pin PE0
+#define PD_PE1				(PD_PORT_E | PD_PIN_1)	//!< pin PE1
+#define PD_PE2				(PD_PORT_E | PD_PIN_2)	//!< pin PE2
+#define PD_PE3				(PD_PORT_E | PD_PIN_3)	//!< pin PE3
+#define PD_PE4				(PD_PORT_E | PD_PIN_4)	//!< pin PE4
+#define PD_PE5				(PD_PORT_E | PD_PIN_5)	//!< pin PE5
+#define PD_PE6				(PD_PORT_E | PD_PIN_6)	//!< pin PE6
+#define PD_PE7				(PD_PORT_E | PD_PIN_7)	//!< pin PE7
+#define PD_PE8				(PD_PORT_E | PD_PIN_8)	//!< pin PE8
+#define PD_PE9				(PD_PORT_E | PD_PIN_9)	//!< pin PE9
+#define PD_PE10				(PD_PORT_E | PD_PIN_10)	//!< pin PE10
+#define PD_PE11				(PD_PORT_E | PD_PIN_11)	//!< pin PE11
+#define PD_PE12				(PD_PORT_E | PD_PIN_12)	//!< pin PE12
+#define PD_PE13				(PD_PORT_E | PD_PIN_13)	//!< pin PE13
+#define PD_PE14				(PD_PORT_E | PD_PIN_14)	//!< pin PE14
+#define PD_PE15				(PD_PORT_E | PD_PIN_15)	//!< pin PE15
+
+#define PD_PF0				(PD_PORT_F | PD_PIN_0)	//!< pin PF0
+#define PD_PF1				(PD_PORT_F | PD_PIN_1)	//!< pin PF1
+#define PD_PF2				(PD_PORT_F | PD_PIN_2)	//!< pin PF2
+#define PD_PF3				(PD_PORT_F | PD_PIN_3)	//!< pin PF3
+#define PD_PF4				(PD_PORT_F | PD_PIN_4)	//!< pin PF4
+#define PD_PF5				(PD_PORT_F | PD_PIN_5)	//!< pin PF5
+#define PD_PF6				(PD_PORT_F | PD_PIN_6)	//!< pin PF6
+#define PD_PF7				(PD_PORT_F | PD_PIN_7)	//!< pin PF7
+#define PD_PF8				(PD_PORT_F | PD_PIN_8)	//!< pin PF8
+#define PD_PF9				(PD_PORT_F | PD_PIN_9)	//!< pin PF9
+#define PD_PF10				(PD_PORT_F | PD_PIN_10)	//!< pin PF10
+#define PD_PF11				(PD_PORT_F | PD_PIN_11)	//!< pin PF11
+#define PD_PF12				(PD_PORT_F | PD_PIN_12)	//!< pin PF12
+#define PD_PF13				(PD_PORT_F | PD_PIN_13)	//!< pin PF13
+#define PD_PF14				(PD_PORT_F | PD_PIN_14)	//!< pin PF14
+#define PD_PF15				(PD_PORT_F | PD_PIN_15)	//!< pin PF15
+
+#define PD_PG0				(PD_PORT_G | PD_PIN_0)	//!< pin PG0
+#define PD_PG1				(PD_PORT_G | PD_PIN_1)	//!< pin PG1
+#define PD_PG2				(PD_PORT_G | PD_PIN_2)	//!< pin PG2
+#define PD_PG3				(PD_PORT_G | PD_PIN_3)	//!< pin PG3
+#define PD_PG4				(PD_PORT_G | PD_PIN_4)	//!< pin PG4
+#define PD_PG5				(PD_PORT_G | PD_PIN_5)	//!< pin PG5
+#define PD_PG6				(PD_PORT_G | PD_PIN_6)	//!< pin PG6
+#define PD_PG7				(PD_PORT_G | PD_PIN_7)	//!< pin PG7
+#define PD_PG8				(PD_PORT_G | PD_PIN_8)	//!< pin PG8
+#define PD_PG9				(PD_PORT_G | PD_PIN_9)	//!< pin PG9
+#define PD_PG10				(PD_PORT_G | PD_PIN_10)	//!< pin PG10
+#define PD_PG11				(PD_PORT_G | PD_PIN_11)	//!< pin PG11
+#define PD_PG12				(PD_PORT_G | PD_PIN_12)	//!< pin PG12
+#define PD_PG13				(PD_PORT_G | PD_PIN_13)	//!< pin PG13
+#define PD_PG14				(PD_PORT_G | PD_PIN_14)	//!< pin PG14
+#define PD_PG15				(PD_PORT_G | PD_PIN_15)	//!< pin PG15
+
+#define PD_PH0				(PD_PORT_H | PD_PIN_0)	//!< pin PH0
+#define PD_PH1				(PD_PORT_H | PD_PIN_1)	//!< pin PH1
+#define PD_PH2				(PD_PORT_H | PD_PIN_2)	//!< pin PH2
+#define PD_PH3				(PD_PORT_H | PD_PIN_3)	//!< pin PH3
+#define PD_PH4				(PD_PORT_H | PD_PIN_4)	//!< pin PH4
+#define PD_PH5				(PD_PORT_H | PD_PIN_5)	//!< pin PH5
+#define PD_PH6				(PD_PORT_H | PD_PIN_6)	//!< pin PH6
+#define PD_PH7				(PD_PORT_H | PD_PIN_7)	//!< pin PH7
+#define PD_PH8				(PD_PORT_H | PD_PIN_8)	//!< pin PH8
+#define PD_PH9				(PD_PORT_H | PD_PIN_9)	//!< pin PH9
+#define PD_PH10				(PD_PORT_H | PD_PIN_10)	//!< pin PH10
+#define PD_PH11				(PD_PORT_H | PD_PIN_11)	//!< pin PH11
+#define PD_PH12				(PD_PORT_H | PD_PIN_12)	//!< pin PH12
+#define PD_PH13				(PD_PORT_H | PD_PIN_13)	//!< pin PH13
+#define PD_PH14				(PD_PORT_H | PD_PIN_14)	//!< pin PH14
+#define PD_PH15				(PD_PORT_H | PD_PIN_15)	//!< pin PH15
+
+#define PD_PI0				(PD_PORT_I | PD_PIN_0)	//!< pin PI0
+#define PD_PI1				(PD_PORT_I | PD_PIN_1)	//!< pin PI1
+#define PD_PI2				(PD_PORT_I | PD_PIN_2)	//!< pin PI2
+#define PD_PI3				(PD_PORT_I | PD_PIN_3)	//!< pin PI3
+#define PD_PI4				(PD_PORT_I | PD_PIN_4)	//!< pin PI4
+#define PD_PI5				(PD_PORT_I | PD_PIN_5)	//!< pin PI5
+#define PD_PI6				(PD_PORT_I | PD_PIN_6)	//!< pin PI6
+#define PD_PI7				(PD_PORT_I | PD_PIN_7)	//!< pin PI7
+#define PD_PI8				(PD_PORT_I | PD_PIN_8)	//!< pin PI8
+#define PD_PI9				(PD_PORT_I | PD_PIN_9)	//!< pin PI9
+#define PD_PI10				(PD_PORT_I | PD_PIN_10)	//!< pin PI10
+#define PD_PI11				(PD_PORT_I | PD_PIN_11)	//!< pin PI11
+#define PD_PI12				(PD_PORT_I | PD_PIN_12)	//!< pin PI12
+#define PD_PI13				(PD_PORT_I | PD_PIN_13)	//!< pin PI13
+#define PD_PI14				(PD_PORT_I | PD_PIN_14)	//!< pin PI14
+#define PD_PI15				(PD_PORT_I | PD_PIN_15)	//!< pin PI15
+
+#define PD_IN				(PD_MODE_INPUT ) 					//!< input pin
+#define PD_OUT				(PD_MODE_OUTPUT | PD_OSPEED_2MHz) 	//!< output pin
+#define PD_AF				(PD_MODE_AF)						//!< open drain pin
+#define PD_ANALOG			(PD_MODE_ANALOG)					//!< open drain pin
+
+
+/** @} */ // @STD_GPIO
 
 
 #endif /* GPIO_STM32_H_ */

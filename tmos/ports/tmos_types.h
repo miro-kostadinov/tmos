@@ -49,8 +49,8 @@ typedef unsigned int RES_CODE;
 #define __IO	volatile        /*!< defines 'read / write' permissions   */
 
 #ifndef __ASSEMBLY__
-#	define CAST(type, value) ((type *) value)
-#	define REG_ACCESS(type, address) (*(type*)address) /**< C code: Register value */
+#	define CAST(type, value) ((type *) (value))
+#	define REG_ACCESS(type, address) (*(type*)(address)) /**< C code: Register value */
 #else
 #	define CAST(type, value) (value)
 #	define REG_ACCESS(type, address) (address) /**< Assembly code: Register address */
