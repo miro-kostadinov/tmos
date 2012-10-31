@@ -29,7 +29,7 @@ typedef unsigned int PIN_DESC;
 /// Pin definition bits 31:30 = MODE
 #define PD_MODE_Pos 		30						//!< mode bits position
 #define PD_MODE_Msk			(0x3 << PD_MODE_Pos)	//!< mode bits mask
-#define PD_MODE_Get(x)		(0x3 & ((x) >> PD_MODE_Pos)) //!< mode value
+#define PD_MODE_Get(x)		((x) >> PD_MODE_Pos) 	//!< mode value
 #define PD_MODE_INPUT		(0 << PD_MODE_Pos)		//!< input (reset state)
 #define PD_MODE_OUTPUT		(1 << PD_MODE_Pos)		//!< general purpose output mode
 #define PD_MODE_AF			(2 << PD_MODE_Pos)		//!< alternative function mode
@@ -69,7 +69,7 @@ typedef unsigned int PIN_DESC;
 #define PD_PULL_UP   		(1 << 26)				//!< weak pull up
 
 
-/// Pin definition bits 25:25 = pullup
+/// Pin definition bits 25:25 = pulldown
 #define PD_PULL_DOWN   		(1 << 25)				//!< weak pull down
 
 
@@ -121,7 +121,7 @@ typedef unsigned int PIN_DESC;
 /// Pin definition bits 15:0 = pin bits
 #define PD_PINS_Pos			0						//!< pins bits position
 #define PD_PINS_Msk			(0xFFFF << PD_PINS_Pos)	//!< pins bits mask
-#define PD_PINS_Get(x)		(0xFFFF & ((x))			//!< pins value
+#define PD_PINS_Get(x)		(0xFFFF & (x))			//!< pins value
 #define PD_PIN_0			(0x0001 << PD_PINS_Pos)	//!< pin 0
 #define PD_PIN_1			(0x0002 << PD_PINS_Pos)	//!< pin 1
 #define PD_PIN_2			(0x0004 << PD_PINS_Pos)	//!< pin 2
