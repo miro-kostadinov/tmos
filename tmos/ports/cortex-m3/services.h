@@ -39,6 +39,29 @@ unsigned int  locked_set_int(volatile unsigned int* var, unsigned int flags);
 unsigned int  locked_clr_int(volatile unsigned int* var, unsigned int flags);
 void* locked_set_if_null(void* pointer, void* value);
 
+static inline unsigned int locked_get_reg(volatile unsigned int* addr)
+{
+	unsigned int result;
+
+	asm volatile ("ldrex %0, [%1]" : "=r" (result) : "r" (addr) );
+	return (result);
+}
+
+static inline unsigned int locked_set_reg(volatile unsigned int* addr, unsigned int val)
+{
+	unsigned int result;
+
+	asm volatile ("strex %0, %2, [%1]" : "=r" (result) : "r" (addr), "r" (val) );
+	return (result);
+}
+
+static inline unsigned int __CLZ(unsigned int val)
+{
+	unsigned int result;
+
+	asm volatile ("clz %0, %1" : "=r" (result) : "r" (val) );
+	return (result);
+}
 
 #ifdef __cplusplus
 }
