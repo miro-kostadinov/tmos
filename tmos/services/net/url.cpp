@@ -565,10 +565,14 @@ const char* CURL::url_get_userinfo (const char *url)
 NET_CODE CURL::url_parse(const char* url)
 {
 	CSTRING s;
+	if(!url || !url[0])
+		return NET_ERR_URL_INVALID;
 	//parse the scheme
 	url = url_scheme(url, &url_flags);
-	if(!url || (url_flags & URL_FLAG_SCHEME_MASK) > URL_FLAG_SCHEME_HTTP)
+	if((url_flags & URL_FLAG_SCHEME_MASK) > URL_FLAG_SCHEME_HTTP)
 		return NET_ERR_URL_SCHEME;
+	if(!url[0])
+		return NET_ERR_URL_INVALID;
 
 	port = 0;
 	if (!port)
