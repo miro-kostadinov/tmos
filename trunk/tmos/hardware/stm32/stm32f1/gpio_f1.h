@@ -15,6 +15,7 @@
 #define _GPIO_H_
 
 #include <tmos_types.h>
+#include <gpio_stm32.h>
 
 /*------------------------------------------------------------------------------
  *         Definitions
@@ -41,7 +42,7 @@ typedef struct {
 	__IO uint32_t GPIO_BRR;    //!< (gpio Offset: 0x0014) Port bit reset register
 	__IO uint32_t GPIO_LCKR;   //!< (gpio Offset: 0x0018) ort configuration lock register
 
-} Pio;
+} GPIO_TypeDef;
 #endif /* __ASSEMBLY__ */
 
 /*******************************************************************************
@@ -69,6 +70,20 @@ typedef struct {
 #define GPIO_CRH_CNFx_Set(x,y)   ((y)<<((x-6)*4))     //!< Port x configuration bits Set
 #define GPIO_CRH_CNFx_Get(x,y)   (((y)>>((x-6)*4))&3) //!< Port x configuration bits Get
 /** @} */
+
+#define GPIO_CRx_MODE_INPUT		 0			//!< MODEy - Input mode (reset state)
+#define GPIO_CRx_MODE_OUT_10MHz  1			//!< MODEy - Output mode, max speed 10 MHz
+#define GPIO_CRx_MODE_OUT_2MHz   2			//!< MODEy - Output mode, max speed 2 MHz
+#define GPIO_CRx_MODE_OUT_50MHz  3			//!< MODEy - Output mode, max speed 50 MHz
+
+#define GPIO_CRx_CNF_IN_AN 		 0			//!< CNFx (IN mode) - Analog mode
+#define GPIO_CRx_CNF_IN_GP 		 4			//!< CNFx (IN mode) - Floating input (reset state)
+#define GPIO_CRx_CNF_IN_PUPD	 8			//!< CNFx (IN mode) - Input with pull-up / pull-down
+
+#define GPIO_CRx_CNF_OUT_GP_PP	 0			//!< CNFx (OUT mode)- General purpose output push-pull
+#define GPIO_CRx_CNF_OUT_GP_OD	 4			//!< CNFx (OUT mode)- General purpose output Open-drain
+#define GPIO_CRx_CNF_OUT_AF_PP	 8			//!< CNFx (OUT mode)- Alternate function output Push-pull
+#define GPIO_CRx_CNF_OUT_AF_OD	 12			//!< CNFx (OUT mode)- Alternate function output Open-drain
 
 /** @defgroup GPIO_IDR: (gpio Offset: 0x0008) Port input data register        */
 #define GPIO_IDR_IDR0      0x0001            //!< Port input data, bit 0
@@ -185,7 +200,25 @@ typedef struct {
 
 /** @} */ // @defgroup GPIO_pins_define
 
+/// Calculate port address for a given pin definition
+#define PORT_ADDRESS(num) ((GPIO_TypeDef*)(GPIOA_BASE + ((num)*0x400)))
 
+
+void PIO_Cfg(PIN_DESC cfg);
+void PIO_CfgOutput1(PIN_DESC pins);
+void PIO_CfgOutput0(PIN_DESC pins);
+void PIO_CfgInput(PIN_DESC pins);
+void PIO_Cfg_List(PIN_DESC * list);
+void PIO_CfgInput_List(PIN_DESC * list);
+void PIO_Free(PIN_DESC cfg);
+void PIO_Free_List(PIN_DESC* list);
+
+pio_set PIO_Read(PIN_DESC pins);
+void PIO_Write(PIN_DESC pins, unsigned int val);
+void PIO_SetOutput(PIN_DESC pins);
+void PIO_ClrOutput(PIN_DESC pins);
+void PIO_Assert(PIN_DESC pins);
+void PIO_Deassert(PIN_DESC pins);
 
 #ifdef __cplusplus
 }

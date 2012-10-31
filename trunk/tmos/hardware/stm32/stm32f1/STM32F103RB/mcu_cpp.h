@@ -22,9 +22,9 @@
  * \addtogroup STM32_base Peripheral Base Address Definitions
  * @{
  */
-#define RCC			CAST(RCC_TypeDef	, AHBPERIPH_BASE + 0x1000)  //!< (RCC) Base Address
-#define FLASH       CAST(FLASH_TypeDef	, AHBPERIPH_BASE + 0x2000)	//!< Flash registers base address
-#define DBGMCU      CAST(DBGMCU_TypeDef , 0xE0042000)				//!< Debug MCU registers base address
+#define RCC			CAST(RCC_TypeDef	, RCC_BASE)  	//!< (RCC) Base Address
+#define FLASH       CAST(FLASH_TypeDef	, FLASH_R_BASE)	//!< Flash registers base address
+#define DBGMCU      CAST(DBGMCU_TypeDef , DBGMCU_BASE)	//!< Debug MCU registers base address
 
 /** @} */
 
