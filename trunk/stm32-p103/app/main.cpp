@@ -1,5 +1,6 @@
 #include <tmos.h>
 #include <drivers.h>
+#include <hardware_cpp.h>
 
 
 /*!< Uncomment the line corresponding to the desired System clock (SYSCLK)
@@ -242,6 +243,28 @@ extern "C" void LowLevelInit( void )
 }
 
 
+
+extern "C" void app_init(void)
+{
+	TRACELN1("App init");
+}
+
+void led_thread(void)
+{
+	PIN_DESC led_pin = PIN_LED;
+
+	PIO_Cfg(led_pin);
+	while(1)
+	{
+		PIO_Assert(led_pin);
+		tsk_sleep(100);
+		PIO_Deassert(led_pin);
+		tsk_sleep(500);
+	}
+}
+TASK_DECLARE_STATIC(led_task, "LEDT", led_thread, 0, 20+TRACE_SIZE);
+
+
 volatile unsigned int cpu_usage;
 
 static unsigned int get_clocks_per200ms(void)
@@ -272,57 +295,13 @@ static unsigned int get_clocks_per200ms(void)
 	return res;
 }
 
-
-int main(void);
-TASK_DECLARE_STATIC(main_task, "MAIN", (void (*)(void))main, 0, 20+TRACE_SIZE);
-
-
-
-
-
-extern "C" void app_init(void)
-{
-	TRACELN1("App init");
-}
-
-//#define MEMORY_TEST 1
-#ifdef MEMORY_TEST
-// ----------------------------------------------------------------------------
-
-extern unsigned short end;
-
-void mm_info1( void )
-{
-	unsigned short* ptr = &end;
-
-	__disable_irq();
-	TRACE("\r\n==================================\r\n %08X %04X %04X  %04X ", ptr, ptr[0], ptr[1]>>1, ptr[2]);
-
-	do
-	{
-		ptr += ptr[0] <<1;
-		TRACE("\r\n %08X %04X %04X ", ptr, ptr[0], ptr[1]>>1);
-		if(!(ptr[1]&1))
-		{
-			TRACE1("              ");
-		}
-		TRACE(" %04X %04X", ptr[2], ptr[3]);
-	}while(ptr[0]);
-	__enable_irq();
-}
-#endif
-
-
-
 int main(void)
 {
 	unsigned int clock_freq;
 
 
-#ifdef MEMORY_TEST
-    mm_info1();
-#endif
-
+	//start other tasks
+    usr_task_init_static(&led_task_desc, true);
 
     //clocks in 250mS
     clock_freq = system_clock_frequency >> 2;
@@ -346,3 +325,4 @@ int main(void)
     //codan!
     return 0;
 }
+TASK_DECLARE_STATIC(main_task, "MAIN", (void (*)(void))main, 0, 20+TRACE_SIZE);
