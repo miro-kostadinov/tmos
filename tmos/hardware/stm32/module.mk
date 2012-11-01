@@ -13,7 +13,7 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:= 
 
-local_cpp_src-y	+= 
+local_cpp_src-y	+= fam_cpp.cpp
 
 local_h_src-y 	+= fam_cpp.h fam_inc.h gpio_stm32.h 
 
