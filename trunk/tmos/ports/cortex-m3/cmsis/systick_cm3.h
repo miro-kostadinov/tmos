@@ -13,6 +13,11 @@
 #ifndef SYSTICK_CM3_H_
 #define SYSTICK_CM3_H_
 
+#include <cmsis_inc.h>
+#include <mcu_inc.h>
+#include <tmos_types.h>
+
+
 
 /**
  * @ingroup	 cores_cmsis
