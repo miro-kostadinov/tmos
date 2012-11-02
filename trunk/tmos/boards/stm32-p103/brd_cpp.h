@@ -17,7 +17,7 @@
 #ifdef __cplusplus
  extern "C" {
 
- enum DRIVER_INDEX : signed char
+enum DRIVER_INDEX : signed char
 {
 /******  Cortex-M3 Processor Exceptions Numbers ******************************/
     NonMaskableInt_IRQn     = -14,  /*!< 2 Non Maskable Interrupt            */
