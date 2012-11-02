@@ -624,5 +624,8 @@ typedef struct
    */
 #define HSE_STARTUP_TIMEOUT   0x0500 /*!< Time out for HSE start up */
 
+void RCCPeripheralReset(unsigned int periph_id);
+void RCCPeripheralEnable(unsigned int periph_id);
+void RCCPeripheralDisable(unsigned int periph_id);
 
 #endif /* RCC_F1_H_ */
