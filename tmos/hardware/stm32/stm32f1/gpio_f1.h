@@ -28,8 +28,6 @@
 
 
 
-#ifndef __ASSEMBLY__
-
 /*******************************************************************************
  *  GPIO hardware registers
  ******************************************************************************/
@@ -43,7 +41,6 @@ typedef struct {
 	__IO uint32_t GPIO_LCKR;   //!< (gpio Offset: 0x0018) ort configuration lock register
 
 } GPIO_TypeDef;
-#endif /* __ASSEMBLY__ */
 
 /*******************************************************************************
  * @defgroup GPIO_pins_define
@@ -200,6 +197,175 @@ typedef struct {
 
 /** @} */ // @defgroup GPIO_pins_define
 
+/*******************************************************************************
+ *  Alternate Function I/O (AFIO) registers
+ ******************************************************************************/
+typedef struct
+{
+	__IO uint32_t AFIO_EVCR;		//!< (afio Offset: 0x00) Event control register
+	__IO uint32_t AFIO_MAPR;		//!< (afio Offset: 0x04) AF remap and debug I/O configuration register
+	__IO uint32_t AFIO_EXTICR[4];	//!< (afio Offset: 0x08) External interrupt configuration registers
+	__IO uint32_t AFIO_RESERVED0;	//!< (afio Offset: 0x18) reserved
+	__IO uint32_t AFIO_MAPR2;  		//!< (afio Offset: 0x1C) AF remap and debug I/O configuration register2
+} AFIO_TypeDef;
+
+/*******************************************************************************
+ * @defgroup AFIO_pins_define
+ * @{
+ ******************************************************************************/
+
+/** @defgroup AFIO_EVCR:		(afio Offset: 0x00) Event control register 		*/
+/*!< PIN configuration */
+#define AFIO_EVCR_PIN               0x0000000F //!< PIN[3:0] bits (Pin selection)
+#define AFIO_EVCR_PIN_Msk           0x0000000F //!< Pin selection mask
+#define AFIO_EVCR_PIN_Set(x)        (x)        //!< Pin selection set
+#define AFIO_EVCR_PIN_Get(x)        ((x)& 0xF) //!< Pin selection get
+
+/*!< PORT configuration */
+#define AFIO_EVCR_PORT              0x00000070 //!< PORT[2:0] bits (Port selection) */
+#define AFIO_EVCR_PORT_Msk          0x00000070 //!< Port selection mask
+#define AFIO_EVCR_PORT_Set(x)       ((x) << 4) //!< Port selection set
+#define AFIO_EVCR_PORT_Get(x)       (((x)>>4)&7) //!< Port selection get
+#define AFIO_EVCR_PORT_PA           0x00000000 //!< Port A selected */
+#define AFIO_EVCR_PORT_PB           0x00000010 //!< Port B selected */
+#define AFIO_EVCR_PORT_PC           0x00000020 //!< Port C selected */
+#define AFIO_EVCR_PORT_PD           0x00000030 //!< Port D selected */
+#define AFIO_EVCR_PORT_PE           0x00000040 //!< Port E selected */
+
+#define AFIO_EVCR_EVOE              0x00000080 //!< Event Output Enable */
+/** @} */
+
+/** @defgroup AFIO_MAPR:		(afio Offset: 0x04) AF remap and debug I/O configuration register */
+#define AFIO_MAPR_SPI1_REMAP                 0x00000001 //!< SPI1 remapping
+#define AFIO_MAPR_I2C1_REMAP                 0x00000002 //!< I2C1 remapping
+#define AFIO_MAPR_USART1_REMAP               0x00000004 //!< USART1 remapping
+#define AFIO_MAPR_USART2_REMAP               0x00000008 //!< USART2 remapping
+
+#define AFIO_MAPR_USART3_REMAP               0x00000030 //!< USART3_REMAP[1:0] bits (USART3 remapping)
+#define AFIO_MAPR_USART3_REMAP_0             0x00000010 //!< Bit 0
+#define AFIO_MAPR_USART3_REMAP_1             0x00000020 //!< Bit 1
+
+/* USART3_REMAP configuration */
+#define AFIO_MAPR_USART3_REMAP_NOREMAP       0x00000000 //!< No remap (TX/PB10, RX/PB11, CK/PB12, CTS/PB13, RTS/PB14)
+#define AFIO_MAPR_USART3_REMAP_PARTIALREMAP  0x00000010 //!< Partial remap (TX/PC10, RX/PC11, CK/PC12, CTS/PB13, RTS/PB14)
+#define AFIO_MAPR_USART3_REMAP_FULLREMAP     0x00000030 //!< Full remap (TX/PD8, RX/PD9, CK/PD10, CTS/PD11, RTS/PD12)
+
+#define AFIO_MAPR_TIM1_REMAP                 0x000000C0 //!< TIM1_REMAP[1:0] bits (TIM1 remapping)
+#define AFIO_MAPR_TIM1_REMAP_0               0x00000040 //!< Bit 0
+#define AFIO_MAPR_TIM1_REMAP_1               0x00000080 //!< Bit 1
+
+/*!< TIM1_REMAP configuration */
+#define AFIO_MAPR_TIM1_REMAP_NOREMAP         0x00000000 //!< No remap (ETR/PA12, CH1/PA8, CH2/PA9, CH3/PA10, CH4/PA11, BKIN/PB12, CH1N/PB13, CH2N/PB14, CH3N/PB15)
+#define AFIO_MAPR_TIM1_REMAP_PARTIALREMAP    0x00000040 //!< Partial remap (ETR/PA12, CH1/PA8, CH2/PA9, CH3/PA10, CH4/PA11, BKIN/PA6, CH1N/PA7, CH2N/PB0, CH3N/PB1)
+#define AFIO_MAPR_TIM1_REMAP_FULLREMAP       0x000000C0 //!< Full remap (ETR/PE7, CH1/PE9, CH2/PE11, CH3/PE13, CH4/PE14, BKIN/PE15, CH1N/PE8, CH2N/PE10, CH3N/PE12)
+
+#define AFIO_MAPR_TIM2_REMAP                 0x00000300 //!< TIM2_REMAP[1:0] bits (TIM2 remapping)
+#define AFIO_MAPR_TIM2_REMAP_0               0x00000100 //!< Bit 0
+#define AFIO_MAPR_TIM2_REMAP_1               0x00000200 //!< Bit 1
+
+/*!< TIM2_REMAP configuration */
+#define AFIO_MAPR_TIM2_REMAP_NOREMAP         0x00000000 //!< No remap (CH1/ETR/PA0, CH2/PA1, CH3/PA2, CH4/PA3)
+#define AFIO_MAPR_TIM2_REMAP_PARTIALREMAP1   0x00000100 //!< Partial remap (CH1/ETR/PA15, CH2/PB3, CH3/PA2, CH4/PA3)
+#define AFIO_MAPR_TIM2_REMAP_PARTIALREMAP2   0x00000200 //!< Partial remap (CH1/ETR/PA0, CH2/PA1, CH3/PB10, CH4/PB11)
+#define AFIO_MAPR_TIM2_REMAP_FULLREMAP       0x00000300 //!< Full remap (CH1/ETR/PA15, CH2/PB3, CH3/PB10, CH4/PB11)
+
+#define AFIO_MAPR_TIM3_REMAP                 0x00000C00 //!< TIM3_REMAP[1:0] bits (TIM3 remapping)
+#define AFIO_MAPR_TIM3_REMAP_0               0x00000400 //!< Bit 0 */
+#define AFIO_MAPR_TIM3_REMAP_1               0x00000800 //!< Bit 1 */
+
+/*!< TIM3_REMAP configuration */
+#define AFIO_MAPR_TIM3_REMAP_NOREMAP         0x00000000 //!< No remap (CH1/PA6, CH2/PA7, CH3/PB0, CH4/PB1)
+#define AFIO_MAPR_TIM3_REMAP_PARTIALREMAP    0x00000800 //!< Partial remap (CH1/PB4, CH2/PB5, CH3/PB0, CH4/PB1)
+#define AFIO_MAPR_TIM3_REMAP_FULLREMAP       0x00000C00 //!< Full remap (CH1/PC6, CH2/PC7, CH3/PC8, CH4/PC9)
+
+#define AFIO_MAPR_TIM4_REMAP                 0x00001000 //!< TIM4_REMAP bit (TIM4 remapping)
+
+#define AFIO_MAPR_CAN_REMAP                  0x00006000 //!< CAN_REMAP[1:0] bits (CAN Alternate function remapping)
+#define AFIO_MAPR_CAN_REMAP_0                0x00002000 //!< Bit 0
+#define AFIO_MAPR_CAN_REMAP_1                0x00004000 //!< Bit 1
+
+/*!< CAN_REMAP configuration */
+#define AFIO_MAPR_CAN_REMAP_REMAP1           0x00000000 //!< CANRX mapped to PA11, CANTX mapped to PA12
+#define AFIO_MAPR_CAN_REMAP_REMAP2           0x00004000 //!< CANRX mapped to PB8, CANTX mapped to PB9
+#define AFIO_MAPR_CAN_REMAP_REMAP3           0x00006000 //!< CANRX mapped to PD0, CANTX mapped to PD1
+
+#define AFIO_MAPR_PD01_REMAP                 0x00008000 //!< Port D0/Port D1 mapping on OSC_IN/OSC_OUT
+#define AFIO_MAPR_TIM5CH4_IREMAP             0x00010000 //!< TIM5 Channel4 Internal Remap
+#define AFIO_MAPR_ADC1_ETRGINJ_REMAP         0x00020000 //!< ADC 1 External Trigger Injected Conversion remapping
+#define AFIO_MAPR_ADC1_ETRGREG_REMAP         0x00040000 //!< ADC 1 External Trigger Regular Conversion remapping
+#define AFIO_MAPR_ADC2_ETRGINJ_REMAP         0x00080000 //!< ADC 2 External Trigger Injected Conversion remapping
+#define AFIO_MAPR_ADC2_ETRGREG_REMAP         0x00100000 //!< ADC 2 External Trigger Regular Conversion remapping
+
+/*!< SWJ_CFG configuration */
+#define AFIO_MAPR_SWJ_CFG                    0x07000000 //!< SWJ_CFG[2:0] bits (Serial Wire JTAG configuration)
+#define AFIO_MAPR_SWJ_CFG_0                  0x01000000 //!< Bit 0
+#define AFIO_MAPR_SWJ_CFG_1                  0x02000000 //!< Bit 1
+#define AFIO_MAPR_SWJ_CFG_2                  0x04000000 //!< Bit 2
+
+#define AFIO_MAPR_SWJ_CFG_RESET              0x00000000 //!< Full SWJ (JTAG-DP + SW-DP) : Reset State
+#define AFIO_MAPR_SWJ_CFG_NOJNTRST           0x01000000 //!< Full SWJ (JTAG-DP + SW-DP) but without JNTRST
+#define AFIO_MAPR_SWJ_CFG_JTAGDISABLE        0x02000000 //!< JTAG-DP Disabled and SW-DP Enabled
+#define AFIO_MAPR_SWJ_CFG_DISABLE            0x04000000 //!< JTAG-DP Disabled and SW-DP Disabled
+
+#ifdef STM32F10X_CL
+/*!< ETH_REMAP configuration */
+ #define AFIO_MAPR_ETH_REMAP                 0x00200000 //!< SPI3_REMAP bit (Ethernet MAC I/O remapping)
+
+/*!< CAN2_REMAP configuration */
+ #define AFIO_MAPR_CAN2_REMAP                0x00400000 //!< CAN2_REMAP bit (CAN2 I/O remapping)
+
+/*!< MII_RMII_SEL configuration */
+ #define AFIO_MAPR_MII_RMII_SEL              0x00800000 //!< MII_RMII_SEL bit (Ethernet MII or RMII selection)
+
+/*!< SPI3_REMAP configuration */
+ #define AFIO_MAPR_SPI3_REMAP                0x10000000 //!< SPI3_REMAP bit (SPI3 remapping)
+
+/*!< TIM2ITR1_IREMAP configuration */
+ #define AFIO_MAPR_TIM2ITR1_IREMAP           0x20000000 //!< TIM2ITR1_IREMAP bit (TIM2 internal trigger 1 remapping)
+
+/*!< PTP_PPS_REMAP configuration */
+ #define AFIO_MAPR_PTP_PPS_REMAP             0x40000000 //!< PTP_PPS_REMAP bit (Ethernet PTP PPS remapping)
+#endif
+/** @} */
+
+/** @defgroup AFIO_EXTICR[4]:	(afio Offset: 0x08) External interrupt configuration registers */
+#define AFIO_EXTICRy_EXTIx_Msk(x)            (0xF << ((x)*4))            //!< EXTI x configuration
+#define AFIO_EXTICRy_EXTIx_Get(x,y)          (((y) >> ((x)*4)) & 0xF)    //!< EXTI x configuration get
+#define AFIO_EXTICRy_EXTIx_Set(x,y)          ((y) << ((x)*4))            //!< EXTI x configuration set
+/** @} */
+
+/** @defgroup AFIO_MAPR2:  		(afio Offset: 0x1C) AF remap and debug I/O configuration register2 */
+#if defined (STM32F10X_LD_VL) || defined (STM32F10X_MD_VL) || defined (STM32F10X_HD_VL)
+#define AFIO_MAPR2_TIM15_REMAP               0x00000001 //!< TIM15 remapping
+#define AFIO_MAPR2_TIM16_REMAP               0x00000002 //!< TIM16 remapping
+#define AFIO_MAPR2_TIM17_REMAP               0x00000004 //!< TIM17 remapping
+#define AFIO_MAPR2_CEC_REMAP                 0x00000008 //!< CEC remapping
+#define AFIO_MAPR2_TIM1_DMA_REMAP            0x00000010 //!< TIM1_DMA remapping
+#endif
+
+#ifdef STM32F10X_HD_VL
+#define AFIO_MAPR2_TIM13_REMAP               0x00000100 //!< TIM13 remapping
+#define AFIO_MAPR2_TIM14_REMAP               0x00000200 //!< TIM14 remapping
+#define AFIO_MAPR2_FSMC_NADV_REMAP           0x00000400 //!< FSMC NADV remapping
+#define AFIO_MAPR2_TIM67_DAC_DMA_REMAP       0x00000800 //!< TIM6/TIM7 and DAC DMA remapping
+#define AFIO_MAPR2_TIM12_REMAP               0x00001000 //!< TIM12 remapping
+#define AFIO_MAPR2_MISC_REMAP                0x00002000 //!< Miscellaneous remapping
+#endif
+
+#ifdef STM32F10X_XL
+#define AFIO_MAPR2_TIM9_REMAP                0x00000020 //!< TIM9 remapping
+#define AFIO_MAPR2_TIM10_REMAP               0x00000040 //!< TIM10 remapping
+#define AFIO_MAPR2_TIM11_REMAP               0x00000080 //!< TIM11 remapping
+#define AFIO_MAPR2_TIM13_REMAP               0x00000100 //!< TIM13 remapping
+#define AFIO_MAPR2_TIM14_REMAP               0x00000200 //!< TIM14 remapping
+#define AFIO_MAPR2_FSMC_NADV_REMAP           0x00000400 //!< FSMC NADV remapping
+#endif
+/** @} */
+
+
+
+/** @} */ // @defgroup AFIO_pins_define
+
 /// Calculate port address for a given pin definition
 #define PORT_ADDRESS(num) ((GPIO_TypeDef*)(GPIOA_BASE + ((num)*0x400)))
 
@@ -219,6 +385,9 @@ void PIO_SetOutput(PIN_DESC pins);
 void PIO_ClrOutput(PIN_DESC pins);
 void PIO_Assert(PIN_DESC pins);
 void PIO_Deassert(PIN_DESC pins);
+
+void exti_set_line_source(unsigned int line, unsigned int port);
+
 
 #ifdef __cplusplus
 }

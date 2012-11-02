@@ -16,7 +16,7 @@
  ******************************************************************************/
 
 /** Pin set **/
-typedef unsigned char pio_set;
+typedef unsigned short pio_set;
 
 /** Pin definition **/
 typedef unsigned int pio_def;
@@ -63,6 +63,8 @@ typedef unsigned int PIN_DESC;
 #define PD_INT_FE			(1 << PD_INT_Pos)		//!< falling edge
 #define PD_INT_RE			(2 << PD_INT_Pos)		//!< rising edge
 #define PD_INT_BE			(3 << PD_INT_Pos)		//!< both edges
+#define PD_INT_Msk			(0x3 << PD_INT_Pos)	//!< output speed bits mask
+#define PD_INT_Get(x)		(0x3 & ((x) >> PD_INT_Pos)) //!< output speed value
 
 
 /// Pin definition bits 26:26 = pullup

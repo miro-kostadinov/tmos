@@ -18,6 +18,7 @@
 
 #include "series_cpp.h"
 #include <gpio_stm32.h>
+#include <exti_stm32.h>
 
 unsigned int get_systick_source_clock();
 

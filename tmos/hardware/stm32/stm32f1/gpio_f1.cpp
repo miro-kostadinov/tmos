@@ -11,7 +11,7 @@
  ******************************************************************************/
 
 #include <tmos.h>
-#include "fam_cpp.h"
+#include <fam_cpp.h>
 #include <cmsis_cpp.h>
 
 /**
@@ -313,6 +313,14 @@ void PIO_CfgInput(PIN_DESC pins)
 	PIO_Cfg((pins & ~PD_MODE_Msk ) | PD_MODE_INPUT);
 }
 
+void exti_set_line_source(unsigned int line, unsigned int port)
+{
+	__IO uint32_t * reg;
+
+	reg = &AFIO->AFIO_EXTICR[line >>2];
+	line &= 3;
+	*reg = (*reg & ~AFIO_EXTICRy_EXTIx_Msk(line)) | AFIO_EXTICRy_EXTIx_Set(line, port & 0xF);
+}
 
 /** @} ingroup stm32_gpio */
 

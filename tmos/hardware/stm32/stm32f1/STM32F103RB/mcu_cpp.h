@@ -25,11 +25,13 @@
 #define RCC			CAST(RCC_TypeDef	, RCC_BASE)  	//!< (RCC) Base Address
 #define FLASH       CAST(FLASH_TypeDef	, FLASH_R_BASE)	//!< Flash registers base address
 #define DBGMCU      CAST(DBGMCU_TypeDef , DBGMCU_BASE)	//!< Debug MCU registers base address
+#define EXTI        CAST(EXTI_TypeDef	, EXTI_BASE)	//!< External Interrupt/Event Controller (EXTI)
+#define AFIO        CAST(AFIO_TypeDef 	, AFIO_BASE)	//!< Alternate Function I/O (AFIO)
 
 /** @} */
 
 /* ************************************************************************** */
-/*   PERIPHERAL ID DEFINITIONS FOR SAM3S */
+/*   PERIPHERAL ID DEFINITIONS FOR STM32F1 */
 /* ************************************************************************** */
 /**
  * @ingroup	 STM32F103RB
