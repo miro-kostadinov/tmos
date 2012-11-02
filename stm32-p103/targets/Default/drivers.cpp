@@ -58,11 +58,125 @@ extern "C" const SYSTICK_DRIVER_INFO systick_driver =
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// 		 UART 0 DRIVER
+// 		 GPIO / EXTI DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+EXTI_DRIVER_DATA gpio_data;
+const EXTI_DRIVER_INFO exti_0 =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)EXTI_ISR,
+			(DRV_DCR)EXTI_DCR,
+			(DRV_DSR)EXTI_DSR,
+			EXTI0_IRQn,
+			DRV_PRIORITY_EXTI0,
+			ID_PERIPH_AFIO
+		},
+		EXTI,
+		EXTI_IMR_MR0,
+		&gpio_data
+};
+
+const EXTI_DRIVER_INFO exti_1 =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)EXTI_ISR,
+			(DRV_DCR)EXTI_DCR,
+			(DRV_DSR)EXTI_DSR,
+			EXTI1_IRQn,
+			DRV_PRIORITY_EXTI1,
+			ID_NO_PERIPH
+		},
+		EXTI,
+		EXTI_IMR_MR1,
+		&gpio_data
+};
+
+const EXTI_DRIVER_INFO exti_2 =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)EXTI_ISR,
+			(DRV_DCR)EXTI_DCR,
+			(DRV_DSR)EXTI_DSR,
+			EXTI2_IRQn,
+			DRV_PRIORITY_EXTI2,
+			ID_NO_PERIPH
+		},
+		EXTI,
+		EXTI_IMR_MR2,
+		&gpio_data
+};
+
+const EXTI_DRIVER_INFO exti_3 =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)EXTI_ISR,
+			(DRV_DCR)EXTI_DCR,
+			(DRV_DSR)EXTI_DSR,
+			EXTI3_IRQn,
+			DRV_PRIORITY_EXTI3,
+			ID_NO_PERIPH
+		},
+		EXTI,
+		EXTI_IMR_MR3,
+		&gpio_data
+};
+
+const EXTI_DRIVER_INFO exti_4 =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)EXTI_ISR,
+			(DRV_DCR)EXTI_DCR,
+			(DRV_DSR)EXTI_DSR,
+			EXTI4_IRQn,
+			DRV_PRIORITY_EXTI4,
+			ID_NO_PERIPH
+		},
+		EXTI,
+		EXTI_IMR_MR4,
+		&gpio_data
+};
+
+const EXTI_DRIVER_INFO exti_5 =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)EXTI_ISR,
+			(DRV_DCR)EXTI_DCR,
+			(DRV_DSR)EXTI_DSR,
+			EXTI9_5_IRQn,
+			DRV_PRIORITY_EXTI5,
+			ID_NO_PERIPH
+		},
+		EXTI,
+		EXTI_IMR_MR5 | EXTI_IMR_MR6 | EXTI_IMR_MR7 | EXTI_IMR_MR8 | EXTI_IMR_MR9,
+		&gpio_data
+};
+
+const EXTI_DRIVER_INFO exti_10 =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)EXTI_ISR,
+			(DRV_DCR)EXTI_DCR,
+			(DRV_DSR)EXTI_DSR,
+			EXTI15_10_IRQn,
+			DRV_PRIORITY_EXTI10,
+			ID_NO_PERIPH
+		},
+		EXTI,
+		EXTI_IMR_MR10 | EXTI_IMR_MR11 | EXTI_IMR_MR12 | EXTI_IMR_MR13 | EXTI_IMR_MR15 | EXTI_IMR_MR15,
+		&gpio_data
+};
+
+
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// 		 GPIO DRIVER
+// 		 UART 0 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -96,11 +210,11 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
 	1+ (char * const)&DefaultDriver, 	/*!<  3 RTC global Interrupt            */
 	1+ (char * const)&DefaultDriver, 	/*!<  4 FLASH global Interrupt          */
 	1+ (char * const)&DefaultDriver, 	/*!<  5 RCC global Interrupt            */
-	1+ (char * const)&DefaultDriver, 	/*!<  6 EXTI Line0 Interrupt            */
-	1+ (char * const)&DefaultDriver, 	/*!<  7 EXTI Line1 Interrupt            */
-	1+ (char * const)&DefaultDriver, 	/*!<  8 EXTI Line2 Interrupt            */
-	1+ (char * const)&DefaultDriver, 	/*!<  9 EXTI Line3 Interrupt            */
-	1+ (char * const)&DefaultDriver, 	/*!< 10 EXTI Line4 Interrupt            */
+	1+ (char * const)&exti_0, 			/*!<  6 EXTI Line0 Interrupt            */
+	1+ (char * const)&exti_1, 			/*!<  7 EXTI Line1 Interrupt            */
+	1+ (char * const)&exti_2, 			/*!<  8 EXTI Line2 Interrupt            */
+	1+ (char * const)&exti_3,		 	/*!<  9 EXTI Line3 Interrupt            */
+	1+ (char * const)&exti_4,		 	/*!< 10 EXTI Line4 Interrupt            */
 	1+ (char * const)&DefaultDriver, 	/*!< 11 DMA1 Channel 1 global Interrupt */
 	1+ (char * const)&DefaultDriver, 	/*!< 12 DMA1 Channel 2 global Interrupt */
 	1+ (char * const)&DefaultDriver, 	/*!< 13 DMA1 Channel 3 global Interrupt */
@@ -114,7 +228,7 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&DefaultDriver, 	/*!< 20 SB Device Low Priority or CAN1 RX0 Interrupts */
     1+ (char * const)&DefaultDriver, 	/*!< 21 AN1 RX1 Interrupt                   */
     1+ (char * const)&DefaultDriver, 	/*!< 22 AN1 SCE Interrupt                   */
-    1+ (char * const)&DefaultDriver, 	/*!< 23 xternal Line[9:5] Interrupts        */
+    1+ (char * const)&exti_5, 			/*!< 23 xternal Line[9:5] Interrupts        */
     1+ (char * const)&DefaultDriver, 	/*!< 24 IM1 Break Interrupt                 */
     1+ (char * const)&DefaultDriver, 	/*!< 25 IM1 Update Interrupt                */
     1+ (char * const)&DefaultDriver, 	/*!< 26 IM1 Trigger and Commutation Interrupt */
@@ -131,7 +245,7 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&DefaultDriver, 	/*!< 37 SART1 global Interrupt              */
     1+ (char * const)&DefaultDriver, 	/*!< 38 SART2 global Interrupt              */
     1+ (char * const)&DefaultDriver, 	/*!< 39 SART3 global Interrupt              */
-    1+ (char * const)&DefaultDriver, 	/*!< 40 xternal Line[15:10] Interrupts      */
+    1+ (char * const)&exti_10, 			/*!< 40 xternal Line[15:10] Interrupts      */
     1+ (char * const)&DefaultDriver, 	/*!< 41 TC Alarm through EXTI Line Interrupt */
     1+ (char * const)&DefaultDriver, 	/*!< 42 SB Device WakeUp from suspend through EXTI Line Interrupt */
    NULL				//null terminated list

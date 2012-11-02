@@ -249,6 +249,23 @@ extern "C" void app_init(void)
 	TRACELN1("App init");
 }
 
+/**
+ * example how to drive pins directly...
+ *
+ * Note:
+ * 	There are target specific things like the PIN_DESC type and it's value.
+ * 	So these things are defined either in the OS or in the target directory of
+ * 	the project.
+ * 	The code here is supposed to be universal. We just want to flash a led,
+ * 	we don't care if the actual board is using Atmel, ST or Luminary CPUs.
+ * 	We don't care if the pin is PA0 or PB1. We don't care if the pin needs to be
+ * 	asserted low or high. These are target specific things.
+ * 	All we need here is to have a pin that can drive a led. We assume the pin
+ * 	definition is called PIN_LED and we ask assertion or deassertion of this pin.
+ * 	If you want to change the pin, just go in drivers.h in the target's directory
+ * 	and change the definition.
+ *
+ */
 void led_thread(void)
 {
 	PIN_DESC led_pin = PIN_LED;
@@ -263,6 +280,53 @@ void led_thread(void)
 	}
 }
 TASK_DECLARE_STATIC(led_task, "LEDT", led_thread, 0, 20+TRACE_SIZE);
+
+#define DEBOUNCE_TIME 40		//40 ms debounce
+
+void button_thread(void)
+{
+	/* We always need a handle to work with drivers	 */
+	CHandle hnd;
+	/* As a mode structure we must provide a zero/null terminated array of pin
+	 * descriptions (many pins can be read/write at once).*/
+	PIN_DESC pin_definitions[] = {PIN_WAKE_UP, 0};
+	pio_set read_values[1];	// here we will read the pin values.
+
+	/* If we want to open a handle for gpio operations we can use GPIO_IRQn as
+	 * the driver index.
+	 * The tsk_open() will also configure the pins according to the descriptions */
+	if(hnd.tsk_open(GPIO_IRQn, &pin_definitions))
+	{
+		while(1)
+		{
+			/* Reading from the handle will return immediately with the pin state(s).
+			 * The same can be done with PIO_Read() without handles and drivers.
+			 *
+			 * Locked read will return when at least one pin from the set triggers
+			 * an interrupt. In our case we have one pin, so tsk_read_locked() will
+			 * return as soon as active edge is detected on this pin.
+			 * Make sure the definition includes rasing/falling edge flag. Otherwise
+			 * the function will block forever.
+			 */
+			if(hnd.tsk_read_locked(read_values, sizeof(read_values)) == RES_OK)
+			{
+				// The pin changed once...
+
+				//to debounce keep reading while it is changing too fast
+				int oscilations =0;
+				while(hnd.tsk_read_locked(read_values, sizeof(read_values), DEBOUNCE_TIME) == RES_OK)
+				{
+					// we have a change within less the DEBOUNCE time - ignore it!
+					oscilations++;
+				}
+
+				// tsk_read_locked() timed out... the pin has settled at last.
+				TRACELN("PIN change: %04X (%u)", read_values[0], oscilations);
+			}
+		}
+	}
+}
+TASK_DECLARE_STATIC(button_task, "LEDT", button_thread, 5, 50+TRACE_SIZE);
 
 
 volatile unsigned int cpu_usage;
@@ -302,6 +366,7 @@ int main(void)
 
 	//start other tasks
     usr_task_init_static(&led_task_desc, true);
+    usr_task_init_static(&button_task_desc, true);
 
     //clocks in 250mS
     clock_freq = system_clock_frequency >> 2;
