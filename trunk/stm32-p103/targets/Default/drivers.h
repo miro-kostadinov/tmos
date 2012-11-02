@@ -23,15 +23,13 @@ extern "C" char __BUILD_VERSION;
 #define DRV_PRIORITY_UART0		0x02
 #define DRV_PRIORITY_UART1		0x02
 #define DRV_PRIORITY_UART2		0x02
-#define DRV_PRIORITY_GPIOA		0x02
-#define DRV_PRIORITY_GPIOB		0x02
-#define DRV_PRIORITY_GPIOC		0x02
-#define DRV_PRIORITY_GPIOD		0x02
-#define DRV_PRIORITY_GPIOE		0x02
-#define DRV_PRIORITY_GPIOF		0x02
-#define DRV_PRIORITY_GPIOG		0x02
-#define DRV_PRIORITY_GPIOH		0x02
-#define DRV_PRIORITY_GPIOJ		0x02
+#define DRV_PRIORITY_EXTI0		0x02
+#define DRV_PRIORITY_EXTI1		0x02
+#define DRV_PRIORITY_EXTI2		0x02
+#define DRV_PRIORITY_EXTI3		0x02
+#define DRV_PRIORITY_EXTI4		0x02
+#define DRV_PRIORITY_EXTI5		0x02
+#define DRV_PRIORITY_EXTI10		0x02
 #define DRV_PRIORITY_SPI0		0x02
 #define DRV_PRIORITY_USB		0x02
 #define DRV_PRIORITY_WDT		0x02
@@ -61,9 +59,10 @@ typedef void (*DRV_ISR)(DRIVER_INFO drv_info);
 // 		 GPIO DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #include <gpio_stm32.h>
+#include <exti_drv.h>
 
 // Port A
-#define PIN_WAKE_UP		(PD_PA0  | PD_IN)										//!< Wake-up button
+#define PIN_WAKE_UP		(PD_PA0  | PD_IN | PD_INT_BE)							//!< Wake-up button
 #define PIN_UART2_RTS	(PD_PA1  | PD_OUT)										//!< UART 2
 #define PIN_UART2_TX	(PD_PA2  | PD_AF)										//!< UART 2
 #define PIN_UART2_RX	(PD_PA3  | PD_AF)										//!< UART 2
