@@ -85,13 +85,16 @@ void dcr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, unsigned int reason, HANDLE hn
 		{
 			PIO_Cfg_List((PIN_DESC*)hnd->mode.as_voidptr);
 			hnd->list_remove(drv_data->waiting);
-			svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+//			svc_HND_SET_STATUS(hnd, RES_SIG_OK);
 		}
 		break;
 
 		case DCR_CANCEL:
-			read_handle(drv_data, hnd);
-			svc_HND_SET_STATUS(hnd, RES_SIG_CANCEL);
+			if (hnd->res & FLG_BUSY)
+			{
+				read_handle(drv_data, hnd);
+				svc_HND_SET_STATUS(hnd, RES_SIG_CANCEL);
+			}
 			break;
 
 		case DCR_RESET:
