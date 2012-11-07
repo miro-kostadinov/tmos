@@ -16,7 +16,7 @@ local_h_src-y 	:=
 local_cpp_src-y	+= gpio_f2.cpp
  
 local_h_src-y 	+= series_inc.h series_cpp.h gpio_f2.h rcc_f2.h flash_f2.h
-local_h_src-y 	+= dbgmcu_f2.h
+local_h_src-y 	+= dbgmcu_f2.h usart_f2.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
