@@ -21,6 +21,7 @@
 #include "flash_f2.h"
 #include "dbgmcu_f2.h"
 #include "gpio_f2.h"
+#include "usart_f2.h"
 
 #endif /* SERIES_CPP_H_ */
 /** @} ingroup hardware_stm32f2 */
