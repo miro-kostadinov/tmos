@@ -284,7 +284,46 @@ static void draw_box_frame(CMessageBox* msg_hnd, LCD_MODULE* lcd)
 	lcd->draw_hline(0, lcd->size_x-1, 0);
 	posy = msg_hnd->rect.y0 + 10;
 	lcd->clear_rect(1, 1, lcd->size_x-1, posy-1);
-	txt = msg_hnd->msg_text.c_str();
+	txt = msg_hnd->msg_start;
+	if(!txt)
+	{
+		txt = msg_hnd->msg_text.c_str();
+		msg_hnd->msg_start = txt;
+	}
+
+	if(msg_hnd->up_downs)
+	{
+		while(msg_hnd->up_downs > 0)
+		{
+    		const char* next;
+
+    		next = lcd->get_next_txt_row(msg_hnd->msg_start);
+    		if(next)
+    		{
+    			msg_hnd->msg_start = next;
+    			msg_hnd->up_downs--;
+    		} else
+    			msg_hnd->up_downs = 0;
+		}
+		while(msg_hnd->up_downs < 0)
+		{
+        	if(msg_hnd->msg_start != msg_hnd->msg_text.c_str())
+        	{
+        		const char* last= msg_hnd->msg_text.c_str();
+        		const char* next = lcd->get_next_txt_row(last);
+
+        		while(next && (next < msg_hnd->msg_start))
+        		{
+        			last = next;
+        			next = lcd->get_next_txt_row(next);
+        		}
+        		msg_hnd->msg_start = last;
+    			msg_hnd->up_downs++;
+        	} else
+        		msg_hnd->up_downs = 0;
+		}
+		txt = msg_hnd->msg_start;
+	}
 	if(txt)
 	{
 		lcd->set_xy_all(posy, ALL_CENTER);
@@ -322,6 +361,18 @@ RES_CODE msgbox_cb(CMessageBox* msg_hnd, unsigned int param, unsigned int msg)
         	case KEY_C:
                 return RES_SIG_CANCEL;
 #endif
+
+#ifdef KEY_UP
+	        case KEY_UP:
+    			msg_hnd->up_downs--;
+       			return FLG_BUSY;
+#endif
+
+#ifdef KEY_DOWN
+        	case KEY_DOWN:
+    			msg_hnd->up_downs++;
+       			return FLG_BUSY;
+#endif
         }
     }
 
@@ -334,7 +385,7 @@ RES_CODE msg_box(const char *msg)
 
 	if(msg_hnd.tsk_window_init((GUI_CB)msgbox_cb))
 	{
-		msg_hnd.msg_text = msg;
+		msg_hnd.update(msg);
 		msg_hnd.tsk_window_showmodal();
 		return (msg_hnd.res);
 	}
@@ -347,7 +398,7 @@ RES_CODE msg_box(CSTRING& msg)
 
 	if(msg_hnd.tsk_window_init((GUI_CB)msgbox_cb))
 	{
-		msg_hnd.msg_text = msg;
+		msg_hnd.update(msg);
 		msg_hnd.tsk_window_showmodal();
 		return (msg_hnd.res);
 	}
@@ -686,7 +737,24 @@ RES_CODE statusbox_cb(CMessageBox* msg_hnd, unsigned int param, unsigned int msg
     {
         draw_box_frame(msg_hnd, (LCD_MODULE*)param);
     }
+    if(msg == WM_KEY)
+    {
+        switch (param /*& KEY_PRESREP_MASK*/)
+        {
 
+#ifdef KEY_UP
+	        case KEY_UP:
+    			msg_hnd->up_downs--;
+       			return FLG_BUSY;
+#endif
+
+#ifdef KEY_DOWN
+        	case KEY_DOWN:
+    			msg_hnd->up_downs++;
+       			return FLG_BUSY;
+#endif
+        }
+    }
     return (0);
 }
 
@@ -705,7 +773,7 @@ CMessageBox* status_box_show(const char *msg)
 	msg_hnd = new CMessageBox();
 	if(msg_hnd)
 	{
-		msg_hnd->msg_text = msg;
+		msg_hnd->update(msg);
 		if(msg_hnd->tsk_window_init((GUI_CB)statusbox_cb))
 		{
 			msg_hnd->rect.y0 += 10;
@@ -728,7 +796,7 @@ CMessageBox* status_box_show(const char *msg, unsigned int displays)
 		msg_hnd->displays = displays;
 #endif
 
-		msg_hnd->msg_text = msg;
+		msg_hnd->update(msg);
 		if(msg_hnd->tsk_window_init((GUI_CB)statusbox_cb))
 		{
 			msg_hnd->rect.y0 += 10;
@@ -747,7 +815,7 @@ CMessageBox* status_box_show(CSTRING& msg)
 	msg_hnd = new CMessageBox();
 	if(msg_hnd)
 	{
-		msg_hnd->msg_text = msg;
+		msg_hnd->update(msg);
 		if(msg_hnd->tsk_window_init((GUI_CB)statusbox_cb))
 		{
 			msg_hnd->rect.y0 += 10;
@@ -769,7 +837,7 @@ CMessageBox* status_box_show(CSTRING& msg, unsigned int displays)
 #if GUI_DISPLAYS > 1
 		msg_hnd->displays = displays;
 #endif
-		msg_hnd->msg_text = msg;
+		msg_hnd->update(msg);
 		if(msg_hnd->tsk_window_init((GUI_CB)statusbox_cb))
 		{
 			msg_hnd->rect.y0 += 10;

@@ -113,18 +113,25 @@ RES_CODE menu_box(const MENU_STRU *menu, MENU_WINDOW menu_hnd);
 struct CMessageBox: CWindow
 {
     CSTRING			msg_text;
-    unsigned int 	offset;
-    CMessageBox(): CWindow(), offset(0) {};
+    const char*		msg_start;
+    signed int		up_downs;
+    CMessageBox(): CWindow(), msg_start(NULL), up_downs(0) {};
 
     void update(const char* str)
     {
     	if(this)
+    	{
     		msg_text = str;
+    		msg_start = msg_text.c_str();
+    	}
     };
     void update(CSTRING& str)
     {
     	if(this)
+    	{
     		msg_text = str;
+    		msg_start = msg_text.c_str();
+    	}
     };
 };
 

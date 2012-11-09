@@ -80,6 +80,62 @@ void LCD_MODULE::set_xy_all(unsigned int xy, unsigned int all)
 	pos_x = xy >> 16;
 	allign = all;
 }
+const char* LCD_MODULE::get_next_txt_row(const char *txt)
+{
+    unsigned int width,len, pos;
+	unsigned int c;
+
+	if(txt && txt[0])
+	{
+		while(*txt == ' ' || *txt =='\r' || *txt == '\n')
+			txt++;
+
+	    pos = pos_x + font->distance;
+	    len = 0;
+	    width = 0;
+	    while( pos < size_x )
+	    {
+	    	c=txt[len++];
+	        if( !IS_ALPHANUM(c))
+	        {
+	        	width = pos;
+	        	if(c == 0 || c =='\r' || c == '\n')
+	        		break;
+	        }
+	    	pos += font->spacing;
+	    }
+
+	    if(!width && len)
+	    {
+	    	width = pos_x + font->distance + (len-1)*font->spacing;
+	    }
+
+
+	    if(width)
+	    {
+	    	len = width -pos_x -font->distance;
+	    	if(allign != ALL_LEFT)
+	    	{
+	            pos = size_x - len;
+	    		if(allign == ALL_CENTER)
+	    			pos >>= 1;
+	    	}
+	    	else
+	    		pos = pos_x + font->distance;
+
+	    	width = pos + len;
+
+	    	while( (pos < width) && *txt)
+	    	{
+	    		txt++;
+	    		pos += font->spacing;
+	    	}
+	    }
+		if(txt[0])
+		    return (txt);
+	}
+	return NULL;
+}
 
 const char* LCD_MODULE::draw_text(const char *txt)
 {
@@ -153,6 +209,8 @@ const char* LCD_MODULE::draw_row(const char *txt)
 
 //	if( (pos_y + font->hight) < offset_y0)
 //		return (NULL);
+	if(!txt)
+		return NULL;
 
 	while(*txt == ' ')
 		txt++;
