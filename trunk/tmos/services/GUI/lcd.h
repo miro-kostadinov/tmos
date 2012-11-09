@@ -86,6 +86,7 @@ struct LCD_MODULE
 	void set_xy_all(unsigned int xy, unsigned int all);
 	void clear_rect(unsigned int x0, unsigned int y0, unsigned int x1,
 			unsigned int y1);
+	const char* get_next_txt_row(const char *txt);
 	const char* draw_text(const char *txt);
 	const char* draw_row(const char *txt);
 	void lcd_single_window(GUI_CB callback);
