@@ -27,6 +27,11 @@
 #define DBGMCU      CAST(DBGMCU_TypeDef , DBGMCU_BASE)	//!< Debug MCU registers base address
 #define EXTI        CAST(EXTI_TypeDef	, EXTI_BASE)	//!< External Interrupt/Event Controller (EXTI)
 #define AFIO        CAST(AFIO_TypeDef 	, AFIO_BASE)	//!< Alternate Function I/O (AFIO)
+#define USART1      CAST(USART_TypeDef  , USART1_BASE)	//!< USART1
+#define USART2      CAST(USART_TypeDef  , USART2_BASE)	//!< USART2
+#define USART3      CAST(USART_TypeDef  , USART3_BASE)	//!< USART3
+#define UART4       CAST(USART_TypeDef  , UART4_BASE) 	//!< UART4
+#define UART5       CAST(USART_TypeDef  , UART5_BASE) 	//!< UART5
 
 /** @} */
 
