@@ -12,6 +12,10 @@
 #include <tmos_types.h>
 #include <gpio_stm32.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 /*******************************************************************************
  *  GPIO hardware registers
  ******************************************************************************/
@@ -112,11 +116,52 @@ typedef struct
 
 /** @} */ // @defgroup GPIO_regs_define
 
-
-#ifdef __cplusplus
-extern "C"
+/*******************************************************************************
+ *  System configuration controller
+ ******************************************************************************/
+typedef struct
 {
-#endif
+  __IO uint32_t SYSCFG_MEMRMP;      //!< (syscfg Offset: 0x00) SYSCFG memory remap register
+  __IO uint32_t SYSCFG_PMC;         //!< (syscfg Offset: 0x04) SYSCFG peripheral mode configuration register
+  __IO uint32_t SYSCFG_EXTICR[4];   //!< (syscfg Offset: 0x08) SYSCFG external interrupt configuration registers
+  __IO uint32_t SYSCFG_RESERVED[2]; //!< (syscfg Offset: 0x18) Reserved
+  __IO uint32_t SYSCFG_CMPCR;       //!< (syscfg Offset: 0x20) SYSCFG Compensation cell control register
+} SYSCFG_TypeDef;
+
+/*******************************************************************************
+ * @defgroup SYSCFG_pins_define
+ * @{
+ ******************************************************************************/
+
+/** @defgroup SYSCFG_MEMRMP:    (syscfg Offset: 0x00) SYSCFG memory remap register */
+#define SYSCFG_MEMRMP_MEM_MODE      	0x00000003 //!< <SYSCFG_Memory Remap Config
+#define SYSCFG_MEMRMP_MEM_MODE_FLASH    0x00000000 //!<  Main Flash memory mapped
+#define SYSCFG_MEMRMP_MEM_MODE_ROM    	0x00000001 //!<  System Flash memory mapped
+#define SYSCFG_MEMRMP_MEM_MODE_FSMC    	0x00000002 //!<  FSMC Bank1 (NOR/PSRAM 1 and 2)
+#define SYSCFG_MEMRMP_MEM_MODE_SRAM    	0x00000003 //!<  Embedded SRAM (112kB) mapped
+/** @} */
+
+/** @defgroup SYSCFG_PMC:       (syscfg Offset: 0x04) SYSCFG peripheral mode configuration register */
+#define SYSCFG_PMC_MII_RMII         	0x0080 //!< Ethernet PHY interface selection
+/** @} */
+
+/** @defgroup SYSCFG_EXTICR[4]: (syscfg Offset: 0x08) SYSCFG external interrupt configuration registers */
+#define SYSCFG_EXTICRy_EXTIx_Msk(x)     (0xF << ((x)*4))            //!< EXTI x configuration
+#define SYSCFG_EXTICRy_EXTIx_Get(x,y)   (((y) >> ((x)*4)) & 0xF)    //!< EXTI x configuration get
+#define SYSCFG_EXTICRy_EXTIx_Set(x,y)   ((y) << ((x)*4))            //!< EXTI x configuration set
+/** @} */
+
+/** @defgroup SYSCFG_CMPCR:     (syscfg Offset: 0x20) SYSCFG Compensation cell control register */
+#define SYSCFG_CMPCR_CMP_PD         0x00000001 //!< Compensation cell ready flag
+#define SYSCFG_CMPCR_READY          0x00000100 //!< Compensation cell power-down
+/** @} */
+
+
+/** @} */ // @defgroup SYSCFG_pins_define
+
+/// Calculate port address for a given pin definition
+#define PORT_ADDRESS(num) ((GPIO_TypeDef*)(GPIOA_BASE + ((num)*0x400)))
+
 
 void PIO_Cfg(PIN_DESC cfg);
 void PIO_CfgOutput1(PIN_DESC pins);
@@ -133,6 +178,9 @@ void PIO_SetOutput(PIN_DESC pins);
 void PIO_ClrOutput(PIN_DESC pins);
 void PIO_Assert(PIN_DESC pins);
 void PIO_Deassert(PIN_DESC pins);
+
+void exti_set_line_source(unsigned int line, unsigned int port);
+
 
 #ifdef __cplusplus
 }
