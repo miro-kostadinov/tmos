@@ -22,6 +22,7 @@
 #include "dbgmcu_f1.h"
 #include "gpio_f1.h"
 #include "usart_f1.h"
+#include "dma_f1.h"
 
 #endif /* SERIES_CPP_H_ */
 /** @} ingroup hardware_stm32f1 */
