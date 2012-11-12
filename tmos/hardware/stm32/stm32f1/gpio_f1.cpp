@@ -61,7 +61,7 @@ void PIO_Cfg(PIN_DESC cfg)
 			if(mode)
 			{
 				// when ospeed is set, AD is in output mode
-				mode |= PD_OTYPE_Get(cfg) << 2; // PP or OD
+				mode |= GPIO_CRx_CNF_OUT_AF_PP | (PD_OTYPE_Get(cfg) << 2); // PP or OD
 			} else
 			{
 				if(cfg & (PD_PULL_UP | PD_PULL_DOWN) )
