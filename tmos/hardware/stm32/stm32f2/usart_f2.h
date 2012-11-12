@@ -128,5 +128,16 @@ typedef struct
 
 /** @} */ // @defgroup USART_regs_define
 
+#define USART_STATUS_TXE 	USART_SR_TXE	//!< TXE flag for F1 family
+#define USART_STATUS_RXNE 	USART_SR_RXNE	//!< RXNE flag for F1 family
+#define USART_STATUS_IDLE 	USART_SR_IDLE	//!< IDLE flag for F1 family
+#define USART_STATUS_ORE 	USART_SR_ORE	//!< Overrun flag for F1 family
+
+unsigned int get_usart_source_clk(unsigned int periph_id);
+
+#define get_usart_sr(uart) (uart->USART_SR)		//!< interrupt status for F1 family
+#define get_usart_tdr(uart) (uart->USART_DR)	//!< transmit data register for F1
+#define get_usart_rdr(uart) (uart->USART_DR)	//!< receive data register for F1
+
 
 #endif /* USART_F2_H_ */
