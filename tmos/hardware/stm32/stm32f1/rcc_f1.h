@@ -86,6 +86,7 @@ typedef struct
 #define RCC_CFGR_HPRE_DIV128    	0x000000D0 //!< SYSCLK divided by 128
 #define RCC_CFGR_HPRE_DIV256    	0x000000E0 //!< SYSCLK divided by 256
 #define RCC_CFGR_HPRE_DIV512    	0x000000F0 //!< SYSCLK divided by 512
+#define RCC_CFGR_HPRE_Get(x)        (((x)>>4)&0xF)   //!< HPRE[3:0] get
 
 /*!< PPRE1 configuration */
 #define RCC_CFGR_PPRE1          	0x00000700 //!< PRE1[2:0] bits (APB1 prescaler)
@@ -94,6 +95,7 @@ typedef struct
 #define RCC_CFGR_PPRE1_DIV4     	0x00000500 //!< HCLK divided by 4
 #define RCC_CFGR_PPRE1_DIV8     	0x00000600 //!< HCLK divided by 8
 #define RCC_CFGR_PPRE1_DIV16    	0x00000700 //!< HCLK divided by 16
+#define RCC_CFGR_PPRE1_Get(x)    	(((x)>>8)& 7)   //!< PRE1[2:0] get
 
 /*!< PPRE2 configuration */
 #define RCC_CFGR_PPRE2          	0x00003800 //!< PRE2[2:0] bits (APB2 prescaler)
@@ -102,6 +104,7 @@ typedef struct
 #define RCC_CFGR_PPRE2_DIV4     	0x00002800 //!< HCLK divided by 4
 #define RCC_CFGR_PPRE2_DIV8     	0x00003000 //!< HCLK divided by 8
 #define RCC_CFGR_PPRE2_DIV16    	0x00003800 //!< HCLK divided by 16
+#define RCC_CFGR_PPRE2_Get(x)    	(((x)>>11)& 7)   //!< PRE2[2:0] get
 
 /*!< ADCPPRE configuration */
 #define RCC_CFGR_ADCPRE         	0x0000C000 //!< ADCPRE[1:0] bits (ADC prescaler)
@@ -109,6 +112,7 @@ typedef struct
 #define RCC_CFGR_ADCPRE_DIV4    	0x00004000 //!< PCLK2 divided by 4
 #define RCC_CFGR_ADCPRE_DIV6    	0x00008000 //!< PCLK2 divided by 6
 #define RCC_CFGR_ADCPRE_DIV8    	0x0000C000 //!< PCLK2 divided by 8
+#define RCC_CFGR_ADCPRE_Get(x)    	(((x)>>14)& 3)   //!< ADCPRE[1:0] get
 
 #define RCC_CFGR_PLLSRC         	0x00010000 //!< PLL entry clock source
 
@@ -116,7 +120,8 @@ typedef struct
 
 /*!< PLLMUL configuration */
 #define RCC_CFGR_PLLMULL        	0x003C0000 //!< PLLMUL[3:0] bits (PLL multiplication factor)
-
+#define RCC_CFGR_PLLMULL_Get(x)		(((x)>>18) &0xF)
+#define RCC_CFGR_PLLMULL_Set(x)		(((x) &0xF)<<18)
 
 #ifdef STM32F10X_CL
  #define RCC_CFGR_PLLSRC_HSI_Div2   0x00000000 //!< HSI clock divided by 2 selected as PLL entry clock source
@@ -619,13 +624,45 @@ typedef struct
 /** @} */ // @defgroup RCC_regs_define
 
 /**
+ * @brief In the following line adjust the value of External High Speed oscillator (HSE)
+   used in your application
+
+   Tip: To avoid modifying this file each time you need to use different HSE, you
+        can define the HSE value in your toolchain compiler preprocessor.
+  */
+#ifndef  HSE_VALUE
+ #ifdef STM32F10X_CL
+  #define HSE_VALUE    25000000 /*!< Value of the External oscillator in Hz */
+ #else
+  #define HSE_VALUE    8000000  /*!< Value of the External oscillator in Hz */
+ #endif /* STM32F10X_CL */
+#endif /* HSE_VALUE */
+/**
  * @brief In the following line adjust the External High Speed oscillator (HSE) Startup
    Timeout value
    */
+#ifndef HSE_STARTUP_TIMEOUT
 #define HSE_STARTUP_TIMEOUT   0x0500 /*!< Time out for HSE start up */
+#endif
+
+#ifndef HSI_VALUE
+#define HSI_VALUE    8000000 /*!< Value of the Internal oscillator in Hz*/
+#endif
+
+typedef struct
+{
+	uint32_t SYSCLK_Frequency; 	//!< SYSCLK clock frequency expressed in Hz
+	uint32_t HCLK_Frequency; 	//!< HCLK clock frequency expressed in Hz
+	uint32_t PCLK1_Frequency; 	//!< PCLK1 clock frequency expressed in Hz
+	uint32_t PCLK2_Frequency; 	//!< PCLK2 clock frequency expressed in Hz
+	uint32_t ADCCLK_Frequency; 	//!< ADCCLK clock frequency expressed in Hz
+} RCC_ClocksTypeDef;
+
 
 void RCCPeripheralReset(unsigned int periph_id);
 void RCCPeripheralEnable(unsigned int periph_id);
 void RCCPeripheralDisable(unsigned int periph_id);
+
+void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks);
 
 #endif /* RCC_F1_H_ */
