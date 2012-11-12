@@ -74,6 +74,8 @@ typedef unsigned int PIN_DESC;
 /// Pin definition bits 25:25 = pulldown
 #define PD_PULL_DOWN   		(1 << 25)				//!< weak pull down
 
+#define PD_PULL_Get(x)	(0x3 & ((x) >> 25)) //!< PUPD value
+
 
 /// Pin definition bit 24 = Active level
 #define PD_ACTIVE_HIGH 	  	(1 << 24)
