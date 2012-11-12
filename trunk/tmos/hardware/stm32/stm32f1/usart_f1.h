@@ -68,7 +68,7 @@ typedef struct
 #define USART_CR1_IDLEIE            0x0010 //!< IDLE Interrupt Enable
 #define USART_CR1_RXNEIE            0x0020 //!< RXNE Interrupt Enable
 #define USART_CR1_TCIE              0x0040 //!< Transmission Complete Interrupt Enable
-#define USART_CR1_TXEIE             0x0080 //!< PE Interrupt Enable
+#define USART_CR1_TXEIE             0x0080 //!< TXE interrupt enable
 #define USART_CR1_PEIE              0x0100 //!< PE Interrupt Enable
 #define USART_CR1_PS                0x0200 //!< Parity Selection
 #define USART_CR1_PCE               0x0400 //!< Parity Control Enable
@@ -127,5 +127,18 @@ typedef struct
 
 
 /** @} */ // @defgroup USART_regs_define
+
+#define USART_STATUS_TXE 	USART_SR_TXE	//!< TXE flag for F1 family
+#define USART_STATUS_RXNE 	USART_SR_RXNE	//!< RXNE flag for F1 family
+#define USART_STATUS_IDLE 	USART_SR_IDLE	//!< IDLE flag for F1 family
+#define USART_STATUS_ORE 	USART_SR_ORE	//!< Overrun flag for F1 family
+
+unsigned int get_usart_source_clk(unsigned int periph_id);
+
+#define get_usart_sr(uart) (uart->USART_SR)		//!< interrupt status for F1 family
+#define get_usart_tdr(uart) (uart->USART_DR)	//!< transmit data register for F1
+#define get_usart_rdr(uart) (uart->USART_DR)	//!< receive data register for F1
+
+void enable_usart_drv_ints(USART_TypeDef* uart);
 
 #endif /* USART_F1_H_ */
