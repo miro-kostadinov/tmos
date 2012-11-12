@@ -23,16 +23,16 @@ extern "C" char __BUILD_VERSION;
 #define DRV_PRIORITY_UART0		0x02
 #define DRV_PRIORITY_UART1		0x02
 #define DRV_PRIORITY_UART2		0x02
-#define DRV_PRIORITY_EXTI0		0x02
-#define DRV_PRIORITY_EXTI1		0x02
-#define DRV_PRIORITY_EXTI2		0x02
-#define DRV_PRIORITY_EXTI3		0x02
-#define DRV_PRIORITY_EXTI4		0x02
-#define DRV_PRIORITY_EXTI5		0x02
-#define DRV_PRIORITY_EXTI10		0x02
-#define DRV_PRIORITY_SPI0		0x02
-#define DRV_PRIORITY_USB		0x02
-#define DRV_PRIORITY_WDT		0x02
+#define DRV_PRIORITY_EXTI0		0x03
+#define DRV_PRIORITY_EXTI1		0x03
+#define DRV_PRIORITY_EXTI2		0x03
+#define DRV_PRIORITY_EXTI3		0x03
+#define DRV_PRIORITY_EXTI4		0x03
+#define DRV_PRIORITY_EXTI5		0x03
+#define DRV_PRIORITY_EXTI10		0x03
+#define DRV_PRIORITY_SPI0		0x03
+#define DRV_PRIORITY_USB		0x03
+#define DRV_PRIORITY_WDT		0x04
 
 
 
@@ -54,6 +54,11 @@ typedef void (*DRV_ISR)(DRIVER_INFO drv_info);
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 UART DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#include <usart_drv.h>
+
+extern const USART_DRIVER_MODE uart_default_mode;
+
+#define UART_TEST_DRIVER USART2_IRQn
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 GPIO DRIVER
@@ -64,8 +69,8 @@ typedef void (*DRV_ISR)(DRIVER_INFO drv_info);
 // Port A
 #define PIN_WAKE_UP		(PD_PA0  | PD_IN | PD_INT_BE)							//!< Wake-up button
 #define PIN_UART2_RTS	(PD_PA1  | PD_OUT)										//!< UART 2
-#define PIN_UART2_TX	(PD_PA2  | PD_AF)										//!< UART 2
-#define PIN_UART2_RX	(PD_PA3  | PD_AF)										//!< UART 2
+#define PIN_UART2_TX	(uint32_t)(PD_PA2  | PD_AF_OUT_2MHz)					//!< UART 2
+#define PIN_UART2_RX	(uint32_t)(PD_PA3  | PD_AF)								//!< UART 2
 #define PIN_SPI1_NSS	(PD_PA4  | PD_OUT | PD_ACTIVE_LOW)						//!< UEXT con
 #define PIN_SPI1_SCK	(PD_PA5  | PD_AF)										//!< UEXT con
 #define PIN_SPI1_MISO	(PD_PA6  | PD_AF)										//!< UEXT con
