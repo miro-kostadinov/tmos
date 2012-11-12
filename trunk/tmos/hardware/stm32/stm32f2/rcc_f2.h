@@ -86,6 +86,7 @@ typedef struct
 #define  RCC_PLLCFGR_PLLP_DIV4      0x00010000
 #define  RCC_PLLCFGR_PLLP_DIV6      0x00020000
 #define  RCC_PLLCFGR_PLLP_DIV8      0x00030000
+#define  RCC_PLLCFGR_PLLP_Get(x)	(((x) >> 16) & 3)	//!< PLL division factor get
 
 #define  RCC_PLLCFGR_PLLSRC         0x00400000 //!< Main PLL(PLL) and audio PLL (PLLI2S) entry clock source
 #define  RCC_PLLCFGR_PLLSRC_HSE     0x00400000 //!<  HSE oscillator clock selected as PLL and PLLI2S clock entry
@@ -121,6 +122,7 @@ typedef struct
 #define RCC_CFGR_HPRE_DIV128    	0x000000D0 //!< SYSCLK divided by 128
 #define RCC_CFGR_HPRE_DIV256    	0x000000E0 //!< SYSCLK divided by 256
 #define RCC_CFGR_HPRE_DIV512    	0x000000F0 //!< SYSCLK divided by 512
+#define RCC_CFGR_HPRE_Get(x)        (((x)>>4)&0xF)   //!< HPRE[3:0] get
 
 /*!< PPRE1 configuration */
 #define RCC_CFGR_PPRE1          	0x00001C00 //!< PRE1[2:0] APB Low speed prescaler (APB1)
@@ -129,6 +131,7 @@ typedef struct
 #define RCC_CFGR_PPRE1_DIV4     	0x00001400 //!< AHB divided by 4
 #define RCC_CFGR_PPRE1_DIV8     	0x00001800 //!< AHB divided by 8
 #define RCC_CFGR_PPRE1_DIV16    	0x00001C00 //!< AHB divided by 16
+#define RCC_CFGR_PPRE1_Get(x)    	(((x)>>10)& 7)   //!< PRE1[2:0] get
 
 /*!< PPRE2 configuration */
 #define RCC_CFGR_PPRE2          	0x0000E000 //!< PRE2[2:0] bits (APB2 prescaler)
@@ -137,6 +140,7 @@ typedef struct
 #define RCC_CFGR_PPRE2_DIV4     	0x0000A000 //!< AHB divided by 4
 #define RCC_CFGR_PPRE2_DIV8     	0x0000C000 //!< AHB divided by 8
 #define RCC_CFGR_PPRE2_DIV16    	0x0000E000 //!< AHB divided by 16
+#define RCC_CFGR_PPRE2_Get(x)    	(((x)>>13)& 7)   //!< PRE2[2:0] get
 
 /*!< RTCPRE configuration */
 #define RCC_CFGR_RTCPRE             0x001F0000 //!< HSE division factor for RTC clock
@@ -470,11 +474,42 @@ typedef struct
 /** @} */ // @defgroup RCC_regs_define
 
 /**
+ * @brief In the following line adjust the value of External High Speed oscillator (HSE)
+   used in your application
+
+   Tip: To avoid modifying this file each time you need to use different HSE, you
+        can define the HSE value in your toolchain compiler preprocessor.
+  */
+#ifndef HSE_VALUE
+#define HSE_VALUE            25000000 /*!< Value of the External oscillator in Hz */
+#endif /* HSE_VALUE */
+
+/**
  * @brief In the following line adjust the External High Speed oscillator (HSE) Startup
    Timeout value
    */
-#define HSE_STARTUP_TIMEOUT   0x0500 /*!< Time out for HSE start up */
+#ifndef HSE_STARTUP_TIMEOUT
+#define HSE_STARTUP_TIMEOUT  0x0500   /*!< Time out for HSE start up */
+#endif /* HSE_STARTUP_TIMEOUT */
+
+#ifndef HSI_VALUE
+#define HSI_VALUE            16000000 /*!< Value of the Internal oscillator in Hz*/
+#endif /* HSI_VALUE */
 
 
+typedef struct
+{
+	uint32_t SYSCLK_Frequency; 	//!< SYSCLK clock frequency expressed in Hz
+	uint32_t HCLK_Frequency; 	//!< HCLK clock frequency expressed in Hz
+	uint32_t PCLK1_Frequency; 	//!< PCLK1 clock frequency expressed in Hz
+	uint32_t PCLK2_Frequency; 	//!< PCLK2 clock frequency expressed in Hz
+} RCC_ClocksTypeDef;
+
+
+void RCCPeripheralReset(unsigned int periph_id);
+void RCCPeripheralEnable(unsigned int periph_id);
+void RCCPeripheralDisable(unsigned int periph_id);
+
+void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks);
 
 #endif /* RCC_F2_H_ */
