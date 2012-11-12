@@ -328,6 +328,40 @@ void button_thread(void)
 }
 TASK_DECLARE_STATIC(button_task, "LEDT", button_thread, 5, 50+TRACE_SIZE);
 
+void uart_thread(void)
+{
+	CHandle uart_hnd;
+	char buf[8];
+	RES_CODE res;
+
+	if(uart_hnd.tsk_open(UART_TEST_DRIVER, &uart_default_mode))
+	{
+		//transmit something..
+		res = uart_hnd.tsk_write("hello\r\n");
+		TRACELN("uart tsk send %x", res);
+
+		//loopback
+		while(1)
+		{
+			res = uart_hnd.tsk_read(buf, sizeof(buf));
+			TRACELN("uart tsk rcv %x", res);
+			if(res <= RES_OK)
+			{
+				unsigned int dwRead;
+
+				dwRead = sizeof(buf) - uart_hnd.len;
+				TRACE(" %u bytes", dwRead);
+				if(dwRead)
+				{
+					res = uart_hnd.tsk_write(buf, dwRead);
+					TRACELN("uart tsk send %x", res);
+				}
+			}
+		}
+	}
+}
+TASK_DECLARE_STATIC(uart_task, "UART", uart_thread, 5, 100+TRACE_SIZE);
+
 
 volatile unsigned int cpu_usage;
 
@@ -367,6 +401,7 @@ int main(void)
 	//start other tasks
     usr_task_init_static(&led_task_desc, true);
     usr_task_init_static(&button_task_desc, true);
+    usr_task_init_static(&uart_task_desc, true);
 
     //clocks in 250mS
     clock_freq = system_clock_frequency >> 2;
