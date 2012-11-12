@@ -306,6 +306,16 @@ typedef unsigned int PIN_DESC;
 #define PD_AF				(PD_MODE_AF)						//!< open drain pin
 #define PD_ANALOG			(PD_MODE_ANALOG)					//!< open drain pin
 
+#define PD_AF_OUT_2MHz		(PD_MODE_AF | PD_OSPEED_2MHz) 	//!< AF output 2MHz pin
+#if CFG_SERIES == stm32f1
+#define PD_AF_OUT_10MHz		(PD_MODE_AF | PD_OSPEED_10MHz) 	//!< AF output 10MHz pin
+#define PD_AF_OUT_50MHz		(PD_MODE_AF | PD_OSPEED_50MHz) 	//!< AF output 50MHz pin
+#else
+#define PD_AF_OUT_25MHz		(PD_MODE_AF | PD_OSPEED_25MHz) 	//!< AF output 25MHz pin
+#define PD_AF_OUT_50MHz		(PD_MODE_AF | PD_OSPEED_50MHz) 	//!< AF output 50MHz pin
+#define PD_AF_OUT_100MHz	(PD_MODE_AF | PD_OSPEED_100MHz) //!< AF output 100MHz pin
+#endif
+
 
 /** @} */ // @STD_GPIO
 
