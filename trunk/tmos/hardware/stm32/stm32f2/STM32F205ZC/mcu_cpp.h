@@ -96,19 +96,19 @@
 #define ID_PERIPH_PWR       ((3<<5)|28) //!< PWR
 #define ID_PERIPH_DAC       ((3<<5)|29) //!< DAC
 
-#define ID_PERIPH_TIM1      ((4<<5)|00) //!< TIM 1
-#define ID_PERIPH_TIM8      ((4<<5)|01) //!< TIM 8
-#define ID_PERIPH_USART1    ((4<<5)|04) //!< USART 1
-#define ID_PERIPH_USART6    ((4<<5)|05) //!< USART 6
-#define ID_PERIPH_ADC1		((4<<5)|08) //!< ADC 1
-#define ID_PERIPH_ADC2      ((4<<5)|09) //!< ADC 2
-#define ID_PERIPH_ADC3      ((4<<5)|10) //!< ADC 3
-#define ID_PERIPH_SDIO      ((4<<5)|11) //!< SDIO
-#define ID_PERIPH_SPI1      ((4<<5)|12) //!< SPI 1
-#define ID_PERIPH_SYSC      ((4<<5)|14) //!< SYSC
-#define ID_PERIPH_TIM9      ((4<<5)|16) //!< TIM 9
-#define ID_PERIPH_TIM10     ((4<<5)|17) //!< TIM 10
-#define ID_PERIPH_TIM11     ((4<<5)|18) //!< TIM 11
+#define ID_PERIPH_TIM1      ((5<<5)|00) //!< TIM 1
+#define ID_PERIPH_TIM8      ((5<<5)|01) //!< TIM 8
+#define ID_PERIPH_USART1    ((5<<5)|04) //!< USART 1
+#define ID_PERIPH_USART6    ((5<<5)|05) //!< USART 6
+#define ID_PERIPH_ADC1		((5<<5)|08) //!< ADC 1
+#define ID_PERIPH_ADC2      ((5<<5)|09) //!< ADC 2
+#define ID_PERIPH_ADC3      ((5<<5)|10) //!< ADC 3
+#define ID_PERIPH_SDIO      ((5<<5)|11) //!< SDIO
+#define ID_PERIPH_SPI1      ((5<<5)|12) //!< SPI 1
+#define ID_PERIPH_SYSC      ((5<<5)|14) //!< SYSC
+#define ID_PERIPH_TIM9      ((5<<5)|16) //!< TIM 9
+#define ID_PERIPH_TIM10     ((5<<5)|17) //!< TIM 10
+#define ID_PERIPH_TIM11     ((5<<5)|18) //!< TIM 11
 
 #define ID_NO_PERIPH 		(255)		//!< invalid index for peripheral
 /** @}*/
