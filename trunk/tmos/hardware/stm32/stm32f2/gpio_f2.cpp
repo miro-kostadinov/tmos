@@ -54,7 +54,7 @@ void PIO_Cfg(PIN_DESC cfg)
 				tmpreg |= PD_PULL_Get(cfg) << pos;
 			} while (locked_set_reg(&gpio_port->GPIO_PUPDR, tmpreg));
 
-			if(mode == PD_MODE_Get(PD_MODE_OUTPUT) || PD_MODE_Get(PD_MODE_AF))
+			if(mode == PD_MODE_Get(PD_MODE_OUTPUT) || mode == PD_MODE_Get(PD_MODE_AF))
 			{
 				/* Change speed */
 				do
