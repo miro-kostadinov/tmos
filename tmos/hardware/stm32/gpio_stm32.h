@@ -67,12 +67,12 @@ typedef unsigned int PIN_DESC;
 #define PD_INT_Get(x)		(0x3 & ((x) >> PD_INT_Pos)) //!< output speed value
 
 
-/// Pin definition bits 26:26 = pullup
-#define PD_PULL_UP   		(1 << 26)				//!< weak pull up
-
-
 /// Pin definition bits 25:25 = pulldown
-#define PD_PULL_DOWN   		(1 << 25)				//!< weak pull down
+#define PD_PULL_DOWN   		(1 << 26)				//!< weak pull down
+
+/// Pin definition bits 26:26 = pullup
+#define PD_PULL_UP   		(1 << 25)				//!< weak pull up
+
 
 #define PD_PULL_Get(x)	(0x3 & ((x) >> 25)) //!< PUPD value
 
