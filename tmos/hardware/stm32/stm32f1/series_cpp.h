@@ -24,5 +24,17 @@
 #include "usart_f1.h"
 #include "dma_f1.h"
 
+
+/**
+  * The RCC feeds the Cortex System Timer (SysTick) external clock with the AHB
+  * clock (HCLK) divided by 8. The SysTick can work either with this clock or
+  * with the Cortex clock(HCLK), configurable in the SysTick Control and Status
+  * Register.
+  */
+#ifndef GET_SYSTICK_CLOCK
+#define GET_SYSTICK_CLOCK (system_clock_frequency >> 3)
+#endif
+
+
 #endif /* SERIES_CPP_H_ */
 /** @} ingroup hardware_stm32f1 */
