@@ -126,6 +126,7 @@ extern const USART_DRIVER_MODE uart_default_mode;
 #define PIN_PD2 		(PD_PD2 | PD_IN)										//!<
 
 
+#define PIN_BUTTON PIN_WAKE_UP
 
 extern   signed char const DRV_RESET_FIRST_TABLE[];
 extern "C" char* const DRV_TABLE[INALID_DRV_INDX+1];
