@@ -494,7 +494,7 @@ typedef struct
 #define RCC_BDCR_LSERDY             0x00000002 //!< External Low Speed oscillator Ready
 #define RCC_BDCR_LSEBYP             0x00000004 //!< External Low Speed oscillator Bypass
 
-/*!< RTC congiguration */
+/*!< RTC configuration */
 #define RCC_BDCR_RTCSEL             0x00000300 //!< RTCSEL[1:0] bits (RTC clock source selection)
 #define RCC_BDCR_RTCSEL_NOCLOCK     0x00000000 //!< No clock
 #define RCC_BDCR_RTCSEL_LSE         0x00000100 //!< LSE oscillator clock used as RTC clock
