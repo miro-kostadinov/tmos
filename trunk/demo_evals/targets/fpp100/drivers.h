@@ -137,13 +137,13 @@ extern const USART_DRIVER_MODE uart_default_mode;
 #define PIN_M_D1		(PD_PD15 | PD_AF)                                       //!< bus
 
 // Port E
-#define PIN_KEY0		(PD_PE0  | PD_IN | PD_INT_BE)							//!< key
-#define PIN_KEY1		(PD_PE1  | PD_IN | PD_INT_BE)							//!< key
+#define PIN_KEY0		(PD_PE0  | PD_IN | PD_PULL_UP | PD_INT_BE)				//!< key
+#define PIN_KEY1		(PD_PE1  | PD_IN | PD_PULL_UP | PD_INT_BE)				//!< key
 #define PIN_PRN2_LATCH	(PD_PE2  | PD_OUT)										//!< prn 2
 #define PIN_M_A19		(PD_PE3  | PD_AF)										//!< bus
 #define PIN_M_A20		(PD_PE4  | PD_AF)										//!< bus
-#define PIN_KEY2		(PD_PE5  | PD_IN | PD_INT_BE)							//!< key
-#define PIN_KEY3		(PD_PE6  | PD_IN | PD_INT_BE)							//!< key
+#define PIN_KEY2		(PD_PE5  | PD_IN | PD_PULL_UP | PD_INT_BE)				//!< key
+#define PIN_KEY3		(PD_PE6  | PD_IN | PD_PULL_UP | PD_INT_BE)				//!< key
 #define PIN_M_D4		(PD_PE7  | PD_AF)						 				//!< bus
 #define PIN_M_D5		(PD_PE8  | PD_AF)                                       //!< bus
 #define PIN_M_D6		(PD_PE9  | PD_AF)            					        //!< bus
