@@ -67,6 +67,9 @@ void EXTI_DCR(EXTI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 
 		case DCR_OPEN:
 		{
+			//Enable AFIO/SYSCFG...
+			RCCPeripheralEnable(drv_info->info.peripheral_indx);
+
 			pin = (PIN_DESC *)hnd->mode.as_voidptr;
 			hnd->list_add(drv_data->waiting);
 			hnd->mode0 = PIOHND_IDLE;
