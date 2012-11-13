@@ -87,6 +87,7 @@ typedef struct
 #define  RCC_PLLCFGR_PLLP_DIV6      0x00020000
 #define  RCC_PLLCFGR_PLLP_DIV8      0x00030000
 #define  RCC_PLLCFGR_PLLP_Get(x)	(((x) >> 16) & 3)	//!< PLL division factor get
+#define  RCC_PLLCFGR_PLLP_Set(x)	(((x) & 3) << 16)	//!< PLL division factor set
 
 #define  RCC_PLLCFGR_PLLSRC         0x00400000 //!< Main PLL(PLL) and audio PLL (PLLI2S) entry clock source
 #define  RCC_PLLCFGR_PLLSRC_HSE     0x00400000 //!<  HSE oscillator clock selected as PLL and PLLI2S clock entry
