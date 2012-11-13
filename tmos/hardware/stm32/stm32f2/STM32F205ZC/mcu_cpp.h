@@ -25,7 +25,14 @@
 #define RCC			CAST(RCC_TypeDef	, RCC_BASE)  	//!< (RCC) Base Address
 #define FLASH       CAST(FLASH_TypeDef	, FLASH_R_BASE)	//!< Flash registers base address
 #define DBGMCU      CAST(DBGMCU_TypeDef , DBGMCU_BASE)	//!< Debug MCU registers base address
+#define EXTI        CAST(EXTI_TypeDef	, EXTI_BASE)	//!< External Interrupt/Event Controller (EXTI)
 #define SYSCFG      CAST(SYSCFG_TypeDef , SYSCFG_BASE)	//!< System configuration controller
+#define USART1      CAST(USART_TypeDef  , USART1_BASE)	//!< USART1
+#define USART2      CAST(USART_TypeDef  , USART2_BASE)	//!< USART2
+#define USART3      CAST(USART_TypeDef  , USART3_BASE)	//!< USART3
+#define UART4       CAST(USART_TypeDef  , UART4_BASE) 	//!< UART4
+#define UART5       CAST(USART_TypeDef  , UART5_BASE) 	//!< UART5
+#define USART6      CAST(USART_TypeDef  , USART6_BASE)	//!< USART6
 
 /** @} */
 
