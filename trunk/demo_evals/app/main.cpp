@@ -88,9 +88,6 @@ void uart_thread(void)
 	char buf[8];
 	RES_CODE res;
 
-	RCC_ClocksTypeDef  clocks;
-
-	RCC_GetClocksFreq (&clocks);
 
 	if(uart_hnd.tsk_open(UART_TEST_DRIVER, &uart_default_mode))
 	{
