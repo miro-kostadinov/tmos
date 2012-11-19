@@ -13,61 +13,65 @@
 #include <cmsis_cpp.h>
 #include <sysctl_lm3s.h>
 
+void wdt_feet(WDT_INFO drv_info)
+{
+	WDT_Type* wdt = drv_info->hw_base;
+	unsigned int ctrl;
+	unsigned int locked;
 
+	locked = wdt->WDTLOCK;
+	//Unlock
+	ctrl = wdt->WDTCTL;
+	if(locked)
+		wdt->WDTLOCK = WDT_WDTLOCK_UNLOCK;
+	while(ctrl != wdt->WDTCTL)
+	{
+	}
+
+	//Feed (due to errata do it twice)
+	do
+	{
+		wdt->WDTLOAD = drv_info->wdt_load +1;
+		while(ctrl != wdt->WDTCTL)
+		{
+		}
+	} while (wdt->WDTLOAD != drv_info->wdt_load +1);
+	do
+	{
+		wdt->WDTLOAD = drv_info->wdt_load ;
+		while(ctrl != wdt->WDTCTL)
+		{
+		}
+	} while (wdt->WDTLOAD != drv_info->wdt_load);
+
+	//Lock
+	if(locked)
+	{
+		wdt->WDTLOCK = WDT_WDTLOCK_LOCKED;
+		while(ctrl != wdt->WDTCTL)
+		{
+		}
+	}
+
+}
 /**
  * WDT helper task
  * @param drv_info
  */
 void wdt_thread(WDT_INFO drv_info)
 {
-	WDT_Type* wdt = drv_info->hw_base;
-	unsigned int ctrl;
 
 	while(1)
 	{
-//		__disable_irq();
-//		SysCtlPeripheralReset(drv_info->info.peripheral_indx);
-//		wdt->WDTLOAD = drv_info->wdt_load;
-//		wdt->WDTTEST = WDT_WDTTEST_STALL;
-//		wdt->WDTCTL = WDT_WDTCTL_INTEN | WDT_WDTCTL_RESEN;
-//		__enable_irq();
 
-		//Unlock
-		ctrl = wdt->WDTCTL;
-		wdt->WDTLOCK = WDT_WDTLOCK_UNLOCK;
-		while(ctrl != wdt->WDTCTL)
-		{
-		}
-
-		//Feed (due to errata do it twice)
-		do
-		{
-			wdt->WDTLOAD = drv_info->wdt_load +1;
-			while(ctrl != wdt->WDTCTL)
-			{
-			}
-		} while (wdt->WDTLOAD != drv_info->wdt_load +1);
-		do
-		{
-			wdt->WDTLOAD = drv_info->wdt_load ;
-			while(ctrl != wdt->WDTCTL)
-			{
-			}
-		} while (wdt->WDTLOAD != drv_info->wdt_load);
-
-		//Lock
-		wdt->WDTLOCK = WDT_WDTLOCK_LOCKED;
-		while(ctrl != wdt->WDTCTL)
-		{
-		}
-
+		wdt_feet(drv_info);
 
 		//Sleep
 		tsk_sleep(drv_info->feed_sleep);
 	}
 
 }
-#define WDT_TASK_STACK_SIZE 15
+#define WDT_TASK_STACK_SIZE 20
 
 /**
  * Watchdog DCR
