@@ -28,7 +28,7 @@ CFG_MCU 	?= STM32F205ZC
 # Debugging format.
 DEBUG 		?= dwarf-2
 ifdef ComSpec
-TFTP_PATH	?= \\\\tftproot\\\\
+TFTP_PATH	?= \\tftproot\\
 MPS_PATH	?= \\tftproot\\
 endif
 
