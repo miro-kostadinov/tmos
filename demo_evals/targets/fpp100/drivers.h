@@ -36,7 +36,7 @@ extern "C" char __BUILD_VERSION;
 #define DRV_PRIORITY_SPI0		0x03
 #define DRV_PRIORITY_USB		0x03
 #define DRV_PRIORITY_WDT		0x04
-
+#define DRV_PRIORITY_DEFAULT	0x05
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
