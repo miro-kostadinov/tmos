@@ -37,9 +37,21 @@ void PIO_Cfg(PIN_DESC cfg)
 			pin_pattern = (pin_pattern << pos) >> pos;
 			pos = (32-pos)*2;
 
-			/* Change mode */
 			mode = PD_MODE_Get(cfg);
-			do	// loop for exclusive access (thread safe)
+
+			/* Change AF mapping */
+			if(mode == PD_MODE_Get(PD_MODE_AF))
+			{
+				do
+				{
+					tmpreg = locked_get_reg(&gpio_port->GPIO_AFR[pos >> 4]);
+					tmpreg &= ~GPIO_AFR_AFRy_Msk(pos>>1);
+					tmpreg |= GPIO_AFR_AFRy_Set(pos>>1, PD_MUX_Get(cfg));
+				} while (locked_set_reg(&gpio_port->GPIO_AFR[pos >> 4], tmpreg));
+			}
+
+			/* Change mode */
+			do
 			{
 				tmpreg = locked_get_reg(&gpio_port->GPIO_MODER);
 				tmpreg &= ~(0x3 << pos);
