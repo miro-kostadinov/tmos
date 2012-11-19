@@ -49,6 +49,8 @@ struct WDT_DRIVER_INFO
 /** WDT Driver Info */
 typedef const WDT_DRIVER_INFO* WDT_INFO;
 
+void wdt_feet(WDT_INFO drv_info);
+
 void WDT_DCR(WDT_INFO drv_info, unsigned int reason, HANDLE hnd);
 void WDT_DSR(WDT_INFO drv_info, HANDLE hnd);
 void WDT_ISR(WDT_INFO drv_info );
