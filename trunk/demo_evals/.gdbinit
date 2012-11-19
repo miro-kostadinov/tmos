@@ -81,7 +81,8 @@ define cc
 
 	# NVIC_APINT = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ | NVIC_APINT_VECT_CLR_ACT | NVIC_APINT_VECT_RESET
 	# ... System reset request | Clear active NMI/fault info | System reset
-	mon m w 0xE000ED0C 0x05FA0007	
+	#mon m w 0xE000ED0C 0x05FA0007	
+	mon m w 0xE000ED0C 0x05FA0003	
 	mon set xPSR 0x01000000
 	#mon res	
 
