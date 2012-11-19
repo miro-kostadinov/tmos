@@ -11,6 +11,7 @@ extern "C"
 {
 
 unsigned int CalculateCRC16(unsigned int crc, const char* buf, unsigned int len);
+unsigned int CalculateCRC16CCITT(unsigned int crc, const char* buf, unsigned int len);
 
 }
 #endif /* CRC16_H_ */
