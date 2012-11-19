@@ -87,30 +87,42 @@ void uart_thread(void)
 	CHandle uart_hnd;
 	char buf[8];
 	RES_CODE res;
+	unsigned int received, remain, dwRead;
 
 
 	if(uart_hnd.tsk_open(UART_TEST_DRIVER, &uart_default_mode))
 	{
-		//transmit something..
-		res = uart_hnd.tsk_write("hello\r\n");
-		TRACELN("uart tsk send %x", res);
-
-		//loopback
+		//loopback test
 		while(1)
 		{
-			res = uart_hnd.tsk_read(buf, sizeof(buf));
-			TRACELN("uart tsk rcv %x", res);
-			if(res <= RES_OK)
-			{
-				unsigned int dwRead;
+			tsk_sleep(2);
+			//transmit something..
+			res = uart_hnd.tsk_write("hello\r\n");
+			TRACELN("uart tsk send %x", res);
+			remain = 7;
 
-				dwRead = sizeof(buf) - uart_hnd.len;
-				TRACE(" %u bytes", dwRead);
-				if(dwRead)
+			//receive...
+			received = 0;
+			memclr(buf, sizeof(buf));
+			while(remain)
+			{
+				res = uart_hnd.tsk_read(buf + received, remain, 1000);
+				TRACELN("uart tsk rcv %x", res);
+				if(res != RES_OK)
 				{
-					res = uart_hnd.tsk_write(buf, dwRead);
-					TRACELN("uart tsk send %x", res);
+					TRACELN1("failed !!!!");
+					break;
 				}
+
+				dwRead = remain - uart_hnd.len;
+				received += dwRead;
+				remain -= dwRead;
+
+				TRACE(" %u bytes", dwRead);
+			}
+			if(!remain && strcmp("hello\r\n", buf))
+			{
+				TRACELN1("strcmp !!!!");
 			}
 		}
 	}
