@@ -133,12 +133,31 @@ typedef struct
 #define USART_STATUS_IDLE 	USART_SR_IDLE	//!< IDLE flag for F1 family
 #define USART_STATUS_ORE 	USART_SR_ORE	//!< Overrun flag for F1 family
 
+#define USART_STATUS_RXNEIE USART_CR1_RXNEIE	//!< RXNE enable flag for F1 family
+#define USART_STATUS_IDLEIE USART_CR1_IDLEIE	//!< IDLE enableflag for F1 family
+
 unsigned int get_usart_source_clk(unsigned int periph_id);
 
+/// Maskable status bits
+#define USART_SR_MASKABLE (USART_CR1_IDLEIE | USART_CR1_RXNEIE | USART_CR1_TCIE | USART_CR1_TXEIE)
+
+/// Nonmaskable status bits
+#define USART_SR_NOMASKABLE (USART_SR_FE | USART_SR_NE | USART_SR_ORE)
+
+/// ERROR status bits
+#define USART_SR_ERRORS (USART_SR_PE | USART_SR_FE | USART_SR_NE | USART_SR_ORE)
+
 #define get_usart_sr(uart) (uart->USART_SR)		//!< interrupt status for F1 family
+
+#define get_usart_imr(uart) \
+	((uart->USART_CR1 & USART_SR_MASKABLE) | \
+	 ((uart->USART_CR1 >> 8) & 1) | \
+     USART_SR_NOMASKABLE )	//!< interrupt mask for F1 family
+
 #define get_usart_tdr(uart) (uart->USART_DR)	//!< transmit data register for F1
 #define get_usart_rdr(uart) (uart->USART_DR)	//!< receive data register for F1
 
-void enable_usart_drv_ints(USART_TypeDef* uart);
+#define enable_usart_drv_ints(uart, f) (uart->USART_CR1 |= (f))		//!< enable usart interrupts
+#define disable_usart_drv_ints(uart, f) (uart->USART_CR1 &= ~(f)) 	//!< disable usart interrupts
 
 #endif /* USART_F1_H_ */

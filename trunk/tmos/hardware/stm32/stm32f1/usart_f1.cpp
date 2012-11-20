@@ -27,7 +27,3 @@ unsigned int get_usart_source_clk(unsigned int periph_id)
 	return clocks.PCLK1_Frequency;
 }
 
-WEAK void enable_usart_drv_ints(USART_TypeDef* uart)
-{
-
-}
