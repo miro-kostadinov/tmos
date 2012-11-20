@@ -51,13 +51,14 @@ static inline void START_RX_BUF(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data
 	drv_data->rx_ptr = drv_data->rx_buf;
 	drv_data->rx_wrptr = drv_data->rx_buf;
 	drv_data->rx_remaining = USART_DRV_RX_BUF_SIZE;
+	enable_usart_drv_ints(uart, USART_STATUS_RXNEIE | USART_STATUS_IDLEIE);
 }
 
 static inline void START_RX_HND(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data, HANDLE hnd)
 {
 	drv_data->rx_remaining = hnd->len;
 	drv_data->rx_wrptr = hnd->dst.as_byteptr;
-//	Uart->UARTIntEnable(UART_INT_RX|UART_INT_RT);
+	enable_usart_drv_ints(uart, USART_STATUS_RXNEIE | USART_STATUS_IDLEIE);
 }
 
 static inline void STOP_TX(USART_TypeDef* uart)
@@ -69,7 +70,7 @@ static inline void START_TX_HND(USART_TypeDef* uart, HANDLE hnd)
 {
 	if( get_usart_sr(uart) & USART_STATUS_TXE )
 	{
-		TRACE_BUF(hnd->src.as_charptr, 1, TC_BG_MAGENTA);
+//		TRACE_BUF(hnd->src.as_charptr, 1, TC_BG_MAGENTA);
 		get_usart_tdr(uart) = *hnd->src.as_charptr++;
 		hnd->len--;
 	}
@@ -89,6 +90,38 @@ static inline void STOP_RX_HND(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data,
 		START_RX_BUF(uart, drv_data);
 }
 
+static inline void RESUME_RX(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data)
+{
+	unsigned int free_space;
+
+	//	update wr ptr
+	if (drv_data->rx_wrptr == &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
+		drv_data->rx_wrptr = drv_data->rx_buf;
+
+	// get free space
+	if (drv_data->rx_wrptr < drv_data->rx_ptr)
+	{
+		free_space = drv_data->rx_ptr - drv_data->rx_wrptr;
+		drv_data->rx_remaining = free_space;
+	}
+	else
+	{
+		free_space = &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE] - drv_data->rx_wrptr;
+		drv_data->rx_remaining = free_space;
+		free_space += drv_data->rx_ptr - drv_data->rx_buf;
+	}
+
+	// enable or disable the receiver...
+	if(free_space <= 1)
+	{
+		disable_usart_drv_ints(uart, USART_STATUS_RXNEIE | USART_STATUS_IDLEIE);
+	}
+	else
+	{
+		enable_usart_drv_ints(uart, USART_STATUS_RXNEIE | USART_STATUS_IDLEIE);
+	}
+
+}
 
 static void dcr_cancel_handle(USART_DRIVER_INFO* drv_info,
 		USART_DRIVER_DATA *drv_data, HANDLE hnd)
@@ -238,16 +271,22 @@ void USART_DSR(USART_DRIVER_INFO* drv_info, HANDLE hnd)
       		svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
       		return;
       	}
+
+      	if (hnd->len == 0)
+      	{
+      		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+      		return;
+      	}
+
 		// STOP_RX(uart);
 		//try to read from buffer
       	ptr = drv_data->rx_wrptr;
-      	if( hnd->len && (ptr!= drv_data->rx_ptr) )
+      	if( ptr != drv_data->rx_ptr )
       	{
       		if(ptr < drv_data->rx_ptr)
       		{
       			size =min(hnd->len, (&drv_data->rx_buf[USART_DRV_RX_BUF_SIZE]) - drv_data->rx_ptr);
       			memcpy(hnd->dst.as_byteptr, drv_data->rx_ptr, size);
-      	      	hnd->res = RES_BUSY | FLG_OK; // some data transfered
       			hnd->len -= size;
       			hnd->dst.as_int += size;
       			drv_data->rx_ptr += size;
@@ -258,20 +297,13 @@ void USART_DSR(USART_DRIVER_INFO* drv_info, HANDLE hnd)
           	if( hnd->len && (ptr!= drv_data->rx_ptr) )
       		{
       			size =min(hnd->len, ptr - drv_data->rx_ptr);
-      	      	hnd->res = RES_BUSY | FLG_OK; // some data transfered
       			memcpy(hnd->dst.as_byteptr, drv_data->rx_ptr, size);
       			hnd->len -= size;
       			hnd->dst.as_int += size;
       			drv_data->rx_ptr += size;
       		}
 
-      		//RESUME_RX(Uart);
-      		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
-      		return;
-      	}
-      	if (hnd->len == 0)
-      	{
-      		//RESUME_RX(Uart);
+      		RESUME_RX(uart, drv_data);
       		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
       		return;
       	}
@@ -313,8 +345,7 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 
 
 	status = get_usart_sr(uart);
-	TRACELN("%02X", status);
-//	Uart->UARTIntClear(status);
+	status &= get_usart_imr(uart);
 
 	if( status & USART_STATUS_TXE )
 	{
@@ -323,7 +354,7 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 			if(hnd->len)
 			{
 				hnd->len--;
-				TRACE_BUF(hnd->src.as_charptr, 1, TC_TXT_MAGENTA);
+//				TRACE_BUF(hnd->src.as_charptr, 1, TC_TXT_MAGENTA);
 				get_usart_tdr(uart) = *hnd->src.as_charptr++;
 			} else
 			{
@@ -355,14 +386,14 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 	if (status & USART_STATUS_RXNE)
     {
 		*drv_data->rx_wrptr = get_usart_rdr(uart);
-		TRACE_BUF(drv_data->rx_wrptr, 1, TC_TXT_CYAN);
+//		TRACE_BUF(drv_data->rx_wrptr, 1, TC_TXT_CYAN);
 		drv_data->rx_wrptr++;
 		if(!--drv_data->rx_remaining )
 		{
 	    	if( (hnd=drv_data->hnd_rcv) )
 				STOP_RX_HND(uart, drv_data, hnd, RES_SIG_OK);
 	      	else
-				START_RX_BUF(uart,drv_data);
+	      		RESUME_RX(uart,drv_data);
 
 		}
 	} else
