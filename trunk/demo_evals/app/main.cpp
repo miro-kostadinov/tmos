@@ -2,6 +2,100 @@
 #include <drivers.h>
 #include <hardware_cpp.h>
 
+#ifndef TEST_TASK_SWITCH_SPEED
+#define TEST_TASK_SWITCH_SPEED 0
+#endif
+
+#if TEST_TASK_SWITCH_SPEED == 1
+void high_thread(void)
+{
+	PIN_DESC led_pin = PIN_BOX;
+
+	PIO_Cfg(led_pin);
+	while(1)
+	{
+		PIO_Assert(led_pin);
+		tsk_get_signal(1);
+		PIO_Deassert(led_pin);
+		tsk_get_signal(1);
+	}
+}
+TASK_DECLARE_STATIC(high_task, "HIGHT", high_thread, 60, 20); //priority 60
+
+void low_thread(void)
+{
+	while(1)
+	{
+		tsk_send_signal(&high_task, 1);
+	}
+}
+TASK_DECLARE_STATIC(low_task, "HIGHT", low_thread, 30, 20); //priority 30
+#endif
+
+#if TEST_TASK_SWITCH_SPEED == 2
+// optimized version for fpp100
+void high_thread(void)
+{
+	PIO_Cfg(PD_PD6  | PD_OUT);
+	while(1)
+	{
+		GPIOD->GPIO_BSRR = PD_PIN_6;		// PIO_Assert();
+		tsk_get_signal(1);
+		GPIOD->GPIO_BSRR = PD_PIN_6 << 16;	// PIO_Deassert();
+		tsk_get_signal(1);
+	}
+}
+TASK_DECLARE_STATIC(high_task, "HIGHT", high_thread, 60, 20); //priority 60
+
+void low_thread(void)
+{
+	while(1)
+	{
+		tsk_send_signal(&high_task, 1);
+	}
+}
+TASK_DECLARE_STATIC(low_task, "HIGHT", low_thread, 30, 20); //priority 30
+#endif
+
+#ifndef TEST_MEM2MEM_DMA
+#define TEST_MEM2MEM_DMA 0
+#endif
+
+#if TEST_MEM2MEM_DMA
+// only for STM targets
+const DMA_DRIVER_MODE test_dma_mode =
+{
+	// dma_index
+	DMA2_Stream0_IRQn,
+	// dma_ch_cr
+	DMA_SxCR_CHSEL_0 |
+	DMA_SxCR_MBURST_burst0 |
+	DMA_SxCR_PBURST_burst0 |
+	DMA_SxCR_PL_low	|
+	DMA_SxCR_MINC |
+	DMA_SxCR_MSIZE_8bit |
+	DMA_SxCR_PINC |
+	DMA_SxCR_PSIZE_8bit |
+	DMA_SxCR_DIR_M2M,
+
+	// dma_ch_fr
+	DMA_SxFCR_FTH_full
+};
+void mem_dma_thread(void)
+{
+	CHandle hnd;
+	char dst[10];
+	RES_CODE res;
+
+	memclr(dst, sizeof(dst));
+	if(hnd.tsk_open(test_dma_mode.dma_index, &test_dma_mode))
+	{
+		res = hnd.tsk_read_write(dst, "test", 4);
+		TRACELN("DMA TEST res=%u", res);
+	}
+}
+TASK_DECLARE_STATIC(mem_dma_task, "MEMD", mem_dma_thread, 1, 20+TRACE_SIZE);
+#endif
 
 /**
  * example how to drive pins directly...
@@ -169,7 +263,13 @@ int main(void)
     usr_task_init_static(&led_task_desc, true);
     usr_task_init_static(&button_task_desc, true);
     usr_task_init_static(&uart_task_desc, true);
-
+#if TEST_TASK_SWITCH_SPEED
+    usr_task_init_static(&high_task_desc, true);
+    usr_task_init_static(&low_task_desc, true);
+#endif
+#if TEST_MEM2MEM_DMA
+    usr_task_init_static(&mem_dma_task_desc, true);
+#endif
     //clocks in 250mS
     clock_freq = system_clock_frequency >> 2;
 
