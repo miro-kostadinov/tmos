@@ -27,6 +27,17 @@
 #define DBGMCU      CAST(DBGMCU_TypeDef , DBGMCU_BASE)	//!< Debug MCU registers base address
 #define EXTI        CAST(EXTI_TypeDef	, EXTI_BASE)	//!< External Interrupt/Event Controller (EXTI)
 #define SYSCFG      CAST(SYSCFG_TypeDef , SYSCFG_BASE)	//!< System configuration controller
+#define GPIOA       CAST(GPIO_TypeDef   , GPIOA_BASE)	//!< GPIO A
+#define GPIOB       CAST(GPIO_TypeDef   , GPIOB_BASE)   //!< GPIO B
+#define GPIOC       CAST(GPIO_TypeDef   , GPIOC_BASE)   //!< GPIO C
+#define GPIOD       CAST(GPIO_TypeDef   , GPIOD_BASE)   //!< GPIO D
+#define GPIOE       CAST(GPIO_TypeDef   , GPIOE_BASE)   //!< GPIO E
+#define GPIOF       CAST(GPIO_TypeDef   , GPIOF_BASE)   //!< GPIO F
+#define GPIOG       CAST(GPIO_TypeDef   , GPIOG_BASE)   //!< GPIO G
+#define GPIOH       CAST(GPIO_TypeDef   , GPIOH_BASE)   //!< GPIO H
+#define GPIOI       CAST(GPIO_TypeDef   , GPIOI_BASE)   //!< GPIO I
+#define DMA1        CAST(DMA_TypeDef 	, DMA1_BASE)    //!< DMA 1
+#define DMA2        CAST(DMA_TypeDef 	, DMA2_BASE)    //!< DMA 2
 #define USART1      CAST(USART_TypeDef  , USART1_BASE)	//!< USART1
 #define USART2      CAST(USART_TypeDef  , USART2_BASE)	//!< USART2
 #define USART3      CAST(USART_TypeDef  , USART3_BASE)	//!< USART3
