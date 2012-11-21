@@ -26,17 +26,21 @@ extern "C" char __BUILD_VERSION;
 #define DRV_PRIORITY_UART0		0x02
 #define DRV_PRIORITY_UART1		0x02
 #define DRV_PRIORITY_UART2		0x02
-#define DRV_PRIORITY_EXTI0		0x03
-#define DRV_PRIORITY_EXTI1		0x03
-#define DRV_PRIORITY_EXTI2		0x03
-#define DRV_PRIORITY_EXTI3		0x03
-#define DRV_PRIORITY_EXTI4		0x03
-#define DRV_PRIORITY_EXTI5		0x03
-#define DRV_PRIORITY_EXTI10		0x03
-#define DRV_PRIORITY_SPI0		0x03
-#define DRV_PRIORITY_USB		0x03
-#define DRV_PRIORITY_WDT		0x04
-#define DRV_PRIORITY_DEFAULT	0x05
+#define DRV_PRIORITY_DMA1_CH0	0x03	// must be above all DMA clients
+#define DRV_PRIORITY_DMA1_CH1	0x03
+#define DRV_PRIORITY_DMA1_CH2	0x03
+#define DRV_PRIORITY_DMA2_CH0	0x03
+#define DRV_PRIORITY_EXTI0		0x04
+#define DRV_PRIORITY_EXTI1		0x04
+#define DRV_PRIORITY_EXTI2		0x04
+#define DRV_PRIORITY_EXTI3		0x04
+#define DRV_PRIORITY_EXTI4		0x04
+#define DRV_PRIORITY_EXTI5		0x04
+#define DRV_PRIORITY_EXTI10		0x04
+#define DRV_PRIORITY_SPI0		0x04
+#define DRV_PRIORITY_USB		0x04
+#define DRV_PRIORITY_WDT		0x05
+#define DRV_PRIORITY_DEFAULT	0x06
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -193,9 +197,17 @@ extern const USART_DRIVER_MODE uart_default_mode;
 #define PIN_LED		PIN_LED0	// for LED test
 #define PIN_BUTTON	PIN_KEY0
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 DMA DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#include <dma_drv.h>
+
+
 extern   signed char const DRV_RESET_FIRST_TABLE[];
 extern "C" char* const DRV_TABLE[INALID_DRV_INDX+1];
 
+
+#define TEST_MEM2MEM_DMA 1
 
 
 #endif /* DRIVERS_H_ */
