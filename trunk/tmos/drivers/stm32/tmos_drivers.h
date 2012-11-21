@@ -9,5 +9,8 @@
 #define TMOS_DRIVERS_H_
 
 #include <exti_drv.h>
+#include <usart_drv.h>
+#include <spi_drv.h>
+#include <dma_drv.h>
 
 #endif /* TMOS_DRIVERS_H_ */
