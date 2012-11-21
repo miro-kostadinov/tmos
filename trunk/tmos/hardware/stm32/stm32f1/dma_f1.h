@@ -99,7 +99,33 @@ typedef struct
 #define DMA_IFCR_Set(x,y)      ((y)<<((x)*4)) 	//!< set macro
 /** @} */
 
+#define STM32_DMA_ERRORS (DMA_ISR_TEIFx )	//!< errors for F1
 
+#define STM32_DMA_COMPLETE (DMA_ISR_TCIFx)	//!< complete for F1
+
+/** DMA Driver mode structure **/
+struct DMA_DRIVER_MODE
+{
+	DRIVER_INDEX dma_index;	//!< DMA driver index (DMAx_Streamx_IRQn or DMAx_Channelx_IRQn)
+
+	uint32_t dma_ch_cr;		//!< DMA channel/stream config register value
+};
+
+void stm32_dma_start(DMA_TypeDef* dmac, uint32_t indx, HANDLE hnd);
+void stm32_dma_ch_cfg(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode);
+
+static inline uint32_t stm32_get_ints(DMA_TypeDef* dmac, uint32_t indx)
+{
+	uint32_t status;
+
+	indx <<= 2;
+	status = dmac->DMA_ISR & (0xf << indx);
+	dmac->DMA_IFCR = status;
+
+	return status >> indx;
+}
+
+void stm32_dis_ints(DMA_TypeDef* dmac, uint32_t indx);
 
 
 /** @} */ // @defgroup DMA_regs_define

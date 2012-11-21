@@ -62,27 +62,32 @@ typedef struct
 #define DMA_SxCR_PINCOS_psize       0x00000000 //!<  address calculation is linked to the PSIZE
 #define DMA_SxCR_PINCOS_32bit       0x00008000 //!<  address calculation is fixed to 4 (32-bit alignment)
 #define DMA_SxCR_PL                 0x00030000 //!< PL[1:0] bits(Channel Priority level)
-#define DMA_SxCR_PL_low             0x00010000 //!<  Low
-#define DMA_SxCR_PL_medium          0x00020000 //!<  Medium
-#define DMA_SxCR_PL_high            0x00010000 //!<  High
-#define DMA_SxCR_PL_veryhigh        0x00020000 //!<  Very high
+#define DMA_SxCR_PL_low             0x00000000 //!<  Low
+#define DMA_SxCR_PL_medium          0x00010000 //!<  Medium
+#define DMA_SxCR_PL_high            0x00020000 //!<  High
+#define DMA_SxCR_PL_veryhigh        0x00030000 //!<  Very high
 #define DMA_SxCR_DBM                0x00040000 //!< Double buffer mode
 #define DMA_SxCR_CT                 0x00080000 //!< Current target (only in double buffer mode)
 #define DMA_SxCR_ACK                0x00100000 //!< ?
 #define DMA_SxCR_PBURST             0x00600000 //!< Peripheral burst transfer configuration
-#define DMA_SxCR_PBURST_0           0x00200000 //!<  single transfer
-#define DMA_SxCR_PBURST_1           0x00400000 //!<  INCR4 (incremental burst of 4 beats)
-#define DMA_SxCR_PBURST_0           0x00200000 //!<  INCR8 (incremental burst of 8 beats)
-#define DMA_SxCR_PBURST_1           0x00400000 //!<  INCR16 (incremental burst of 16 beats)
+#define DMA_SxCR_PBURST_burst0      0x00000000 //!<  single transfer
+#define DMA_SxCR_PBURST_burst4      0x00200000 //!<  INCR4 (incremental burst of 4 beats)
+#define DMA_SxCR_PBURST_burst8      0x00400000 //!<  INCR8 (incremental burst of 8 beats)
+#define DMA_SxCR_PBURST_burst16     0x00600000 //!<  INCR16 (incremental burst of 16 beats)
 #define DMA_SxCR_MBURST             0x01800000 //!< Memory burst transfer configuration
-#define DMA_SxCR_MBURST_0           0x00800000 //!<  single transfer
-#define DMA_SxCR_MBURST_1           0x01000000 //!<  INCR4 (incremental burst of 4 beats)
-#define DMA_SxCR_MBURST_0           0x00800000 //!<  INCR8 (incremental burst of 8 beats)
-#define DMA_SxCR_MBURST_1           0x01000000 //!<  INCR16 (incremental burst of 16 beats)
+#define DMA_SxCR_MBURST_burst0      0x00000000 //!<  single transfer
+#define DMA_SxCR_MBURST_burst4      0x00800000 //!<  INCR4 (incremental burst of 4 beats)
+#define DMA_SxCR_MBURST_burst8      0x01000000 //!<  INCR8 (incremental burst of 8 beats)
+#define DMA_SxCR_MBURST_burst16     0x01800000 //!<  INCR16 (incremental burst of 16 beats)
 #define DMA_SxCR_CHSEL              0x0E000000 //!< CHSEL[2:0]: Channel selection
-#define DMA_SxCR_CHSEL_0            0x02000000 //!<
-#define DMA_SxCR_CHSEL_1            0x04000000 //!<
-#define DMA_SxCR_CHSEL_2            0x08000000 //!<
+#define DMA_SxCR_CHSEL_0            0x00000000 //!<  channel 0 selected
+#define DMA_SxCR_CHSEL_1            0x02000000 //!<  channel 1 selected
+#define DMA_SxCR_CHSEL_2            0x04000000 //!<  channel 2 selected
+#define DMA_SxCR_CHSEL_3            0x06000000 //!<  channel 3 selected
+#define DMA_SxCR_CHSEL_4            0x08000000 //!<  channel 4 selected
+#define DMA_SxCR_CHSEL_5            0x0A000000 //!<  channel 5 selected
+#define DMA_SxCR_CHSEL_6            0x0C000000 //!<  channel 6 selected
+#define DMA_SxCR_CHSEL_7            0x0E000000 //!<  channel 7 selected
 /** @} */
 
 /** @defgroup DMA_SxNDTR:   (dmas Offset: 0x04) DMA stream x number of data register */
@@ -136,5 +141,83 @@ typedef struct
 
 /** @} */ // @defgroup DMA_regs_define
 
+#define STM32_DMA_ERRORS (DMA_ISR_TEIFx | DMA_ISR_DMEIFx | DMA_ISR_FEIFx)	//!< errors for F2
+
+#define STM32_DMA_COMPLETE (DMA_ISR_TCIFx)	//!< complete for F2
+
+/** DMA Driver mode structure **/
+struct DMA_DRIVER_MODE
+{
+	DRIVER_INDEX dma_index;	//!< DMA driver index (DMAx_Streamx_IRQn or DMAx_Channelx_IRQn)
+
+	uint32_t dma_ch_cr;		//!< DMA channel/stream config register value
+	uint32_t dma_ch_fr;		//!< DMA channel/stream fifo register (not usend in F1..)
+};
+
+void stm32_dma_start(DMA_TypeDef* dmac, uint32_t indx, HANDLE hnd);
+void stm32_dma_ch_cfg(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode);
+
+static inline uint32_t stm32_get_ints(DMA_TypeDef* dmac, uint32_t indx)
+{
+	uint32_t status;
+
+	switch(indx)
+	{
+	case 0:
+		status = dmac->DMA_ISR[0] & 0x3f;
+		dmac->DMA_IFCR[0] = status;
+		break;
+
+	case 1:
+		status = dmac->DMA_ISR[0] & (0x3f << 6);
+		dmac->DMA_IFCR[0] = status;
+		status >>=6;
+		break;
+
+	case 2:
+		status = dmac->DMA_ISR[0] & (0x3f << 16);
+		dmac->DMA_IFCR[0] = status;
+		status >>=16;
+		break;
+
+	case 3:
+		status = dmac->DMA_ISR[0] & (0x3f << 22);
+		dmac->DMA_IFCR[0] = status;
+		status >>=22;
+		break;
+
+	case 4:
+		status = dmac->DMA_ISR[1] & 0x3f;
+		dmac->DMA_IFCR[1] = status;
+		break;
+
+	case 5:
+		status = dmac->DMA_ISR[1] & (0x3f << 6);
+		dmac->DMA_IFCR[1] = status;
+		status >>=6;
+		break;
+
+	case 6:
+		status = dmac->DMA_ISR[1] & (0x3f << 16);
+		dmac->DMA_IFCR[1] = status;
+		status >>=16;
+		break;
+
+	case 7:
+		status = dmac->DMA_ISR[1] & (0x3f << 22);
+		dmac->DMA_IFCR[1] = status;
+		status >>=22;
+		break;
+
+	default:
+		status = DMA_ISR_TEIFx;
+		break;
+
+	}
+
+	return status;
+}
+
+void stm32_dis_ints(DMA_TypeDef* dmac, uint32_t indx);
 
 #endif /* DMA_F2_H_ */
