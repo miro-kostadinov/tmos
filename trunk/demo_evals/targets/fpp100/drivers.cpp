@@ -7,6 +7,7 @@
 #include <tmos.h>
 #include <drivers.h>
 #include <systick_drv.h>
+#include <dma_drv.h>
 
 const char restart_on_exception =0;
 
@@ -175,6 +176,84 @@ const EXTI_DRIVER_INFO exti10_driver =
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 DMA 1 DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DMA_DRIVER_DATA dma1_drv_data;
+DMA_DRIVER_DATA dma2_drv_data;
+
+DMA_CHANNEL_DATA dma1_ch0_data;
+const DMA_DRIVER_INFO dma1_ch0_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)DMA_ISR,
+			(DRV_DCR)DMA_DCR,
+			(DRV_DSR)DMA_DSR,
+			DMA1_Stream0_IRQn,
+			DRV_PRIORITY_DMA1_CH0,
+			ID_PERIPH_DMA1
+		},
+		DMA1,
+		&dma1_drv_data,
+		&dma1_ch0_data,
+		0								// channel
+};
+
+DMA_CHANNEL_DATA dma1_ch1_data;
+const DMA_DRIVER_INFO dma1_ch1_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)DMA_ISR,
+			(DRV_DCR)DMA_DCR,
+			(DRV_DSR)DMA_DSR,
+			DMA1_Stream1_IRQn,
+			DRV_PRIORITY_DMA1_CH1,
+			ID_PERIPH_DMA1
+		},
+		DMA1,
+		&dma1_drv_data,
+		&dma1_ch1_data,
+		1								// channel
+};
+
+DMA_CHANNEL_DATA dma1_ch2_data;
+const DMA_DRIVER_INFO dma1_ch2_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)DMA_ISR,
+			(DRV_DCR)DMA_DCR,
+			(DRV_DSR)DMA_DSR,
+			DMA1_Stream2_IRQn,
+			DRV_PRIORITY_DMA1_CH2,
+			ID_PERIPH_DMA1
+		},
+		DMA1,
+		&dma1_drv_data,
+		&dma1_ch2_data,
+		2								// channel
+};
+
+DMA_CHANNEL_DATA dma2_ch0_data;
+const DMA_DRIVER_INFO dma2_ch0_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)DMA_ISR,
+			(DRV_DCR)DMA_DCR,
+			(DRV_DSR)DMA_DSR,
+			DMA2_Stream0_IRQn,
+			DRV_PRIORITY_DMA2_CH0,
+			ID_PERIPH_DMA2
+		},
+		DMA2,
+		&dma2_drv_data,
+		&dma2_ch0_data,
+		0								// channel
+};
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 UART 2 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -240,9 +319,9 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&exti2_driver, 	/*!< 8  EXTI Line2 Interrupt                                              */
     1+ (char * const)&exti3_driver, 	/*!< 9  EXTI Line3 Interrupt                                              */
     1+ (char * const)&exti4_driver, 	/*!< 10 EXTI Line4 Interrupt                                              */
-    1+ (char * const)&DefaultDriver, 	/*!< 11 DMA1 Stream 0 global Interrupt                                    */
-    1+ (char * const)&DefaultDriver, 	/*!< 12 DMA1 Stream 1 global Interrupt                                    */
-    1+ (char * const)&DefaultDriver, 	/*!< 13 DMA1 Stream 2 global Interrupt                                    */
+    1+ (char * const)&dma1_ch0_driver, 	/*!< 11 DMA1 Stream 0 global Interrupt                                    */
+    1+ (char * const)&dma1_ch1_driver, 	/*!< 12 DMA1 Stream 1 global Interrupt                                    */
+    1+ (char * const)&dma1_ch2_driver, 	/*!< 13 DMA1 Stream 2 global Interrupt                                    */
     1+ (char * const)&DefaultDriver, 	/*!< 14 DMA1 Stream 3 global Interrupt                                    */
     1+ (char * const)&DefaultDriver, 	/*!< 15 DMA1 Stream 4 global Interrupt                                    */
     1+ (char * const)&DefaultDriver, 	/*!< 16 DMA1 Stream 5 global Interrupt                                    */
@@ -285,7 +364,7 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&DefaultDriver, 	/*!< 53 UART5 global Interrupt                                            */
     1+ (char * const)&DefaultDriver, 	/*!< 54 TIM6 global and DAC1&2 underrun error  interrupts                 */
     1+ (char * const)&DefaultDriver, 	/*!< 55 TIM7 global interrupt                                             */
-    1+ (char * const)&DefaultDriver, 	/*!< 56 DMA2 Stream 0 global Interrupt                                    */
+    1+ (char * const)&dma2_ch0_driver, 	/*!< 56 DMA2 Stream 0 global Interrupt                                    */
     1+ (char * const)&DefaultDriver, 	/*!< 57 DMA2 Stream 1 global Interrupt                                    */
     1+ (char * const)&DefaultDriver, 	/*!< 58 DMA2 Stream 2 global Interrupt                                    */
     1+ (char * const)&DefaultDriver, 	/*!< 59 DMA2 Stream 3 global Interrupt                                    */
