@@ -40,9 +40,37 @@ static inline void STOP_RX(UART_Type * Uart)
 	Uart->UARTIntDisable(UART_INT_RX|UART_INT_RT);
 }
 
-static inline void RESUME_RX(UART_Type * Uart)
+static inline void RESUME_RX(UART_DRIVER_DATA * drv_data, UART_Type * Uart)
 {
-	Uart->UARTIntEnable(UART_INT_RX|UART_INT_RT);
+	unsigned int free_space;
+
+	//	update wr ptr
+	if (drv_data->rx_wrptr == &drv_data->rx_buf[RX_BUF_SIZE])
+		drv_data->rx_wrptr = drv_data->rx_buf;
+
+	// get free space
+	if (drv_data->rx_wrptr < drv_data->rx_ptr)
+	{
+		free_space = drv_data->rx_ptr - drv_data->rx_wrptr;
+		drv_data->rx_remaining = free_space;
+	}
+	else
+	{
+		free_space = &drv_data->rx_buf[RX_BUF_SIZE] - drv_data->rx_wrptr;
+		drv_data->rx_remaining = free_space;
+		free_space += drv_data->rx_ptr - drv_data->rx_buf;
+	}
+
+	// enable or disable the receiver...
+	if(free_space <= 1)
+	{
+		Uart->UARTIntDisable(UART_INT_RX | UART_INT_RT);
+	}
+	else
+	{
+		Uart->UARTIntEnable(UART_INT_RX | UART_INT_RT);
+	}
+
 }
 
 static inline void START_RX_BUF(UART_Type * Uart, UART_DRIVER_INFO * drv_info, UART_DRIVER_DATA * drv_data)
@@ -258,7 +286,6 @@ void dsr_SerialDriver(UART_DRIVER_INFO* drv_info, HANDLE hnd)
 			return;
       	}
 
-		STOP_RX(Uart);
 		//try to read from buffer
       	ptr = drv_data->rx_wrptr;
       	if( hnd->len && (ptr!= drv_data->rx_ptr) )
@@ -287,7 +314,7 @@ void dsr_SerialDriver(UART_DRIVER_INFO* drv_info, HANDLE hnd)
       	}
       	if (hnd->len == 0)
       	{
-      		RESUME_RX(Uart);
+      		RESUME_RX(drv_data, Uart);
       		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
       		return;
       	}
@@ -370,7 +397,9 @@ void isr_SerilaDriver(UART_DRIVER_INFO* drv_info )
     	    	if( (hnd=drv_data->hnd_rcv) )
     				STOP_RX_HND(Uart, drv_info, hnd);
     	      	else
-    				START_RX_BUF(Uart, drv_info, drv_data);
+    	      	{
+    	      		RESUME_RX(drv_data, Uart);
+    	      	}
     		}
     	}
     	if( (Status&UART_INT_RT) && drv_data->mode.rx_tout )
