@@ -48,6 +48,10 @@ WEAK_C RES_CODE splashdlg_cb(WINDOW obj, LCD_MODULE* lcd, unsigned int msg)
 		lcd->set_xy_all(pos, ALL_CENTER);
 		lcd->color = PIX_RED;
 		lcd->draw_text("TMOS");
+		lcd->draw_hline(0, lcd->size_x-1, 0);
+		lcd->draw_hline(0, lcd->size_x-1, lcd->size_y-1);
+		lcd->draw_vline(0, lcd->size_y-1, 0);
+		lcd->draw_vline(0, lcd->size_y-1, lcd->size_x-1);
 	}
 	return (0);
 }
