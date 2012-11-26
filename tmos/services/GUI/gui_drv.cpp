@@ -31,15 +31,24 @@ extern TASK_STRU gui_task;
 
 WEAK_C RES_CODE splashdlg_cb(WINDOW obj, LCD_MODULE* lcd, unsigned int msg)
 {
-	unsigned int pos;
+	int pos;
 
 	lcd->set_font(&FNT10x21);
 	pos = (lcd->size_y - 2* lcd->font->vspacing)/2;
-	lcd->set_xy_all(pos-7, ALL_CENTER);
-	lcd->color = PIX_RED;
-	lcd->draw_text("TMOS");
-	lcd->color = PIX_BLUE;
-	lcd->draw_text("DEMO");
+	if(pos > 0)
+	{
+		lcd->set_xy_all(pos-7, ALL_CENTER);
+		lcd->color = PIX_RED;
+		lcd->draw_text("TMOS");
+		lcd->color = PIX_BLUE;
+		lcd->draw_text("DEMO");
+	} else
+	{
+		pos = (lcd->size_y - lcd->font->vspacing)/2;
+		lcd->set_xy_all(pos, ALL_CENTER);
+		lcd->color = PIX_RED;
+		lcd->draw_text("TMOS");
+	}
 	return (0);
 }
 
