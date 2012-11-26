@@ -259,7 +259,7 @@ void ST7565S::update_screen()
 {
 	unsigned int cmd;
 
-	cmd = CMD_PAGE_ADR(frame_y0 /8) +	(CMD_COLUMN_ADR_LO(1) << 8 )+
+	cmd = CMD_PAGE_ADR(frame_y0 /8) +	(CMD_COLUMN_ADR_LO(4) << 8 )+
 			(CMD_COLUMN_ADR_HI(0) << 16) + (CMD_READ_WRITE_START << 24);
 
 	//lock
