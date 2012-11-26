@@ -27,7 +27,7 @@ static void SPI_ENABLE(SPI_DRIVER_INFO* drv_info)
 }
 
 // Start a new transaction
-static void SPI_START_TRANSACTION(SPI_TypeDef*  pSPI, SPI_DRIVER_MODE* mode)
+static void SPI_START_TRANSACTION(SPI_TypeDef* pSPI, SPI_DRIVER_MODE* mode)
 {
 
 	//	1. Select the BR[2:0] bits to define the serial clock baud rate (see
@@ -51,12 +51,18 @@ static void SPI_START_TRANSACTION(SPI_TypeDef*  pSPI, SPI_DRIVER_MODE* mode)
 	//	  to a high-level signal).
 
 
-    pSPI->SPI_CR2 = (pSPI->SPI_CR2 & (SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN)) | mode->spi_cr2;
+    pSPI->SPI_CR2 = (pSPI->SPI_CR2 & (SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN)) | mode->spi_cr2 | SPI_CR2_RXNEIE;
 
+    //enable
+    pSPI->SPI_CR1 = mode->spi_cr1 | SPI_CR1_SPE;
 
     // Assert CS
     PIO_Assert(mode->cs_pin);
+}
 
+static void SPI_END_TRANSACTION(SPI_DRIVER_MODE* mode)
+{
+	PIO_Deassert(mode->cs_pin);
 }
 
 //*----------------------------------------------------------------------------
@@ -160,55 +166,32 @@ void SPI_DSR(SPI_DRIVER_INFO* drv_info, HANDLE hnd)
     }
 
 
-    /*
+
 	if(hnd->len)
 	{
 		hnd->next = NULL;
 		hnd->res  = RES_BUSY;
 		drv_data->pending = hnd;
-	    //enable interrupts (-enable + disable)
-		drv_info->hw_base->IM = SSI_TXFF + SSI_RXFF ; //SSI_RXTO + SSI_RXOR - SSI_TXFF - SSI_RXFF;
 
-		if(hnd->cmd & FLAG_WRITE)
+		if(1)
 		{
-			if((((SPI_DRIVER_MODE *)hnd->mode.as_voidptr)->cr0_reg & SSI_CR0_DSS_M) < 8 )
+			//no DMA
+			if(hnd->cmd & FLAG_WRITE)
 			{
-				//then try to send up to 8 bytes (TX FIFO may have more space, but we do not want to overrun the RX FIFO)
-				while(hnd->len && (drv_data->buffered < 8))
-				{
-					drv_info->hw_base->DR = *hnd->src.as_byteptr++;
-					//			TRACELN("que: %x", temp);
-					hnd->len--;
-					drv_data->buffered++;
-				}
-			}
-			else
+				drv_info->hw_base->SPI_DR = *hnd->src.as_byteptr++;
+			} else
 			{
-				//then try to send up to 8 short (TX FIFO may have more space, but we do not want to overrun the RX FIFO)
-				while(hnd->len && (drv_data->buffered < 8))
-				{
-					drv_info->hw_base->DR = *hnd->src.as_shortptr++;
-					//			TRACELN("que: %x", temp);
-					hnd->len--;
-					drv_data->buffered++;
-				}
-			}
-		} else
-		{
-			while(hnd->len && (drv_data->buffered < 8))
-			{
-				drv_info->hw_base->DR = 0xFFFF;
-	//			TRACELN("que: %x", temp);
-				hnd->len--;
-				drv_data->buffered++;
+				drv_info->hw_base->SPI_DR = 0xFF;
 			}
 		}
 
 	} else
 	{
+		if(!drv_data->locker)
+			SPI_END_TRANSACTION((SPI_DRIVER_MODE *)hnd->mode.as_voidptr);
+
 		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
 	}
-*/
 }
 
 //*----------------------------------------------------------------------------
@@ -216,5 +199,109 @@ void SPI_DSR(SPI_DRIVER_INFO* drv_info, HANDLE hnd)
 //*----------------------------------------------------------------------------
 void SPI_ISR(SPI_DRIVER_INFO* drv_info)
 {
+	SPI_TypeDef* pSPI = drv_info->hw_base;
+    SPI_DRIVER_DATA* drv_data ;
+	unsigned int status, cr1;
 
+	cr1 = pSPI->SPI_CR1;
+	status = pSPI->SPI_SR;
+	drv_data = drv_info->drv_data;
+
+	if(status & SPI_SR_OVR)
+	{
+		//this should never happen but just in case...
+		// Clearing the OVR bit is done by a read operation on the SPI_DR register
+		// followed by a read access to the SPI_SR register
+		pSPI->SPI_DR;
+		status |= pSPI->SPI_SR;
+	}
+
+	if(status & SPI_SR_MODF)
+	{
+//		Use the following software sequence to clear the MODF bit:
+//		1. Make a read or write access to the SPI_SR register while the MODF bit is set.
+//		2. Then write to the SPI_CR1 register.
+		pSPI->SPI_CR1 = cr1;
+	}
+
+
+	if(status & SPI_SR_RXNE)
+	{
+		HANDLE hnd;
+
+		status = pSPI->SPI_DR;
+		hnd = drv_data->pending;
+		if(hnd)
+		{
+			if(hnd->cmd & FLAG_READ)
+			{
+				*hnd->dst.as_charptr++ = status;
+			}
+
+			if(--hnd->len)
+			{
+				// send next byte..
+				if(hnd->cmd & FLAG_WRITE)
+				{
+					pSPI->SPI_DR = *hnd->src.as_byteptr++;
+				} else
+				{
+					pSPI->SPI_DR = 0xFF;
+				}
+			} else
+			{
+				//done
+				if(!drv_data->locker)
+				{
+					SPI_END_TRANSACTION((SPI_DRIVER_MODE *)hnd->mode.as_voidptr);
+				}
+
+				drv_data->pending = hnd->next;
+				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+
+				hnd = drv_data->pending;
+				if( !hnd )
+				{
+					// no pending try with waiting...
+					hnd = drv_data->waiting;
+
+					if(drv_data->locker)
+					{
+						//search for the same client...
+						while(hnd)
+						{
+							if(hnd->client.task == drv_data->locker)
+								break;
+							hnd = hnd->next;
+						}
+					}
+
+					if( hnd )
+					{
+						// make it pending
+						hnd->list_remove(drv_data->waiting);
+						drv_data->pending = hnd;
+						hnd->next = NULL;
+					}
+				}
+				if(hnd)
+				{
+					if(!drv_data->locker)
+					{
+						SPI_START_TRANSACTION(pSPI, (SPI_DRIVER_MODE *)hnd->mode.as_voidptr);
+						if( hnd->cmd & FLAG_LOCK)
+							drv_data->locker = hnd->client.task;
+					}
+					//then try to send up to 8 bytes (TX FIFO may have more space, but we do not want to overrun the RX FIFO)
+					if(hnd->cmd & FLAG_WRITE)
+					{
+						pSPI->SPI_DR = *hnd->src.as_byteptr++;
+					} else
+					{
+						pSPI->SPI_DR = 0xFFFF;
+					}
+				}
+			}
+		}
+	}
 }
