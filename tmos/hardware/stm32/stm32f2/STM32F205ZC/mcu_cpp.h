@@ -44,6 +44,9 @@
 #define UART4       CAST(USART_TypeDef  , UART4_BASE) 	//!< UART4
 #define UART5       CAST(USART_TypeDef  , UART5_BASE) 	//!< UART5
 #define USART6      CAST(USART_TypeDef  , USART6_BASE)	//!< USART6
+#define SPI1        CAST(SPI_TypeDef 	, SPI1_BASE)	//!< SPI 1
+#define SPI2        CAST(SPI_TypeDef 	, SPI2_BASE)	//!< SPI 2
+#define SPI3        CAST(SPI_TypeDef 	, SPI3_BASE)	//!< SPI 3
 
 /** @} */
 
