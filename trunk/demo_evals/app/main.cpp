@@ -90,6 +90,7 @@ void mem_dma_thread(void)
 	memclr(dst, sizeof(dst));
 	if(hnd.tsk_open(test_dma_mode.dma_index, &test_dma_mode))
 	{
+		// normal operation (memcopy)
 		res = hnd.tsk_read_write(dst, "test", 4);
 		TRACELN("DMA TEST res=%u", res);
 	}
@@ -176,6 +177,11 @@ void button_thread(void)
 }
 TASK_DECLARE_STATIC(button_task, "LEDT", button_thread, 5, 50+TRACE_SIZE);
 
+#ifndef TEST_UART
+#define TEST_UART 0
+#endif
+
+#if TEST_UART
 void uart_thread(void)
 {
 	CHandle uart_hnd;
@@ -222,6 +228,7 @@ void uart_thread(void)
 	}
 }
 TASK_DECLARE_STATIC(uart_task, "UART", uart_thread, 5, 100+TRACE_SIZE);
+#endif
 
 
 volatile unsigned int cpu_usage;
@@ -262,7 +269,9 @@ int main(void)
 	//start other tasks
     usr_task_init_static(&led_task_desc, true);
     usr_task_init_static(&button_task_desc, true);
+#if TEST_UART
     usr_task_init_static(&uart_task_desc, true);
+#endif
 #if TEST_TASK_SWITCH_SPEED
     usr_task_init_static(&high_task_desc, true);
     usr_task_init_static(&low_task_desc, true);
