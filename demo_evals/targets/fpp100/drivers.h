@@ -37,7 +37,7 @@ extern "C" char __BUILD_VERSION;
 #define DRV_PRIORITY_EXTI4		0x04
 #define DRV_PRIORITY_EXTI5		0x04
 #define DRV_PRIORITY_EXTI10		0x04
-#define DRV_PRIORITY_SPI0		0x04
+#define DRV_PRIORITY_SPI1		0x04
 #define DRV_PRIORITY_USB		0x04
 #define DRV_PRIORITY_WDT		0x05
 #define DRV_PRIORITY_DEFAULT	0x06
@@ -87,9 +87,9 @@ extern const USART_DRIVER_MODE uart_default_mode;
 #define PIN_TDI			(PD_PA15 | PD_AF)										//!<
 
 // Port B
-#define PIN_LCD_CS0		(PD_PB0  | PD_OUT)										//!< lcd
-#define PIN_SDIO_CS		(PD_PB1  | PD_OUT)										//!< sdio
-#define PIN_PB2 		(PD_PB2  | PD_IN)										//!<
+#define PIN_LCD_CS0		(PD_PB0  | PD_OUT | PD_ACTIVE_LOW)						//!< lcd
+#define PIN_LCD_CS1		(PD_PB1  | PD_OUT | PD_ACTIVE_LOW)						//!< lcd
+#define PIN_SDIO_CS		(PD_PB2  | PD_OUT)										//!< sdio
 #define PIN_TDO			(PD_PB3  | PD_AF)										//!<
 #define PIN_IO_CS		(PD_PB4  | PD_OUT)										//!< io
 #define PIN_SPI1_MOSI	(PD_PB5  | PD_AF_SPI1)									//!< spi 1
@@ -202,12 +202,27 @@ extern const USART_DRIVER_MODE uart_default_mode;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #include <dma_drv.h>
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 SPI DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#include <spi_drv.h>
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 GUI DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#include <gui_drv.h>
+
+extern const PIN_DESC lcdpins[];
+extern const SPI_DRIVER_MODE lcd_mode_stru;
+
+
+
 
 extern   signed char const DRV_RESET_FIRST_TABLE[];
 extern "C" char* const DRV_TABLE[INALID_DRV_INDX+1];
 
 
-#define TEST_MEM2MEM_DMA 1
+#define TEST_MEM2MEM_DMA 0
 
 
 #endif /* DRIVERS_H_ */
