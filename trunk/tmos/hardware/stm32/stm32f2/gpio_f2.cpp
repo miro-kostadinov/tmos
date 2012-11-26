@@ -49,6 +49,11 @@ void PIO_Cfg(PIN_DESC cfg)
 					tmpreg |= GPIO_AFR_AFRy_Set(pos>>1, PD_MUX_Get(cfg));
 				} while (locked_set_reg(&gpio_port->GPIO_AFR[pos >> 4], tmpreg));
 			}
+			/* set default pin level*/
+			if(mode == PD_MODE_Get(PD_MODE_OUTPUT))
+			{
+				gpio_port->GPIO_BSRR = (1<<(pos>>1)) << ((cfg & PD_ACTIVE_HIGH)?16:0);
+			}
 
 			/* Change mode */
 			do
@@ -244,7 +249,7 @@ void PIO_CfgOutput1(PIN_DESC pins)
 {
 	if(! (pins & PD_OSPEED_Msk))
 		pins |= PD_OSPEED_2MHz;
-	PIO_Cfg((pins & ~PD_MODE_Msk) | PD_MODE_OUTPUT | PD_ACTIVE_HIGH);
+	PIO_Cfg((pins & ~(PD_MODE_Msk | PD_ACTIVE_HIGH)) | PD_MODE_OUTPUT);
 }
 
 
@@ -256,7 +261,7 @@ void PIO_CfgOutput0(PIN_DESC pins)
 {
 	if(! (pins & PD_OSPEED_Msk))
 		pins |= PD_OSPEED_2MHz;
-	PIO_Cfg((pins & ~(PD_MODE_Msk | PD_ACTIVE_HIGH)) | PD_MODE_OUTPUT);
+	PIO_Cfg((pins & ~PD_MODE_Msk) | PD_MODE_OUTPUT | PD_ACTIVE_HIGH);
 }
 
 /**
