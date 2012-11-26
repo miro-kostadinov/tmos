@@ -59,12 +59,15 @@ typedef struct
 
 #define  SPI_CR1_SPE            0x0040 //!< SPI Enable
 #define  SPI_CR1_LSBFIRST       0x0080 //!< Frame Format
+#define  SPI_CR1_MSBFIRST		0x0000 //!< Frame Format
 #define  SPI_CR1_SSI            0x0100 //!< Internal slave select
 #define  SPI_CR1_SSM            0x0200 //!< Software slave management
 #define  SPI_CR1_RXONLY         0x0400 //!< Receive only
 
 #if STM32_SPI_TYPE == 124
 #define  SPI_CR1_DFF            0x0800 //!< Data Frame Format
+#define  SPI_CR1_DFF_8bit       0x0000 //!<  8-bit data frame format
+#define  SPI_CR1_DFF_16bit      0x0800 //!<  8-bit data frame format
 #else
 #define  SPI_CR1_CRCL           0x0800 //!< CRC Length
 #endif
@@ -79,10 +82,12 @@ typedef struct
 #define  SPI_CR2_RXDMAEN        0x01   //!< Rx Buffer DMA Enable
 #define  SPI_CR2_TXDMAEN        0x02   //!< Tx Buffer DMA Enable
 #define  SPI_CR2_SSOE           0x04   //!< SS Output Enable
+#define  SPI_CR2_FRF            0x0010 //!< Frame Format Enable
+#define  SPI_CR2_FRF_MOTO       0x0000 //!<  SPI Motorola mode
+#define  SPI_CR2_FRF_TI         0x0010 //!<  SPI TI mode
 
 #if STM32_SPI_TYPE == 03
 #define  SPI_CR2_NSSP           0x0008 //!< NSS pulse management Enable
-#define  SPI_CR2_FRF            0x0010 //!< Frame Format Enable
 #endif
 
 #define  SPI_CR2_ERRIE          0x20   //!< Error Interrupt Enable
