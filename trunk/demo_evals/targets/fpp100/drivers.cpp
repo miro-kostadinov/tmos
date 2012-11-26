@@ -7,7 +7,6 @@
 #include <tmos.h>
 #include <drivers.h>
 #include <systick_drv.h>
-#include <dma_drv.h>
 
 const char restart_on_exception =0;
 
@@ -286,13 +285,80 @@ const USART_DRIVER_INFO uart1_driver =
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// 		 SPIO DRIVER
+// 		 SPI 1 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SPI_DRIVER_DATA spi1_drv_data;
+const SPI_DRIVER_INFO spi1_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)SPI_ISR,
+			(DRV_DCR)SPI_DCR,
+			(DRV_DSR)SPI_DSR,
+			SPI1_IRQn,
+			DRV_PRIORITY_SPI1,
+			ID_PERIPH_SPI1
+		},
+		SPI1,
+		&spi1_drv_data,
+		{
+			PIN_SPI1_SCK,
+			PIN_SPI1_MISO,
+			PIN_SPI1_MOSI,
+			0
+		}
+};
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 USB DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 GUI DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+const PIN_DESC lcdpins[] =
+{
+	PIN_LCD_BL,						// BKLT_PIN_INDX
+	PIN_LCD_RST,					// RST_PIN_INDX
+	PIN_SPI1_MISO,					// A9_PIN_INDX
+	0
+//	PD_PA5 | PD_OUT,				// SCL_PIN_INDX
+//	PD_PB5 | PD_OUT | PD_PULL_UP 	//SDA_PIN_INDX
+};
+
+const SPI_DRIVER_MODE lcd_mode_stru =
+{
+	PIN_LCD_CS0 | PIN_LCD_CS1,
+	// SPI_CR1 register value
+	SPI_CR1_DFF_8bit | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSBFIRST |
+	SPI_CR1_BR_DIV32 | SPI_CR1_MSTR | SPI_CR1_CPHA | SPI_CR1_CPOL,
+	// SPI_CR2 register value (FRF and SSOE only)
+	SPI_CR2_FRF_MOTO
+};
+
+
+
+GUI_DRIVER_DATA gui_drv_data;
+
+GUI_DRIVER_INFO gui_driver =
+{
+	{
+		DRIVER_INFO_STUB,
+		DEFAULT_DRIVER_ISR,
+		(DRV_DCR)GUI_DCR,
+		(DRV_DSR)GUI_DSR,
+		GUI_DRV_INDX,
+		DRV_PRIORITY_DEFAULT,
+		ID_NO_PERIPH
+	},
+	&gui_drv_data,
+	{
+			NULL // lcd_module will be set from AppInit()
+	}
+};
 
 
 extern signed char const DRV_RESET_FIRST_TABLE[] =
@@ -343,7 +409,7 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&DefaultDriver, 	/*!< 32 I2C1 Error Interrupt                                              */
     1+ (char * const)&DefaultDriver, 	/*!< 33 I2C2 Event Interrupt                                              */
     1+ (char * const)&DefaultDriver, 	/*!< 34 I2C2 Error Interrupt                                              */
-    1+ (char * const)&DefaultDriver, 	/*!< 35 SPI1 global Interrupt                                             */
+    1+ (char * const)&spi1_driver, 		/*!< 35 SPI1 global Interrupt                                             */
     1+ (char * const)&DefaultDriver, 	/*!< 36 SPI2 global Interrupt                                             */
     1+ (char * const)&uart1_driver, 	/*!< 37 USART1 global Interrupt                                           */
     1+ (char * const)&DefaultDriver, 	/*!< 38 USART2 global Interrupt                                           */
@@ -390,7 +456,7 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&DefaultDriver, 	/*!< 79 CRYP crypto global interrupt                                      */
     1+ (char * const)&DefaultDriver, 	/*!< 80 Hash and Rng global interrupt                                     */
     1+ (char * const)&DefaultDriver, 		//81 key drv
-    1+ (char * const)&DefaultDriver, 		//82 gui drv
+    1+ (char * const)&gui_driver, 		//82 gui drv
 
 
    NULL				//null terminated list
