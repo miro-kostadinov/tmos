@@ -17,7 +17,7 @@ struct SPI_DRIVER_MODE
 {
     PIN_DESC cs_pin;		//!< chip select pin
 	uint16_t spi_cr1;		//!< SPI_CR1 register value
-	uint16_t spi_cr2;		//!< SPI_CR1 register value (FRF and SSOE only)
+	uint16_t spi_cr2;		//!< SPI_CR2 register value (FRF and SSOE only)
 };
 
 /** SPI Driver data structure **/
@@ -37,7 +37,8 @@ struct SPI_DRIVER_INFO
 	SPI_TypeDef*		hw_base;		//!< SPI peripheral
 	SPI_DRIVER_DATA* 	drv_data;		//!< driver data
 	PIN_DESC		 	spi_pins[4];	//!< zero terminated PIN_DESC list
-
+//	DMA_DRIVER_MODE		rx_dma_mode;
+//	DMA_DRIVER_MODE		tx_dma_mode;
 };
 
 void SPI_DCR(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd);
