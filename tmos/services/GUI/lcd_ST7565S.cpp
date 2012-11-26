@@ -66,25 +66,27 @@
 #define A0_PIN_INDX	2
 
 
-const unsigned char ST7565S_init[]=
+void ST7565S::lcd_command(unsigned int cmd)
 {
-		CMD_RESET,
-		CMD_BIAS1,
-		CMD_ADC_NORMAL,
-		CMD_COMMON_NORMAL,
+	//lock
+	lcd_hnd->tsk_read_locked(NULL, 0);
 
-		CMD_V5_REGULATOR(0),
-		CMD_ELECTRONIC_VOLUME, 0,
-		CMD_POWER(POWER_ALL),
-		CMD_START_LINE(0),
-		CMD_DISPLAY_ON
-};
+	// A0=0 (cmds)
+	PIO_CfgOutput0(pins[A0_PIN_INDX]);
 
+	//command
+	lcd_hnd->tsk_write_locked(&cmd, 1);
+
+	//release A0
+	PIO_Cfg(pins[A0_PIN_INDX]);
+
+	//unlock
+	lcd_hnd->tsk_read(NULL, 0);
+}
 
 void ST7565S::lcd_init(GUI_CB splash)
 
 {
-    PIO_CfgOutput0(pins[A0_PIN_INDX]);
 	LCD_MODULE::lcd_init(splash);
 
 
@@ -98,8 +100,41 @@ void ST7565S::lcd_init(GUI_CB splash)
 
 void ST7565S::lcd_reset()
 {
-   	PIO_ClrOutput(pins[A0_PIN_INDX]);
-	lcd_hnd->tsk_write(ST7565S_init, sizeof(ST7565S_init));
+	lcd_command(CMD_RESET);
+
+	// LCD bias select
+	lcd_command(CMD_BIAS2);
+	// ADC select
+	lcd_command(CMD_ADC_REVERSE);
+	// SHL select
+	lcd_command(CMD_COMMON_NORMAL);
+	// Initial display line
+	lcd_command(CMD_START_LINE(0));
+
+	// turn on voltage converter (VC=1, VR=0, VF=0)
+	lcd_command(CMD_POWER( 0x4));
+	// wait for 50% rising
+	tsk_sleep(50);
+
+	// turn on voltage regulator (VC=1, VR=1, VF=0)
+	lcd_command(CMD_POWER(0x6));
+	// wait >=50ms
+	tsk_sleep(50);
+
+	// turn on voltage follower (VC=1, VR=1, VF=1)
+	lcd_command(CMD_POWER(0x7));
+	// wait
+	tsk_sleep(10);
+
+	// set lcd operating voltage (regulator resistor, ref voltage resistor)
+	lcd_command(CMD_V5_REGULATOR(0x2));
+
+	lcd_command(CMD_ELECTRONIC_VOLUME);
+	lcd_command(0x12);
+
+	lcd_command(CMD_DISPLAY_ON);
+	lcd_command(CMD_DISPLAY_ALL_ON);
+
 }
 
 void ST7565S::draw_bitmap(unsigned int x0, unsigned int y0,
@@ -224,14 +259,30 @@ void ST7565S::update_screen()
 {
 	unsigned int cmd;
 
-	cmd = (CMD_COLUMN_ADR_LO(0)<<16) + (CMD_COLUMN_ADR_HI(0)<<8) + CMD_PAGE_ADR(frame_y0>>3);
-	lcd_hnd->tsk_write(&cmd, 3);
+	cmd = CMD_PAGE_ADR(pagemap[frame_y0 /8]) +	(CMD_COLUMN_ADR_LO(1) << 8 )+
+			(CMD_COLUMN_ADR_HI(0) << 16) + (CMD_READ_WRITE_START << 24);
 
+	//lock
+	lcd_hnd->tsk_read_locked(NULL, 0);
+
+	// A0=0
+   	PIO_CfgOutput0(pins[A0_PIN_INDX]);
+
+   	//command
+	lcd_hnd->tsk_write_locked(&cmd, 4);
+
+	// A0=1
    	PIO_SetOutput(pins[A0_PIN_INDX]);
 
-	lcd_hnd->tsk_write(disp_buf, sizeof(disp_buf));
+   	// data
+	lcd_hnd->tsk_write_locked(disp_buf, size_x);
 
-   	PIO_ClrOutput(pins[A0_PIN_INDX]);
+	//release A0
+   	PIO_Cfg(pins[A0_PIN_INDX]);
+
+	//unlock
+	lcd_hnd->tsk_read(NULL, 0);
+
 }
 
 
