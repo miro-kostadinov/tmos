@@ -16,13 +16,15 @@
 struct ST7565S: public LCD_MODULE
 {
 	unsigned int reset_timeout;
-	unsigned int disp_buf[132];
+	unsigned char disp_buf[132];
 
 	ST7565S(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p) :
 		LCD_MODULE(x, y, hnd, p), reset_timeout(0)
 	{
 	}
 	;
+
+	void lcd_command(unsigned int cmd);
 
 	//virtual functions
 	void lcd_init(GUI_CB splash);
