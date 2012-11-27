@@ -100,7 +100,7 @@ void ST7565S::lcd_init(GUI_CB splash)
 
 void ST7565S::lcd_reset()
 {
-//	lcd_command(CMD_RESET);
+	lcd_command(CMD_RESET);
 
 	// LCD bias select
 	lcd_command(CMD_BIAS2);
