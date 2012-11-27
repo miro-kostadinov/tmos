@@ -319,22 +319,38 @@ const SPI_DRIVER_INFO spi1_driver =
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-const PIN_DESC lcdpins[] =
+const PIN_DESC lcd1pins[] =
 {
 	PIN_LCD_BL,						// BKLT_PIN_INDX
 	PIN_LCD_RST,					// RST_PIN_INDX
 	PIN_SPI1_MISO,					// A9_PIN_INDX
 	0
-//	PD_PA5 | PD_OUT,				// SCL_PIN_INDX
-//	PD_PB5 | PD_OUT | PD_PULL_UP 	//SDA_PIN_INDX
 };
 
-const SPI_DRIVER_MODE lcd_mode_stru =
+const PIN_DESC lcd2pins[] =
 {
-	PIN_LCD_CS0 | PIN_LCD_CS1,
+	PIN_LCD_BL,						// BKLT_PIN_INDX
+	PIN_LCD_CS1,					// fake reset (lcd1 will reset)
+	PIN_SPI1_MISO,					// A9_PIN_INDX
+	0
+};
+
+const SPI_DRIVER_MODE lcd1_mode_stru =
+{
+	PIN_LCD_CS0 ,
 	// SPI_CR1 register value
 	SPI_CR1_DFF_8bit | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSBFIRST |
-	SPI_CR1_BR_DIV32 | SPI_CR1_MSTR | SPI_CR1_CPHA | SPI_CR1_CPOL,
+	SPI_CR1_BR_DIV256 | SPI_CR1_MSTR | SPI_CR1_CPHA | SPI_CR1_CPOL,
+	// SPI_CR2 register value (FRF and SSOE only)
+	SPI_CR2_FRF_MOTO
+};
+
+const SPI_DRIVER_MODE lcd2_mode_stru =
+{
+	PIN_LCD_CS1,
+	// SPI_CR1 register value
+	SPI_CR1_DFF_8bit | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSBFIRST |
+	SPI_CR1_BR_DIV256 | SPI_CR1_MSTR | SPI_CR1_CPHA | SPI_CR1_CPOL,
 	// SPI_CR2 register value (FRF and SSOE only)
 	SPI_CR2_FRF_MOTO
 };
@@ -356,7 +372,8 @@ GUI_DRIVER_INFO gui_driver =
 	},
 	&gui_drv_data,
 	{
-			NULL // lcd_module will be set from AppInit()
+			NULL, // lcd_module will be set from AppInit()
+			NULL
 	}
 };
 

@@ -212,8 +212,10 @@ extern const USART_DRIVER_MODE uart_default_mode;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #include <gui_drv.h>
 
-extern const PIN_DESC lcdpins[];
-extern const SPI_DRIVER_MODE lcd_mode_stru;
+extern const PIN_DESC lcd1pins[];
+extern const PIN_DESC lcd2pins[];
+extern const SPI_DRIVER_MODE lcd1_mode_stru;
+extern const SPI_DRIVER_MODE lcd2_mode_stru;
 
 
 
