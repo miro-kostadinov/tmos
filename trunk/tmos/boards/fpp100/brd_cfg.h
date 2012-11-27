@@ -16,6 +16,11 @@
 #define KEY_UP_CODE			0x40
 #define KEY_PRESREP_MASK	0x7F
 
+#define KEY_OK				0x00
+#define KEY_DOWN			0x01
+#define KEY_UP				0x02
+#define KEY_C				0x03
+
 // GUI messages
 #define WM_USER				0x01
 #define WM_DRAW				0x02
@@ -44,5 +49,14 @@
 
 #define GUI_DISPLAYS		2
 #define GUI_DEFAULT_DISP	2
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 KEY DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define KEY_COUNT			4
+
+#define KEY_POLLING_TIME	10
+#define KEY_DEBOUNCE_TIME 	50 //30 //300
+#define KEY_REPEAT_TIME 	300//150 //1000
 
 #endif /* BRD_CFG_H_ */
