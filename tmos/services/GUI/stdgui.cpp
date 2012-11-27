@@ -420,7 +420,7 @@ WEAK RES_CODE msg_error(const char *msg, int err_code)
 //*----------------------------------------------------------------------------
 
 #define TXT_CHAR_LINES 		16
-#define TXT_SCREEN_LINES 	4
+//#define TXT_SCREEN_LINES 	4
 
 const char buttons[160] =
 {
@@ -444,8 +444,13 @@ const char buttons[160] =
 
 void DrawButtonsRow(unsigned int n, const char* btns, signed char sx, LCD_MODULE* lcd)
 {
-	unsigned char y = 34 + n * 11;
+	unsigned char y;
 	unsigned char x;
+
+	if(lcd->size_y > 32)
+		y = 34 + n * 11;
+	else
+		y = 14 + n * 11;
 
 	for(x=2; x < 100; x += 10)
 	{
@@ -456,7 +461,10 @@ void DrawButtonsRow(unsigned int n, const char* btns, signed char sx, LCD_MODULE
 	if (sx >= 0)
 	{
 		x = (sx * 10) + 1;
-		y = n * 11 + 32;
+		if(lcd->size_y > 32)
+			y = n * 11 + 32;
+		else
+			y = n * 11 + 12;
 		for (n = 0; n < 12; n++)
 			lcd->invert_hline(x, x + 8, y + n);
 	}
@@ -465,7 +473,7 @@ void DrawButtonsRow(unsigned int n, const char* btns, signed char sx, LCD_MODULE
 void DrawButtons(CGetBox* box, LCD_MODULE* lcd)
 {
 	unsigned int i;
-	unsigned int start;
+	unsigned int start, lines;
 
 	i=box->sy;
 	start = box->y;
@@ -478,7 +486,11 @@ void DrawButtons(CGetBox* box, LCD_MODULE* lcd)
 	i=box->sy;
 	start = box->y;
 	DrawButtonsRow(i, &buttons[start * 10], box->x, lcd);
-	while( i < TXT_SCREEN_LINES-1)
+	if(lcd->size_y >32)
+		lines = 4-1;
+	else
+		lines = 2-1;
+	while( i < lines)
 	{
 		start = (start + 1)%TXT_CHAR_LINES;
 		i++;
@@ -491,15 +503,30 @@ extern TASK_STRU gui_task;
 RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 {
 	const char * buf;
-	unsigned char pos;
+	unsigned char pos, offset;
     if(msg == WM_DRAW)
     {
     	LCD_MODULE* lcd = (LCD_MODULE*)param;
 
+
     	lcd->clear_screen();
     	box->flags ^= TXT_FLAGS_CURSOR;
-        lcd->set_xy_all(2, ALL_CENTER);
-        lcd->draw_text(box->title.c_str());
+    	if(lcd->size_y > 32)
+    	{
+            lcd->set_xy_all(2, ALL_CENTER);
+            lcd->draw_text(box->title.c_str());
+            offset = 13;
+
+        	//sy overflow
+			if( box->sy >= 4)
+				box->sy = 4-1;
+    	} else
+    	{
+    		offset = 0;
+			if( box->sy >= 2)
+				box->sy = 2-1;
+    	}
+
     	if(box->flags & TXT_FLAGS_CONST)
     	{
     		if(box->data.length() > 10)
@@ -520,13 +547,16 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
     	}
     	if(box->flags & TXT_FLAGS_EDIT)
     	{
-			lcd->draw_hline(0, lcd->size_x-1, 1+12);
+			lcd->draw_hline(0, lcd->size_x-1, offset);
 			if(!(box->flags & TXT_FLAGS_CONST))
 			{
-				lcd->draw_vline(1+12, 1+12+15, 0);
-				lcd->draw_vline(1+12, 1+12+15, lcd->size_x-1);
-				lcd->draw_hline(0, lcd->size_x-1, 1+12+15);
-	    		lcd->set_xy_all(lcd->size_y -23, ALL_RIGHT);
+				lcd->draw_vline(offset, offset+15, 0);
+				lcd->draw_vline(offset, offset+15, lcd->size_x-1);
+				lcd->draw_hline(0, lcd->size_x-1, offset+15);
+		    	if(lcd->size_y > 32)
+		    		lcd->set_xy_all(lcd->size_y -23, ALL_RIGHT);
+		    	else
+		    		lcd->set_xy_all(lcd->size_y -8, ALL_RIGHT);
 #ifdef KEY_C
 	    		if(box->flags & TXT_FLAGS_RES)
 	    			lcd->draw_text("CANCEL");
@@ -535,7 +565,10 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 #endif
 			}
 #ifdef KEY_OK
-    		lcd->set_xy_all(lcd->size_y -23, ALL_LEFT);
+	    	if(lcd->size_y > 32)
+	    		lcd->set_xy_all(lcd->size_y -23, ALL_LEFT);
+	    	else
+	    		lcd->set_xy_all(lcd->size_y -8, ALL_LEFT);
     		lcd->draw_text("OK");
 #endif
     	}
@@ -544,7 +577,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
     		DrawButtons(box, lcd);
     	}
 
-        lcd->set_xy_all(17, ALL_LEFT);
+        lcd->set_xy_all(offset+4, ALL_LEFT);
 		buf = box->data.c_str();
 		pos = box->pos;
     	if(buf)
@@ -559,8 +592,8 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 		if(box->flags & (TXT_FLAGS_CURSOR|TXT_FLAGS_CONST))
 		{
 			pos = 2 + pos * lcd->font->spacing;
-		   lcd->draw_hline(pos, pos + lcd->font->spacing, 1+12+15-2);
-		   lcd->draw_hline(pos, pos + lcd->font->spacing, 1+12+15-1);
+		   lcd->draw_hline(pos, pos + lcd->font->spacing, offset+15-2);
+		   lcd->draw_hline(pos, pos + lcd->font->spacing, offset+15-1);
 		}
         return (0);
     }
@@ -643,6 +676,7 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 #endif
 
 #ifdef KEY_UP
+#ifdef KEY_LEFT
 				case KEY_UP:
 					box->flags &=~TXT_FLAGS_RES;
 					if(box->flags & TXT_FLAGS_CONST)
@@ -657,9 +691,36 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 							box->sy = 0;
 					}
 					return (FLG_BUSY);
+#else
+				case KEY_UP:
+					box->flags &=~TXT_FLAGS_RES;
+					if(box->flags & TXT_FLAGS_CONST)
+						return (0);
+					if(box->flags & TXT_FLAGS_EDIT)
+						box->flags ^= TXT_FLAGS_EDIT;
+					if(box->flags & TXT_FLAGS_EDIT)
+					{
+						if(box->pos-- == 0)
+							box->pos = 0;
+						box->flags &=~TXT_FLAGS_CURSOR;
+					}
+					else
+					{
+						if(box->x-- == 0)
+						{
+							box->x=9;
+							if(box->y-- == 0 )
+								box->y = TXT_CHAR_LINES-1;
+							if(box->sy-- == 0 )
+								box->sy = 0;
+						}
+					}
+					return (FLG_BUSY);
+#endif
 #endif
 
 #ifdef KEY_DOWN
+#ifdef KEY_RIGHT
 				case KEY_DOWN:
 					box->flags &=~TXT_FLAGS_RES;
 					if(box->flags & TXT_FLAGS_CONST)
@@ -670,10 +731,37 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 					{
 						if(++box->y >= TXT_CHAR_LINES)
 							box->y = 0;
-						if(++box->sy >= TXT_SCREEN_LINES)
-							box->sy = TXT_SCREEN_LINES-1;
+
+						++box->sy; //overflow will be checked during draw
 					}
 					return (FLG_BUSY);
+#else
+				case KEY_DOWN:
+					box->flags &=~TXT_FLAGS_RES;
+					if(box->flags & TXT_FLAGS_CONST)
+						return (0);
+					if(box->flags & TXT_FLAGS_EDIT)
+						box->flags ^= TXT_FLAGS_EDIT;
+					if(box->flags & TXT_FLAGS_EDIT)
+					{
+						if(++box->pos > box->data.length())
+							box->pos = box->data.length();
+						box->flags &=~TXT_FLAGS_CURSOR;
+					}
+					else
+					{
+						if(++box->x > 9)
+						{
+							box->x=0;
+							if(++box->y >= TXT_CHAR_LINES)
+								box->y = 0;
+
+							++box->sy; //overflow will be checked during draw
+						}
+					}
+					return (FLG_BUSY);
+
+#endif
 #endif
 			}
             return (FLAG_WRITE);
