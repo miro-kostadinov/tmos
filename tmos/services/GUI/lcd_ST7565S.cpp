@@ -100,7 +100,7 @@ void ST7565S::lcd_init(GUI_CB splash)
 
 void ST7565S::lcd_reset()
 {
-	lcd_command(CMD_RESET);
+//	lcd_command(CMD_RESET);
 
 	// LCD bias select
 	lcd_command(CMD_BIAS2);
@@ -121,19 +121,19 @@ void ST7565S::lcd_reset()
 	lcd_command(CMD_START_LINE(0));
 
 	// turn on voltage converter (VC=1, VR=0, VF=0)
-	lcd_command(CMD_POWER( 0x4));
+//	lcd_command(CMD_POWER( 0x4));
 	// wait for 50% rising
-	tsk_sleep(50);
+//	tsk_sleep(50);
 
 	// turn on voltage regulator (VC=1, VR=1, VF=0)
-	lcd_command(CMD_POWER(0x6));
+//	lcd_command(CMD_POWER(0x6));
 	// wait >=50ms
-	tsk_sleep(50);
+//	tsk_sleep(50);
 
 	// turn on voltage follower (VC=1, VR=1, VF=1)
 	lcd_command(CMD_POWER(0x7));
 	// wait
-	tsk_sleep(10);
+//	tsk_sleep(10);
 
 	// set lcd operating voltage (regulator resistor, ref voltage resistor)
 	lcd_command(CMD_V5_REGULATOR(lcd_mode & 0x7)); //ST7565S_RaRb_RATIO
