@@ -9,6 +9,7 @@
 #define GPIO_DRV_H_
 
 #include <gpio_lm3s.h>
+#include <brd_cpp.h>
 
 /** GPIO Driver data structure **/
 struct GPIO_DRIVER_DATA
@@ -36,5 +37,5 @@ void dcr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, unsigned int reason, HANDLE hn
 void dsr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, HANDLE hnd);
 void isr_GPIO_driver(GPIO_DRIVER_INFO * drv_info );
 
-
+#define GPIO_IRQn GPIOPortA_IRQn
 #endif /* GPIO_DRV_H_ */
