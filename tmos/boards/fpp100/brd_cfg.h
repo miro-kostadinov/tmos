@@ -42,5 +42,7 @@
 #define USE_EXCEPTION_RECORD 1
 #define USE_MEMORY_TRACKING	1
 
+#define GUI_DISPLAYS		2
+#define GUI_DEFAULT_DISP	2
 
 #endif /* BRD_CFG_H_ */
