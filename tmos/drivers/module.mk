@@ -17,6 +17,8 @@ ifeq ($(CFG_CORE), cortex-m3)
 local_cpp_src-y	+= systick_drv.cpp
 local_h_src-y 	+= systick_drv.h
 endif
+local_cpp_src-$(USE_GUI) 	+= key_drv.cpp 
+local_h_src-$(USE_GUI) 		+= key_drv.h 
 
 
 #updating global variables
