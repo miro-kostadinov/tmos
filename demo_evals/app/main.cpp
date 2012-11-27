@@ -130,8 +130,13 @@ void led_thread(void)
 }
 TASK_DECLARE_STATIC(led_task, "LEDT", led_thread, 0, 20+TRACE_SIZE);
 
+
+#ifndef TEST_BUTTON
+#define TEST_BUTTON 0
+#endif
 #define DEBOUNCE_TIME 40		//40 ms debounce
 
+#if TEST_BUTTON
 void button_thread(void)
 {
 	/* We always need a handle to work with drivers	 */
@@ -176,6 +181,7 @@ void button_thread(void)
 	}
 }
 TASK_DECLARE_STATIC(button_task, "LEDT", button_thread, 5, 50+TRACE_SIZE);
+#endif
 
 #ifndef TEST_UART
 #define TEST_UART 0
@@ -268,7 +274,9 @@ int main(void)
 
 	//start other tasks
     usr_task_init_static(&led_task_desc, true);
+#if TEST_BUTTON
     usr_task_init_static(&button_task_desc, true);
+#endif
 #if TEST_UART
     usr_task_init_static(&uart_task_desc, true);
 #endif
