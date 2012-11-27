@@ -65,16 +65,101 @@ static void SPI_END_TRANSACTION(SPI_DRIVER_MODE* mode)
 	PIO_Deassert(mode->cs_pin);
 }
 
+static void START_HND(SPI_DRIVER_INFO* drv_info, SPI_DRIVER_DATA* drv_data, HANDLE hnd)
+{
+#if USE_SPI_DMA_DRIVER
+	if(drv_info->rx_dma_mode.dma_index < INALID_DRV_INDX)
+	{
+		void *ptr;
+
+		if(hnd->cmd & FLAG_READ)
+		{
+			ptr = hnd->dst.as_voidptr;
+		} else
+		{
+			ptr = NULL;
+		}
+		drv_data->rx_dma_hnd.tsk_read(ptr, hnd->len);
+
+		if(hnd->cmd & FLAG_WRITE)
+		{
+			ptr = hnd->src.as_voidptr;
+		} else
+		{
+			ptr = NULL;
+		}
+		drv_data->tx_dma_hnd.tsk_read(ptr, hnd->len);
+
+	} else
+#endif
+	{
+		//no DMA
+		if(hnd->cmd & FLAG_WRITE)
+		{
+			drv_info->hw_base->SPI_DR = *hnd->src.as_byteptr++;
+		} else
+		{
+			drv_info->hw_base->SPI_DR = 0xFF;
+		}
+	}
+}
+
+static void SPI_RESUME(SPI_DRIVER_INFO* drv_info, SPI_DRIVER_DATA* drv_data)
+{
+	HANDLE hnd;
+
+	hnd = drv_data->pending;
+	if( !hnd )
+	{
+		// no pending try with waiting...
+		hnd = drv_data->waiting;
+
+		if(drv_data->locker)
+		{
+			//search for the same client...
+			while(hnd)
+			{
+				if(hnd->client.task == drv_data->locker)
+					break;
+				hnd = hnd->next;
+			}
+		}
+
+		if( hnd )
+		{
+			// make it pending
+			hnd->list_remove(drv_data->waiting);
+			drv_data->pending = hnd;
+			hnd->next = NULL;
+		}
+	}
+	if(hnd)
+	{
+		if(!drv_data->locker)
+		{
+			SPI_START_TRANSACTION(drv_info->hw_base, (SPI_DRIVER_MODE *)hnd->mode.as_voidptr);
+			if( hnd->cmd & FLAG_LOCK)
+				drv_data->locker = hnd->client.task;
+		}
+		START_HND(drv_info, drv_data, hnd);
+	}
+}
 //*----------------------------------------------------------------------------
 //*			DCR function
 //*----------------------------------------------------------------------------
 void SPI_DCR(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 {
+    SPI_DRIVER_DATA* drv_data = drv_info->drv_data;
+
 	switch(reason)
     {
         case DCR_RESET:
 			RCCPeripheralReset(drv_info->info.peripheral_indx);
         	RCCPeripheralDisable(drv_info->info.peripheral_indx);
+#if USE_SPI_DMA_DRIVER
+        	drv_data->rx_dma_hnd.client.drv_index = drv_info->info.drv_index;
+        	drv_data->tx_dma_hnd.client.drv_index = drv_info->info.drv_index;
+#endif
         	break;
 
         case DCR_OPEN:
@@ -83,8 +168,19 @@ void SPI_DCR(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
         	mode = (SPI_DRIVER_MODE *)hnd->mode.as_voidptr;
         	if(mode)
         	{
-        		if(!drv_info->drv_data->cnt++)
+        		if(!drv_data->cnt)
         		{
+#if USE_SPI_DMA_DRIVER
+        			if(!drv_data->rx_dma_hnd.drv_open(
+        					drv_info->rx_dma_mode.dma_index,
+        					&drv_info->rx_dma_mode))
+        				break;
+        			if(!drv_data->tx_dma_hnd.drv_open(
+        					drv_info->tx_dma_mode.dma_index,
+        					&drv_info->tx_dma_mode))
+        				break;
+#endif
+        			drv_data->cnt++;
         			SPI_ENABLE(drv_info);
         		}
         		PIO_Cfg(mode->cs_pin);
@@ -96,23 +192,52 @@ void SPI_DCR(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 			break;
 
 		case DCR_CLOSE:
-			if(!--drv_info->drv_data->cnt)
+			if(!--drv_data->cnt)
+			{
 				RCCPeripheralDisable(drv_info->info.peripheral_indx);
+#if USE_SPI_DMA_DRIVER
+				drv_data->rx_dma_hnd.close();
+				drv_data->tx_dma_hnd.close();
+#endif
+			}
         	break;
+
+		case DCR_SIGNAL:
+			//signal rx/dma complete
+			if(hnd == &drv_data->rx_dma_hnd)
+			{
+				//process rx dma signal only (data shifted out)
+
+				hnd = drv_data->pending;
+				if(hnd)
+				{
+					//pending is done
+					if(!drv_data->locker)
+					{
+						SPI_END_TRANSACTION((SPI_DRIVER_MODE *)hnd->mode.as_voidptr);
+					}
+					drv_data->pending = hnd->next;
+					svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+
+					//resume waiting
+					SPI_RESUME(drv_info, drv_data);
+				}
+			}
+			break;
 
 
         case DCR_PARAMS:
         	//send handle's client to release the lock
-        	if(hnd == (HANDLE)drv_info->drv_data->locker)
+        	if(hnd == (HANDLE)drv_data->locker)
         	{
         		//unlock
-        		drv_info->drv_data->locker = NULL;
+        		drv_data->locker = NULL;
 
         		//start waiting
-        		hnd = drv_info->drv_data->waiting;
+        		hnd = drv_data->waiting;
         		if(hnd)
         		{
-        			drv_info->drv_data->waiting = hnd->next;
+        			drv_data->waiting = hnd->next;
         			SPI_DSR(drv_info, hnd);
         		}
         	}
@@ -173,17 +298,7 @@ void SPI_DSR(SPI_DRIVER_INFO* drv_info, HANDLE hnd)
 		hnd->res  = RES_BUSY;
 		drv_data->pending = hnd;
 
-		if(1)
-		{
-			//no DMA
-			if(hnd->cmd & FLAG_WRITE)
-			{
-				drv_info->hw_base->SPI_DR = *hnd->src.as_byteptr++;
-			} else
-			{
-				drv_info->hw_base->SPI_DR = 0xFF;
-			}
-		}
+		START_HND(drv_info, drv_data, hnd);
 
 	} else
 	{
@@ -259,48 +374,7 @@ void SPI_ISR(SPI_DRIVER_INFO* drv_info)
 				drv_data->pending = hnd->next;
 				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 
-				hnd = drv_data->pending;
-				if( !hnd )
-				{
-					// no pending try with waiting...
-					hnd = drv_data->waiting;
-
-					if(drv_data->locker)
-					{
-						//search for the same client...
-						while(hnd)
-						{
-							if(hnd->client.task == drv_data->locker)
-								break;
-							hnd = hnd->next;
-						}
-					}
-
-					if( hnd )
-					{
-						// make it pending
-						hnd->list_remove(drv_data->waiting);
-						drv_data->pending = hnd;
-						hnd->next = NULL;
-					}
-				}
-				if(hnd)
-				{
-					if(!drv_data->locker)
-					{
-						SPI_START_TRANSACTION(pSPI, (SPI_DRIVER_MODE *)hnd->mode.as_voidptr);
-						if( hnd->cmd & FLAG_LOCK)
-							drv_data->locker = hnd->client.task;
-					}
-					//then try to send up to 8 bytes (TX FIFO may have more space, but we do not want to overrun the RX FIFO)
-					if(hnd->cmd & FLAG_WRITE)
-					{
-						pSPI->SPI_DR = *hnd->src.as_byteptr++;
-					} else
-					{
-						pSPI->SPI_DR = 0xFFFF;
-					}
-				}
+				SPI_RESUME(drv_info, drv_data);
 			}
 		}
 	}
