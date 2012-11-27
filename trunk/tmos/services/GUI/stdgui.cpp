@@ -510,7 +510,8 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
 
 
     	lcd->clear_screen();
-    	box->flags ^= TXT_FLAGS_CURSOR;
+    	if(lcd->frame_y0 == 0)
+    		box->flags ^= TXT_FLAGS_CURSOR;
     	if(lcd->size_y > 32)
     	{
             lcd->set_xy_all(2, ALL_CENTER);
