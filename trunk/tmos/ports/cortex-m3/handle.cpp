@@ -73,6 +73,18 @@ void CHandle::close()
 
 				drv_index = INALID_DRV_INDX;
 				res = RES_CLOSED;
+			} else
+			{
+				if( client.drv_index < INALID_DRV_INDX )
+				{
+					//this is a driver handle...
+
+					svc_drv_icontrol(drv_index, DCR_CLOSE, this);
+
+					drv_index = INALID_DRV_INDX;
+					res = RES_CLOSED;
+				}
+
 			}
 		}
 	}
@@ -123,6 +135,59 @@ bool CHandle::tsk_open(DRIVER_INDEX index, const void * m)
 	} else
 		TRACELN_ERROR("Memory err INDEX:%u", index);
 	return (false);
+}
+
+bool CHandle::drv_open(DRIVER_INDEX index, const void * m)
+{
+	if (this)
+	{
+		error = 0;
+		if (!(res & FLG_CLOSED))
+		{
+			TRACELN_ERROR("Handle is already open:%x", this);
+			close();
+		}
+		drv_index = index;
+		mode.as_voidptr = (void*) m;
+
+		signal = DCR_SIGNAL;
+		res = RES_CLOSED;
+		svc_drv_icontrol(index, DCR_OPEN, this);
+
+		if (res == RES_OK)
+		{
+			return (true);
+		}
+		TRACELN_ERROR("Handle open err INDEX:%u", drv_index);
+		drv_index = INALID_DRV_INDX;
+	}
+	else
+		TRACELN_ERROR("Memory err INDEX:%u", index);
+	return (false);
+}
+
+void CHandle::drv_read(void * buf, unsigned int l)
+{
+	if(res < FLG_BUSY)
+	{
+		//handle is idle and open
+		len = l;
+		set_res_cmd(CMD_READ);
+		dst.as_voidptr = buf;
+		svc_drv_service(this);
+	}
+}
+
+void CHandle::drv_write(const void * buf, unsigned int l)
+{
+	if(res < FLG_BUSY)
+	{
+		//handle is idle and open
+		len = l;
+		set_res_cmd(CMD_WRITE);
+		src.as_cvoidptr = buf;
+		svc_drv_service(this);
+	}
 }
 
 /**
