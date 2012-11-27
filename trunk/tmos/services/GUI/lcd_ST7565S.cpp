@@ -104,10 +104,19 @@ void ST7565S::lcd_reset()
 
 	// LCD bias select
 	lcd_command(CMD_BIAS2);
+
 	// ADC select
-	lcd_command(CMD_ADC_REVERSE);
+	if(lcd_mode & ST7565S_H_FLIP)
+		lcd_command(CMD_ADC_REVERSE);
+	else
+		lcd_command(CMD_ADC_NORMAL);
+
 	// SHL select
-	lcd_command(CMD_COMMON_NORMAL);
+	if(lcd_mode & ST7565S_V_FLIP)
+		lcd_command(CMD_COMMON_REVERSE);
+	else
+		lcd_command(CMD_COMMON_NORMAL);
+
 	// Initial display line
 	lcd_command(CMD_START_LINE(0));
 
@@ -127,10 +136,10 @@ void ST7565S::lcd_reset()
 	tsk_sleep(10);
 
 	// set lcd operating voltage (regulator resistor, ref voltage resistor)
-	lcd_command(CMD_V5_REGULATOR(0x2));
+	lcd_command(CMD_V5_REGULATOR(lcd_mode & 0x7)); //ST7565S_RaRb_RATIO
 
 	lcd_command(CMD_ELECTRONIC_VOLUME);
-	lcd_command(0x12);
+	lcd_command((lcd_mode >>8) & 0x3F);		//ST7565S_VOLUME
 
 	lcd_command(CMD_DISPLAY_ON);
 	lcd_command(CMD_DISPLAY_ALL_ON);

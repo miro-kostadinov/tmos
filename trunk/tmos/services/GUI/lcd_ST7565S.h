@@ -10,16 +10,22 @@
 
 #include <lcd.h>
 
-#define ST7565S_LINES 32
-#define ST7565S_COLUMNS 1	32
+/// V0 voltage regulator internal resistance ratio register value (0-7)
+#define ST7565S_RaRb_RATIO(x) (x)
+///electric volume register value (0-63)
+#define ST7565S_VOLUME(x)  ((x)<< 8)
+#define ST7565S_H_FLIP		(0x10000)	//!< Flip horizontally
+#define ST7565S_V_FLIP		(0x20000)	//!< Flip vertically
+
 
 struct ST7565S: public LCD_MODULE
 {
 	unsigned int reset_timeout;
+	unsigned int lcd_mode;
 	unsigned char disp_buf[132];
 
-	ST7565S(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p) :
-		LCD_MODULE(x, y, hnd, p), reset_timeout(0)
+	ST7565S(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p, unsigned int m):
+		LCD_MODULE(x, y, hnd, p), reset_timeout(0), lcd_mode(m)
 	{
 	}
 	;
