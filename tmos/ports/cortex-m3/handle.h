@@ -134,6 +134,9 @@ struct CHandle {
 
 	void tsk_cancel();
 	bool tsk_open(DRIVER_INDEX index, const void * m);
+	bool drv_open(DRIVER_INDEX index, const void * m);
+	void drv_read(void * buf, unsigned int l);
+	void drv_write(const void * buf, unsigned int l);
 	void tsk_safe_open(DRIVER_INDEX index, const void * m);
 	bool tsk_start_read(void * buf, unsigned int l);
 	RES_CODE tsk_read(void * buf, unsigned int l);
@@ -213,6 +216,14 @@ inline static void tsk_HND_SET_STATUS(HANDLE volatile hnd, RES_CODE volatile res
 			:
 			: "I" (usr_HND_SET_STATUS_swi), "r"(_hnd), "r"(_result)
 			: "memory");
+}
+#endif
+
+#ifdef __cplusplus
+ extern "C" {
+#endif
+void svc_drv_service(HANDLE hnd);
+#ifdef __cplusplus
 }
 #endif
 
