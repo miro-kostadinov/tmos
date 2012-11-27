@@ -208,6 +208,14 @@ extern const USART_DRIVER_MODE uart_default_mode;
 #include <spi_drv.h>
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 KEY DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+extern const unsigned char key_codes[];
+extern const unsigned int KEY_RD_PINS[];
+
+#include <key_drv.h>
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 GUI DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #include <gui_drv.h>

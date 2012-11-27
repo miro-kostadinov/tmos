@@ -9,6 +9,7 @@
 #include <drivers.h>
 #include <lcd.h>
 #include <lcd_ST7565S.h>
+#include <menus.h>
 
 extern volatile unsigned int backlight_time;
 
@@ -36,4 +37,36 @@ EXTERN_C int detect_displays(GUI_DRIVER_INFO* drv_info)
     backlight_time = 255*1024;
 
 	return (int)drv_info->lcd[0];
+}
+
+
+//*----------------------------------------------------------------------------
+//*			Main dlg/desktop
+//*----------------------------------------------------------------------------
+extern "C" RES_CODE maindlg_cb(WINDOW obj, unsigned int param, unsigned int msg)
+{
+    if(msg == WM_DRAW)
+    {
+    	LCD_MODULE* lcd = (LCD_MODULE*)param;
+
+		lcd->set_xy_all(2, ALL_CENTER);
+		lcd->draw_text("FPP100");
+		if(lcd->display == 2 || obj->displays == 1)
+		{
+			lcd->set_xy_all(lcd->size_y -10, ALL_LEFT);
+			lcd->draw_text("MENU");
+		}
+    }
+    if(msg == WM_KEY)
+    {
+        if(param == KEY_OK)
+		{
+        	if(exception_record.restart_cause)
+        		exception_record.restart_cause = 0;
+        	usr_send_signal(&menu_task, MAIN_MENU_SIG);
+			return FLAG_WRITE;
+		}
+    }
+
+    return 0;
 }

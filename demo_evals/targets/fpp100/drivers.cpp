@@ -315,6 +315,36 @@ const SPI_DRIVER_INFO spi1_driver =
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 KEY DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+const unsigned int KEY_RD_PINS[]=
+{
+	PIN_KEY0,
+	PIN_KEY1,
+	PIN_KEY2,
+	PIN_KEY3,
+	0
+};
+
+const unsigned char key_codes[] = "DUKC";
+
+KEY_DRIVER_DATA key_drv_data;
+const KEY_DRIVER_INFO key_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			DEFAULT_DRIVER_ISR,
+			(DRV_DCR)KEY_DCR,
+			(DRV_DSR)KEY_DSR,
+			KEY_DRV_INDX,
+			DRV_PRIORITY_KERNEL,
+			0
+		},
+		&key_drv_data
+};
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 GUI DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -472,7 +502,7 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&DefaultDriver, 	/*!< 78 DCMI global interrupt                                             */
     1+ (char * const)&DefaultDriver, 	/*!< 79 CRYP crypto global interrupt                                      */
     1+ (char * const)&DefaultDriver, 	/*!< 80 Hash and Rng global interrupt                                     */
-    1+ (char * const)&DefaultDriver, 		//81 key drv
+    1+ (char * const)&key_driver, 		//81 key drv
     1+ (char * const)&gui_driver, 		//82 gui drv
 
 
