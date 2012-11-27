@@ -12,6 +12,10 @@
 #include <hardware_cpp.h>
 #include <mcu_cpp.h>
 
+#ifndef USE_SPI_DMA_DRIVER
+#define USE_SPI_DMA_DRIVER 1		//Enable DMA by defaulr
+#endif
+
 /** SPI Driver mode structure **/
 struct SPI_DRIVER_MODE
 {
@@ -27,6 +31,10 @@ struct SPI_DRIVER_DATA
     HANDLE		pending;	//!< currently processed handle, or list of handles with locked access.
     Task *	 	locker;		//!< Task (or other client) which have locked the driver for multiple transfers whithin single CS
 	uint16_t 	cnt;		//!< Number of open handles
+#if USE_SPI_DMA_DRIVER
+	CHandle		rx_dma_hnd;
+	CHandle		tx_dma_hnd;
+#endif
 };
 
 
@@ -37,8 +45,10 @@ struct SPI_DRIVER_INFO
 	SPI_TypeDef*		hw_base;		//!< SPI peripheral
 	SPI_DRIVER_DATA* 	drv_data;		//!< driver data
 	PIN_DESC		 	spi_pins[4];	//!< zero terminated PIN_DESC list
-//	DMA_DRIVER_MODE		rx_dma_mode;
-//	DMA_DRIVER_MODE		tx_dma_mode;
+#if USE_SPI_DMA_DRIVER
+	DMA_DRIVER_MODE		rx_dma_mode;
+	DMA_DRIVER_MODE		tx_dma_mode;
+#endif
 };
 
 void SPI_DCR(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd);
