@@ -411,7 +411,7 @@ FUNC(	svc_HND_SET_STATUS	)
 1://driver
 				mov				r2, r0
 				ldr				r0, =DRV_TABLE
-				ldr				r0, [r3, r0]
+				ldr				r0, [r0, r3, lsl #2]
 				subs			r0, #1
                 ldr				r3, [r0, #DRV_INFO_DCR]
 				ldrb			r1, [r2, #HND_SIGNAL]
