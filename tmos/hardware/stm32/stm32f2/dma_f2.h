@@ -141,7 +141,7 @@ typedef struct
 
 /** @} */ // @defgroup DMA_regs_define
 
-#define STM32_DMA_ERRORS (DMA_ISR_TEIFx | DMA_ISR_DMEIFx | DMA_ISR_FEIFx)	//!< errors for F2
+#define STM32_DMA_ERRORS (DMA_ISR_TEIFx | DMA_ISR_DMEIFx )	//!< errors for F2 (DMA_ISR_FEIFx is fake???)
 
 #define STM32_DMA_COMPLETE (DMA_ISR_TCIFx)	//!< complete for F2
 
