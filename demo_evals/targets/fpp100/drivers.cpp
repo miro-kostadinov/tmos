@@ -252,6 +252,24 @@ const DMA_DRIVER_INFO dma2_ch0_driver =
 		0								// channel
 };
 
+DMA_CHANNEL_DATA dma2_ch5_data;
+const DMA_DRIVER_INFO dma2_ch5_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)DMA_ISR,
+			(DRV_DCR)DMA_DCR,
+			(DRV_DSR)DMA_DSR,
+			DMA2_Stream5_IRQn,
+			DRV_PRIORITY_DMA2_CH5,
+			ID_PERIPH_DMA2
+		},
+		DMA2,
+		&dma2_drv_data,
+		&dma2_ch5_data,
+		5								// channel
+};
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 UART 2 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -287,6 +305,7 @@ const USART_DRIVER_INFO uart1_driver =
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 SPI 1 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 SPI_DRIVER_DATA spi1_drv_data;
 const SPI_DRIVER_INFO spi1_driver =
 {
@@ -306,6 +325,39 @@ const SPI_DRIVER_INFO spi1_driver =
 			PIN_SPI1_MISO,
 			PIN_SPI1_MOSI,
 			0
+		},
+		{
+			// Rx dma_index
+			DMA2_Stream0_IRQn,
+			// dma_ch_cr
+			DMA_SxCR_CHSEL_3 |
+			DMA_SxCR_MBURST_burst0 |
+			DMA_SxCR_PBURST_burst0 |
+			DMA_SxCR_PL_low	|
+			DMA_SxCR_MINC |
+			DMA_SxCR_MSIZE_8bit |
+			DMA_SxCR_PSIZE_8bit |
+			DMA_SxCR_DIR_P2M,
+
+			// dma_ch_fr
+			DMA_SxFCR_FTH_full | DMA_SxFCR_DMDIS
+		},
+
+		{
+			// Tx dma_index
+			DMA2_Stream5_IRQn,
+			// dma_ch_cr
+			DMA_SxCR_CHSEL_3 |
+			DMA_SxCR_PBURST_burst0 |
+			DMA_SxCR_MBURST_burst0 |
+			DMA_SxCR_PL_low	|
+			DMA_SxCR_MINC |
+			DMA_SxCR_MSIZE_8bit |
+			DMA_SxCR_PSIZE_8bit |
+			DMA_SxCR_DIR_M2P,
+
+			// dma_ch_fr
+			DMA_SxFCR_FTH_full  | DMA_SxFCR_DMDIS
 		}
 };
 
@@ -489,7 +541,7 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&DefaultDriver, 	/*!< 65 CAN2 RX1 Interrupt                                                */
     1+ (char * const)&DefaultDriver, 	/*!< 66 CAN2 SCE Interrupt                                                */
     1+ (char * const)&DefaultDriver, 	/*!< 67 USB OTG FS global Interrupt                                       */
-    1+ (char * const)&DefaultDriver, 	/*!< 68 DMA2 Stream 5 global interrupt                                    */
+    1+ (char * const)&dma2_ch5_driver, 	/*!< 68 DMA2 Stream 5 global interrupt                                    */
     1+ (char * const)&DefaultDriver, 	/*!< 69 DMA2 Stream 6 global interrupt                                    */
     1+ (char * const)&DefaultDriver, 	/*!< 70 DMA2 Stream 7 global interrupt                                    */
     1+ (char * const)&DefaultDriver, 	/*!< 71 USART6 global interrupt                                           */
