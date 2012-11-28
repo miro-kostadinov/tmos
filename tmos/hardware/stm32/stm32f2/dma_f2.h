@@ -117,10 +117,10 @@ typedef struct
 #define DMA_SxFCR_FS_full           0x00000028 //!<  FIFO is full
 #define DMA_SxFCR_DMDIS             0x00000004 //!< Direct mode disable
 #define DMA_SxFCR_FTH               0x00000003 //!< FIFO threshold selection
-#define DMA_SxFCR_FTH_14            0x00000001 //!<  1/4 full FIFO
-#define DMA_SxFCR_FTH_12            0x00000002 //!<  1/2 full FIFO
-#define DMA_SxFCR_FTH_34            0x00000001 //!<  3/4 full FIFO
-#define DMA_SxFCR_FTH_full          0x00000002 //!   full FIFO
+#define DMA_SxFCR_FTH_14            0x00000000 //!<  1/4 full FIFO
+#define DMA_SxFCR_FTH_12            0x00000001 //!<  1/2 full FIFO
+#define DMA_SxFCR_FTH_34            0x00000002 //!<  3/4 full FIFO
+#define DMA_SxFCR_FTH_full          0x00000003 //!   full FIFO
 /** @} */
 
 /** @defgroup DMA_ISR[2]:	(dma Offset: 0x00) DMA low/high DMA_LISR/DMA_LISR interrupt status register */
