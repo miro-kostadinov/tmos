@@ -137,6 +137,7 @@ struct CHandle {
 	bool drv_open(DRIVER_INDEX index, const void * m);
 	void drv_read(void * buf, unsigned int l);
 	void drv_write(const void * buf, unsigned int l);
+	void drv_read_write(void *dst, const void *src, unsigned int l);
 	void tsk_safe_open(DRIVER_INDEX index, const void * m);
 	bool tsk_start_read(void * buf, unsigned int l);
 	RES_CODE tsk_read(void * buf, unsigned int l);
