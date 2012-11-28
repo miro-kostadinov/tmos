@@ -190,6 +190,19 @@ void CHandle::drv_write(const void * buf, unsigned int l)
 	}
 }
 
+void CHandle::drv_read_write(void *d, const void *s, unsigned int l)
+{
+	if(res < FLG_BUSY)
+	{
+		//handle is idle and open
+		len = l;
+		set_res_cmd(CMD_READ_WRITE);
+		dst.as_voidptr = d;
+		src.as_cvoidptr = s;
+		svc_drv_service(this);
+	}
+}
+
 /**
  * try to open in endless loop
  * @param index
