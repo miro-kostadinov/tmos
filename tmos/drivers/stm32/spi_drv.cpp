@@ -27,8 +27,9 @@ static void SPI_ENABLE(SPI_DRIVER_INFO* drv_info)
 }
 
 // Start a new transaction
-static void SPI_START_TRANSACTION(SPI_TypeDef* pSPI, SPI_DRIVER_MODE* mode)
+static void SPI_START_TRANSACTION(SPI_DRIVER_INFO* drv_info, SPI_DRIVER_MODE* mode)
 {
+	SPI_TypeDef* pSPI = drv_info->hw_base;
 
 	//	1. Select the BR[2:0] bits to define the serial clock baud rate (see
 	//		SPI_CR1 register).
@@ -50,9 +51,16 @@ static void SPI_START_TRANSACTION(SPI_TypeDef* pSPI, SPI_DRIVER_MODE* mode)
 	//	7. The MSTR and SPE bits must be set (they remain set only if the NSS pin is connected
 	//	  to a high-level signal).
 
-
-    pSPI->SPI_CR2 = (pSPI->SPI_CR2 & (SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN)) | mode->spi_cr2 | SPI_CR2_RXNEIE;
-
+#if USE_SPI_DMA_DRIVER
+	if(drv_info->rx_dma_mode.dma_index < INALID_DRV_INDX)
+	{
+		pSPI->SPI_CR2 |= SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN ;
+	}
+	else
+#endif
+	{
+		pSPI->SPI_CR2 = (pSPI->SPI_CR2 & (SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN)) | mode->spi_cr2 | SPI_CR2_RXNEIE;
+	}
     //enable
     pSPI->SPI_CR1 = mode->spi_cr1 | SPI_CR1_SPE;
 
@@ -79,16 +87,16 @@ static void START_HND(SPI_DRIVER_INFO* drv_info, SPI_DRIVER_DATA* drv_data, HAND
 		{
 			ptr = NULL;
 		}
-		drv_data->rx_dma_hnd.tsk_read(ptr, hnd->len);
+		drv_data->rx_dma_hnd.drv_read_write(ptr, (void *)&drv_info->hw_base->SPI_DR, hnd->len);
 
 		if(hnd->cmd & FLAG_WRITE)
 		{
 			ptr = hnd->src.as_voidptr;
 		} else
 		{
-			ptr = NULL;
+			ptr = (void*) 0xff; //fill with ff...
 		}
-		drv_data->tx_dma_hnd.tsk_read(ptr, hnd->len);
+		drv_data->tx_dma_hnd.drv_read_write((void *)&drv_info->hw_base->SPI_DR, ptr, hnd->len);
 
 	} else
 #endif
@@ -137,7 +145,7 @@ static void SPI_RESUME(SPI_DRIVER_INFO* drv_info, SPI_DRIVER_DATA* drv_data)
 	{
 		if(!drv_data->locker)
 		{
-			SPI_START_TRANSACTION(drv_info->hw_base, (SPI_DRIVER_MODE *)hnd->mode.as_voidptr);
+			SPI_START_TRANSACTION(drv_info, (SPI_DRIVER_MODE *)hnd->mode.as_voidptr);
 			if( hnd->cmd & FLAG_LOCK)
 				drv_data->locker = hnd->client.task;
 		}
@@ -285,7 +293,7 @@ void SPI_DSR(SPI_DRIVER_INFO* drv_info, HANDLE hnd)
 		}
 
 		//the SPI is idle so start a new transaction
-		SPI_START_TRANSACTION(drv_info->hw_base, (SPI_DRIVER_MODE*)hnd->mode.as_voidptr);
+		SPI_START_TRANSACTION(drv_info, (SPI_DRIVER_MODE*)hnd->mode.as_voidptr);
 		if( hnd->cmd & FLAG_LOCK)
 			drv_data->locker = hnd->client.task;
     }
