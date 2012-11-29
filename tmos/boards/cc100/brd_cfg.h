@@ -63,5 +63,13 @@
 #define USE_EXCEPTION_RECORD 1
 #define USE_MEMORY_TRACKING	1
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 KEY DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define KEY_COUNT			6
+
+#define KEY_POLLING_TIME	10
+#define KEY_DEBOUNCE_TIME 	50 //30 //300
+#define KEY_REPEAT_TIME 	300//150 //1000
 
 #endif /* BRD_CFG_H_ */
