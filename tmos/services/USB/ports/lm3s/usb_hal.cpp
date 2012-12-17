@@ -19,24 +19,32 @@ void usb_write_payload(volatile void* dst, HANDLE hnd,	unsigned int size)
     {
 	    if (size > hnd->len)
 	    {
-	    	size -= hnd->len;
-		    // Write packet in the FIFO buffer
-		    while(hnd->len > 3)
-		    {
-		    	hnd->len-=4;
-		    	*(volatile int*)dst = *hnd->src.as_intptr++;
-		    }
-		    while(hnd->len)
-		    {
-		    	hnd->len--;
-		    	*(volatile char*)dst = *hnd->src.as_byteptr++;
-		    }
+	    	if(hnd->len)
+	    	{
+		    	size -= hnd->len;
+			    // Write packet in the FIFO buffer
+			    while(hnd->len > 3)
+			    {
+			    	hnd->len-=4;
+			    	*(volatile int*)dst = *hnd->src.as_intptr++;
+			    }
+			    while(hnd->len)
+			    {
+			    	hnd->len--;
+			    	*(volatile char*)dst = *hnd->src.as_byteptr++;
+			    }
+	    	} else
+	    	{
+	    		hnd->cmd &= ~FLAG_LOCK;
+	    	}
 		   	hnd = hnd->next;
 		   	if(!hnd)
 		   		return;
 	    }
 	    else
 	    {
+	    	if(size == hnd->len)
+	    		hnd->cmd |= FLAG_LOCK;
 		    hnd->len -= size;
 		    while(size>3)
 		    {
@@ -801,7 +809,7 @@ void usb_b_ept_tx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
 	if ( (endpoint->state == ENDPOINT_STATE_SENDING)  )
 	{
 		//check if we have pending write
-		while((hnd=endpoint->pending) && ( hnd->len == 0) )
+		while((hnd=endpoint->pending) && ( hnd->len == 0) && !(hnd->cmd & FLAG_LOCK))
 		{
 	   		// End of transfer ?
 	    	TRACE1_USB(" Wr!");
