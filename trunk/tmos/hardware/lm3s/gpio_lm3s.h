@@ -875,7 +875,7 @@ void PIO_Cfg(PIN_DESC cfg);
 void PIO_CfgOutput1(PIN_DESC pins);
 void PIO_CfgOutput0(PIN_DESC pins);
 void PIO_CfgInput(PIN_DESC pins);
-void PIO_Cfg_List(PIN_DESC * list);
+void PIO_Cfg_List(const PIN_DESC* list);
 void PIO_CfgInput_List(PIN_DESC * list);
 void PIO_Free(PIN_DESC cfg);
 void PIO_Free_List(PIN_DESC* list);
