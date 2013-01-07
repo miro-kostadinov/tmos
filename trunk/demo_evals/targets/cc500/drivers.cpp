@@ -38,7 +38,7 @@ const DRIVER_INFO_Type DefaultDriver =
 		DEFAULT_DRIVER_DSR,
 		INALID_DRV_INDX,
 		DRV_PRIORITY_KERNEL,
-		SYSCTL_NO_PERIPH
+		ID_NO_PERIPH
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -54,7 +54,7 @@ extern "C" const SYSTICK_DRIVER_INFO systick_driver =
 			(DRV_DSR)DEFAULT_DRIVER_DSR,	//!< cannot be used!
 			SysTick_IRQn,
 			DRV_PRIORITY_KERNEL,
-			SYSCTL_NO_PERIPH
+			ID_NO_PERIPH
 		},
 		1									//!< OS_QUANTUM_PERIOD = 1 ms
 };
@@ -73,7 +73,7 @@ const UART_DRIVER_INFO uart_0 =
 			(DRV_DSR)dsr_SerialDriver,
 			UART0_IRQn,
 			DRV_PRIORITY_UART0,
-			SYSCTL_PERIPH_UART0
+			ID_PERIPH_UART0
 		},
 		UART0,
 		{U0_RX, U0_TX, 0, 0, 0},           // pin Rx , pin Tx, pin RTS, pin CTS
@@ -93,7 +93,7 @@ const UART_DRIVER_INFO uart_1 =
 			(DRV_DSR)dsr_SerialDriver,
 			UART1_IRQn,
 			DRV_PRIORITY_UART1,
-			SYSCTL_PERIPH_UART1
+			ID_PERIPH_UART1
 		},
 		UART1,
 		{U1_RX, U1_TX, U1_RTS, U1_CTS, 0}, // pin Rx , pin Tx, pin RTS, pin CTS
@@ -113,7 +113,7 @@ const UART_DRIVER_INFO uart_2 =
 			(DRV_DSR)dsr_SerialDriver,
 			UART2_IRQn,
 			DRV_PRIORITY_UART2,
-			SYSCTL_PERIPH_UART2
+			ID_PERIPH_UART2
 		},
 		UART2,
 		{U2_RX, U2_TX, 0, 0, 0},           // pin Rx , pin Tx, pin RTS, pin CTS
@@ -137,7 +137,7 @@ const GPIO_DRIVER_INFO gpio_a =
 			(DRV_DSR)dsr_GPIO_driver,
 			GPIOPortA_IRQn,
 			DRV_PRIORITY_GPIOA,
-			SYSCTL_PERIPH_GPIOA
+			ID_PERIPH_GPIOA
 		},
 		GPIOA,
 		0,
@@ -153,7 +153,7 @@ const GPIO_DRIVER_INFO gpio_b =
 			(DRV_DSR)dsr_GPIO_driver,
 			GPIOPortB_IRQn,
 			DRV_PRIORITY_GPIOB,
-			SYSCTL_PERIPH_GPIOB
+			ID_PERIPH_GPIOB
 		},
 		GPIOB,
 		1,
@@ -169,7 +169,7 @@ const GPIO_DRIVER_INFO gpio_c =
 			(DRV_DSR)dsr_GPIO_driver,
 			GPIOPortC_IRQn,
 			DRV_PRIORITY_GPIOC,
-			SYSCTL_PERIPH_GPIOC
+			ID_PERIPH_GPIOC
 		},
 		GPIOC,
 		2,
@@ -185,7 +185,7 @@ const GPIO_DRIVER_INFO gpio_d =
 			(DRV_DSR)dsr_GPIO_driver,
 			GPIOPortD_IRQn,
 			DRV_PRIORITY_GPIOD,
-			SYSCTL_PERIPH_GPIOD
+			ID_PERIPH_GPIOD
 		},
 		GPIOD,
 		3,
@@ -201,7 +201,7 @@ const GPIO_DRIVER_INFO gpio_e =
 			(DRV_DSR)dsr_GPIO_driver,
 			GPIOPortE_IRQn,
 			DRV_PRIORITY_GPIOE,
-			SYSCTL_PERIPH_GPIOE
+			ID_PERIPH_GPIOE
 		},
 		GPIOE,
 		4,
@@ -217,7 +217,7 @@ const GPIO_DRIVER_INFO gpio_f =
 			(DRV_DSR)dsr_GPIO_driver,
 			GPIOPortF_IRQn,
 			DRV_PRIORITY_GPIOF,
-			SYSCTL_PERIPH_GPIOF
+			ID_PERIPH_GPIOF
 		},
 		GPIOF,
 		5,
@@ -233,7 +233,7 @@ const GPIO_DRIVER_INFO gpio_g =
 			(DRV_DSR)dsr_GPIO_driver,
 			GPIOPortG_IRQn,
 			DRV_PRIORITY_GPIOG,
-			SYSCTL_PERIPH_GPIOG
+			ID_PERIPH_GPIOG
 		},
 		GPIOG,
 		6,
@@ -249,7 +249,7 @@ const GPIO_DRIVER_INFO gpio_h =
 			(DRV_DSR)dsr_GPIO_driver,
 			GPIOPortH_IRQn,
 			DRV_PRIORITY_GPIOH,
-			SYSCTL_PERIPH_GPIOH
+			ID_PERIPH_GPIOH
 		},
 		GPIOH,
 		7,
@@ -265,7 +265,7 @@ const GPIO_DRIVER_INFO gpio_j =
 			(DRV_DSR)dsr_GPIO_driver,
 			GPIOPortJ_IRQn,
 			DRV_PRIORITY_GPIOJ,
-			SYSCTL_PERIPH_GPIOJ
+			ID_PERIPH_GPIOJ
 		},
 		GPIOJ,
 		8,
@@ -315,7 +315,7 @@ const SPI_DRIVER_INFO spi0_driver =
 			(DRV_DSR)dsr_SPI_driver,
 			SSI0_IRQn,
 			DRV_PRIORITY_SPI0,
-			SYSCTL_PERIPH_SSI0
+			ID_PERIPH_SSI0
 		},
 		SSI0,
 		&spi0_drv_data,
@@ -340,7 +340,7 @@ const SPI_DRIVER_INFO spi1_driver =
 			(DRV_DSR)dsr_SPI_driver,
 			SSI1_IRQn,
 			DRV_PRIORITY_SPI0,
-			SYSCTL_PERIPH_SSI1
+			ID_PERIPH_SSI1
 		},
 		SSI1,
 		&spi1_drv_data,
@@ -445,21 +445,27 @@ const unsigned int usb_pins[]=
 	0
 };
 
+const usb_config_t usb_config =
+{
+	usb_pins
+};
+
 USB_DRIVER_DATA usb_drv_data;
 const USB_DRIVER_INFO usb_driver =
 {
-		{
-			DRIVER_INFO_STUB,
-			(DRV_ISR)USB_B_ISR,
-			(DRV_DCR)USB_DCR,
-			(DRV_DSR)USB_DSR,
-			USB0_IRQn,
-			DRV_PRIORITY_USB,
-			SYSCTL_PERIPH_USB0
-		},
-		USB0,
-		&usb_drv_data,
-		&cc500_descriptors
+	{
+		DRIVER_INFO_STUB,
+		(DRV_ISR)USB_B_ISR,
+		(DRV_DCR)USB_DCR,
+		(DRV_DSR)USB_DSR,
+		USB0_IRQn,
+		DRV_PRIORITY_USB,
+		ID_PERIPH_USB0
+	},
+	USB0,
+	&usb_drv_data,
+	&cc500_descriptors,
+	&usb_config
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -474,7 +480,7 @@ const WDT_DRIVER_INFO wdt_driver =
 			(DRV_DSR)WDT_DSR,
 			Watchdog_IRQn,
 			DRV_PRIORITY_WDT,
-			SYSCTL_PERIPH_WDOG1
+			ID_PERIPH_WDOG1
 		},
 		WDT1,					//hw_base
 		80 * 1000 * 1000,		//load
