@@ -7,6 +7,9 @@
 #include <tmos.h>
 #include <drivers.h>
 #include <systick_drv.h>
+#include <usb_drv.h>
+#include <usb_setup.h>
+#include <usb_hal.h>
 
 const char restart_on_exception =0;
 
@@ -365,6 +368,101 @@ const SPI_DRIVER_INFO spi1_driver =
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 USB DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+USB_DRIVER_DATA usb_drv_data;
+
+const PIN_DESC usb_pins[]=
+{
+	PIN_USB_DM,
+	PIN_USB_DP,
+//	USB_ID,
+//	USB_VBUS,
+//	USB_PEN,
+	0
+};
+
+const usb_config_t usb_config =
+{
+	/*CFG_STM32_OTG_MODE |*/ CFG_STM32_OTG_HS_CORE | CFG_STM32_OTG_LOW_POWER |
+	CFG_STM32_OTG_DEDICATED_EP1 | CFG_STM32_OTG_VBUS_SENS,
+	128,			// RxFIFO depth
+	{
+		64,			// TX0_FIFO_HS_SIZE
+		372,		// TX1_FIFO_HS_SIZE
+		64,			// TX2_FIFO_HS_SIZE
+		0,			// TX3_FIFO_HS_SIZE
+		0,			// TX4_FIFO_HS_SIZE
+		0			// TX5_FIFO_HS_SIZE
+	},
+	usb_pins
+};
+
+const USB_DRIVER_INFO usb_ep1_in_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)USB_EP1_IN_ISR,
+			(DRV_DCR)USB_DCR,
+			(DRV_DSR)USB_DSR,
+			OTG_HS_EP1_IN_IRQn,
+			DRV_PRIORITY_USB,
+			ID_NO_PERIPH
+		},
+		OTG_HS,
+		&usb_drv_data,
+		&fpp100_descriptors
+};
+
+const USB_DRIVER_INFO usb_ep1_out_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)USB_EP1_OUT_ISR,
+			(DRV_DCR)USB_DCR,
+			(DRV_DSR)USB_DSR,
+			OTG_HS_EP1_OUT_IRQn,
+			DRV_PRIORITY_USB,
+			ID_NO_PERIPH
+		},
+		OTG_HS,
+		&usb_drv_data,
+		&fpp100_descriptors,
+		&usb_config
+};
+
+const USB_DRIVER_INFO usb_wkup_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)USB_HS_WKUP_ISR,
+			(DRV_DCR)USB_DCR,
+			(DRV_DSR)USB_DSR,
+			OTG_HS_WKUP_IRQn,
+			DRV_PRIORITY_USB,
+			ID_NO_PERIPH
+		},
+		OTG_HS,
+		&usb_drv_data,
+		&fpp100_descriptors,
+		&usb_config
+};
+
+const USB_DRIVER_INFO usb_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)USB_OTG_ISR,
+			(DRV_DCR)USB_DCR,
+			(DRV_DSR)USB_DSR,
+			OTG_HS_IRQn,
+			DRV_PRIORITY_USB,
+			ID_PERIPH_OTGHS
+		},
+		OTG_HS,
+		&usb_drv_data,
+		&fpp100_descriptors,
+		&usb_config
+};
+
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 KEY DRIVER
@@ -547,10 +645,10 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&DefaultDriver, 	/*!< 71 USART6 global interrupt                                           */
     1+ (char * const)&DefaultDriver, 	/*!< 72 I2C3 event interrupt                                              */
     1+ (char * const)&DefaultDriver, 	/*!< 73 I2C3 error interrupt                                              */
-    1+ (char * const)&DefaultDriver, 	/*!< 74 USB OTG HS End Point 1 Out global interrupt                       */
-    1+ (char * const)&DefaultDriver, 	/*!< 75 USB OTG HS End Point 1 In global interrupt                        */
-    1+ (char * const)&DefaultDriver, 	/*!< 76 USB OTG HS Wakeup through EXTI interrupt                          */
-    1+ (char * const)&DefaultDriver, 	/*!< 77 USB OTG HS global interrupt                                       */
+    1+ (char * const)&usb_ep1_out_driver,/*!<74 USB OTG HS End Point 1 Out global interrupt                       */
+    1+ (char * const)&usb_ep1_in_driver,/*!< 75 USB OTG HS End Point 1 In global interrupt                        */
+    1+ (char * const)&usb_wkup_driver, 	/*!< 76 USB OTG HS Wakeup through EXTI interrupt                          */
+    1+ (char * const)&usb_driver, 		/*!< 77 USB OTG HS global interrupt                                       */
     1+ (char * const)&DefaultDriver, 	/*!< 78 DCMI global interrupt                                             */
     1+ (char * const)&DefaultDriver, 	/*!< 79 CRYP crypto global interrupt                                      */
     1+ (char * const)&DefaultDriver, 	/*!< 80 Hash and Rng global interrupt                                     */
