@@ -414,3 +414,53 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 
 }
 
+/*
+ * 	DMA Goals:
+ * 		1) autonomous mode (no need to serve fast interrupts)
+ * 		2) less cpu usage
+ *
+ * 	Memcopy variant:
+ * 		goal 1 -> OK
+ * 		goal 2  ok?
+ *
+ * 		problems
+ * 		- how to signal the client??? (e.g. client waits for 3 bytes, DMA started for 256)
+ *
+ * 	DMA switch
+ * 		goal 1 -> no way...
+ * 		goal 2 -> OK
+ *
+ *
+ *
+ *
+ *	1) copy as much as avail...
+ *
+ *	2) if remain < 8
+ *		enable rx int (continue with memcpy(..1) ISR for each byte)
+ *
+ *	3) if remain >= 8
+ *		stop DMA
+ *		DMA1 = hnd.dst
+ *		DMA2 = buf
+ *		dma_len >= 8...
+ *			usr_Send_Signal..
+ *			update dma_len...
+ *
+ *
+ *		8888888888888
+ *		8888888888888
+ *
+ *		CCCCCCCCCCCCC
+ *		CCCCCCCCCCCCC
+ *		CCCCCCCCCCCCC
+ *		CCCCCCCCCCCCC
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
+
