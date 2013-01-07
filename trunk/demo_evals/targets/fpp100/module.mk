@@ -56,7 +56,7 @@ local_as_src-y	:=
 local_c_src-y 	:= 
 local_cpp_src-y	:=   
 
-local_cpp_src-y	+= drivers.cpp board_setup.cpp gui_setup.cpp menus.cpp
+local_cpp_src-y	+= drivers.cpp board_setup.cpp gui_setup.cpp menus.cpp usb_setup.cpp
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

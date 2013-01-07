@@ -242,6 +242,7 @@ extern "C" char* const DRV_TABLE[INALID_DRV_INDX+1];
 
 
 #define TEST_MEM2MEM_DMA 0
+#define TEST_USB 1
 
 
 #endif /* DRIVERS_H_ */
