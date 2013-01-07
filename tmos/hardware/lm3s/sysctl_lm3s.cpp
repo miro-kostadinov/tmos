@@ -19,49 +19,49 @@
  */
 bool SysCtlPeripheralValid(unsigned long ulPeripheral)
 {
-    return((ulPeripheral == SYSCTL_PERIPH_ADC0) ||
-           (ulPeripheral == SYSCTL_PERIPH_ADC1) ||
-           (ulPeripheral == SYSCTL_PERIPH_CAN0) ||
-           (ulPeripheral == SYSCTL_PERIPH_CAN1) ||
-           (ulPeripheral == SYSCTL_PERIPH_CAN2) ||
-           (ulPeripheral == SYSCTL_PERIPH_COMP0) ||
-           (ulPeripheral == SYSCTL_PERIPH_COMP1) ||
-           (ulPeripheral == SYSCTL_PERIPH_COMP2) ||
-           (ulPeripheral == SYSCTL_PERIPH_EPI0) ||
-           (ulPeripheral == SYSCTL_PERIPH_ETH) ||
-           (ulPeripheral == SYSCTL_PERIPH_GPIOA) ||
-           (ulPeripheral == SYSCTL_PERIPH_GPIOB) ||
-           (ulPeripheral == SYSCTL_PERIPH_GPIOC) ||
-           (ulPeripheral == SYSCTL_PERIPH_GPIOD) ||
-           (ulPeripheral == SYSCTL_PERIPH_GPIOE) ||
-           (ulPeripheral == SYSCTL_PERIPH_GPIOF) ||
-           (ulPeripheral == SYSCTL_PERIPH_GPIOG) ||
-           (ulPeripheral == SYSCTL_PERIPH_GPIOH) ||
-           (ulPeripheral == SYSCTL_PERIPH_GPIOJ) ||
-           (ulPeripheral == SYSCTL_PERIPH_HIBERNATE) ||
-           (ulPeripheral == SYSCTL_PERIPH_I2C0) ||
-           (ulPeripheral == SYSCTL_PERIPH_I2C1) ||
-           (ulPeripheral == SYSCTL_PERIPH_I2S0) ||
-           (ulPeripheral == SYSCTL_PERIPH_IEEE1588) ||
-           (ulPeripheral == SYSCTL_PERIPH_MPU) ||
-           (ulPeripheral == SYSCTL_PERIPH_PLL) ||
-           (ulPeripheral == SYSCTL_PERIPH_PWM) ||
-           (ulPeripheral == SYSCTL_PERIPH_QEI0) ||
-           (ulPeripheral == SYSCTL_PERIPH_QEI1) ||
-           (ulPeripheral == SYSCTL_PERIPH_SSI0) ||
-           (ulPeripheral == SYSCTL_PERIPH_SSI1) ||
-           (ulPeripheral == SYSCTL_PERIPH_TEMP) ||
-           (ulPeripheral == SYSCTL_PERIPH_TIMER0) ||
-           (ulPeripheral == SYSCTL_PERIPH_TIMER1) ||
-           (ulPeripheral == SYSCTL_PERIPH_TIMER2) ||
-           (ulPeripheral == SYSCTL_PERIPH_TIMER3) ||
-           (ulPeripheral == SYSCTL_PERIPH_UART0) ||
-           (ulPeripheral == SYSCTL_PERIPH_UART1) ||
-           (ulPeripheral == SYSCTL_PERIPH_UART2) ||
-           (ulPeripheral == SYSCTL_PERIPH_UDMA) ||
-           (ulPeripheral == SYSCTL_PERIPH_USB0) ||
-           (ulPeripheral == SYSCTL_PERIPH_WDOG0) ||
-           (ulPeripheral == SYSCTL_PERIPH_WDOG1));
+    return((ulPeripheral == ID_PERIPH_ADC0) ||
+           (ulPeripheral == ID_PERIPH_ADC1) ||
+           (ulPeripheral == ID_PERIPH_CAN0) ||
+           (ulPeripheral == ID_PERIPH_CAN1) ||
+           (ulPeripheral == ID_PERIPH_CAN2) ||
+           (ulPeripheral == ID_PERIPH_COMP0) ||
+           (ulPeripheral == ID_PERIPH_COMP1) ||
+           (ulPeripheral == ID_PERIPH_COMP2) ||
+           (ulPeripheral == ID_PERIPH_EPI0) ||
+           (ulPeripheral == ID_PERIPH_ETH) ||
+           (ulPeripheral == ID_PERIPH_GPIOA) ||
+           (ulPeripheral == ID_PERIPH_GPIOB) ||
+           (ulPeripheral == ID_PERIPH_GPIOC) ||
+           (ulPeripheral == ID_PERIPH_GPIOD) ||
+           (ulPeripheral == ID_PERIPH_GPIOE) ||
+           (ulPeripheral == ID_PERIPH_GPIOF) ||
+           (ulPeripheral == ID_PERIPH_GPIOG) ||
+           (ulPeripheral == ID_PERIPH_GPIOH) ||
+           (ulPeripheral == ID_PERIPH_GPIOJ) ||
+           (ulPeripheral == ID_PERIPH_HIBERNATE) ||
+           (ulPeripheral == ID_PERIPH_I2C0) ||
+           (ulPeripheral == ID_PERIPH_I2C1) ||
+           (ulPeripheral == ID_PERIPH_I2S0) ||
+           (ulPeripheral == ID_PERIPH_IEEE1588) ||
+           (ulPeripheral == ID_PERIPH_MPU) ||
+           (ulPeripheral == ID_PERIPH_PLL) ||
+           (ulPeripheral == ID_PERIPH_PWM) ||
+           (ulPeripheral == ID_PERIPH_QEI0) ||
+           (ulPeripheral == ID_PERIPH_QEI1) ||
+           (ulPeripheral == ID_PERIPH_SSI0) ||
+           (ulPeripheral == ID_PERIPH_SSI1) ||
+           (ulPeripheral == ID_PERIPH_TEMP) ||
+           (ulPeripheral == ID_PERIPH_TIMER0) ||
+           (ulPeripheral == ID_PERIPH_TIMER1) ||
+           (ulPeripheral == ID_PERIPH_TIMER2) ||
+           (ulPeripheral == ID_PERIPH_TIMER3) ||
+           (ulPeripheral == ID_PERIPH_UART0) ||
+           (ulPeripheral == ID_PERIPH_UART1) ||
+           (ulPeripheral == ID_PERIPH_UART2) ||
+           (ulPeripheral == ID_PERIPH_UDMA) ||
+           (ulPeripheral == ID_PERIPH_USB0) ||
+           (ulPeripheral == ID_PERIPH_WDOG0) ||
+           (ulPeripheral == ID_PERIPH_WDOG1));
 }
 
 //*****************************************************************************
@@ -69,14 +69,14 @@ bool SysCtlPeripheralValid(unsigned long ulPeripheral)
 // This macro extracts the array index out of the peripheral number.
 //
 //*****************************************************************************
-//#define SYSCTL_PERIPH_INDEX(a)  (((a) >> 28) & 0xf)
+//#define ID_PERIPH_INDEX(a)  (((a) >> 28) & 0xf)
 
 //*****************************************************************************
 //
 // This macro constructs the peripheral bit mask from the peripheral number.
 //
 //*****************************************************************************
-//#define SYSCTL_PERIPH_MASK(a)   (((a) & 0xffff) << (((a) & 0x001f0000) >> 16))
+//#define ID_PERIPH_MASK(a)   (((a) & 0xffff) << (((a) & 0x001f0000) >> 16))
 
 
 /**
@@ -413,21 +413,21 @@ unsigned long SYSCTL_Type::SysCtlFlashSizeGet(void)
 //! determine which are present on this device.
 //!
 //! The \e ulPeripheral parameter must be only one of the following values:
-//! \b SYSCTL_PERIPH_ADC0, \b SYSCTL_PERIPH_ADC1, \b SYSCTL_PERIPH_CAN0,
-//! \b SYSCTL_PERIPH_CAN1, \b SYSCTL_PERIPH_CAN2, \b SYSCTL_PERIPH_COMP0,
-//! \b SYSCTL_PERIPH_COMP1, \b SYSCTL_PERIPH_COMP2, \b SYSCTL_PERIPH_EPI0,
-//! \b SYSCTL_PERIPH_ETH, \b SYSCTL_PERIPH_GPIOA, \b SYSCTL_PERIPH_GPIOB,
-//! \b SYSCTL_PERIPH_GPIOC, \b SYSCTL_PERIPH_GPIOD, \b SYSCTL_PERIPH_GPIOE,
-//! \b SYSCTL_PERIPH_GPIOF, \b SYSCTL_PERIPH_GPIOG, \b SYSCTL_PERIPH_GPIOH,
-//! \b SYSCTL_PERIPH_GPIOJ, \b SYSCTL_PERIPH_HIBERNATE, \b SYSCTL_PERIPH_I2C0,
-//! \b SYSCTL_PERIPH_I2C1, \b SYSCTL_PERIPH_I2S0, \b SYSCTL_PERIPH_IEEE1588,
-//! \b SYSCTL_PERIPH_MPU, \b SYSCTL_PERIPH_PLL, \b SYSCTL_PERIPH_PWM,
-//! \b SYSCTL_PERIPH_QEI0, \b SYSCTL_PERIPH_QEI1, \b SYSCTL_PERIPH_SSI0,
-//! \b SYSCTL_PERIPH_SSI1, \b SYSCTL_PERIPH_TIMER0, \b SYSCTL_PERIPH_TIMER1,
-//! \b SYSCTL_PERIPH_TIMER2, \b SYSCTL_PERIPH_TIMER3, \b SYSCTL_PERIPH_TEMP,
-//! \b SYSCTL_PERIPH_UART0, \b SYSCTL_PERIPH_UART1, \b SYSCTL_PERIPH_UART2,
-//! \b SYSCTL_PERIPH_UDMA, \b SYSCTL_PERIPH_USB0, \b SYSCTL_PERIPH_WDOG0, or
-//! \b SYSCTL_PERIPH_WDOG1.
+//! \b ID_PERIPH_ADC0, \b ID_PERIPH_ADC1, \b ID_PERIPH_CAN0,
+//! \b ID_PERIPH_CAN1, \b ID_PERIPH_CAN2, \b ID_PERIPH_COMP0,
+//! \b ID_PERIPH_COMP1, \b ID_PERIPH_COMP2, \b ID_PERIPH_EPI0,
+//! \b ID_PERIPH_ETH, \b ID_PERIPH_GPIOA, \b ID_PERIPH_GPIOB,
+//! \b ID_PERIPH_GPIOC, \b ID_PERIPH_GPIOD, \b ID_PERIPH_GPIOE,
+//! \b ID_PERIPH_GPIOF, \b ID_PERIPH_GPIOG, \b ID_PERIPH_GPIOH,
+//! \b ID_PERIPH_GPIOJ, \b ID_PERIPH_HIBERNATE, \b ID_PERIPH_I2C0,
+//! \b ID_PERIPH_I2C1, \b ID_PERIPH_I2S0, \b ID_PERIPH_IEEE1588,
+//! \b ID_PERIPH_MPU, \b ID_PERIPH_PLL, \b ID_PERIPH_PWM,
+//! \b ID_PERIPH_QEI0, \b ID_PERIPH_QEI1, \b ID_PERIPH_SSI0,
+//! \b ID_PERIPH_SSI1, \b ID_PERIPH_TIMER0, \b ID_PERIPH_TIMER1,
+//! \b ID_PERIPH_TIMER2, \b ID_PERIPH_TIMER3, \b ID_PERIPH_TEMP,
+//! \b ID_PERIPH_UART0, \b ID_PERIPH_UART1, \b ID_PERIPH_UART2,
+//! \b ID_PERIPH_UDMA, \b ID_PERIPH_USB0, \b ID_PERIPH_WDOG0, or
+//! \b ID_PERIPH_WDOG1.
 //!
 //! \return Returns \b true if the specified peripheral is present and \b false
 //! if it is not.
@@ -440,7 +440,7 @@ int SYSCTL_Type::SysCtlPeripheralPresent(unsigned long ulPeripheral)
     //
     // Read the correct DC register and determine if this peripheral exists.
     //
-    if(ulPeripheral == SYSCTL_PERIPH_USB0)
+    if(ulPeripheral == ID_PERIPH_USB0)
     {
         //
         // USB is a special case since the DC bit is missing for USB0.
@@ -478,20 +478,20 @@ int SYSCTL_Type::SysCtlPeripheralPresent(unsigned long ulPeripheral)
 //|  NOTE: It also enables the peripheral so it is recommended when the peripheral is enabled for the first time
 //!
 //! The \e ulPeripheral parameter must be only one of the following values:
-//! \b SYSCTL_PERIPH_ADC0, \b SYSCTL_PERIPH_ADC1, \b SYSCTL_PERIPH_CAN0,
-//! \b SYSCTL_PERIPH_CAN1, \b SYSCTL_PERIPH_CAN2, \b SYSCTL_PERIPH_COMP0,
-//! \b SYSCTL_PERIPH_COMP1, \b SYSCTL_PERIPH_COMP2, \b SYSCTL_PERIPH_EPI0,
-//! \b SYSCTL_PERIPH_ETH, \b SYSCTL_PERIPH_GPIOA, \b SYSCTL_PERIPH_GPIOB,
-//! \b SYSCTL_PERIPH_GPIOC, \b SYSCTL_PERIPH_GPIOD, \b SYSCTL_PERIPH_GPIOE,
-//! \b SYSCTL_PERIPH_GPIOF, \b SYSCTL_PERIPH_GPIOG, \b SYSCTL_PERIPH_GPIOH,
-//! \b SYSCTL_PERIPH_GPIOJ, \b SYSCTL_PERIPH_HIBERNATE, \b SYSCTL_PERIPH_I2C0,
-//! \b SYSCTL_PERIPH_I2C1, \b SYSCTL_PERIPH_I2S0, \b SYSCTL_PERIPH_PWM,
-//! \b SYSCTL_PERIPH_QEI0, \b SYSCTL_PERIPH_QEI1, \b SYSCTL_PERIPH_SSI0,
-//! \b SYSCTL_PERIPH_SSI1, \b SYSCTL_PERIPH_TIMER0, \b SYSCTL_PERIPH_TIMER1,
-//! \b SYSCTL_PERIPH_TIMER2, \b SYSCTL_PERIPH_TIMER3, \b SYSCTL_PERIPH_TEMP,
-//! \b SYSCTL_PERIPH_UART0, \b SYSCTL_PERIPH_UART1, \b SYSCTL_PERIPH_UART2,
-//! \b SYSCTL_PERIPH_UDMA, \b SYSCTL_PERIPH_USB0, \b SYSCTL_PERIPH_WDOG0, or
-//! \b SYSCTL_PERIPH_WDOG1.
+//! \b ID_PERIPH_ADC0, \b ID_PERIPH_ADC1, \b ID_PERIPH_CAN0,
+//! \b ID_PERIPH_CAN1, \b ID_PERIPH_CAN2, \b ID_PERIPH_COMP0,
+//! \b ID_PERIPH_COMP1, \b ID_PERIPH_COMP2, \b ID_PERIPH_EPI0,
+//! \b ID_PERIPH_ETH, \b ID_PERIPH_GPIOA, \b ID_PERIPH_GPIOB,
+//! \b ID_PERIPH_GPIOC, \b ID_PERIPH_GPIOD, \b ID_PERIPH_GPIOE,
+//! \b ID_PERIPH_GPIOF, \b ID_PERIPH_GPIOG, \b ID_PERIPH_GPIOH,
+//! \b ID_PERIPH_GPIOJ, \b ID_PERIPH_HIBERNATE, \b ID_PERIPH_I2C0,
+//! \b ID_PERIPH_I2C1, \b ID_PERIPH_I2S0, \b ID_PERIPH_PWM,
+//! \b ID_PERIPH_QEI0, \b ID_PERIPH_QEI1, \b ID_PERIPH_SSI0,
+//! \b ID_PERIPH_SSI1, \b ID_PERIPH_TIMER0, \b ID_PERIPH_TIMER1,
+//! \b ID_PERIPH_TIMER2, \b ID_PERIPH_TIMER3, \b ID_PERIPH_TEMP,
+//! \b ID_PERIPH_UART0, \b ID_PERIPH_UART1, \b ID_PERIPH_UART2,
+//! \b ID_PERIPH_UDMA, \b ID_PERIPH_USB0, \b ID_PERIPH_WDOG0, or
+//! \b ID_PERIPH_WDOG1.
 //!
 //! \return None.
 //
@@ -543,20 +543,20 @@ void SysCtlPeripheralReset(unsigned long ulPeripheral)
 //! register reads/writes.
 //!
 //! The \e ulPeripheral parameter must be only one of the following values:
-//! \b SYSCTL_PERIPH_ADC0, \b SYSCTL_PERIPH_ADC1, \b SYSCTL_PERIPH_CAN0,
-//! \b SYSCTL_PERIPH_CAN1, \b SYSCTL_PERIPH_CAN2, \b SYSCTL_PERIPH_COMP0,
-//! \b SYSCTL_PERIPH_COMP1, \b SYSCTL_PERIPH_COMP2, \b SYSCTL_PERIPH_EPI0,
-//! \b SYSCTL_PERIPH_ETH, \b SYSCTL_PERIPH_GPIOA, \b SYSCTL_PERIPH_GPIOB,
-//! \b SYSCTL_PERIPH_GPIOC, \b SYSCTL_PERIPH_GPIOD, \b SYSCTL_PERIPH_GPIOE,
-//! \b SYSCTL_PERIPH_GPIOF, \b SYSCTL_PERIPH_GPIOG, \b SYSCTL_PERIPH_GPIOH,
-//! \b SYSCTL_PERIPH_GPIOJ, \b SYSCTL_PERIPH_HIBERNATE, \b SYSCTL_PERIPH_I2C0,
-//! \b SYSCTL_PERIPH_I2C1, \b SYSCTL_PERIPH_I2S0, \b SYSCTL_PERIPH_PWM,
-//! \b SYSCTL_PERIPH_QEI0, \b SYSCTL_PERIPH_QEI1, \b SYSCTL_PERIPH_SSI0,
-//! \b SYSCTL_PERIPH_SSI1, \b SYSCTL_PERIPH_TIMER0, \b SYSCTL_PERIPH_TIMER1,
-//! \b SYSCTL_PERIPH_TIMER2, \b SYSCTL_PERIPH_TIMER3, \b SYSCTL_PERIPH_TEMP,
-//! \b SYSCTL_PERIPH_UART0, \b SYSCTL_PERIPH_UART1, \b SYSCTL_PERIPH_UART2,
-//! \b SYSCTL_PERIPH_UDMA, \b SYSCTL_PERIPH_USB0, \b SYSCTL_PERIPH_WDOG0, or
-//! \b SYSCTL_PERIPH_WDOG1.
+//! \b ID_PERIPH_ADC0, \b ID_PERIPH_ADC1, \b ID_PERIPH_CAN0,
+//! \b ID_PERIPH_CAN1, \b ID_PERIPH_CAN2, \b ID_PERIPH_COMP0,
+//! \b ID_PERIPH_COMP1, \b ID_PERIPH_COMP2, \b ID_PERIPH_EPI0,
+//! \b ID_PERIPH_ETH, \b ID_PERIPH_GPIOA, \b ID_PERIPH_GPIOB,
+//! \b ID_PERIPH_GPIOC, \b ID_PERIPH_GPIOD, \b ID_PERIPH_GPIOE,
+//! \b ID_PERIPH_GPIOF, \b ID_PERIPH_GPIOG, \b ID_PERIPH_GPIOH,
+//! \b ID_PERIPH_GPIOJ, \b ID_PERIPH_HIBERNATE, \b ID_PERIPH_I2C0,
+//! \b ID_PERIPH_I2C1, \b ID_PERIPH_I2S0, \b ID_PERIPH_PWM,
+//! \b ID_PERIPH_QEI0, \b ID_PERIPH_QEI1, \b ID_PERIPH_SSI0,
+//! \b ID_PERIPH_SSI1, \b ID_PERIPH_TIMER0, \b ID_PERIPH_TIMER1,
+//! \b ID_PERIPH_TIMER2, \b ID_PERIPH_TIMER3, \b ID_PERIPH_TEMP,
+//! \b ID_PERIPH_UART0, \b ID_PERIPH_UART1, \b ID_PERIPH_UART2,
+//! \b ID_PERIPH_UDMA, \b ID_PERIPH_USB0, \b ID_PERIPH_WDOG0, or
+//! \b ID_PERIPH_WDOG1.
 //!
 //! \note It takes five clock cycles after the write to enable a peripheral
 //! before the the peripheral is actually enabled.  During this time, attempts
@@ -590,20 +590,20 @@ void SysCtlPeripheralEnable(unsigned long ulPeripheral)
 //! operate or respond to register reads/writes.
 //!
 //! The \e ulPeripheral parameter must be only one of the following values:
-//! \b SYSCTL_PERIPH_ADC0, \b SYSCTL_PERIPH_ADC1, \b SYSCTL_PERIPH_CAN0,
-//! \b SYSCTL_PERIPH_CAN1, \b SYSCTL_PERIPH_CAN2, \b SYSCTL_PERIPH_COMP0,
-//! \b SYSCTL_PERIPH_COMP1, \b SYSCTL_PERIPH_COMP2, \b SYSCTL_PERIPH_EPI0,
-//! \b SYSCTL_PERIPH_ETH, \b SYSCTL_PERIPH_GPIOA, \b SYSCTL_PERIPH_GPIOB,
-//! \b SYSCTL_PERIPH_GPIOC, \b SYSCTL_PERIPH_GPIOD, \b SYSCTL_PERIPH_GPIOE,
-//! \b SYSCTL_PERIPH_GPIOF, \b SYSCTL_PERIPH_GPIOG, \b SYSCTL_PERIPH_GPIOH,
-//! \b SYSCTL_PERIPH_GPIOJ, \b SYSCTL_PERIPH_HIBERNATE, \b SYSCTL_PERIPH_I2C0,
-//! \b SYSCTL_PERIPH_I2C1, \b SYSCTL_PERIPH_I2S0, \b SYSCTL_PERIPH_PWM,
-//! \b SYSCTL_PERIPH_QEI0, \b SYSCTL_PERIPH_QEI1, \b SYSCTL_PERIPH_SSI0,
-//! \b SYSCTL_PERIPH_SSI1, \b SYSCTL_PERIPH_TIMER0, \b SYSCTL_PERIPH_TIMER1,
-//! \b SYSCTL_PERIPH_TIMER2, \b SYSCTL_PERIPH_TIMER3, \b SYSCTL_PERIPH_TEMP,
-//! \b SYSCTL_PERIPH_UART0, \b SYSCTL_PERIPH_UART1, \b SYSCTL_PERIPH_UART2,
-//! \b SYSCTL_PERIPH_UDMA, \b SYSCTL_PERIPH_USB0, \b SYSCTL_PERIPH_WDOG0, or
-//! \b SYSCTL_PERIPH_WDOG1.
+//! \b ID_PERIPH_ADC0, \b ID_PERIPH_ADC1, \b ID_PERIPH_CAN0,
+//! \b ID_PERIPH_CAN1, \b ID_PERIPH_CAN2, \b ID_PERIPH_COMP0,
+//! \b ID_PERIPH_COMP1, \b ID_PERIPH_COMP2, \b ID_PERIPH_EPI0,
+//! \b ID_PERIPH_ETH, \b ID_PERIPH_GPIOA, \b ID_PERIPH_GPIOB,
+//! \b ID_PERIPH_GPIOC, \b ID_PERIPH_GPIOD, \b ID_PERIPH_GPIOE,
+//! \b ID_PERIPH_GPIOF, \b ID_PERIPH_GPIOG, \b ID_PERIPH_GPIOH,
+//! \b ID_PERIPH_GPIOJ, \b ID_PERIPH_HIBERNATE, \b ID_PERIPH_I2C0,
+//! \b ID_PERIPH_I2C1, \b ID_PERIPH_I2S0, \b ID_PERIPH_PWM,
+//! \b ID_PERIPH_QEI0, \b ID_PERIPH_QEI1, \b ID_PERIPH_SSI0,
+//! \b ID_PERIPH_SSI1, \b ID_PERIPH_TIMER0, \b ID_PERIPH_TIMER1,
+//! \b ID_PERIPH_TIMER2, \b ID_PERIPH_TIMER3, \b ID_PERIPH_TEMP,
+//! \b ID_PERIPH_UART0, \b ID_PERIPH_UART1, \b ID_PERIPH_UART2,
+//! \b ID_PERIPH_UDMA, \b ID_PERIPH_USB0, \b ID_PERIPH_WDOG0, or
+//! \b ID_PERIPH_WDOG1.
 //!
 //! \return None.
 //
@@ -638,20 +638,20 @@ void SysCtlPeripheralDisable(unsigned long ulPeripheral)
 //! configuration is maintained but has no effect when sleep mode is entered.
 //!
 //! The \e ulPeripheral parameter must be only one of the following values:
-//! \b SYSCTL_PERIPH_ADC0, \b SYSCTL_PERIPH_ADC1, \b SYSCTL_PERIPH_CAN0,
-//! \b SYSCTL_PERIPH_CAN1, \b SYSCTL_PERIPH_CAN2, \b SYSCTL_PERIPH_COMP0,
-//! \b SYSCTL_PERIPH_COMP1, \b SYSCTL_PERIPH_COMP2, \b SYSCTL_PERIPH_EPI0,
-//! \b SYSCTL_PERIPH_ETH, \b SYSCTL_PERIPH_GPIOA, \b SYSCTL_PERIPH_GPIOB,
-//! \b SYSCTL_PERIPH_GPIOC, \b SYSCTL_PERIPH_GPIOD, \b SYSCTL_PERIPH_GPIOE,
-//! \b SYSCTL_PERIPH_GPIOF, \b SYSCTL_PERIPH_GPIOG, \b SYSCTL_PERIPH_GPIOH,
-//! \b SYSCTL_PERIPH_GPIOJ, \b SYSCTL_PERIPH_HIBERNATE, \b SYSCTL_PERIPH_I2C0,
-//! \b SYSCTL_PERIPH_I2C1, \b SYSCTL_PERIPH_I2S0, \b SYSCTL_PERIPH_PWM,
-//! \b SYSCTL_PERIPH_QEI0, \b SYSCTL_PERIPH_QEI1, \b SYSCTL_PERIPH_SSI0,
-//! \b SYSCTL_PERIPH_SSI1, \b SYSCTL_PERIPH_TIMER0, \b SYSCTL_PERIPH_TIMER1,
-//! \b SYSCTL_PERIPH_TIMER2, \b SYSCTL_PERIPH_TIMER3, \b SYSCTL_PERIPH_TEMP,
-//! \b SYSCTL_PERIPH_UART0, \b SYSCTL_PERIPH_UART1, \b SYSCTL_PERIPH_UART2,
-//! \b SYSCTL_PERIPH_UDMA, \b SYSCTL_PERIPH_USB0, \b SYSCTL_PERIPH_WDOG0, or
-//! \b SYSCTL_PERIPH_WDOG1.
+//! \b ID_PERIPH_ADC0, \b ID_PERIPH_ADC1, \b ID_PERIPH_CAN0,
+//! \b ID_PERIPH_CAN1, \b ID_PERIPH_CAN2, \b ID_PERIPH_COMP0,
+//! \b ID_PERIPH_COMP1, \b ID_PERIPH_COMP2, \b ID_PERIPH_EPI0,
+//! \b ID_PERIPH_ETH, \b ID_PERIPH_GPIOA, \b ID_PERIPH_GPIOB,
+//! \b ID_PERIPH_GPIOC, \b ID_PERIPH_GPIOD, \b ID_PERIPH_GPIOE,
+//! \b ID_PERIPH_GPIOF, \b ID_PERIPH_GPIOG, \b ID_PERIPH_GPIOH,
+//! \b ID_PERIPH_GPIOJ, \b ID_PERIPH_HIBERNATE, \b ID_PERIPH_I2C0,
+//! \b ID_PERIPH_I2C1, \b ID_PERIPH_I2S0, \b ID_PERIPH_PWM,
+//! \b ID_PERIPH_QEI0, \b ID_PERIPH_QEI1, \b ID_PERIPH_SSI0,
+//! \b ID_PERIPH_SSI1, \b ID_PERIPH_TIMER0, \b ID_PERIPH_TIMER1,
+//! \b ID_PERIPH_TIMER2, \b ID_PERIPH_TIMER3, \b ID_PERIPH_TEMP,
+//! \b ID_PERIPH_UART0, \b ID_PERIPH_UART1, \b ID_PERIPH_UART2,
+//! \b ID_PERIPH_UDMA, \b ID_PERIPH_USB0, \b ID_PERIPH_WDOG0, or
+//! \b ID_PERIPH_WDOG1.
 //!
 //! \return None.
 //
@@ -687,20 +687,20 @@ void SYSCTL_Type::SysCtlPeripheralSleepEnable(unsigned long ulPeripheral)
 //! configuration is maintained but has no effect when sleep mode is entered.
 //!
 //! The \e ulPeripheral parameter must be only one of the following values:
-//! \b SYSCTL_PERIPH_ADC0, \b SYSCTL_PERIPH_ADC1, \b SYSCTL_PERIPH_CAN0,
-//! \b SYSCTL_PERIPH_CAN1, \b SYSCTL_PERIPH_CAN2, \b SYSCTL_PERIPH_COMP0,
-//! \b SYSCTL_PERIPH_COMP1, \b SYSCTL_PERIPH_COMP2, \b SYSCTL_PERIPH_EPI0,
-//! \b SYSCTL_PERIPH_ETH, \b SYSCTL_PERIPH_GPIOA, \b SYSCTL_PERIPH_GPIOB,
-//! \b SYSCTL_PERIPH_GPIOC, \b SYSCTL_PERIPH_GPIOD, \b SYSCTL_PERIPH_GPIOE,
-//! \b SYSCTL_PERIPH_GPIOF, \b SYSCTL_PERIPH_GPIOG, \b SYSCTL_PERIPH_GPIOH,
-//! \b SYSCTL_PERIPH_GPIOJ, \b SYSCTL_PERIPH_HIBERNATE, \b SYSCTL_PERIPH_I2C0,
-//! \b SYSCTL_PERIPH_I2C1, \b SYSCTL_PERIPH_I2S0, \b SYSCTL_PERIPH_PWM,
-//! \b SYSCTL_PERIPH_QEI0, \b SYSCTL_PERIPH_QEI1, \b SYSCTL_PERIPH_SSI0,
-//! \b SYSCTL_PERIPH_SSI1, \b SYSCTL_PERIPH_TIMER0, \b SYSCTL_PERIPH_TIMER1,
-//! \b SYSCTL_PERIPH_TIMER2, \b SYSCTL_PERIPH_TIMER3, \b SYSCTL_PERIPH_TEMP,
-//! \b SYSCTL_PERIPH_UART0, \b SYSCTL_PERIPH_UART1, \b SYSCTL_PERIPH_UART2,
-//! \b SYSCTL_PERIPH_UDMA, \b SYSCTL_PERIPH_USB0, \b SYSCTL_PERIPH_WDOG0, or
-//! \b SYSCTL_PERIPH_WDOG1.
+//! \b ID_PERIPH_ADC0, \b ID_PERIPH_ADC1, \b ID_PERIPH_CAN0,
+//! \b ID_PERIPH_CAN1, \b ID_PERIPH_CAN2, \b ID_PERIPH_COMP0,
+//! \b ID_PERIPH_COMP1, \b ID_PERIPH_COMP2, \b ID_PERIPH_EPI0,
+//! \b ID_PERIPH_ETH, \b ID_PERIPH_GPIOA, \b ID_PERIPH_GPIOB,
+//! \b ID_PERIPH_GPIOC, \b ID_PERIPH_GPIOD, \b ID_PERIPH_GPIOE,
+//! \b ID_PERIPH_GPIOF, \b ID_PERIPH_GPIOG, \b ID_PERIPH_GPIOH,
+//! \b ID_PERIPH_GPIOJ, \b ID_PERIPH_HIBERNATE, \b ID_PERIPH_I2C0,
+//! \b ID_PERIPH_I2C1, \b ID_PERIPH_I2S0, \b ID_PERIPH_PWM,
+//! \b ID_PERIPH_QEI0, \b ID_PERIPH_QEI1, \b ID_PERIPH_SSI0,
+//! \b ID_PERIPH_SSI1, \b ID_PERIPH_TIMER0, \b ID_PERIPH_TIMER1,
+//! \b ID_PERIPH_TIMER2, \b ID_PERIPH_TIMER3, \b ID_PERIPH_TEMP,
+//! \b ID_PERIPH_UART0, \b ID_PERIPH_UART1, \b ID_PERIPH_UART2,
+//! \b ID_PERIPH_UDMA, \b ID_PERIPH_USB0, \b ID_PERIPH_WDOG0, or
+//! \b ID_PERIPH_WDOG1.
 //!
 //! \return None.
 //
@@ -737,20 +737,20 @@ void SYSCTL_Type::SysCtlPeripheralSleepDisable(unsigned long ulPeripheral)
 //! entered.
 //!
 //! The \e ulPeripheral parameter must be only one of the following values:
-//! \b SYSCTL_PERIPH_ADC0, \b SYSCTL_PERIPH_ADC1, \b SYSCTL_PERIPH_CAN0,
-//! \b SYSCTL_PERIPH_CAN1, \b SYSCTL_PERIPH_CAN2, \b SYSCTL_PERIPH_COMP0,
-//! \b SYSCTL_PERIPH_COMP1, \b SYSCTL_PERIPH_COMP2, \b SYSCTL_PERIPH_EPI0,
-//! \b SYSCTL_PERIPH_ETH, \b SYSCTL_PERIPH_GPIOA, \b SYSCTL_PERIPH_GPIOB,
-//! \b SYSCTL_PERIPH_GPIOC, \b SYSCTL_PERIPH_GPIOD, \b SYSCTL_PERIPH_GPIOE,
-//! \b SYSCTL_PERIPH_GPIOF, \b SYSCTL_PERIPH_GPIOG, \b SYSCTL_PERIPH_GPIOH,
-//! \b SYSCTL_PERIPH_GPIOJ, \b SYSCTL_PERIPH_HIBERNATE, \b SYSCTL_PERIPH_I2C0,
-//! \b SYSCTL_PERIPH_I2C1, \b SYSCTL_PERIPH_I2S0, \b SYSCTL_PERIPH_PWM,
-//! \b SYSCTL_PERIPH_QEI0, \b SYSCTL_PERIPH_QEI1, \b SYSCTL_PERIPH_SSI0,
-//! \b SYSCTL_PERIPH_SSI1, \b SYSCTL_PERIPH_TIMER0, \b SYSCTL_PERIPH_TIMER1,
-//! \b SYSCTL_PERIPH_TIMER2, \b SYSCTL_PERIPH_TIMER3, \b SYSCTL_PERIPH_TEMP,
-//! \b SYSCTL_PERIPH_UART0, \b SYSCTL_PERIPH_UART1, \b SYSCTL_PERIPH_UART2,
-//! \b SYSCTL_PERIPH_UDMA, \b SYSCTL_PERIPH_USB0, \b SYSCTL_PERIPH_WDOG0, or
-//! \b SYSCTL_PERIPH_WDOG1.
+//! \b ID_PERIPH_ADC0, \b ID_PERIPH_ADC1, \b ID_PERIPH_CAN0,
+//! \b ID_PERIPH_CAN1, \b ID_PERIPH_CAN2, \b ID_PERIPH_COMP0,
+//! \b ID_PERIPH_COMP1, \b ID_PERIPH_COMP2, \b ID_PERIPH_EPI0,
+//! \b ID_PERIPH_ETH, \b ID_PERIPH_GPIOA, \b ID_PERIPH_GPIOB,
+//! \b ID_PERIPH_GPIOC, \b ID_PERIPH_GPIOD, \b ID_PERIPH_GPIOE,
+//! \b ID_PERIPH_GPIOF, \b ID_PERIPH_GPIOG, \b ID_PERIPH_GPIOH,
+//! \b ID_PERIPH_GPIOJ, \b ID_PERIPH_HIBERNATE, \b ID_PERIPH_I2C0,
+//! \b ID_PERIPH_I2C1, \b ID_PERIPH_I2S0, \b ID_PERIPH_PWM,
+//! \b ID_PERIPH_QEI0, \b ID_PERIPH_QEI1, \b ID_PERIPH_SSI0,
+//! \b ID_PERIPH_SSI1, \b ID_PERIPH_TIMER0, \b ID_PERIPH_TIMER1,
+//! \b ID_PERIPH_TIMER2, \b ID_PERIPH_TIMER3, \b ID_PERIPH_TEMP,
+//! \b ID_PERIPH_UART0, \b ID_PERIPH_UART1, \b ID_PERIPH_UART2,
+//! \b ID_PERIPH_UDMA, \b ID_PERIPH_USB0, \b ID_PERIPH_WDOG0, or
+//! \b ID_PERIPH_WDOG1.
 //!
 //! \return None.
 //
@@ -789,20 +789,20 @@ void SYSCTL_Type::SysCtlPeripheralDeepSleepEnable(unsigned long ulPeripheral)
 //! entered.
 //!
 //! The \e ulPeripheral parameter must be only one of the following values:
-//! \b SYSCTL_PERIPH_ADC0, \b SYSCTL_PERIPH_ADC1, \b SYSCTL_PERIPH_CAN0,
-//! \b SYSCTL_PERIPH_CAN1, \b SYSCTL_PERIPH_CAN2, \b SYSCTL_PERIPH_COMP0,
-//! \b SYSCTL_PERIPH_COMP1, \b SYSCTL_PERIPH_COMP2, \b SYSCTL_PERIPH_EPI0,
-//! \b SYSCTL_PERIPH_ETH, \b SYSCTL_PERIPH_GPIOA, \b SYSCTL_PERIPH_GPIOB,
-//! \b SYSCTL_PERIPH_GPIOC, \b SYSCTL_PERIPH_GPIOD, \b SYSCTL_PERIPH_GPIOE,
-//! \b SYSCTL_PERIPH_GPIOF, \b SYSCTL_PERIPH_GPIOG, \b SYSCTL_PERIPH_GPIOH,
-//! \b SYSCTL_PERIPH_GPIOJ, \b SYSCTL_PERIPH_HIBERNATE, \b SYSCTL_PERIPH_I2C0,
-//! \b SYSCTL_PERIPH_I2C1, \b SYSCTL_PERIPH_I2S0, \b SYSCTL_PERIPH_PWM,
-//! \b SYSCTL_PERIPH_QEI0, \b SYSCTL_PERIPH_QEI1, \b SYSCTL_PERIPH_SSI0,
-//! \b SYSCTL_PERIPH_SSI1, \b SYSCTL_PERIPH_TIMER0, \b SYSCTL_PERIPH_TIMER1,
-//! \b SYSCTL_PERIPH_TIMER2, \b SYSCTL_PERIPH_TIMER3, \b SYSCTL_PERIPH_TEMP,
-//! \b SYSCTL_PERIPH_UART0, \b SYSCTL_PERIPH_UART1, \b SYSCTL_PERIPH_UART2,
-//! \b SYSCTL_PERIPH_UDMA, \b SYSCTL_PERIPH_USB0, \b SYSCTL_PERIPH_WDOG0, or
-//! \b SYSCTL_PERIPH_WDOG1.
+//! \b ID_PERIPH_ADC0, \b ID_PERIPH_ADC1, \b ID_PERIPH_CAN0,
+//! \b ID_PERIPH_CAN1, \b ID_PERIPH_CAN2, \b ID_PERIPH_COMP0,
+//! \b ID_PERIPH_COMP1, \b ID_PERIPH_COMP2, \b ID_PERIPH_EPI0,
+//! \b ID_PERIPH_ETH, \b ID_PERIPH_GPIOA, \b ID_PERIPH_GPIOB,
+//! \b ID_PERIPH_GPIOC, \b ID_PERIPH_GPIOD, \b ID_PERIPH_GPIOE,
+//! \b ID_PERIPH_GPIOF, \b ID_PERIPH_GPIOG, \b ID_PERIPH_GPIOH,
+//! \b ID_PERIPH_GPIOJ, \b ID_PERIPH_HIBERNATE, \b ID_PERIPH_I2C0,
+//! \b ID_PERIPH_I2C1, \b ID_PERIPH_I2S0, \b ID_PERIPH_PWM,
+//! \b ID_PERIPH_QEI0, \b ID_PERIPH_QEI1, \b ID_PERIPH_SSI0,
+//! \b ID_PERIPH_SSI1, \b ID_PERIPH_TIMER0, \b ID_PERIPH_TIMER1,
+//! \b ID_PERIPH_TIMER2, \b ID_PERIPH_TIMER3, \b ID_PERIPH_TEMP,
+//! \b ID_PERIPH_UART0, \b ID_PERIPH_UART1, \b ID_PERIPH_UART2,
+//! \b ID_PERIPH_UDMA, \b ID_PERIPH_USB0, \b ID_PERIPH_WDOG0, or
+//! \b ID_PERIPH_WDOG1.
 //!
 //! \return None.
 //
@@ -1747,9 +1747,9 @@ void SYSCTL_Type::SysCtlClkVerificationClear(void)
 //! address for GPIO functions, use \b GPIO_PORTA_AHB_BASE instead.
 //!
 //! The \e ulGPIOPeripheral argument must be only one of the following values:
-//! \b SYSCTL_PERIPH_GPIOA, \b SYSCTL_PERIPH_GPIOB, \b SYSCTL_PERIPH_GPIOC,
-//! \b SYSCTL_PERIPH_GPIOD, \b SYSCTL_PERIPH_GPIOE, \b SYSCTL_PERIPH_GPIOF,
-//! \b SYSCTL_PERIPH_GPIOG, or \b SYSCTL_PERIPH_GPIOH.
+//! \b ID_PERIPH_GPIOA, \b ID_PERIPH_GPIOB, \b ID_PERIPH_GPIOC,
+//! \b ID_PERIPH_GPIOD, \b ID_PERIPH_GPIOE, \b ID_PERIPH_GPIOF,
+//! \b ID_PERIPH_GPIOG, or \b ID_PERIPH_GPIOH.
 //!
 //! \return None.
 //
@@ -1759,15 +1759,15 @@ void SYSCTL_Type::SysCtlGPIOAHBEnable(unsigned long ulGPIOPeripheral)
     //
     // Check the arguments.
     //
-    ASSERT((ulGPIOPeripheral == SYSCTL_PERIPH_GPIOA) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOB) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOC) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOD) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOE) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOF) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOG) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOH) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOJ));
+    ASSERT((ulGPIOPeripheral == ID_PERIPH_GPIOA) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOB) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOC) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOD) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOE) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOF) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOG) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOH) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOJ));
 
     //
     // Enable this GPIO for AHB access.
@@ -1786,9 +1786,9 @@ void SYSCTL_Type::SysCtlGPIOAHBEnable(unsigned long ulGPIOPeripheral)
 //! from the legacy Advanced Peripheral Bus (AHB).
 //!
 //! The \b ulGPIOPeripheral argument must be only one of the following values:
-//! \b SYSCTL_PERIPH_GPIOA, \b SYSCTL_PERIPH_GPIOB, \b SYSCTL_PERIPH_GPIOC,
-//! \b SYSCTL_PERIPH_GPIOD, \b SYSCTL_PERIPH_GPIOE, \b SYSCTL_PERIPH_GPIOF,
-//! \b SYSCTL_PERIPH_GPIOG, or \b SYSCTL_PERIPH_GPIOH.
+//! \b ID_PERIPH_GPIOA, \b ID_PERIPH_GPIOB, \b ID_PERIPH_GPIOC,
+//! \b ID_PERIPH_GPIOD, \b ID_PERIPH_GPIOE, \b ID_PERIPH_GPIOF,
+//! \b ID_PERIPH_GPIOG, or \b ID_PERIPH_GPIOH.
 //!
 //! \return None.
 //
@@ -1798,15 +1798,15 @@ void SYSCTL_Type::SysCtlGPIOAHBDisable(unsigned long ulGPIOPeripheral)
     //
     // Check the arguments.
     //
-    ASSERT((ulGPIOPeripheral == SYSCTL_PERIPH_GPIOA) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOB) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOC) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOD) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOE) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOF) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOG) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOH) ||
-           (ulGPIOPeripheral == SYSCTL_PERIPH_GPIOJ));
+    ASSERT((ulGPIOPeripheral == ID_PERIPH_GPIOA) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOB) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOC) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOD) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOE) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOF) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOG) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOH) ||
+           (ulGPIOPeripheral == ID_PERIPH_GPIOJ));
 
     //
     // Disable this GPIO for AHB access.

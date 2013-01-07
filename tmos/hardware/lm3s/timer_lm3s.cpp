@@ -26,13 +26,13 @@
 unsigned long  TIMER_Type::GetPeripheral(void)
 {
 	if( this == TIMER0 )
-		return SYSCTL_PERIPH_TIMER0;
+		return ID_PERIPH_TIMER0;
 	if( this == TIMER1 )
-		return SYSCTL_PERIPH_TIMER1;
+		return ID_PERIPH_TIMER1;
 	if( this == TIMER2 )
-		return SYSCTL_PERIPH_TIMER2;
+		return ID_PERIPH_TIMER2;
 	if( this == TIMER3 )
-		return SYSCTL_PERIPH_TIMER3;
+		return ID_PERIPH_TIMER3;
 	return (0);
 }
 
