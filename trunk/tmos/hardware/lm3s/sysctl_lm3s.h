@@ -217,52 +217,52 @@ void SysCtlPeripheralDisable(unsigned long ulPeripheral);
 #define SYSCTL_PERIPH_MPU       0x30000080  //!< Cortex M3 MPU
 */
 
-#define  SYSCTL_PERIPH_WDOG0       ((0<<5)|0x03) //!< Watchdog 0
-#define  SYSCTL_PERIPH_HIBERNATE   ((0<<5)|0x06) //!< Hibernation module
-#define  SYSCTL_PERIPH_ADC0        ((0<<5)|0x10) //!< ADC0
-#define  SYSCTL_PERIPH_ADC1        ((0<<5)|0x11) //!< ADC1
-#define  SYSCTL_PERIPH_PWM         ((0<<5)|0x14) //!< PWM
-#define  SYSCTL_PERIPH_CAN0        ((0<<5)|0x18) //!< CAN 0
-#define  SYSCTL_PERIPH_CAN1        ((0<<5)|0x19) //!< CAN 1
-#define  SYSCTL_PERIPH_CAN2        ((0<<5)|0x1a) //!< CAN 2
-#define  SYSCTL_PERIPH_WDOG1       ((0<<5)|0x1c) //!< Watchdog 1
-#define  SYSCTL_PERIPH_UART0       ((1<<5)|0x00) //!< UART 0
-#define  SYSCTL_PERIPH_UART1       ((1<<5)|0x01) //!< UART 1
-#define  SYSCTL_PERIPH_UART2       ((1<<5)|0x02) //!< UART 2
-#define  SYSCTL_PERIPH_SSI0        ((1<<5)|0x04) //!< SSI 0
-#define  SYSCTL_PERIPH_SSI1        ((1<<5)|0x05) //!< SSI 1
-#define  SYSCTL_PERIPH_QEI0        ((1<<5)|0x08) //!< QEI 0
-#define  SYSCTL_PERIPH_QEI1        ((1<<5)|0x09) //!< QEI 1
-#define  SYSCTL_PERIPH_I2C0        ((1<<5)|0x0c) //!< I2C 0
-#define  SYSCTL_PERIPH_I2C1        ((1<<5)|0x0e) //!< I2C 1
-#define  SYSCTL_PERIPH_TIMER0      ((1<<5)|0x10) //!< Timer 0
-#define  SYSCTL_PERIPH_TIMER1      ((1<<5)|0x11) //!< Timer 1
-#define  SYSCTL_PERIPH_TIMER2      ((1<<5)|0x12) //!< Timer 2
-#define  SYSCTL_PERIPH_TIMER3      ((1<<5)|0x13) //!< Timer 3
-#define  SYSCTL_PERIPH_COMP0       ((1<<5)|0x18) //!< Analog comparator 0
-#define  SYSCTL_PERIPH_COMP1       ((1<<5)|0x19) //!< Analog comparator 1
-#define  SYSCTL_PERIPH_COMP2       ((1<<5)|0x1a) //!< Analog comparator 2
-#define  SYSCTL_PERIPH_I2S0        ((1<<5)|0x1c) //!< I2S0
-#define  SYSCTL_PERIPH_EPI0        ((1<<5)|0x1e) //!< EPI0
-#define  SYSCTL_PERIPH_GPIOA       ((2<<5)|0x00) //!< GPIO A
-#define  SYSCTL_PERIPH_GPIOB       ((2<<5)|0x01) //!< GPIO B
-#define  SYSCTL_PERIPH_GPIOC       ((2<<5)|0x02) //!< GPIO C
-#define  SYSCTL_PERIPH_GPIOD       ((2<<5)|0x03) //!< GPIO D
-#define  SYSCTL_PERIPH_GPIOE       ((2<<5)|0x04) //!< GPIO E
-#define  SYSCTL_PERIPH_GPIOF       ((2<<5)|0x05) //!< GPIO F
-#define  SYSCTL_PERIPH_GPIOG       ((2<<5)|0x06) //!< GPIO G
-#define  SYSCTL_PERIPH_GPIOH       ((2<<5)|0x07) //!< GPIO H
-#define  SYSCTL_PERIPH_GPIOJ       ((2<<5)|0x08) //!< GPIO J
-#define  SYSCTL_PERIPH_UDMA        ((2<<5)|0x0d) //!< uDMA
-#define  SYSCTL_PERIPH_USB0        ((2<<5)|0x10) //!< USB0
-#define  SYSCTL_PERIPH_ETH         ((2<<5)|0x1c) //!< ETH
-#define  SYSCTL_PERIPH_IEEE1588    ((2<<5)|0x18) //!< IEEE1588
+#define  ID_PERIPH_WDOG0       ((0<<5)|0x03) //!< Watchdog 0
+#define  ID_PERIPH_HIBERNATE   ((0<<5)|0x06) //!< Hibernation module
+#define  ID_PERIPH_ADC0        ((0<<5)|0x10) //!< ADC0
+#define  ID_PERIPH_ADC1        ((0<<5)|0x11) //!< ADC1
+#define  ID_PERIPH_PWM         ((0<<5)|0x14) //!< PWM
+#define  ID_PERIPH_CAN0        ((0<<5)|0x18) //!< CAN 0
+#define  ID_PERIPH_CAN1        ((0<<5)|0x19) //!< CAN 1
+#define  ID_PERIPH_CAN2        ((0<<5)|0x1a) //!< CAN 2
+#define  ID_PERIPH_WDOG1       ((0<<5)|0x1c) //!< Watchdog 1
+#define  ID_PERIPH_UART0       ((1<<5)|0x00) //!< UART 0
+#define  ID_PERIPH_UART1       ((1<<5)|0x01) //!< UART 1
+#define  ID_PERIPH_UART2       ((1<<5)|0x02) //!< UART 2
+#define  ID_PERIPH_SSI0        ((1<<5)|0x04) //!< SSI 0
+#define  ID_PERIPH_SSI1        ((1<<5)|0x05) //!< SSI 1
+#define  ID_PERIPH_QEI0        ((1<<5)|0x08) //!< QEI 0
+#define  ID_PERIPH_QEI1        ((1<<5)|0x09) //!< QEI 1
+#define  ID_PERIPH_I2C0        ((1<<5)|0x0c) //!< I2C 0
+#define  ID_PERIPH_I2C1        ((1<<5)|0x0e) //!< I2C 1
+#define  ID_PERIPH_TIMER0      ((1<<5)|0x10) //!< Timer 0
+#define  ID_PERIPH_TIMER1      ((1<<5)|0x11) //!< Timer 1
+#define  ID_PERIPH_TIMER2      ((1<<5)|0x12) //!< Timer 2
+#define  ID_PERIPH_TIMER3      ((1<<5)|0x13) //!< Timer 3
+#define  ID_PERIPH_COMP0       ((1<<5)|0x18) //!< Analog comparator 0
+#define  ID_PERIPH_COMP1       ((1<<5)|0x19) //!< Analog comparator 1
+#define  ID_PERIPH_COMP2       ((1<<5)|0x1a) //!< Analog comparator 2
+#define  ID_PERIPH_I2S0        ((1<<5)|0x1c) //!< I2S0
+#define  ID_PERIPH_EPI0        ((1<<5)|0x1e) //!< EPI0
+#define  ID_PERIPH_GPIOA       ((2<<5)|0x00) //!< GPIO A
+#define  ID_PERIPH_GPIOB       ((2<<5)|0x01) //!< GPIO B
+#define  ID_PERIPH_GPIOC       ((2<<5)|0x02) //!< GPIO C
+#define  ID_PERIPH_GPIOD       ((2<<5)|0x03) //!< GPIO D
+#define  ID_PERIPH_GPIOE       ((2<<5)|0x04) //!< GPIO E
+#define  ID_PERIPH_GPIOF       ((2<<5)|0x05) //!< GPIO F
+#define  ID_PERIPH_GPIOG       ((2<<5)|0x06) //!< GPIO G
+#define  ID_PERIPH_GPIOH       ((2<<5)|0x07) //!< GPIO H
+#define  ID_PERIPH_GPIOJ       ((2<<5)|0x08) //!< GPIO J
+#define  ID_PERIPH_UDMA        ((2<<5)|0x0d) //!< uDMA
+#define  ID_PERIPH_USB0        ((2<<5)|0x10) //!< USB0
+#define  ID_PERIPH_ETH         ((2<<5)|0x1c) //!< ETH
+#define  ID_PERIPH_IEEE1588    ((2<<5)|0x18) //!< IEEE1588
 
-#define  SYSCTL_PERIPH_PLL         ((3<<5)|0x04) //!< PLL
-#define  SYSCTL_PERIPH_TEMP        ((3<<5)|0x05) //!< Temperature sensor
-#define  SYSCTL_PERIPH_MPU         ((3<<5)|0x07) //!< Cortex M3 MPU
+#define  ID_PERIPH_PLL         ((3<<5)|0x04) //!< PLL
+#define  ID_PERIPH_TEMP        ((3<<5)|0x05) //!< Temperature sensor
+#define  ID_PERIPH_MPU         ((3<<5)|0x07) //!< Cortex M3 MPU
 
-#define  SYSCTL_NO_PERIPH         	0xFF	//!< doc!
+#define  ID_NO_PERIPH         	0xFF	//!< doc!
 
 //*****************************************************************************
 //
