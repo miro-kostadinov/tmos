@@ -166,6 +166,9 @@ typedef struct
 #define EXTI_PR_PR17            0x00020000 //!< Pending bit for line 17
 #define EXTI_PR_PR18            0x00040000 //!< Pending bit for line 18
 #define EXTI_PR_PR19            0x00080000 //!< Pending bit for line 19
+#define EXTI_PR_PR20            0x00100000 //!< Pending bit for line 20
+#define EXTI_PR_PR21            0x00200000 //!< Pending bit for line 21
+#define EXTI_PR_PR22            0x00400000 //!< Pending bit for line 22
 /** @} */
 
 
