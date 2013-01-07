@@ -128,7 +128,7 @@ void PIO_Cfg(PIN_DESC cfg)
  * Configure a list with pin descriptions
  * @param list
  */
-void PIO_Cfg_List(PIN_DESC* list)
+void PIO_Cfg_List(const PIN_DESC* list)
 {
 	while(*list)
 	{
