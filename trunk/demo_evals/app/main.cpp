@@ -236,6 +236,45 @@ void uart_thread(void)
 TASK_DECLARE_STATIC(uart_task, "UART", uart_thread, 5, 100+TRACE_SIZE);
 #endif
 
+#ifndef TEST_USB
+#define TEST_USB 0
+#endif
+
+#if TEST_USB
+#include <usb_api.h>
+void usb_thread()
+{
+	char buf[8];
+	usb_handle usb_hnd;
+	RES_CODE res;
+
+	usb_hnd.tsk_open(OTG_HS_IRQn, USB_DEFAULT_MODE);
+	usb_hnd.device_config(NULL);
+
+	//endpoints
+	usb_hnd.mode0 = EPT_1;
+	usb_hnd.mode1 = EPT_1;
+
+	while(1)
+	{
+		res = usb_hnd.tsk_read(buf, sizeof(buf));
+		TRACELN("usb tsk rcv %x", res);
+		if(res <= RES_OK)
+		{
+			unsigned int dwRead;
+
+			dwRead = sizeof(buf) - usb_hnd.len;
+			TRACE(" %u bytes", dwRead);
+			if(dwRead)
+			{
+				res = usb_hnd.tsk_write(buf, dwRead);
+				TRACELN("usb tsk send %x", res);
+			}
+		}
+	}
+}
+TASK_DECLARE_STATIC(usb_task, "USBT", usb_thread, 5, 100+TRACE_SIZE);
+#endif
 
 volatile unsigned int cpu_usage;
 
@@ -279,6 +318,9 @@ int main(void)
 #endif
 #if TEST_UART
     usr_task_init_static(&uart_task_desc, true);
+#endif
+#if TEST_USB
+    usr_task_init_static(&usb_task_desc, true);
 #endif
 #if TEST_TASK_SWITCH_SPEED
     usr_task_init_static(&high_task_desc, true);
