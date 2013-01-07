@@ -14,6 +14,8 @@ void usb_svc_stall_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 	unsigned char eptnum = hnd->mode0;
     Endpoint *endpoint = &drv_info->drv_data->endpoints[eptnum];
 
+    eptnum |= 0x80; // ENDPOINT_DIRECTION_IN
+
     // Check that endpoint is in Idle state
     if (endpoint->state != ENDPOINT_STATE_IDLE)
     {
@@ -21,7 +23,7 @@ void usb_svc_stall_hook(USB_DRV_INFO drv_info, HANDLE hnd)
     } else
     {
 	    TRACE_USB(" Stall(%d)", eptnum);
-	    usb_hal_stall(drv_info->hw_base, eptnum, ENDPOINT_DIRECTION_IN);
+	    usb_hal_stall(drv_info->hw_base, eptnum);
     }
 
 }
@@ -126,16 +128,20 @@ void usb_svc_setaddress_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 */
 void usb_svc_setaddress(HANDLE hnd, unsigned int adr)
 {
-	// note: Stall will be performed for the last endpoint used by this handle!!
-	hnd->dst.as_voidptr = (void*)usb_svc_setaddress_hook;
-	hnd->src.as_int = adr;
-	hnd->hcontrol(DCR_HANDLE);
+    /* Sends a zero-length packet and then set the device address */
+    if(hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT)==RES_OK)
+    {
+    	// note: Stall will be performed for the last endpoint used by this handle!!
+    	hnd->dst.as_voidptr = (void*)usb_svc_setaddress_hook;
+    	hnd->src.as_int = adr;
+    	hnd->hcontrol(DCR_HANDLE);
+    }
 }
 //-----------------------------------------------------------------------------
 void usb_svc_halt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 {
 	unsigned int eptnum = hnd->src.as_int;
-    Endpoint *endpoint = &drv_info->drv_data->endpoints[eptnum];
+    Endpoint *endpoint = &drv_info->drv_data->endpoints[eptnum & 0xF];
 
 	TRACE_USB(" Halt(%d)", eptnum);
 
@@ -149,26 +155,25 @@ void usb_svc_halt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
         endpoint->state = ENDPOINT_STATE_HALTED;
 
         // Put endpoint into Halt state
-    	usb_hal_stall(drv_info->hw_base, eptnum, hnd->len);
+    	usb_hal_stall(drv_info->hw_base, eptnum);
 
         // Enable the endpoint interrupt
-        eptnum = 1 << eptnum;
-        if(hnd->len)
-        	drv_info->hw_base->USBRXIE |= eptnum;
-        else
-        	drv_info->hw_base->USBTXIE |= eptnum;
+//        eptnum = 1 << (eptnum & 0xF);
+//        if(hnd->src.as_int & 0x80)
+//        	drv_info->hw_base->USBRXIE |= eptnum;
+//        else
+//        	drv_info->hw_base->USBTXIE |= eptnum;
     }
 }
 
 /**
  * Sets the current device configuration
 */
-void usb_svc_halt(HANDLE hnd, unsigned int eptnum, int is_in_dir)
+void usb_svc_halt(HANDLE hnd, unsigned int eptnum)
 {
 	// note: Stall will be performed for the last endpoint used by this handle!!
 	hnd->dst.as_voidptr = (void*)usb_svc_halt_hook;
 	hnd->src.as_int = eptnum;
-	hnd->len = is_in_dir;
 	hnd->hcontrol(DCR_HANDLE);
 }
 
@@ -176,7 +181,7 @@ void usb_svc_halt(HANDLE hnd, unsigned int eptnum, int is_in_dir)
 void usb_svc_unhalt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 {
 	unsigned char eptnum = hnd->src.as_int;
-    Endpoint *endpoint = &drv_info->drv_data->endpoints[eptnum];
+    Endpoint *endpoint = &drv_info->drv_data->endpoints[eptnum & 0xF];
 
 	TRACE_USB(" Unhalt(%d)", eptnum);
 
@@ -186,18 +191,17 @@ void usb_svc_unhalt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
         endpoint->state = ENDPOINT_STATE_IDLE;
 
         // Clear FORCESTALL flag
-        usb_hal_stall_clear(drv_info->hw_base, eptnum, hnd->len);
+        usb_hal_stall_clear(drv_info->hw_base, eptnum);
     }
 }
 
 /**
  * Sets the current device configuration
 */
-void usb_svc_unhalt(HANDLE hnd, unsigned int eptnum, int is_in_dir)
+void usb_svc_unhalt(HANDLE hnd, unsigned int eptnum)
 {
 	// note: Stall will be performed for the last endpoint used by this handle!!
 	hnd->dst.as_voidptr = (void*)usb_svc_unhalt_hook;
 	hnd->src.as_int = eptnum;
-	hnd->len = is_in_dir;
 	hnd->hcontrol(DCR_HANDLE);
 }

@@ -285,8 +285,8 @@ void usb_device::SetConfiguration(const void* drv, uint8_t cfg, HANDLE hnd)
 	ShutdownInterfaces();
 	for(size=1; size<USB_NUMENDPOINTS; size++)
 	{
-		drv_data->endpoints[size].rxfifo_size =0;
-		drv_data->endpoints[size].txfifo_size =0;
+		CLEAR_EPT_IN_FIFOSZ(drv_data->endpoints[size]);
+		CLEAR_EPT_OUT_FIFOSZ(drv_data->endpoints[size]);
 	}
 	pConfiguration = GetConfiguration(cfg);
 
@@ -364,28 +364,18 @@ void usb_device::GetDeviceStatus(HANDLE hnd)
  */
 void usb_device::GetEndpointStatus(const void* drv, uint8_t eptnum, HANDLE hnd)
 {
+    unsigned short data;
 	USB_DRV_INFO drv_info = (USB_DRV_INFO )drv;
-    // Check if the endpoint exists
-    if (eptnum > USB_NUMENDPOINTS)
-    {
-    	usb_svc_stall(hnd);
-    }
-    else
-    {
-        unsigned short data;
 
-        // Check if the endpoint if currently halted
-        if (drv_info->drv_data->endpoints[eptnum].state  == ENDPOINT_STATE_HALTED)
-        {
-            data = 1;
-        } else
-        {
-        	data = 0;
-        }
-
+	if(usb_hal_get_ep_status(drv_info, eptnum, &data) )
+	{
         // Send the endpoint status
         hnd->tsk_write(&data, 2, USB_SETUP_WRITE_TOUT);
-    }
+
+	} else
+	{
+    	usb_svc_stall(hnd);
+	}
 }
 
 
@@ -487,11 +477,7 @@ void usb_device::RequestHandler(const void* drv,
     	        drv_data->usb_state = USB_STATE_DEFAULT;
             	TRACE_USB(" sAddr(%d)", pRequest->wValue & 0x7F);
 
-                /* Sends a zero-length packet and then set the device address */
-                if(hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT)==RES_OK)
-                {
-                	usb_svc_setaddress(hnd, pRequest->wValue & 0x7F);
-                }
+            	usb_svc_setaddress(hnd, pRequest->wValue & 0x7F);
                 break;
             }
 
@@ -547,7 +533,7 @@ void usb_device::RequestHandler(const void* drv,
                 switch (pRequest->GetFeatureSelector())
                 {
                     case USBFeatureRequest_ENDPOINTHALT:
-                    	usb_svc_unhalt(hnd, pRequest->GetEndpointNumber(), pRequest->GetDirection());
+                    	usb_svc_unhalt(hnd, pRequest->GetEndpointNumber());
                         hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
                         break;
 
@@ -582,7 +568,7 @@ void usb_device::RequestHandler(const void* drv,
                     break;
 
                 case USBFeatureRequest_ENDPOINTHALT:
-                	usb_svc_halt(hnd, pRequest->GetEndpointNumber(), pRequest->GetDirection());
+                	usb_svc_halt(hnd, pRequest->GetEndpointNumber());
                     hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
                     break;
 
