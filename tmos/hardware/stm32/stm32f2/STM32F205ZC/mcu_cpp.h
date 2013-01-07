@@ -47,6 +47,8 @@
 #define SPI1        CAST(SPI_TypeDef 	, SPI1_BASE)	//!< SPI 1
 #define SPI2        CAST(SPI_TypeDef 	, SPI2_BASE)	//!< SPI 2
 #define SPI3        CAST(SPI_TypeDef 	, SPI3_BASE)	//!< SPI 3
+#define OTG_HS		CAST(USB_TypeDef 	, 0x40040000)	//!< OTG HS
+#define OTG_FS		CAST(USB_TypeDef 	, 0x50000000)	//!< OTG FS
 
 /** @} */
 
@@ -126,5 +128,9 @@
 
 #define ID_NO_PERIPH 		(255)		//!< invalid index for peripheral
 /** @}*/
+
+
+/** Number of USB endpoints */
+#define CHIP_USB_NUMENDPOINTS 6		//the USB HS has 1 control, 5 IN and 5 OUT endpoints
 
 #endif /* MCU_CPP_H_ */
