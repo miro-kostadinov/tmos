@@ -14,9 +14,9 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= 
+local_cpp_src-y	+= usb_hal.cpp usb_svc.cpp
 
-local_h_src-y 	+= 
+local_h_src-y 	+= usb_opt.h usb_hal.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

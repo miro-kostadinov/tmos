@@ -15,6 +15,7 @@
 #include <usb_api.h>
 #include <usb_requests.h>
 #include <usb_svc.h>
+#include <cmsis_cpp.h>
 
 void USB_DRIVER_DATA::usb_event(USB_EVENT event)
 {
@@ -22,45 +23,25 @@ void USB_DRIVER_DATA::usb_event(USB_EVENT event)
 	{
 	case e_init:
 		usb_state = USB_STATE_DOWN;
-
 		break;
 
+	case e_powered:
+		usb_state = USB_STATE_POWERED;
+		break;
+
+	case e_susppend:
+		usb_state = USB_STATE_SUSPENDED;
+		break;
+
+
 	case e_reset:
+		usb_state = USB_STATE_DEFAULT;
     	usb_power &= ~(USB_POWER_WAKING);
     	frame_count = 0;
 		break;
 
 	default: ;
 	break;
-	}
-}
-
-HANDLE usb_end_transfer(Endpoint *endpoint, unsigned int status)
-{
-    HANDLE hnd;
-
-    hnd=endpoint->pending;
-
-	if (hnd)
-	{
-		TRACE1_USB(" EoT ");
-		endpoint->pending = hnd->next;
-		if (__get_CONTROL() & 2)
-		{
-			usr_HND_SET_STATUS(hnd, status);
-		}
-		else
-		{
-			svc_HND_SET_STATUS(hnd, status);
-		}
-	}
-	return (hnd);
-}
-
-void usb_end_transfers(Endpoint *endpoint, unsigned int status)
-{
-	while(usb_end_transfer(endpoint, status))
-	{
 	}
 }
 
@@ -132,16 +113,17 @@ TASK_DECLARE_STATIC(usbdrv_task, "USBH", (void (*)(void))usbdrv_thread, 60, 400 
 
 void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
 {
-	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-
 	switch(reason)
     {
         case DCR_RESET:
         	// drv_data constructor is not called yet!
         	usb_hal_reset(drv_info);
 
-           	usr_task_init_static(&usbdrv_task_desc, true);
-           	usbdrv_task.sp->r0.as_cvoidptr = drv_info;
+        	if(drv_info->info.peripheral_indx != ID_NO_PERIPH)
+        	{
+               	usr_task_init_static(&usbdrv_task_desc, true);
+               	usbdrv_task.sp->r0.as_cvoidptr = drv_info;
+        	}
             break;
         case DCR_HANDLE:
         		((USB_SVC_HOOK)param->dst.as_int)(drv_info, param);
@@ -150,45 +132,19 @@ void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
 
     	case DCR_CLOSE:
         case DCR_CANCEL:
-        {
-        	unsigned char eptnum;
-            Endpoint *endpoint;
-
-            eptnum = param->mode0;
-    		endpoint = &(drv_data->endpoints[eptnum]);
-    		if(param->list_remove(endpoint->pending))
-    		{
-    			svc_HND_SET_STATUS(param, FLG_SIGNALED | (param->res & FLG_OK));
-    			if(!eptnum)
-    			{
-    				TRACE1_USB("Can!");
-    			}
-    			if(!endpoint->pending && endpoint->state == ENDPOINT_STATE_SENDING)
-    				endpoint->state = ENDPOINT_STATE_IDLE;
-
-    			return;
-    		}
-
+        	usb_hal_cancel_hnd(drv_info, param);
     		break;
-        }
 
         case DCR_OPEN:
-		  {
-
 			param->res = RES_OK;
 			break;
-		  }
-
-
-
     }
 }
 
 void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd)
 {
 	unsigned char eptnum;
-    Endpoint *endpoint;
-    HANDLE prev, tmp;
+    HANDLE tmp;
     USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 
 	hnd->next = NULL;
@@ -234,32 +190,7 @@ void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd)
 
 	if (hnd->cmd & FLAG_WRITE)
     {
-		eptnum = hnd->mode1;
-	    TRACE_USB(" Write%d(%d) ", eptnum , hnd->len);
-		endpoint = &(drv_data->endpoints[eptnum]);
-	    if( (prev=endpoint->pending) )
-	    {
-	    	while(prev->next)
-	    		prev = prev->next;
-	    	prev->next = hnd;
-	    } else
-	    {
-		    if (endpoint->state != ENDPOINT_STATE_IDLE)
-		    {
-				svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
-		    } else
-		    {
-			    endpoint->state = ENDPOINT_STATE_SENDING;
-			    endpoint->pending = hnd;		//sending
-			    usb_write_payload(ENTPOINT_FIFO(drv_info->hw_base, eptnum),
-						hnd, endpoint->txfifo_size);
-			    usb_hal_txpktrdy(drv_info->hw_base, eptnum, hnd->len);
-
-
-			    // Enable interrupt on endpoint
-			    ENTPOINT_ENABLE_INT(drv_info->hw_base, eptnum);
-		    }
-	    }
+		usb_start_tx(drv_info, hnd);
 	    return;
     }
 
@@ -267,38 +198,7 @@ void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd)
 	if (hnd->cmd & FLAG_READ)
     {
 		eptnum = hnd->mode0;
-		endpoint = &(drv_data->endpoints[eptnum]);
-
-//	    TRACE_USB(" Read%d(%d) ", eptnum, hnd->len);
-
-		if(endpoint->state == ENDPOINT_STATE_RECEIVING_OFF)
-		{
-    		endpoint->rxfifo_cnt = usb_read_payload(ENTPOINT_FIFO(drv_info->hw_base,
-					eptnum), hnd, endpoint->rxfifo_cnt);
-            if (endpoint->rxfifo_cnt == 0)
-            {
-            	usb_ack_packet(drv_info->hw_base, endpoint, eptnum);
-            	endpoint->state = ENDPOINT_STATE_IDLE;
-            }
-		}
-
-		if(hnd->len)
-		{
-		    if( (prev=endpoint->pending) )	//receiving
-		    {
-		    	while(prev->next)
-		    		prev = prev->next;
-		    	prev->next = hnd;
-		    } else
-		    	endpoint->pending = hnd;	//receiving
-
-		    // Enable interrupt on endpoint
-		    ENTPOINT_ENABLE_INT(drv_info->hw_base, eptnum);
-		} else
-		{
-        	svc_HND_SET_STATUS(hnd, RES_SIG_OK);
-		}
-
+		usb_start_rx(drv_info, hnd, eptnum, &(drv_data->endpoints[eptnum]));
 	    return;
     }
 

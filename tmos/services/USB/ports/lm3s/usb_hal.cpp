@@ -13,6 +13,79 @@
 #include <gpio_drv.h>
 #include <usb_drv.h>
 
+bool usb_hal_get_ep_status(USB_DRV_INFO drv_info, uint8_t eptnum, uint16_t* data)
+{
+	eptnum &= 0xF;
+
+	// Check if the endpoint exists
+    if (eptnum  > USB_NUMENDPOINTS)
+    {
+    	return false;
+    }
+    else
+    {
+        // Check if the endpoint if currently halted
+        if (drv_info->drv_data->endpoints[eptnum].state  == ENDPOINT_STATE_HALTED)
+        {
+            *data = 1;
+        } else
+        {
+        	*data = 0;
+        }
+
+    }
+    return true;
+}
+
+static HANDLE usb_end_transfer(Endpoint *endpoint, unsigned int status)
+{
+    HANDLE hnd;
+
+    hnd=endpoint->pending;
+
+	if (hnd)
+	{
+		TRACE1_USB(" EoT ");
+		endpoint->pending = hnd->next;
+		if (__get_CONTROL() & 2)
+		{
+			usr_HND_SET_STATUS(hnd, status);
+		}
+		else
+		{
+			svc_HND_SET_STATUS(hnd, status);
+		}
+	}
+	return (hnd);
+}
+
+void usb_end_transfers(Endpoint *endpoint, unsigned int status)
+{
+	while(usb_end_transfer(endpoint, status))
+	{
+	}
+}
+
+void usb_hal_cancel_hnd(USB_DRV_INFO drv_info, HANDLE hnd)
+{
+	unsigned char eptnum;
+    Endpoint *endpoint;
+
+    eptnum = hnd->mode0; //TODO mode1?
+	endpoint = &(drv_info->drv_data->endpoints[eptnum]);
+	if(hnd->list_remove(endpoint->pending))
+	{
+		svc_HND_SET_STATUS(hnd, FLG_SIGNALED | (hnd->res & FLG_OK));
+		if(!eptnum)
+		{
+			TRACE1_USB("Can!");
+		}
+		if(!endpoint->pending && endpoint->state == ENDPOINT_STATE_SENDING)
+			endpoint->state = ENDPOINT_STATE_IDLE;
+
+	}
+}
+
 void usb_write_payload(volatile void* dst, HANDLE hnd,	unsigned int size)
 {
     while(1)
@@ -98,58 +171,62 @@ void usb_hal_reset(USB_DRV_INFO drv_info)
 			drv_info->info.isr_priority);
 }
 
-void usb_hal_stall(USB_Type* hw_base, unsigned int eptnum, int is_in_dir)
+void usb_hal_stall(USB_Type* hw_base, unsigned int eptnum)
 {
-    if (eptnum == EPT_0)
+	uint32_t ep_num = eptnum & 0xF;
+
+    if (ep_num == EPT_0)
 	{
 		hw_base->DEVICE_EP[0].USBTXCSRL = USB_USBTXCSRL0_STALL;
 	}
 	else
 	{
-		if (is_in_dir)
+		if (eptnum & 0x80)
 		{
-			hw_base->DEVICE_EP[eptnum].USBTXCSRL = USB_USBTXCSRL_STALL;
+			hw_base->DEVICE_EP[ep_num].USBTXCSRL = USB_USBTXCSRL_STALL;
 		}
 		else
 		{
-			hw_base->DEVICE_EP[eptnum].USBRXCSRL = USB_USBRXCSRL_STALL;
+			hw_base->DEVICE_EP[ep_num].USBRXCSRL = USB_USBRXCSRL_STALL;
 		}
 	}
 }
 
-void usb_hal_stall_clear(USB_Type* hw_base, unsigned int eptnum, int is_in_dir)
+void usb_hal_stall_clear(USB_Type* hw_base, unsigned int eptnum)
 {
-    if (eptnum == EPT_0)
+	uint32_t ep_num = eptnum & 0xF;
+
+    if (ep_num == EPT_0)
 	{
 		hw_base->DEVICE_EP[0].USBTXCSRL &= ~USB_USBTXCSRL0_STALLED;
 	}
 	else
 	{
-		if (is_in_dir)
+		if (eptnum & 0x80)
 		{
 	        // Clear the stall on an IN endpoint.
-	        hw_base->DEVICE_EP[eptnum].USBTXCSRL &=
+	        hw_base->DEVICE_EP[ep_num].USBTXCSRL &=
 		            ~(USB_USBTXCSRL_STALL | USB_USBTXCSRL_STALLED);
 
 	        // Reset the data toggle.
-	        hw_base->DEVICE_EP[eptnum].USBTXCSRL |= USB_USBTXCSRL_CLRDT;
+	        hw_base->DEVICE_EP[ep_num].USBTXCSRL |= USB_USBTXCSRL_CLRDT;
 
 		}
 		else
 		{
 	        // Clear the stall on an OUT endpoint.
-			hw_base->DEVICE_EP[eptnum].USBRXCSRL &=
+			hw_base->DEVICE_EP[ep_num].USBRXCSRL &=
 	            ~(USB_USBRXCSRL_STALL | USB_USBRXCSRL_STALLED);
 
 	        // Reset the data toggle.
-			hw_base->DEVICE_EP[eptnum].USBRXCSRL |= USB_USBRXCSRL_CLRDT;
+			hw_base->DEVICE_EP[ep_num].USBRXCSRL |= USB_USBRXCSRL_CLRDT;
 		}
 	}
 }
 
 /** PKTRDY must be set to enable transmission of the packet that was loaded
  */
-void usb_hal_txpktrdy(USB_Type* hw_base, unsigned int eptnum, int len)
+static void usb_hal_txpktrdy(USB_Type* hw_base, unsigned int eptnum, int len)
 {
 	unsigned int flags;
 
@@ -167,6 +244,72 @@ void usb_hal_txpktrdy(USB_Type* hw_base, unsigned int eptnum, int len)
 
 }
 
+void usb_start_tx(USB_DRV_INFO drv_info, HANDLE hnd)
+{
+	Endpoint *endpoint;
+	uint32_t eptnum;
+	HANDLE prev;
+
+	eptnum = hnd->mode1;
+    TRACE_USB(" Write%d(%d) ", eptnum , hnd->len);
+	endpoint = &(drv_info->drv_data->endpoints[eptnum]);
+    if( (prev=endpoint->pending) )
+    {
+    	while(prev->next)
+    		prev = prev->next;
+    	prev->next = hnd;
+    } else
+    {
+	    if (endpoint->state != ENDPOINT_STATE_IDLE)
+	    {
+			svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
+	    } else
+	    {
+		    endpoint->state = ENDPOINT_STATE_SENDING;
+		    endpoint->pending = hnd;		//sending
+
+		    usb_write_payload(ENTPOINT_FIFO(drv_info->hw_base, eptnum), hnd, endpoint->txfifo_size);
+		    usb_hal_txpktrdy(drv_info->hw_base, eptnum, hnd->len);
+
+		    // Enable interrupt on endpoint
+		    ENTPOINT_ENABLE_INT(drv_info->hw_base, eptnum);
+	    }
+    }
+}
+
+void usb_start_rx(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptnum, Endpoint *endpoint)
+{
+	if(endpoint->state == ENDPOINT_STATE_RECEIVING_OFF)
+	{
+		endpoint->rxfifo_cnt = usb_read_payload(ENTPOINT_FIFO(drv_info->hw_base,
+				eptnum), hnd, endpoint->rxfifo_cnt);
+        if (endpoint->rxfifo_cnt == 0)
+        {
+        	usb_ack_packet(drv_info->hw_base, endpoint, eptnum);
+        	endpoint->state = ENDPOINT_STATE_IDLE;
+        }
+	}
+
+	if(hnd->len)
+	{
+	    HANDLE prev;
+
+	    if( (prev=endpoint->pending) )	//receiving
+	    {
+	    	while(prev->next)
+	    		prev = prev->next;
+	    	prev->next = hnd;
+	    } else
+	    	endpoint->pending = hnd;	//receiving
+
+	    // Enable interrupt on endpoint
+	    ENTPOINT_ENABLE_INT(drv_info->hw_base, eptnum);
+	} else
+	{
+    	svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+	}
+}
+
 /** Configure as device
  *
  * @param drv_info
@@ -181,7 +324,7 @@ void usb_hal_configure(USB_DRV_INFO drv_info)
 	SysCtlPeripheralReset(drv_info->info.peripheral_indx);
 
 	// Enable USB related pins
-	PIO_Cfg_List((PIN_DESC*)usb_pins);
+	PIO_Cfg_List(drv_info->cfg->usb_pins);
 
     // Turn on USB Phy clock.
     SYSCTL->RCC2 &= ~SYSCTL_RCC2_USBPWRDN;
@@ -480,11 +623,11 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
     TRACE_USB(" CfgEp(%d)", eptnum);
 }
 
-/** USB bus reset
+/** Handle USB bus reset
  *
  * @param drv_info
  */
-void usb_hal_bus_reset(USB_DRV_INFO drv_info)
+static void usb_handle_bus_reset(USB_DRV_INFO drv_info)
 {
 	const USBDDriverDescriptors * dev_descriptors;
 
@@ -969,7 +1112,7 @@ static void usb_b_usbis_handler(USB_DRV_INFO drv_info, unsigned int status)
         {
     		TRACE1_USB(" reset");
         	drv_data->usb_event(e_reset);
-        	usb_hal_bus_reset(drv_info);
+        	usb_handle_bus_reset(drv_info);
         }
 
         // Suspend was signaled on the bus.

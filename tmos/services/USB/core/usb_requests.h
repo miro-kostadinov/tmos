@@ -180,7 +180,7 @@ struct USBGenericRequest
      * Returns the endpoint number targetted by a given request.
      * \return Endpoint number.
      */
-	unsigned int GetEndpointNumber() const {return (wIndex & 0xF); };
+	unsigned int GetEndpointNumber() const {return (wIndex & 0xFF); };
 
 
     /**

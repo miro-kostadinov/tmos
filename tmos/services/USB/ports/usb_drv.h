@@ -72,21 +72,12 @@ enum USB_OTG_MODE : unsigned char
 enum USB_EVENT
 {
 	e_init,						//!< Init after Driver (DCR) RESET
+	e_powered,
 	e_reset,					//!< USB bus reset signaled
 	e_susppend,
 	e_resume,
 	e_disconnect,
 	e_wakeup
-};
-
-struct Endpoint
-{
-	unsigned char	state;		  //!< Endpoint state
-	unsigned char 	bank;		  //!< current bank if dual banks are used
-	unsigned short 	txfifo_size;  //!< Endpoint size in bytes
-	unsigned short 	rxfifo_size;  //!< Endpoint size in bytes
-	unsigned short 	rxfifo_cnt;	  //!< Bytes available in the rx Fifo
-	HANDLE 			pending;
 };
 
 #ifndef USB_NUMENDPOINTS
@@ -134,6 +125,7 @@ struct USB_DRIVER_INFO
 	USB_CONTROLLER *	hw_base;	//!< pointer to the hardware peripheral
 	USB_DRIVER_DATA* 	drv_data;	//!< pointer to the driver data
 	const USBDDriverDescriptors * dev_descriptors;
+	const usb_config_t*		cfg;		//!< configuration port-specific parameters
 };
 
 typedef const USB_DRIVER_INFO* USB_DRV_INFO;
@@ -142,6 +134,5 @@ void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param);
 void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd);
 void USB_B_ISR(USB_DRV_INFO drv_info);
 
-void usb_end_transfers(Endpoint *endpoint, unsigned int status);
 
 #endif /* USB_DRV_H_ */
