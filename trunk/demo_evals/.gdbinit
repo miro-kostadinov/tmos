@@ -16,62 +16,6 @@ end
 # define user command: disable all interrupts and load program
 #-------------------------------------------------------------
 
-#-----------------------
-# boot OCD reset
-#-----------------------
-define bccc
-	set $temp0 = *(int*)(0)
-	set $temp1 = *(int*)(0x00100000)
-	set $temp2 = *(int*)(0x00200000)
-	if $temp1 == $temp2
-		set $temp2 = $temp2+1
-		mon mww 0x00200000 $temp2
-		set $temp0 = *(int*)(0)
-	end
-	if $temp0 == $temp2
-		mon mww 0xffffff00 1
-	end
-	mon mww 0xFFFFF20C 0xFFFFFFFF
-	mon reg cpsr 0xd3
-	mon reg pc 0
-	si
-end
-
-#-----------------------
-# boot PEEDI reset
-#-----------------------
-define bcc
-	set $temp0 = *(int*)(0)
-	set $temp1 = *(int*)(0x00100000)
-	set $temp2 = *(int*)(0x00200000)
-	if $temp1 == $temp2
-		set $temp2 = $temp2+1
-		mon m w 0x00200000 $temp2
-		set $temp0 = *(int*)(0)
-	end
-	if $temp0 == $temp2
-		mon m w 0xffffff00 1
-	end
-	mon m w 0xFFFFF20C 0xFFFFFFFF
-	mon set pc 0
-	mon set cpsr 0xd3
-	mon set pc 0
-	si
-end
-
-#-----------------------
-# app OCD reset
-#-----------------------
-define ccc
-	mon mww 0xE000ED0C 0x05FA0007
-	#reset flash
-	mon mww 0x400fe0f0 1					
-	set $sp = *(int*)(0)
-	set $pc = *(int*)(4)
-	mon reg xPSR 0x01000000
-	si	
-
-end
 
 #-----------------------
 # app PEEDI reset
@@ -79,27 +23,88 @@ end
 define cc
 	# ------------- reset core
 
-	# NVIC_APINT = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ | NVIC_APINT_VECT_CLR_ACT | NVIC_APINT_VECT_RESET
-	# ... System reset request | Clear active NMI/fault info | System reset
-	#mon m w 0xE000ED0C 0x05FA0007	
-	mon m w 0xE000ED0C 0x05FA0003	
-	mon set xPSR 0x01000000
-	#mon res	
+	set $_ID = *(unsigned int*)0xE0042000
+	if $_ID >0
+		echo ---------- STM32 reset ---------------- \n
+	
+		# NVIC_APINT = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ | NVIC_APINT_VECT_CLR_ACT | NVIC_APINT_VECT_RESET
+		# ... System reset request | Clear active NMI/fault info | System reset
+		#mon m w 0xE000ED0C 0x05FA0007	
+		mon m w 0xE000ED0C 0x05FA0003	
+		mon set xPSR 0x01000000
+		#mon res	
 
-	set $_start = *(int*)4
-	if $_start >= 0x01000000
-		echo PROBLEM> Invalid flash content!
+		set $_start = *(int*)4
+		if $_start >= 0x01000000
+			echo PROBLEM> Invalid flash content!
+		end
+	
+		#jump to app
+	
+		# NVIC_ST_CTRL
+		mon m w 0xe000e010 0x00
+		set $sp = *(int *)0x00
+		set $pc = *(int *)0x04
+		#sys_reset_handler
+		si
+	else
+		echo ---------- LM3S reset -------------------- \n
+		mon m w 0xE000ED0C 0x05FA0007
+		mon set xPSR 0x01000000
+		#mon res	
+
+		#reset flash for LM3S
+		if *(int*)0x400fe0f0 == 0x00000001
+			echo Mapping flash...\n
+			mon m w 0x400fe0f0 1	
+			set $_start = *(int*)4
+			if $_start < 0x01000000
+				#mon res
+				set $sp = *(int *)0x0
+				set $pc = $_start
+	
+				if $_start == 0x9b9
+					set $_start = *(int*)0x1004
+					echo Execute boot ROM and FLASH PATCH...\n
+				else				
+					echo Execute boot ROM...\n
+				end
+	
+				tbreak  * ((int*)$_start)
+				c
+			else
+				echo PROBLEM> Invalid flash content!
+			end
+	
+		else
+			set $_start = *(int*)4
+			if $_start < 0x01000000
+				if $_start == 0x9b9
+					echo Execute FLASH PATCH...\n
+	
+					#mon res
+					mon m w 0xE000ED0C 0x05FA0007
+					set $sp = *(int *)0x0
+					set $pc = $_start
+
+					set $_start = *(int*)0x1004
+					tbreak  * ((int*)$_start)
+					c
+				end
+			else
+				echo PROBLEM> Invalid flash content!
+			end
+		end
+	
+		#jump to app
+	
+		mon m w 0x400FE044 0xFFFFFFFF
+		mon m w 0xe000e010 0x00
+		mon m w 0x400FE044 0x0
+		set $sp = *(int *)0x4100
+		set $pc = sys_reset_handler
+		si
 	end
-	
-	#jump to app
-	
-	# NVIC_ST_CTRL
-	mon m w 0xe000e010 0x00
-	set $sp = *(int *)0x00
-	set $pc = *(int *)0x04
-	#sys_reset_handler
-	si
-
 end
 
 
