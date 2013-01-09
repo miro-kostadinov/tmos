@@ -20,4 +20,9 @@ void usb_svc_setaddress(HANDLE hnd, unsigned int adr);
 void usb_svc_halt(HANDLE hnd, unsigned int eptnum);
 void usb_svc_unhalt(HANDLE hnd, unsigned int eptnum);
 
+/**
+ * Send zero length packet for the status stage of control transaction
+ */
+#define usb_svc_send_control_status(hnd) hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT)
+
 #endif /* USB_SVC_H_ */

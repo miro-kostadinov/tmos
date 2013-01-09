@@ -20,4 +20,13 @@ void usb_svc_setaddress(HANDLE hnd, unsigned int adr);
 void usb_svc_halt(HANDLE hnd, unsigned int eptnum);
 void usb_svc_unhalt(HANDLE hnd, unsigned int eptnum);
 
+
+/**
+ * This is suppose to send zero length packet for the status stage of control
+ * transaction.
+ * In fact it doesn't do anything... (LM3S specific )
+ *
+ */
+#define usb_svc_send_control_status(hnd) while(0)
+
 #endif /* USB_SVC_H_ */

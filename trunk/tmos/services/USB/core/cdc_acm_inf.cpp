@@ -29,7 +29,7 @@ void usb_cdc_acm_interface::RequestHandler(const void* drv,
     	if (hnd->tsk_read(&lineCoding, sizeof(lineCoding), USB_SETUP_READ_TOUT)==RES_OK)
 		{
 			//read OK
-			TRACE_USB("rate=%d", lineCoding.dwDTERate);
+			TRACE_USB(" rate=%d", lineCoding.dwDTERate);
 			set_line_coding(drv);
 //			hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
 		}
@@ -49,8 +49,8 @@ void usb_cdc_acm_interface::RequestHandler(const void* drv,
         bControlLineState = (uint8_t)pRequest->wValue;
 
         set_control_line_state(drv);
-//        hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
 
+        usb_svc_send_control_status(hnd);
         break;
     }
 
