@@ -242,18 +242,19 @@ TASK_DECLARE_STATIC(uart_task, "UART", uart_thread, 5, 100+TRACE_SIZE);
 
 #if TEST_USB
 #include <usb_api.h>
+#include <usb_setup.h>
 void usb_thread()
 {
 	char buf[8];
 	usb_handle usb_hnd;
 	RES_CODE res;
 
-	usb_hnd.tsk_open(OTG_HS_IRQn, USB_DEFAULT_MODE);
+	usb_hnd.tsk_open(USB_TEST_DRIVER, USB_DEFAULT_MODE);
 	usb_hnd.device_config(NULL);
 
 	//endpoints
-	usb_hnd.mode0 = EPT_1;
-	usb_hnd.mode1 = EPT_1;
+	usb_hnd.mode0 = USB_CDC_OUT_EPT;
+	usb_hnd.mode1 = USB_CDC_IN_EPT;
 
 	while(1)
 	{

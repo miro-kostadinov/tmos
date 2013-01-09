@@ -158,4 +158,7 @@ extern const WDT_DRIVER_INFO wdt_driver;
 extern   signed char const DRV_RESET_FIRST_TABLE[];
 extern "C" char* const DRV_TABLE[INALID_DRV_INDX+1];
 
+#define USB_TEST_DRIVER USB0_IRQn
+#define TEST_USB 1
+
 #endif
