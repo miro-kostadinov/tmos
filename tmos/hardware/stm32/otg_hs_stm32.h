@@ -625,10 +625,11 @@ typedef struct
 #define OTG_DIEPCTL_STALL           (1u<<21)    //!< STALL handshake.
 #define OTG_DIEPCTL_SNPM            (1u<<20)    //!< Snoop mode.
 #define OTG_DIEPCTL_EPTYP_Msk       (3<<18)     //!< Endpoint type mask.
-#define OTG_DIEPCTL_EPTYP_CTRL      (0u<<18)    //!< Control.
-#define OTG_DIEPCTL_EPTYP_ISO       (1u<<18)    //!< Isochronous.
-#define OTG_DIEPCTL_EPTYP_BULK      (2u<<18)    //!< Bulk.
-#define OTG_DIEPCTL_EPTYP_INTR      (3u<<18)    //!< Interrupt.
+#define OTG_DIEPCTL_EPTYP(n)        ((n)<<18)   //!<  Endpoint type value.
+#define OTG_DIEPCTL_EPTYP_CTRL      (0u<<18)    //!<  Control.
+#define OTG_DIEPCTL_EPTYP_ISO       (1u<<18)    //!<  Isochronous.
+#define OTG_DIEPCTL_EPTYP_BULK      (2u<<18)    //!<  Bulk.
+#define OTG_DIEPCTL_EPTYP_INTR      (3u<<18)    //!<  Interrupt.
 #define OTG_DIEPCTL_NAKSTS          (1u<<17)    //!< NAK status.
 #define OTG_DIEPCTL_EONUM           (1u<<16)    //!< Even/odd frame.		(ep 1..7)
 #define OTG_DIEPCTL_DPID            (1u<<16)    //!< Endpoint data PID.		(ep 1..7)
@@ -674,6 +675,7 @@ typedef struct
 #define OTG_DOEPCTL_STALL           (1u<<21)    //!< STALL handshake.
 #define OTG_DOEPCTL_SNPM            (1u<<20)    //!< Snoop mode.
 #define OTG_DOEPCTL_EPTYP_Msk	    (3u<<18)    //!< Endpoint type mask.
+#define OTG_DOEPCTL_EPTYP(n)	    ((n)<<18)   //!<  Endpoint type value
 #define OTG_DOEPCTL_EPTYP_CTRL      (0u<<18)    //!<  Control.
 #define OTG_DOEPCTL_EPTYP_ISO       (1u<<18)    //!<  Isochronous.
 #define OTG_DOEPCTL_EPTYP_BULK      (2u<<18)    //!<  Bulk.
