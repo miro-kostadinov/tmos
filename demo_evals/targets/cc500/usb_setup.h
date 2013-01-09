@@ -9,3 +9,6 @@
 #include <cdc_descriptors.h>
 
 extern const USBDDriverDescriptors cc500_descriptors;
+
+#define USB_CDC_OUT_EPT 	EPT_1
+#define USB_CDC_IN_EPT 		EPT_2
