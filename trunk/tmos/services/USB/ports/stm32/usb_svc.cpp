@@ -136,6 +136,7 @@ void usb_svc_setaddress(HANDLE hnd, unsigned int adr)
 	hnd->dst.as_voidptr = (void*)usb_svc_setaddress_hook;
 	hnd->src.as_int = adr;
 	hnd->hcontrol(DCR_HANDLE);
+	hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
 }
 //-----------------------------------------------------------------------------
 void usb_svc_halt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
