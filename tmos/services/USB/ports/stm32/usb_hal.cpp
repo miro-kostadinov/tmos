@@ -9,28 +9,6 @@
 #include <usb_hal.h>
 #include <cmsis_cpp.h>
 
-void trace_usb_state(USB_TypeDef* otg)
-{
-	return;
-	TRACELN_USB("\r\nDIEPCTL  =%08X", otg->in_ept_regs[0].DIEPCTL);
-	TRACELN_USB("DIEPTSIZ =%08X", otg->in_ept_regs[0].DIEPTSIZ);
-	TRACELN_USB("DTXFSTS  =%08X", otg->in_ept_regs[0].DTXFSTS);
-	TRACELN_USB("DOEPCTL  =%08X", otg->out_ept_regs[0].DOEPCTL);
-	TRACELN_USB("DOEPTSIZ =%08X", otg->out_ept_regs[0].DOEPTSIZ);
-	TRACELN_USB("DAINTMSK =%08X", otg->device_regs.DAINTMSK);
-	TRACELN_USB("DIEPEMPMS=%08X", otg->device_regs.DIEPEMPMSK);
-	TRACELN_USB("DOEPMSK  =%08X %08X", otg->device_regs.DOEPMSK, otg->out_ept_regs[0].DOEPINT & ~otg->device_regs.DOEPMSK);
-	TRACELN_USB("DEACHMSK =%08X", otg->device_regs.DEACHMSK);
-	TRACELN_USB("GINTMSK  =%08X %08X", otg->core_regs.GINTMSK, otg->core_regs.GINTSTS & ~otg->core_regs.GINTMSK);
-	TRACELN_USB("DCFG     =%08X", otg->device_regs.DCFG);
-	TRACELN_USB("DCTL     =%08X", otg->device_regs.DCTL);
-	TRACELN_USB("DSTS     =%08X", otg->device_regs.DSTS);
-	TRACELN_USB("DTHRCTL  =%08X", otg->device_regs.DTHRCTL);
-	TRACELN_USB("GAHBCFG  =%08X", otg->core_regs.GAHBCFG);
-	TRACELN_USB("GUSBCFG  =%08X", otg->core_regs.GUSBCFG);
-
-}
-
 bool usb_hal_get_ep_status(USB_DRV_INFO drv_info, uint8_t eptnum, uint16_t* data)
 {
 	uint32_t num = eptnum & 0xF;
@@ -467,24 +445,6 @@ void stm32_otg_set_current_mode(USB_CONTROLLER* otg , uint32_t mode)
 }
 
 
-//static void usb_write_payload(USB_DRV_INFO drv_info, HANDLE hnd)
-//{
-//	__IO uint32_t *fifo;
-//	uint32_t len;
-//
-//	if ( !(drv_info->cfg->stm32_otg & CFG_STM32_OTG_DMA_EN))
-//	{
-//
-//		len = (hnd->len + 3) / 4;
-//		hnd->len = 0;
-//		fifo = drv_info->hw_base->DFIFO[hnd->mode1].DFIFO;
-//		while (len--)
-//		{
-//			fifo[0] = *hnd->src.as_intptr++;
-//		}
-//	}
-//}
-
 
 unsigned int usb_read_payload(volatile void* src, HANDLE hnd, unsigned int size)
 {
@@ -573,28 +533,6 @@ void usb_hal_stall_clear(USB_TypeDef* hw_base, unsigned int eptnum)
 	*reg = value;
 }
 
-/** PKTRDY must be set to enable transmission of the packet that was loaded
- */
-void usb_hal_txpktrdy(USB_TypeDef* hw_base, unsigned int eptnum, int len)
-{
-/*
-	unsigned int flags;
-
-	if(eptnum)
-	{
-		flags = USB_USBTXCSRL_TXRDY;
-	} else
-	{
-		if(len)
-			flags = USB_USBTXCSRL0_TXRDY;
-		else
-			flags = USB_USBTXCSRL0_TXRDY | USB_USBTXCSRL0_DATAEND;
-	}
-    hw_base->DEVICE_EP[eptnum].USBTXCSRL = flags;
-*/
-
-}
-
 /** Configure as device
  * called from the usbdrv thread
  * @param drv_info
@@ -669,6 +607,8 @@ void usb_ept_config(USB_DRV_INFO drv_info, uint32_t eptnum, const USBGenericDesc
 	ep_dir_state_t* epdir;
 	uint32_t ep_num = eptnum & 0xF;
 	USB_TypeDef* otg = drv_info->hw_base;
+	__IO uint32_t* depctl;
+	uint32_t reg, ept_type, fifo_sz;
 
     if(ep_num >= USB_NUMENDPOINTS)
     {
@@ -682,11 +622,39 @@ void usb_ept_config(USB_DRV_INFO drv_info, uint32_t eptnum, const USBGenericDesc
     	 Write or Read state */
     	usb_ept_reset(drv_info, eptnum);
 
+        // set fifo size
+    	ept_type = ENDPOINT_TYPE_CONTROL;
+    	switch(pDescriptor->bDescriptorType)
+    	{
+    	case DEVICE_DESCRIPTOR:
+        	fifo_sz = ((USBDeviceDescriptor *)pDescriptor)->bMaxPacketSize0;
+        	break;
+
+    	case ENDPOINT_DESCRIPTOR:
+    		fifo_sz = ((const USBEndpointDescriptor*)pDescriptor)->wMaxPacketSize;
+    		ept_type = ((const USBEndpointDescriptor*)pDescriptor)->GetType();
+    		break;
+
+    	default:
+    		fifo_sz = 0;
+        }
+
         if(eptnum & 0x80)
         {
-        	eptnum &= 0xF;
             epdir = &drv_info->drv_data->endpoints[ep_num].epd_in;
         	otg->device_regs.DAINTMSK |= OTG_DAINTMSK_IEPM(ep_num);
+
+        	depctl = &otg->in_ept_regs[ep_num].DIEPCTL;
+        	reg = *depctl;
+        	if(!(reg & OTG_DIEPCTL_USBAEP))
+        	{
+        		reg &= ~(OTG_DIEPCTL_TXFNUM_Msk | OTG_DIEPCTL_EPTYP_Msk |
+        				OTG_DIEPCTL_MPSIZ_Msk);
+        		reg |= OTG_DIEPCTL_SD0PID | OTG_DIEPCTL_TXFNUM(ep_num) |
+        				OTG_DIEPCTL_EPTYP(ept_type) | OTG_DIEPCTL_USBAEP |
+        				OTG_DIEPCTL_MPSIZ(fifo_sz);
+            	*depctl = reg;
+        	}
         } else
         {
             epdir = &drv_info->drv_data->endpoints[ep_num].epd_out;
@@ -696,24 +664,33 @@ void usb_ept_config(USB_DRV_INFO drv_info, uint32_t eptnum, const USBGenericDesc
         		otg->out_ept_regs[0].DOEPTSIZ = OTG_DOEPTSIZ_STUPCNT(3) |
         			OTG_DOEPTSIZ_PKTCNT(1) | OTG_DOEPTSIZ_XFRSIZ(8 * 3);
         	}
+        	depctl = &otg->out_ept_regs[ep_num].DOEPCTL;
+        	reg = *depctl;
+        	if(!(reg & OTG_DOEPCTL_USBAEP))
+        	{
+        		reg &= ~( OTG_DOEPCTL_EPTYP_Msk | OTG_DOEPCTL_MPSIZ_Msk);
+        		reg |= OTG_DOEPCTL_SD0PID | OTG_DOEPCTL_EPTYP(ept_type) |
+        				OTG_DOEPCTL_USBAEP | OTG_DOEPCTL_MPSIZ(fifo_sz);
+            	*depctl = reg;
+        	}
         }
 
-        // set fifo size
-    	switch(pDescriptor->bDescriptorType)
-    	{
-    	case DEVICE_DESCRIPTOR:
-        	epdir->epd_fifo_sz = ((USBDeviceDescriptor *)pDescriptor)->bMaxPacketSize0;
-        	break;
-
-    	case ENDPOINT_DESCRIPTOR:
-    		epdir->epd_fifo_sz = ((const USBEndpointDescriptor*)pDescriptor)->wMaxPacketSize;
-    		break;
-
-    	default:
-    		epdir->epd_fifo_sz = 0;
-        }
-
+		epdir->epd_fifo_sz = fifo_sz;
     	epdir->epd_state = ENDPOINT_STATE_IDLE;
+
+    	if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_DEDICATED_EP1)
+    	{
+    		switch(eptnum)
+    		{
+    		case 0x01:
+    			NVIC->NVIC_EnableIRQ(OTG_HS_EP1_OUT_IRQn);
+    			break;
+    		case 0x81:
+    			NVIC->NVIC_EnableIRQ(OTG_HS_EP1_IN_IRQn);
+    			break;
+    		}
+
+    	}
 //        // Set the maximum packet size.
 //        hw_base->DEVICE_EP[eptnum].USBTXMAXP = pEndpoint->txfifo_size;
 //
@@ -770,325 +747,26 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
 
 void usb_hal_config_fifo(USB_DRV_INFO drv_info)
 {
-/*
-	unsigned int size, limit, address, size_code;
+	uint32_t adr, size;
+	USB_TypeDef* otg = drv_info->hw_base;
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
 
-	TRACELN1_USB("USB FIFOS:");
 
-	// Loop and try the best limit
-	limit = 1024;
-	do
+	/* EP0 TX*/
+	adr = drv_info->cfg->rx_fifo_sz;
+	size = drv_data->endpoints[0].epd_in.epd_fifo_sz;
+	TRACELN_USB("0:%x -> %x", otg->core_regs.DIEPTXF0_HNPTXFSIZ, adr + OTG_DIEPTXF_INEPTXFD(size));
+	otg->core_regs.DIEPTXF0_HNPTXFSIZ = adr + OTG_DIEPTXF_INEPTXFD(size);
+
+	/* EP1 - EP5 TX*/
+	for(uint32_t i=0; i<USB_NUMENDPOINTS; i++)
 	{
-		//ept1 starts at 64
-		address = 64;
-		for(int eptnum=1; eptnum<USB_NUMENDPOINTS; eptnum++)
-		{
-			size = drv_data->endpoints[eptnum].rxfifo_size;
-			if(size)
-			{
-				size_code = round_to_fifosize(size);
-
-				if((size + address)> 4095)
-				{
-					address += size;
-					break;
-				}
-				TRACE_USB(" ept%d [rx %d]=", eptnum, address);
-			    // Set the index.
-				hw_base->USBEPIDX = eptnum;
-				// set the address
-				hw_base->USBRXFIFOADD = address >> 3;
-				address += size;
-				//set the size
-				if((size > limit) && ((size + address) > 4095))
-				{
-					hw_base->USBRXFIFOSZ = size_code;
-					TRACE_USB(" %d", size);
-				} else
-				{
-					hw_base->USBRXFIFOSZ = USB_USBRXFIFOSZ_DPB | size_code;
-					address += size;
-					hw_base->USBRXDPKTBUFDIS |= (1<<eptnum);
-					TRACE_USB(" 2*%d", size);
-				}
-
-			}
-			size = drv_data->endpoints[eptnum].txfifo_size;
-			if(size)
-			{
-				size_code = round_to_fifosize(size);
-
-				if((size + address)> 4095)
-				{
-					address += size;
-					break;
-				}
-				TRACE_USB(" ept%d [tx %d]=", eptnum, address);
-			    // Set the index.
-				hw_base->USBEPIDX = eptnum;
-				// set the address
-				hw_base->USBTXFIFOADD = address >> 3;
-				address += size;
-				//set the size
-				if((size > limit) && ((size + address) > 4095))
-				{
-					hw_base->USBTXFIFOSZ = size_code;
-					TRACE_USB(" %d", size);
-				} else
-				{
-					hw_base->USBTXFIFOSZ = USB_USBTXFIFOSZ_DPB | size_code;
-					address += size;
-					hw_base->USBTXDPKTBUFDIS |= (1<<eptnum);
-					TRACE_USB(" 2*%d", size);
-				}
-
-			}
-		}
-		limit >>= 1;
-	} while ((limit >= 16) && (address > 4095));
-*/
-
-}
-
-void usb_ack_packet(USB_TypeDef* hw_base, Endpoint* endpoint, unsigned int eptnum)
-{
-/*
-    if(eptnum == 0)
-    {
-        // Clear RxPktRdy, and optionally DataEnd, on endpoint zero.
-    	hw_base->DEVICE_EP[0].USBTXCSRL = USB_USBTXCSRL0_RXRDYC
-				| (endpoint->rxfifo_cnt ? 0 : USB_USBTXCSRL0_DATAEND);
-
-    	//enable interrupt
-    	hw_base->USBTXIE |= USB_USBTXIE_EP0;
-    }
-    else
-    {
-        // Clear RxPktRdy on all other endpoints.
-        hw_base->DEVICE_EP[eptnum].USBRXCSRL &= ~(USB_USBRXCSRL_RXRDY);
-    }
-*/
-}
-
-
-void usb_b_ept0_handler(USB_DRV_INFO drv_info)
-{
-/*
-	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
-    Endpoint *endpoint;
-    unsigned int status;
-    HANDLE hnd;
-
-    status = usb_hal_ept0_status(hw_base);
-    TRACE_USB("%02x]", status);
-    endpoint = &drv_data->endpoints[0];
-
-	if (status & USB_USBTXCSRL0_STALLED)
-	{
-		if(endpoint->state == ENDPOINT_STATE_STALL)
-		{
-	    	endpoint->state = ENDPOINT_STATE_IDLE;
-		} else
-		{
-	    	TRACE_USB(" Stl0 state=%d", endpoint->state);
-		}
+		adr += size;
+		size = drv_data->endpoints[i+1].epd_in.epd_fifo_sz;
+		TRACELN_USB("%u:%x -> %x", i+1, otg->core_regs.DIEPTXF[i], adr + OTG_DIEPTXF_INEPTXFD(size));
+		otg->core_regs.DIEPTXF[i] = adr + OTG_DIEPTXF_INEPTXFD(size);
 	}
 
-	if ( (endpoint->state == ENDPOINT_STATE_SENDING)  )
-	{
-		//check if we have pending write
-		while((hnd=endpoint->pending) && ( hnd->len == 0) )
-		{
-	   		// End of transfer ?
-	    	TRACE1_USB(" Wr!");
-			endpoint->pending = hnd->next;
-			usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-		}
-
-		//check if we have more to write
-		if(hnd)
-		{
-			if( !(status & USB_USBTXCSRL0_TXRDY) )
-			{
-	            // Send next packet
-		    	TRACE1_USB(" Wr");
-			    usb_write_payload( ENTPOINT_FIFO(hw_base, 0), hnd, endpoint->txfifo_size);
-			    usb_hal_txpktrdy(drv_info->hw_base, 0, hnd->len);
-			}
-		} else
-		{
-			endpoint->state = ENDPOINT_STATE_IDLE;
-		}
-
-	}
-
-	if (status & USB_USBTXCSRL0_RXRDY)
-	{
-		// there is a packet
-
-		if(endpoint->state == ENDPOINT_STATE_IDLE)
-		{
-			unsigned int size;
-			size = hw_base->DEVICE_EP[0].USBRXCOUNT;
-	    	TRACE_USB(" Rd0 %d", size);
-
-	    	while(size && (hnd = endpoint->pending))
-	    	{
-	    		endpoint->pending = hnd->next;
-	    		size = usb_read_payload(ENTPOINT_FIFO(hw_base, 0), hnd, size);
-				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-	    	}
-	    	if(size)
-			{
-	            // mark that we have data
-	        	endpoint->state = ENDPOINT_STATE_RECEIVING_OFF;
-	    		endpoint->rxfifo_cnt = size;
-//	    		hw_base->USBTXIE &= ~USB_USBTXIE_EP0;
-	        } else
-	        {
-	        	hw_base->DEVICE_EP[0].USBTXCSRL = USB_USBTXCSRL0_RXRDYC;
-//	        	usb_ack_packet(drv_info->hw_base, endpoint, 0);
-	        }
-		} else
-		{
-	    	TRACE_USB(" error state=%d", endpoint->state);
-		}
-	}
-*/
-}
-
-void usb_b_ept_rx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
-{
-/*
-	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
-    Endpoint *endpoint;
-    unsigned int status;
-    HANDLE hnd;
-
-    status = usb_hal_ept_rx_status(hw_base, eptnum);
-    TRACE_USB("%02x]", status);
-    endpoint = &drv_data->endpoints[eptnum];
-
-	if (status & USB_USBRXCSRL_DATAERR)
-	{
-    	TRACE_USB(" DATAERR state=%d", endpoint->state);
-	}
-
-	if (status & USB_USBRXCSRL_OVER)
-	{
-    	TRACE1_USB(" OVER");
-	}
-
-	if (status & USB_USBRXCSRL_STALLED)
-	{
-		if(endpoint->state == ENDPOINT_STATE_STALL)
-		{
-	    	endpoint->state = ENDPOINT_STATE_IDLE;
-		} else
-		{
-	    	TRACE_USB(" Stl state=%d", endpoint->state);
-		}
-	}
-
-
-	if (status & USB_USBRXCSRL_RXRDY)
-	{
-		// there is a packet
-
-		if(endpoint->state == ENDPOINT_STATE_IDLE)
-		{
-			unsigned int size;
-			size = hw_base->DEVICE_EP[eptnum].USBRXCOUNT;
-	    	TRACE_USB(" Rd %d", size);
-
-	    	while(size && (hnd = endpoint->pending))
-	    	{
-	    		endpoint->pending = hnd->next;
-	    		size = usb_read_payload(ENTPOINT_FIFO(hw_base, eptnum), hnd, size);
-				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-	    	}
-	    	if(size)
-			{
-	            // mark that we have data
-	        	endpoint->state = ENDPOINT_STATE_RECEIVING_OFF;
-	    		endpoint->rxfifo_cnt = size;
-	    		hw_base->USBRXIE &= 1 << eptnum;
-	        } else
-	        {
-	        	status &= ~(USB_USBRXCSRL_STALLED | USB_USBRXCSRL_DATAERR
-						| USB_USBRXCSRL_OVER | USB_USBRXCSRL_RXRDY);
-	        	hw_base->DEVICE_EP[eptnum].USBRXCSRL = status;
-	        }
-		} else
-		{
-	    	TRACE_USB(" error state=%d", endpoint->state);
-		}
-	}
-*/
-}
-
-void usb_b_ept_tx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
-{
-/*
-	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
-    Endpoint *endpoint;
-    unsigned int status;
-    HANDLE hnd;
-
-    status = usb_hal_ept_tx_status(hw_base, eptnum);
-    TRACE_USB("%02x]", status);
-    endpoint = &drv_data->endpoints[eptnum];
-
-	if (status & USB_USBTXCSRL_STALLED)
-	{
-		if(endpoint->state == ENDPOINT_STATE_STALL)
-		{
-	    	endpoint->state = ENDPOINT_STATE_IDLE;
-		} else
-		{
-	    	TRACE_USB(" Stl state=%d", endpoint->state);
-		}
-	}
-
-	if (status & USB_USBTXCSRL_UNDRN)
-	{
-    	TRACE1_USB(" UNDRN");
-	}
-
-	if ( (endpoint->state == ENDPOINT_STATE_SENDING)  )
-	{
-		//check if we have pending write
-		while((hnd=endpoint->pending) && ( hnd->len == 0) )
-		{
-	   		// End of transfer ?
-	    	TRACE1_USB(" Wr!");
-			endpoint->pending = hnd->next;
-			usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-		}
-
-		//check if we have more to write
-		if(hnd)
-		{
-			if( !(status & USB_USBTXCSRL_TXRDY) )
-			{
-	            // Send next packet
-		    	TRACE1_USB(" Wr");
-			    usb_write_payload( ENTPOINT_FIFO(hw_base, eptnum), hnd, endpoint->txfifo_size);
-			    hw_base->DEVICE_EP[eptnum].USBTXCSRL = USB_USBTXCSRL_TXRDY;
-			    //usb_hal_txpktrdy(drv_info->hw_base, eptnum, hnd->len);
-			}
-		} else
-		{
-			endpoint->state = ENDPOINT_STATE_IDLE;
-		}
-
-	}
-*/
 }
 
 
@@ -1119,7 +797,7 @@ static void DCD_HandleOutEP_ISR(USB_DRV_INFO drv_info)
 			/* Clear the bit in DOEPINTn for this interrupt */
 			otg->out_ept_regs[epnum].DOEPINT = doepint;
 
-	    	TRACELN_USB("USB:[R%x=", epnum);
+	    	TRACE_USB(" [R%x=", epnum);
 		    TRACE_USB("%02x]", doepint);
 
 			/* Transfer complete */
@@ -1136,29 +814,6 @@ static void DCD_HandleOutEP_ISR(USB_DRV_INFO drv_info)
 
 				}
 
-//				if (pdev->cfg.dma_enable == 1)
-//				{
-//					deptsiz = otg->out_ept_regs[epnum].DOEPTSIZ;
-//					deptsiz.d32 = USB_OTG_READ_REG32(
-//							&(pdev->regs.OUTEP_REGS[epnum]->DOEPTSIZ));
-//					/*ToDo : handle more than one single MPS size packet */
-//					pdev->dev.out_ep[epnum].xfer_count =
-//							pdev->dev.out_ep[epnum].maxpacket
-//									- deptsiz.b.xfersize;
-//				}
-				/* Inform upper layer: data ready */
-				/* RX COMPLETE */
-//				USBD_DCD_INT_fops->DataOutStage(pdev, epnum);
-//
-//				if (pdev->cfg.dma_enable == 1)
-//				{
-//					if ((epnum == 0)
-//							&& (pdev->dev.device_state == USB_OTG_EP0_STATUS_OUT))
-//					{
-//						/* prepare to rx more setup packets */
-//						USB_OTG_EP0_OutStart(pdev);
-//					}
-//				}
 			}
 			/* Endpoint disable  */
 			if (doepint & OTG_DOEPINT_EPDISD)
@@ -1296,7 +951,7 @@ void usb_start_tx(USB_DRV_INFO drv_info, HANDLE hnd)
 	HANDLE prev;
 
 	eptnum = hnd->mode1;
-    TRACE_USB(" Write%d(%d) ", eptnum , hnd->len);
+//    TRACE_USB(" Write%d(%d) ", eptnum , hnd->len);
 	epdir = &(drv_info->drv_data->endpoints[eptnum].epd_in);
     if( (prev=epdir->epd_pending) )
     {
@@ -1361,7 +1016,6 @@ static void usb_start_rx_ept(USB_DRV_INFO drv_info, uint32_t eptnum, Endpoint *e
     		otg_regs->DOEPTSIZ = deptsiz;
 	    	otg_regs->DOEPCTL = depctl;
 //    		TRACE_USB(" ns=%08x", deptsiz);
-    		trace_usb_state(drv_info->hw_base);
 
     	} else
     	{
@@ -1467,7 +1121,7 @@ bool USB_OTG_ReadPacket(USB_DRV_INFO drv_info,	uint32_t status)
 	endpoint = &drv_info->drv_data->endpoints[status & OTG_GRXSTSP_EPNUM_Msk];
 	bcnt = OTG_GRXSTSP_BCNT_Get(status);
 	top_rx_cnt = 0;
-	TRACE_USB(" que:[R%x, %ub]", status & OTG_GRXSTSP_EPNUM_Msk, bcnt);
+	TRACE_USB(" que%x(%ub)", status & OTG_GRXSTSP_EPNUM_Msk, bcnt);
 
 	if(endpoint->epd_out.epd_state == ENDPOINT_STATE_IDLE)
 	{
@@ -1559,7 +1213,7 @@ static void DCD_HandleInEP_ISR(USB_DRV_INFO drv_info)
 	{
 		if (ep_intr & 0x1) /* In ITR */
 		{
-	    	TRACELN_USB("USB:[T%x=", epnum);
+	    	TRACE_USB(" [T%x=", epnum);
 			/* Get In ITR status */
 			diepint = otg->device_regs.DIEPMSK;
 			diepint |= ((otg->device_regs.DIEPEMPMSK >> epnum) & 1) << 7;
@@ -1751,12 +1405,12 @@ void usb_handle_bus_reset(USB_DRV_INFO drv_info)
 
 
 
-	otg->device_regs.DOEPMSK = OTG_DOEPMSK_STUPM | OTG_DOEPMSK_XFRCM | OTG_DOEPMSK_EPDM;
+	otg->device_regs.DOEPMSK = /*OTG_DOEPMSK_STUPM | OTG_DOEPMSK_XFRCM |*/ OTG_DOEPMSK_EPDM;
 	otg->device_regs.DIEPMSK = OTG_DIEPMSK_XFRCM | OTG_DIEPMSK_TOCM | OTG_DIEPMSK_EPDM;
 
 	if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_DEDICATED_EP1)
 	{
-		otg->device_regs.DOUTEP1MSK = OTG_DOEPMSK_STUPM | OTG_DOEPMSK_XFRCM | OTG_DOEPMSK_EPDM;
+		otg->device_regs.DOUTEP1MSK = /*OTG_DOEPMSK_STUPM | OTG_DOEPMSK_XFRCM |*/ OTG_DOEPMSK_EPDM;
 		otg->device_regs.DINEP1MSK = OTG_DIEPMSK_XFRCM | OTG_DIEPMSK_TOCM | OTG_DIEPMSK_EPDM;
 	}
 
@@ -1933,80 +1587,6 @@ static void DCD_OTG_ISR(USB_DRV_INFO drv_info)
 
 
 
-void USB_B_ISR(USB_DRV_INFO drv_info)
-{
-	TRACELN("usbisr");
-/*
-	unsigned int status, eptnum;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
-
-    //----- Process USBIS interrupts
-    status = hw_base->USBIS;
-    if(status)
-    {
-    	if(status != 8 )
-    		TRACELN_USB("USB:[is=%02x]", status);
-    	usb_b_usbis_handler(drv_info, status);
-    }
-
-    //----- Process endpoint transmit interrupts
-    status = hw_base->USBTXIS;
-    if(status & USB_USBTXIS_EP0)
-    {
-    	TRACELN1_USB("USB:[E0=");
-    	usb_b_ept0_handler(drv_info);
-    }
-	eptnum=1;
-    while( (status>>=1) )
-    {
-		if(status & 1)
-		{
-	    	TRACELN_USB("USB:[T%x=", eptnum);
-   			usb_b_ept_tx_handler(drv_info, eptnum);
-		}
-		eptnum++;
-    }
-
-    //----- Process endpoint receive interrupts
-    status = hw_base->USBRXIS;
-    if(status)
-    {
-    	eptnum=0;
-    	do
-    	{
-    		if(status & 1)
-    		{
-    	    	TRACELN_USB("USB:[R%x=", eptnum);
-    			usb_b_ept_rx_handler(drv_info, eptnum);
-    		}
-    		eptnum++;
-    		status >>= 1;
-    	} while(status);
-    }
-
-    //----- Process USBEPCISC interrupt
-    status = hw_base->USBEPCISC & USB_USBEPCISC_PF;
-    if(status)
-    {
-    	//Power Fault status has been detected
-    	hw_base->USBEPCISC = status;
-
-    	TRACE_USB("\r\nUSB:[pc=%02x]", status);
-    }
-
-    //----- Process USBIDVISC interrupt
-    status = hw_base->USBIDVISC & USB_USBIDVISC_ID;
-    if(status)
-    {
-    	//ID Valid Detect Interrupt
-    	hw_base->USBIDVISC = status;
-    	TRACE_USB("\r\nUSB:[id=%02x]", status);
-    }
-*/
-
-
-}
-
 /**
  * This function handles EXTI15_10_IRQ Handler.
  * @param drv_info
@@ -2033,7 +1613,7 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 	USB_TypeDef* otg = drv_info->hw_base;
 
 	status = otg->core_regs.GINTSTS;
-	TRACELN_USB("USB: %05u %u[otg=%08X]", CURRENT_TIME, drv_info->drv_data->usb_state, status);
+	TRACELN_USB("USB: %u[otg=%08X]", drv_info->drv_data->usb_state, status);
 	/* ensure that we are in device mode */
 	if( !(status & OTG_GINTSTS_CMOD) )
 	{
