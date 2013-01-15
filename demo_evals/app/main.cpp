@@ -246,15 +246,11 @@ TASK_DECLARE_STATIC(uart_task, "UART", uart_thread, 5, 100+TRACE_SIZE);
 void usb_thread()
 {
 	char buf[8];
-	usb_handle usb_hnd;
+	CHandle usb_hnd;
 	RES_CODE res;
 
-	usb_hnd.tsk_open(USB_TEST_DRIVER, USB_DEFAULT_MODE);
-	usb_hnd.device_config(NULL);
-
-	//endpoints
-	usb_hnd.mode0 = USB_CDC_OUT_EPT;
-	usb_hnd.mode1 = USB_CDC_IN_EPT;
+	usb_hnd.tsk_open(USB_TEST_DRIVER, USB_DRV_MODE(USB_CDC_IN_EPT, USB_CDC_OUT_EPT));
+	usb_hnd.tsk_command(USB_CMD_DEVICE_CONFIG, NULL);
 
 	while(1)
 	{
