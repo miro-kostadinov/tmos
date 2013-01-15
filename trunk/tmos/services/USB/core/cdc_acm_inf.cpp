@@ -44,7 +44,7 @@ void usb_cdc_acm_interface::RequestHandler(const void* drv,
 
     case CDCRequest_SET_CONTROL_LINE_STATE:
     {
-        TRACE_USB_DEBUG("sControlLineState(%02x) ", pRequest->wValue);
+        TRACE_USB("sControlLineState(%02x) ", pRequest->wValue);
 
         bControlLineState = (uint8_t)pRequest->wValue;
 
