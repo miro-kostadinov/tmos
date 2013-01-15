@@ -12,12 +12,6 @@
  *
  * Not implemented from LM3S ????
  */
-#define ENTPOINT_ENABLE_INT(hw_base, eptnum) while(0)
-
-/** Enable interrupt for endpoint
- *
- * Not implemented from LM3S ????
- */
 #define ENTPOINT_IS_PING_PONG(hw_base, eptnum) 					\
 	((hw_base->USBTXDPKTBUFDIS & (1<<eptnum)))
 
@@ -32,21 +26,19 @@
  */
 #define usb_hal_IsHighSpeed() 0
 
-bool usb_hal_get_ep_status(USB_DRV_INFO drv_info, uint8_t eptnum, uint16_t* data);
-void usb_end_transfers(Endpoint* endpoint, unsigned int status);
-void usb_hal_cancel_hnd(USB_DRV_INFO drv_info, HANDLE hnd);
+extern "C" void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event);
+void usb_drv_reset(USB_DRV_INFO drv_info);
+void usb_drv_cancel_hnd(USB_DRV_INFO drv_info, HANDLE hnd);
+void usb_drv_start_tx(USB_DRV_INFO drv_info, HANDLE hnd);
+void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd);
+void usb_drv_end_transfers(Endpoint* endpoint, unsigned int status);
 
-void usb_start_tx(USB_DRV_INFO drv_info, HANDLE hnd);
-void usb_start_rx(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptnum, Endpoint *endpoint);
-
-void usb_ept_reset(USB_DRV_INFO drv_info, unsigned int eptnum);
-void usb_ack_packet(USB_Type* hw_base, Endpoint* endpoint, unsigned int eptnum);
-void usb_hal_reset(USB_DRV_INFO drv_info);
+bool usb_hal_get_ep_status(USB_DRV_INFO drv_info, uint8_t ept_num, uint16_t* data);
+void usb_hal_stall(USB_Type* hw_base, unsigned int ept_num);
+void usb_hal_stall_clear(USB_Type* hw_base, unsigned int ept_num);
 void usb_hal_configure(USB_DRV_INFO drv_info);
-void usb_hal_stall(USB_Type* hw_base, unsigned int eptnum);
-void usb_hal_stall_clear(USB_Type* hw_base, unsigned int eptnum);
+void usb_hal_ept_reset(USB_DRV_INFO drv_info, unsigned int eptnum);
 void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDescriptor);
-
 void usb_hal_config_fifo(USB_DRV_INFO drv_info);
 
 

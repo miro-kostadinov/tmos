@@ -11,7 +11,7 @@
 
 void usb_svc_stall_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 {
-	unsigned char eptnum = hnd->mode0;
+	unsigned char eptnum = hnd->mode.as_bytes[0];
     Endpoint *endpoint = &drv_info->drv_data->endpoints[eptnum];
 
     // Check that endpoint is in Idle state
@@ -43,7 +43,7 @@ void usb_svc_setconfiguration_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 	unsigned char cfgnum = hnd->src.as_int;
 
-	TRACE_USB_DEBUG("SetCfg(%d) ", cfgnum);
+	TRACE_USB("SetCfg(%d) ", cfgnum);
 
     // If the configuration number if non-zero, the device enters the
     // Configured state
@@ -60,7 +60,7 @@ void usb_svc_setconfiguration_hook(USB_DRV_INFO drv_info, HANDLE hnd)
         // Abort all transfers
     	for(int i= 1; i<USB_NUMENDPOINTS; i++)
     	{
-    		usb_ept_reset(drv_info, i);
+    		usb_hal_ept_reset(drv_info, i);
     	}
     }
 	drv_data->device.cfgnum = cfgnum;
@@ -109,7 +109,7 @@ void usb_svc_setaddress_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 	unsigned char address = hnd->src.as_int;
 
-	TRACE_USB_DEBUG("SetAddr(%d) ", address);
+	TRACE_USB("SetAddr(%d) ", address);
 
     // Set address
     pUDP->UDP_FADDR = UDP_FADDR_FEN | address;

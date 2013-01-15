@@ -77,10 +77,10 @@ unsigned int usb_read_payload(unsigned char *src, HANDLE hnd, unsigned int size)
     return (size);
 }
 
-void usb_hal_reset(USB_DRV_INFO drv_info)
+void usb_drv_reset(USB_DRV_INFO drv_info)
 {
    	drv_isr_disable(&drv_info->info);
-    TRACE1_USB_DEBUG("\r\nUSBD_Init");
+    TRACELN1_USB("USBD_Init");
 	/*
 	    Function: USBD_HAL_Init
 	        Initializes the USB HW Access driver.
