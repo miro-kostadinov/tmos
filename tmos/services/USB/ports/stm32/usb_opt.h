@@ -14,12 +14,11 @@
 #define CFG_STM32_OTG_ULPI			0x0001		//!< USE ULPI PHY
 #define CFG_STM32_OTG_SOF_OUTPUT	0x0002		//!< SOF output enable
 #define CFG_STM32_OTG_INTERNAL_VBUS 0x0004		//!< ULPI External VBUS Drive
-#define CFG_STM32_OTG_DMA_EN		0x0008		//!< DMA enable
-#define CFG_STM32_OTG_VBUS_SENS		0x0010		//!< Enable the VBUS sensing
-#define CFG_STM32_OTG_MODE			0x0020		//!< OTG Mode
-#define CFG_STM32_OTG_HS_CORE		0x0040		//!< OTG HS peripheral
-#define CFG_STM32_OTG_LOW_POWER		0x0080		//!< low power
-#define CFG_STM32_OTG_DEDICATED_EP1	0x0100		//!< Dedicated EP1 handler
+#define CFG_STM32_OTG_VBUS_SENS		0x0008		//!< Enable the VBUS sensing
+#define CFG_STM32_OTG_MODE			0x0010		//!< OTG Mode
+#define CFG_STM32_OTG_HS_CORE		0x0020		//!< OTG HS peripheral
+#define CFG_STM32_OTG_LOW_POWER		0x0040		//!< low power
+#define CFG_STM32_OTG_DEDICATED_EP1	0x0080		//!< Dedicated EP1 handler
 
 /// Number of endpoints used
 #ifndef USB_NUMENDPOINTS

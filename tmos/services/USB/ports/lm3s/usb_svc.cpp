@@ -11,7 +11,7 @@
 
 void usb_svc_stall_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 {
-	unsigned char eptnum = hnd->mode0;
+	unsigned char eptnum = hnd->mode.as_bytes[0];
     Endpoint *endpoint = &drv_info->drv_data->endpoints[eptnum];
 
     eptnum |= 0x80; // ENDPOINT_DIRECTION_IN
@@ -62,7 +62,7 @@ void usb_svc_setconfiguration_hook(USB_DRV_INFO drv_info, HANDLE hnd)
         // Abort all transfers
     	for(int i= 1; i<USB_NUMENDPOINTS; i++)
     	{
-    		usb_ept_reset(drv_info, i);
+    		usb_hal_ept_reset(drv_info, i);
     	}
     }
 	drv_data->device.cfgnum = cfgnum;
@@ -150,7 +150,7 @@ void usb_svc_halt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
         && (endpoint->state != ENDPOINT_STATE_HALTED))
    	{
         // Abort the current transfer if necessary
-    	usb_end_transfers(endpoint, USBD_STATUS_ABORTED);
+    	usb_drv_end_transfers(endpoint, USBD_STATUS_ABORTED);
 
         endpoint->state = ENDPOINT_STATE_HALTED;
 
