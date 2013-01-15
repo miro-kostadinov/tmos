@@ -247,7 +247,7 @@ void usb_drv_cancel_hnd(USB_DRV_INFO drv_info, HANDLE hnd)
     	if(hnd->list_remove(endpoint->pending))
     	{
     		svc_HND_SET_STATUS(hnd, FLG_SIGNALED);
-   			TRACE1_USB("Can!");
+//   		TRACE1_USB("Can!");
     		if(!endpoint->pending && endpoint->state == ENDPOINT_STATE_SENDING)
     			endpoint->state = ENDPOINT_STATE_IDLE;
 
