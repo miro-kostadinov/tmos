@@ -12,6 +12,96 @@
 //-------------------  local static functions --------------------------------//
 
 /**
+ * Reads a packet from the Rx FIFO
+ * @param drv_info
+ * @param endpoint
+ * @param len
+ */
+static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
+{
+    Endpoint* endpoint;
+    uint32_t bcnt, top_rx_cnt;
+    HANDLE hnd;
+    __IO uint32_t* fifo = drv_info->hw_base->DFIFO[0].DFIFO;
+
+	endpoint = &drv_info->drv_data->endpoints[status & OTG_GRXSTSP_EPNUM_Msk];
+	bcnt = OTG_GRXSTSP_BCNT_Get(status);
+	top_rx_cnt = 0;
+	TRACE_USB(" que%x(%ub)", status & OTG_GRXSTSP_EPNUM_Msk, bcnt);
+
+	if(endpoint->epd_out.epd_state == ENDPOINT_STATE_IDLE)
+	{
+		if(bcnt)
+		{
+			// loop pending handles
+			hnd = endpoint->epd_out.epd_pending;
+			while( hnd )
+			{
+				if(!top_rx_cnt)
+				{
+					// try whole words
+					while(hnd->len > 3 && bcnt > 3)
+					{
+						*hnd->dst.as_intptr++ = *fifo;
+						hnd->len -= 4;
+						bcnt -= 4;
+					}
+
+					if(!bcnt)
+					{
+						// nothing left in fifo or top
+			    		endpoint->epd_out.epd_pending = hnd->next;
+						usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+
+						return true;
+					}
+
+					// bcnt is >0 and hnd->len is <4
+					if(hnd->len)
+					{
+						// len !=0 -> we must pad
+						endpoint->top_rx_word = *fifo;
+						top_rx_cnt = (bcnt>3)?4:bcnt;
+						bcnt -= top_rx_cnt;
+					}
+				}
+
+				//process the top word
+				while(hnd->len && top_rx_cnt)
+				{
+					*hnd->dst.as_byteptr++ = endpoint->top_rx_word;
+					endpoint->top_rx_word >>= 8;
+					top_rx_cnt--;
+					hnd->len--;
+				}
+
+				if(hnd->len == 0)
+				{
+		    		endpoint->epd_out.epd_pending = hnd->next;
+					usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+					hnd = endpoint->epd_out.epd_pending;
+				}
+			}
+
+			if(bcnt + top_rx_cnt)
+			{
+				endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING_OFF;
+				endpoint->rxfifo_cnt = bcnt;
+				endpoint->top_rx_cnt = top_rx_cnt;
+				return false;
+			}
+		}
+	} else
+	{
+		TRACE_USB("usb drop %X %u bytes ep state=%u", status, bcnt, endpoint->epd_out.epd_state);
+		bcnt = (bcnt+3)/4;
+		while(bcnt--)
+			status = *fifo;
+	}
+	return true;
+}
+
+/**
  * Try to load next packet in the FIFO
  * aka DCD_WriteEmptyTxFifo
  * @param drv_info
@@ -53,15 +143,13 @@ static void stm_write_payload(USB_DRV_INFO drv_info, uint32_t ept_indx)
 			{
 				drv_info->hw_base->device_regs.DIEPEMPMSK |= OTG_DIEPEMPMSK_INEPTXFEM(ept_indx);
 			}
-
-		} else
-		{
-			drv_info->hw_base->device_regs.DIEPEMPMSK &= ~OTG_DIEPEMPMSK_INEPTXFEM(ept_indx);
+			return;
 		}
 	} else
 	{
 		TRACELN1_USB("usb tx emp !h");
 	}
+	drv_info->hw_base->device_regs.DIEPEMPMSK &= ~OTG_DIEPEMPMSK_INEPTXFEM(ept_indx);
 }
 
 static void stm_start_tx(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptnum, ep_dir_state_t* epdir)
@@ -116,7 +204,7 @@ static void stm_start_rx(USB_DRV_INFO drv_info, uint32_t ept_indx, Endpoint *end
 	HANDLE hnd;
 
 	hnd = endpoint->epd_out.epd_pending;
-	if(hnd && drv_info->drv_data->usb_state >= USB_STATE_ADDRESS /*USB_STATE_DEFAULT*/)
+	if(hnd && (!ept_indx || drv_info->drv_data->usb_state >= USB_STATE_ADDRESS))
 	{
     	OTG_OUT_EPT_REGS* otg_regs;
     	uint32_t depctl, deptsiz, maxpacket;
@@ -379,7 +467,7 @@ static void stm_enable_dev_int(USB_TypeDef* otg, uint32_t cfg)
     if(cfg & CFG_STM32_OTG_VBUS_SENS)
     	mask |= OTG_GINTMSK_SRQM | OTG_GINTMSK_OTGM;
 
-	otg->core_regs.GINTMSK |= mask;
+	otg->core_regs.GINTMSK = mask;
 }
 
 
@@ -442,8 +530,6 @@ static void stm_otg_core_init_dev(USB_TypeDef* otg, const usb_config_t* cfg)
 	stm_flush_tx_fifo(otg, 0x10); /* all Tx FIFOs */
 	stm_flush_rx_fifo(otg);
 	/* Clear all pending Device Interrupts */
-//	otg->device_regs.DIEPMSK 	= 0;
-	otg->device_regs.DOEPMSK  	= 0;
 	otg->device_regs.DAINT		= 0xFFFFFFFF;
 	otg->device_regs.DAINTMSK	= 0;
 
@@ -458,7 +544,6 @@ static void stm_otg_core_init_dev(USB_TypeDef* otg, const usb_config_t* cfg)
 			reg = 0;
 		}
 		otg->in_ept_regs[i].DIEPCTL = reg;
-		otg->in_ept_regs[i].DIEPTSIZ = 0;
 		otg->in_ept_regs[i].DIEPINT = 0xFF;
 
 		reg = otg->out_ept_regs[i].DOEPCTL;
@@ -470,15 +555,17 @@ static void stm_otg_core_init_dev(USB_TypeDef* otg, const usb_config_t* cfg)
 			reg = 0;
 		}
 		otg->out_ept_regs[i].DOEPCTL = reg;
-		otg->out_ept_regs[i].DOEPTSIZ = 0;
 		otg->out_ept_regs[i].DOEPINT = 0xFF;
 	}
 	otg->device_regs.DIEPMSK = OTG_DIEPMSK_BIM | OTG_DIEPMSK_TXFURM |
-			OTG_DIEPMSK_INEPNEM | OTG_DIEPMSK_ITTXFEMSK | OTG_DIEPMSK_TOCM |
-			OTG_DIEPMSK_EPDM | OTG_DIEPMSK_XFRCM;
+			OTG_DIEPMSK_TOCM | OTG_DIEPMSK_EPDM |OTG_DIEPMSK_XFRCM;
 	otg->device_regs.DINEP1MSK = OTG_DIEPMSK_BIM | OTG_DIEPMSK_TXFURM |
-			OTG_DIEPMSK_INEPNEM | OTG_DIEPMSK_ITTXFEMSK | OTG_DIEPMSK_TOCM |
-			OTG_DIEPMSK_EPDM | OTG_DIEPMSK_XFRCM;
+			OTG_DIEPMSK_TOCM | OTG_DIEPMSK_EPDM | OTG_DIEPMSK_XFRCM;
+
+	otg->device_regs.DOEPMSK = OTG_DOEPMSK_BOIM | OTG_DOEPMSK_OPEM |
+			OTG_DOEPMSK_B2BSTUP | OTG_DOEPMSK_EPDM;
+	otg->device_regs.DOUTEP1MSK = OTG_DOEPMSK_BOIM | OTG_DOEPMSK_OPEM |
+			OTG_DOEPMSK_B2BSTUP | OTG_DOEPMSK_EPDM;
 
 	stm_enable_dev_int(otg, cfg->stm32_otg);
 }
@@ -504,12 +591,12 @@ static void stm_ept_config(USB_DRV_INFO drv_info, uint32_t ept_num,
 		const USBGenericDescriptor* pDescriptor)
 {
 	ep_dir_state_t* epdir;
-	uint32_t ep_num = ept_num & 0xF;
+	uint32_t ept_indx = ept_num & 0xF;
 	USB_TypeDef* otg = drv_info->hw_base;
 	__IO uint32_t* depctl;
 	uint32_t reg, ept_type, fifo_sz;
 
-    if(ep_num >= USB_NUMENDPOINTS)
+    if(ept_indx >= USB_NUMENDPOINTS)
     {
 		TRACELN1_USB("Invalid endpoint descriptor!");
 
@@ -540,30 +627,31 @@ static void stm_ept_config(USB_DRV_INFO drv_info, uint32_t ept_num,
 
         if(ept_num & 0x80)
         {
-            epdir = &drv_info->drv_data->endpoints[ep_num].epd_in;
-        	otg->device_regs.DAINTMSK |= OTG_DAINTMSK_IEPM(ep_num);
+            epdir = &drv_info->drv_data->endpoints[ept_indx].epd_in;
+            if(ept_indx == EPT_1 && drv_info->cfg->stm32_otg & CFG_STM32_OTG_DEDICATED_EP1)
+            	otg->device_regs.DEACHINTMSK |= OTG_DEACHINTMSK_IEP1INT;
+            else
+            	otg->device_regs.DAINTMSK |= OTG_DAINTMSK_IEPM(ept_indx);
 
-        	depctl = &otg->in_ept_regs[ep_num].DIEPCTL;
+        	depctl = &otg->in_ept_regs[ept_indx].DIEPCTL;
         	reg = *depctl;
         	if(!(reg & OTG_DIEPCTL_USBAEP))
         	{
         		reg &= ~(OTG_DIEPCTL_TXFNUM_Msk | OTG_DIEPCTL_EPTYP_Msk |
         				OTG_DIEPCTL_MPSIZ_Msk);
-        		reg |= OTG_DIEPCTL_SD0PID | OTG_DIEPCTL_TXFNUM(ep_num) |
+        		reg |= OTG_DIEPCTL_SD0PID | OTG_DIEPCTL_TXFNUM(ept_indx) |
         				OTG_DIEPCTL_EPTYP(ept_type) | OTG_DIEPCTL_USBAEP |
         				OTG_DIEPCTL_MPSIZ(fifo_sz);
             	*depctl = reg;
         	}
         } else
         {
-            epdir = &drv_info->drv_data->endpoints[ep_num].epd_out;
-        	otg->device_regs.DAINTMSK |= OTG_DAINTMSK_OEPM(ep_num);
-        	if(ep_num == EPT_0)
-        	{
-        		otg->out_ept_regs[0].DOEPTSIZ = OTG_DOEPTSIZ_STUPCNT(3) |
-        			OTG_DOEPTSIZ_PKTCNT(1) | OTG_DOEPTSIZ_XFRSIZ(8 * 3);
-        	}
-        	depctl = &otg->out_ept_regs[ep_num].DOEPCTL;
+            epdir = &drv_info->drv_data->endpoints[ept_indx].epd_out;
+            if(ept_indx == EPT_1 && drv_info->cfg->stm32_otg & CFG_STM32_OTG_DEDICATED_EP1)
+            	otg->device_regs.DEACHINTMSK |= OTG_DEACHINTMSK_OEP1INTM;
+            else
+            	otg->device_regs.DAINTMSK |= OTG_DAINTMSK_OEPM(ept_indx);
+        	depctl = &otg->out_ept_regs[ept_indx].DOEPCTL;
         	reg = *depctl;
         	if(!(reg & OTG_DOEPCTL_USBAEP))
         	{
@@ -1098,6 +1186,7 @@ void USB_EP1_OUT_ISR(USB_DRV_INFO drv_info)
 	status = otg->out_ept_regs[1].DOEPINT;
 	status &= otg->device_regs.DOUTEP1MSK;
 	otg->out_ept_regs[1].DOEPINT = status;
+	TRACELN_USB("USB1: [out %02X]", status);
 
 	if(status & OTG_DOEPINT_XFRC)		// Transfer completed interrupt
 	{
@@ -1111,96 +1200,6 @@ void USB_EP1_OUT_ISR(USB_DRV_INFO drv_info)
 	}
 }
 
-
-/**
- * Reads a packet from the Rx FIFO
- * @param drv_info
- * @param endpoint
- * @param len
- */
-static bool USB_OTG_ReadPacket(USB_DRV_INFO drv_info,	uint32_t status)
-{
-    Endpoint* endpoint;
-    uint32_t bcnt, top_rx_cnt;
-    HANDLE hnd;
-    __IO uint32_t* fifo = drv_info->hw_base->DFIFO[0].DFIFO;
-
-	endpoint = &drv_info->drv_data->endpoints[status & OTG_GRXSTSP_EPNUM_Msk];
-	bcnt = OTG_GRXSTSP_BCNT_Get(status);
-	top_rx_cnt = 0;
-	TRACE_USB(" que%x(%ub)", status & OTG_GRXSTSP_EPNUM_Msk, bcnt);
-
-	if(endpoint->epd_out.epd_state == ENDPOINT_STATE_IDLE)
-	{
-		if(bcnt)
-		{
-			// loop pending handles
-			hnd = endpoint->epd_out.epd_pending;
-			while( hnd )
-			{
-				if(!top_rx_cnt)
-				{
-					// try whole words
-					while(hnd->len > 3 && bcnt > 3)
-					{
-						*hnd->dst.as_intptr++ = *fifo;
-						hnd->len -= 4;
-						bcnt -= 4;
-					}
-
-					if(!bcnt)
-					{
-						// nothing left in fifo or top
-			    		endpoint->epd_out.epd_pending = hnd->next;
-						usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-
-						return true;
-					}
-
-					// bcnt is >0 and hnd->len is <4
-					if(hnd->len)
-					{
-						// len !=0 -> we must pad
-						endpoint->top_rx_word = *fifo;
-						top_rx_cnt = (bcnt>3)?4:bcnt;
-						bcnt -= top_rx_cnt;
-					}
-				}
-
-				//process the top word
-				while(hnd->len && top_rx_cnt)
-				{
-					*hnd->dst.as_byteptr++ = endpoint->top_rx_word;
-					endpoint->top_rx_word >>= 8;
-					top_rx_cnt--;
-					hnd->len--;
-				}
-
-				if(hnd->len == 0)
-				{
-		    		endpoint->epd_out.epd_pending = hnd->next;
-					usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-					hnd = endpoint->epd_out.epd_pending;
-				}
-			}
-
-			if(bcnt + top_rx_cnt)
-			{
-				endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING_OFF;
-				endpoint->rxfifo_cnt = bcnt;
-				endpoint->top_rx_cnt = top_rx_cnt;
-				return false;
-			}
-		}
-	} else
-	{
-		TRACE_USB("usb drop %X %u bytes ep state=%u", status, bcnt, endpoint->epd_out.epd_state);
-		bcnt = (bcnt+3)/4;
-		while(bcnt--)
-			status = *fifo;
-	}
-	return true;
-}
 
 /**
  * Handles out endpoint interrupts, except endpoint 1
@@ -1231,7 +1230,6 @@ static void usb_b_ept_tx_handler(USB_DRV_INFO drv_info)
 			{
 				ep_dir_state_t* epdir;
 			    HANDLE hnd;
-//				otg->in_ept_regs[ept_indx].DIEPINT = OTG_DIEPINT_XFRC;
 
 				/* TX COMPLETE */
 				epdir = &(drv_info->drv_data->endpoints[ept_indx].epd_in);
@@ -1258,32 +1256,10 @@ static void usb_b_ept_tx_handler(USB_DRV_INFO drv_info)
 
 			}
 
-			if (diepint & OTG_DIEPINT_TOC) 		// Timeout condition
+			// Transmit FIFO empty
+			if (diepint & OTG_DIEPINT_TXFE)
 			{
-//				otg->in_ept_regs[ept_indx].DIEPINT = OTG_DIEPINT_TOC;
-			}
-
-			if (diepint & OTG_DIEPINT_ITTXFE)	// IN Token received when TxFIFO is empty
-			{
-//				otg->in_ept_regs[ept_indx].DIEPINT = OTG_DIEPINT_ITTXFE;
-			}
-
-			if (diepint & OTG_DIEPINT_INEPNE)	// IN endpoint NAK effective
-			{
-//				otg->in_ept_regs[ept_indx].DIEPINT = OTG_DIEPINT_INEPNE;
-			}
-
-			if (diepint & OTG_DIEPINT_EPDISD)	// Endpoint disabled interrupt
-			{
-//				otg->in_ept_regs[ept_indx].DIEPINT = OTG_DIEPINT_EPDISD;
-			}
-
-			if (diepint & OTG_DIEPINT_TXFE)		// Transmit FIFO empty
-			{
-
 				stm_write_payload(drv_info, ept_indx);
-
-//				otg->in_ept_regs[ept_indx].DIEPINT = OTG_DIEPINT_TXFE;
 			}
 		}
 		ept_indx++;
@@ -1292,10 +1268,64 @@ static void usb_b_ept_tx_handler(USB_DRV_INFO drv_info)
 }
 
 /**
- *   Indicates that the USB_OTG controller has detected a resume or remote Wake-up sequence
+ *  USBD_OTG_EP1IN_ISR_Handler
  * @param drv_info
  */
-static void DCD_HandleResume_ISR(USB_DRV_INFO drv_info)
+void USB_EP1_IN_ISR(USB_DRV_INFO drv_info)
+{
+	USB_TypeDef* otg = drv_info->hw_base;
+	uint32_t diepint;
+
+	diepint = otg->device_regs.DINEP1MSK;
+	diepint |= (otg->device_regs.DIEPEMPMSK & 2) << 6;
+	diepint &= otg->in_ept_regs[1].DIEPINT;
+	otg->in_ept_regs[1].DIEPINT = diepint;
+	TRACELN_USB("USB1: [in %02X]", diepint);
+
+	if(diepint & OTG_DIEPINT_XFRC)	//Transfer completed
+	{
+		ep_dir_state_t* epdir;
+	    HANDLE hnd;
+
+		/* TX COMPLETE */
+		epdir = &(drv_info->drv_data->endpoints[1].epd_in);
+		hnd = epdir->epd_pending;
+		if(hnd)
+		{
+			if(hnd->len == 0)
+			{
+		    	TRACE1_USB(" Wr!");
+				epdir->epd_pending = hnd->next;
+				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+				hnd = epdir->epd_pending;
+			}
+		}
+		if(hnd)
+		{
+			//start next transfer
+	    	TRACE1_USB(" Wr");
+			stm_start_tx(drv_info, hnd, 1, epdir);
+		} else
+		{
+			epdir->epd_state = ENDPOINT_STATE_IDLE;
+		}
+
+	}
+
+
+	if(diepint & OTG_DIEPINT_TXFE)		// Transmit FIFO empty
+	{
+		stm_write_payload(drv_info, 1);
+	}
+}
+
+
+/**
+ *  Indicates that the USB_OTG controller has detected a resume or remote Wake-up sequence
+ *  (DCD_HandleResume_ISR)
+ * @param drv_info
+ */
+static void usb_b_gint_wkupint(USB_DRV_INFO drv_info)
 {
 	USB_TypeDef* otg = drv_info->hw_base;
 
@@ -1319,9 +1349,10 @@ static void DCD_HandleResume_ISR(USB_DRV_INFO drv_info)
 
 /**
  * 	Indicates that SUSPEND state has been detected on the USB
+ * 	(DCD_HandleUSBSuspend_ISR)
  * @param drv_info
  */
-static void DCD_HandleUSBSuspend_ISR(USB_DRV_INFO drv_info)
+static void usb_b_gint_usbsusp(USB_DRV_INFO drv_info)
 {
 	USB_DRV_STATE prev_state;
 	USB_TypeDef* otg = drv_info->hw_base;
@@ -1345,9 +1376,10 @@ static void DCD_HandleUSBSuspend_ISR(USB_DRV_INFO drv_info)
 
 /**
  * Handles the SOF Interrupts
+ * (DCD_HandleSof_ISR)
  * @param drv_info
  */
-static void DCD_HandleSof_ISR(USB_DRV_INFO drv_info)
+static void usb_b_gint_sof(USB_DRV_INFO drv_info)
 {
 	/* Inform upper layer ??? */
 	TRACE1_USB(" sofint");
@@ -1363,11 +1395,13 @@ static void DCD_HandleSof_ISR(USB_DRV_INFO drv_info)
  *
  * @param drv_info
  */
-static void usb_handle_bus_reset(USB_DRV_INFO drv_info)
+static void usb_b_gint_usbrst(USB_DRV_INFO drv_info)
 {
 	uint32_t dev_endpoints;
 	const USBDDriverDescriptors * dev_descriptors;
 	USB_TypeDef* otg = drv_info->hw_base;
+
+	TRACE1_USB(" rstint");
 
 	/* Clear the Remote Wake-up Signaling */
 	otg->device_regs.DCTL &= ~OTG_DCTL_RWUSIG;
@@ -1399,21 +1433,9 @@ static void usb_handle_bus_reset(USB_DRV_INFO drv_info)
 		usb_hal_ept_config(drv_info, &dev_descriptors->pFsDevice->as_generic);
 	}
 
-	otg->device_regs.DOEPMSK = /*OTG_DOEPMSK_STUPM | OTG_DOEPMSK_XFRCM |*/ OTG_DOEPMSK_EPDM;
-//	otg->device_regs.DIEPMSK = OTG_DIEPMSK_XFRCM | OTG_DIEPMSK_TOCM | OTG_DIEPMSK_EPDM;
-
-	if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_DEDICATED_EP1)
-	{
-		otg->device_regs.DOUTEP1MSK = /*OTG_DOEPMSK_STUPM | OTG_DOEPMSK_XFRCM |*/ OTG_DOEPMSK_EPDM;
-//		otg->device_regs.DINEP1MSK = OTG_DIEPMSK_XFRCM | OTG_DIEPMSK_TOCM | OTG_DIEPMSK_EPDM;
-	}
-
 	/* Reset Device Address */
 	otg->device_regs.DCFG &= ~ OTG_DCFG_DAD_Msk;
 
-
-	/* setup EP0 to receive SETUP packets */
-//@@	USB_OTG_EP0_OutStart (pdev);
 
   	/* Clear interrupt */
 	drv_info->hw_base->core_regs.GINTSTS = OTG_GINTSTS_USBRST;
@@ -1423,10 +1445,12 @@ static void usb_handle_bus_reset(USB_DRV_INFO drv_info)
 
 
 /**
+ * Enumeration done interrupt
  * Read the device status register and set the device speed
+ * (DCD_HandleEnumDone_ISR)
  * @param drv_info
  */
-static void DCD_HandleEnumDone_ISR(USB_DRV_INFO drv_info)
+static void usb_b_gint_enumdne(USB_DRV_INFO drv_info)
 {
 	USB_TypeDef* otg = drv_info->hw_base;
 	uint32_t reg, speed;
@@ -1459,40 +1483,12 @@ static void DCD_HandleEnumDone_ISR(USB_DRV_INFO drv_info)
 }
 
 
-
 /**
- * handle the ISO IN incomplete interrupt
+ * Handles the Rx Status Queue Level Interrupt
+ * (DCD_HandleRxStatusQueueLevel_ISR)
  * @param drv_info
  */
-static void DCD_IsoINIncomplete_ISR(USB_DRV_INFO drv_info)
-{
-	/* Inform upper layer ??? */
-	TRACELN1_USB("usb iiinc");
-
-	/* Clear interrupt */
-	drv_info->hw_base->core_regs.GINTSTS = OTG_GINTSTS_IISOIXFR;
-}
-
-/**
- * handle the ISO OUT incomplete interrupt
- * @param drv_info
- */
-static void DCD_IsoOUTIncomplete_ISR(USB_DRV_INFO drv_info)
-{
-	/* Inform upper layer ??? */
-	TRACELN1_USB("usb ioinc");
-
-	/* Clear interrupt */
-	drv_info->hw_base->core_regs.GINTSTS = OTG_GINTSTS_IISOOXFR;
-}
-
-/**
-* @brief  DCD_HandleRxStatusQueueLevel_ISR
-*         Handles the Rx Status Queue Level Interrupt
-* @param  pdev: device instance
-* @retval status
-*/
-static void DCD_HandleRxStatusQueueLevel_ISR(USB_DRV_INFO drv_info)
+static void usb_b_gint_rxflvl(USB_DRV_INFO drv_info)
 {
 	uint32_t status;
 	USB_TypeDef* otg = drv_info->hw_base;
@@ -1510,7 +1506,7 @@ static void DCD_HandleRxStatusQueueLevel_ISR(USB_DRV_INFO drv_info)
 
 	case OTG_GRXSTSP_PKTSTS_SETUP_DATA:
 	case OTG_GRXSTSP_PKTSTS_OUT_DATA:
-		if(!USB_OTG_ReadPacket(drv_info, status))
+		if(!stm_read_payload(drv_info, status))
 		{
 			/* Disable the Rx Status Queue Level interrupt */
 			otg->core_regs.GINTMSK &= ~OTG_GINTMSK_RXFLVLM;
@@ -1534,9 +1530,10 @@ static void DCD_HandleRxStatusQueueLevel_ISR(USB_DRV_INFO drv_info)
 
 /**
  * Indicates that the USB_OTG controller has detected a connection
+ * (DCD_SessionRequest_ISR)
  * @param drv_info
  */
-static void DCD_SessionRequest_ISR(USB_DRV_INFO drv_info)
+static void usb_b_gint_srqint(USB_DRV_INFO drv_info)
 {
 	/* Clear interrupt */
 	drv_info->hw_base->core_regs.GINTSTS = OTG_GINTSTS_SRQINT;
@@ -1548,13 +1545,13 @@ static void DCD_SessionRequest_ISR(USB_DRV_INFO drv_info)
 }
 
 /**
-* @brief  DCD_OTG_ISR
-*         Indicates that the USB_OTG controller has detected an OTG event:
-*                 used to detect the end of session i.e. disconnection
-* @param  pdev: device instance
-* @retval status
-*/
-static void DCD_OTG_ISR(USB_DRV_INFO drv_info)
+ * Indicates that the USB_OTG controller has detected an OTG event
+ *   used to detect the end of session i.e. disconnection
+ *
+ * (DCD_OTG_ISR)
+ * @param drv_info
+ */
+static void usb_b_gint_otgint(USB_DRV_INFO drv_info)
 {
 
 	uint32_t otg_int;
@@ -1581,33 +1578,13 @@ static void DCD_OTG_ISR(USB_DRV_INFO drv_info)
 
 
 
-/**
- * This function handles EXTI15_10_IRQ Handler.
- * @param drv_info
- */
-void USB_HS_WKUP_ISR(USB_DRV_INFO drv_info)
-{
-	uint32_t cfg;
-
-	cfg = drv_info->cfg->stm32_otg;
-	if(cfg & CFG_STM32_OTG_LOW_POWER)
-	{
-		*(uint32_t *)NVIC_SYS_CTRL &= ~(NVIC_SYS_CTRL_SLEEPDEEP | NVIC_SYS_CTRL_SLEEPEXIT);
-//		SystemInit();
-		stm_otg_ungate_clock(drv_info->hw_base, cfg);
-	}
-	EXTI->EXTI_PR = EXTI_PR_PR20;
-
-	TRACELN1("usb_wkup!");
-}
-
 void USB_OTG_ISR(USB_DRV_INFO drv_info)
 {
 	uint32_t status;
 	USB_TypeDef* otg = drv_info->hw_base;
 
 	status = otg->core_regs.GINTSTS;
-	TRACELN_USB("USB: %u[otg=%08X]", drv_info->drv_data->usb_state, status);
+	TRACELN_USB("USB: [%08X]", status);
 	/* ensure that we are in device mode */
 	if( !(status & OTG_GINTSTS_CMOD) )
 	{
@@ -1616,13 +1593,11 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		{
 			if (status & OTG_GINTSTS_OEPINT) 	// OUT endpoints interrupt
 			{
-//				TRACELN1_USB("usb oepint");
 				usb_b_ept_rx_handler(drv_info);
 			}
 
 			if (status & OTG_GINTSTS_IEPINT)	// IN endpoints interrupt
 			{
-//				TRACELN1_USB("usb iepint");
 				usb_b_ept_tx_handler(drv_info);
 			}
 
@@ -1636,116 +1611,83 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 			if (status & OTG_GINTSTS_WKUPINT)	// Resume/Remote wakeup detected interrupt
 			{
 				TRACE1_USB(" wkupint");
-				DCD_HandleResume_ISR(drv_info);
+				usb_b_gint_wkupint(drv_info);
 			}
 
 			if (status & OTG_GINTSTS_USBSUSP)	// USB suspend
 			{
 				TRACE1_USB(" suspint");
-				DCD_HandleUSBSuspend_ISR(drv_info);
+				usb_b_gint_usbsusp(drv_info);
 			}
 
 			if (status & OTG_GINTSTS_SOF)		// Start of frame
 			{
-//				TRACELN1_USB("usb sofint");
-				DCD_HandleSof_ISR(drv_info);
+				usb_b_gint_sof(drv_info);
 			}
 
 			if (status & OTG_GINTSTS_RXFLVL)	// RxFIFO non-empty
 			{
-//				TRACELN1_USB("usb rxflvl");
-				DCD_HandleRxStatusQueueLevel_ISR(drv_info);
+				usb_b_gint_rxflvl(drv_info);
 			}
 
 			if (status & OTG_GINTSTS_USBRST)	// USB reset
 			{
-				TRACE1_USB(" rstint");
-				usb_handle_bus_reset(drv_info);
+				usb_b_gint_usbrst(drv_info);
 			}
 
 			if (status & OTG_GINTSTS_ENUMDNE)	// Enumeration done
 			{
 				TRACE1_USB(" enumint");
-				DCD_HandleEnumDone_ISR(drv_info);
+				usb_b_gint_enumdne(drv_info);
 			}
 
 			if (status & OTG_GINTSTS_IISOIXFR)	// Incomplete isochronous IN transfer
 			{
 				TRACE1_USB(" isoiint");
-				DCD_IsoINIncomplete_ISR(drv_info);
+
+				otg->core_regs.GINTSTS = OTG_GINTSTS_IISOIXFR;
 			}
 
 			if (status & OTG_GINTSTS_IISOOXFR)	// Incomplete isochronous OUT transfer
 			{
 				TRACE1_USB(" isooint");
-				DCD_IsoOUTIncomplete_ISR(drv_info);
+
+				otg->core_regs.GINTSTS = OTG_GINTSTS_IISOOXFR;
 			}
 
 			if (status & OTG_GINTSTS_SRQINT)
 			{
 				TRACE1_USB(" sesint");
-				DCD_SessionRequest_ISR(drv_info);
+				usb_b_gint_srqint(drv_info);
 			}
 
 			if (status & OTG_GINTSTS_OTGINT)
 			{
 				TRACE1_USB(" otgint");
-				DCD_OTG_ISR(drv_info);
+				usb_b_gint_otgint(drv_info);
 			}
 		}
 	}
 }
 
+
 /**
- *  USBD_OTG_EP1IN_ISR_Handler
+ * This function handles EXTI15_10_IRQ Handler.
  * @param drv_info
  */
-void USB_EP1_IN_ISR(USB_DRV_INFO drv_info)
+void USB_HS_WKUP_ISR(USB_DRV_INFO drv_info)
 {
-	USB_TypeDef* otg = drv_info->hw_base;
-	uint32_t status;
+	uint32_t cfg;
 
-	status = otg->device_regs.DINEP1MSK;
-	status |= (otg->device_regs.DIEPEMPMSK & 2) << 6;
-	status &= otg->in_ept_regs[1].DIEPINT;
-
-	if(status & OTG_DIEPINT_XFRC)	//Transfer completed
+	cfg = drv_info->cfg->stm32_otg;
+	if(cfg & CFG_STM32_OTG_LOW_POWER)
 	{
-		// disable tx empty interrupt
-		otg->device_regs.DIEPEMPMSK &= ~2;
-		// clear transfer completed interrupt
-		otg->in_ept_regs[1].DIEPINT = OTG_DIEPINT_XFRC;
-		// signal...
-		TRACELN1_USB("usb xfrc 1");
+		*(uint32_t *)NVIC_SYS_CTRL &= ~(NVIC_SYS_CTRL_SLEEPDEEP | NVIC_SYS_CTRL_SLEEPEXIT);
+		stm_otg_ungate_clock(drv_info->hw_base, cfg);
 	}
+	EXTI->EXTI_PR = EXTI_PR_PR20;
 
-	if(status & OTG_DIEPINT_EPDISD)	// Endpoint disabled
-	{
-		otg->in_ept_regs[1].DIEPINT = OTG_DIEPINT_EPDISD;
-	}
-
-	if(status & OTG_DIEPINT_TOC) 	// Timeout condition
-	{
-		otg->in_ept_regs[1].DIEPINT = OTG_DIEPINT_TOC;
-	}
-
-	if(status & OTG_DIEPINT_ITTXFE)	// IN Token received when TxFIFO is empty
-	{
-		otg->in_ept_regs[1].DIEPINT = OTG_DIEPINT_ITTXFE;
-	}
-
-	if(status & OTG_DIEPINT_INEPNE)	// IN endpoint NAK effective
-	{
-		otg->in_ept_regs[1].DIEPINT = OTG_DIEPINT_INEPNE;
-	}
-
-	if(status & OTG_DIEPINT_TXFE)		// Transmit FIFO empty
-	{
-
-		stm_write_payload(drv_info, 1);
-
-		otg->in_ept_regs[1].DIEPINT = OTG_DIEPINT_TXFE;
-	}
+	TRACELN1("usb_wkup!");
 }
 
 

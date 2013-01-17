@@ -86,12 +86,12 @@ typedef struct
   __IO uint32_t DTHRCTL;     		//!< (otg Offset: 0x0830) device thr
   __IO uint32_t DIEPEMPMSK; 		//!< (otg Offset: 0x0834) device empty msk
   __IO uint32_t DEACHINT;    		//!< (otg Offset: 0x0838) dedicated EP interrupt
-  __IO uint32_t DEACHMSK;    		//!< (otg Offset: 0x083C) dedicated EP msk
+  __IO uint32_t DEACHINTMSK;    	//!< (otg Offset: 0x083C) dedicated EP msk
   __IO uint32_t DIEPEACHMSK1;      	//!< (otg Offset: 0x0840) dedicated in EP-1 interrupt
-  __IO uint32_t DINEP1MSK;  		//!< (otg Offset: 0x0844) dedicated EP mask
+  __IO uint32_t DINEP1MSK;  		//!< (otg Offset: 0x0844) dedicated EP mask (as DIEPMSK)
   __IO uint32_t reserved3[14];    	//!< (otg Offset: 0x0848) Reserved
   __IO uint32_t DOEPEACHMSK1; 		//!< (otg Offset: 0x0880) device each OUT endpoint-1 interrupt register
-  __IO uint32_t DOUTEP1MSK; 		//!< (otg Offset: 0x0884) dedicated EP msk
+  __IO uint32_t DOUTEP1MSK; 		//!< (otg Offset: 0x0884) dedicated EP msk (as DOEPMSK)
 } OTG_DEVICE_REGS;
 
 
@@ -544,6 +544,9 @@ typedef struct
 /** @} */
 
 /** @defgroup DOEPMSK;  (otg Offset: 0x0814) device OUT Endpoint Mask			*/
+#define OTG_DOEPMSK_BOIM            (1u<<9)     //!< BNA interrupt mask
+#define OTG_DOEPMSK_OPEM            (1u<<8)     //!< OUT packet error mask
+#define OTG_DOEPMSK_B2BSTUP         (1u<<6)     //!< Back-to-back SETUP packets received mask
 #define OTG_DOEPMSK_OTEPDM          (1u<<4)     //!< OUT token received when endpoint disabled mask
 #define OTG_DOEPMSK_STUPM           (1u<<3)     //!< SETUP phase done mask
 #define OTG_DOEPMSK_EPDM            (1u<<1)     //!< Endpoint disabled interrupt mask
@@ -590,9 +593,13 @@ typedef struct
 /** @} */
 
 /** @defgroup DEACHINT;    (otg Offset: 0x0838) dedicated EP interrupt			*/
+#define OTG_DEACHINT_OEP1INT        (1u<<17)    //!< OUT endpoint 1 interrupt bit
+#define OTG_DEACHINT_IEP1INT        (1u<<1)     //!< IN endpoint 1interrupt bit
 /** @} */
 
-/** @defgroup DEACHMSK;    (otg Offset: 0x083C) dedicated EP msk				*/
+/** @defgroup DEACHINTMSK; (otg Offset: 0x083C) dedicated EP msk				*/
+#define OTG_DEACHINTMSK_OEP1INTM    (1u<<17)    //!< OUT endpoint 1 interrupt mask bit
+#define OTG_DEACHINTMSK_IEP1INT     (1u<<1)     //!< IN endpoint 1interrupt mask bit
 /** @} */
 
 /** @defgroup DIEPEACHMSK1;(otg Offset: 0x0840) dedicated in EP-1 interrupt		*/
