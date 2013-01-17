@@ -18,11 +18,15 @@
 #define CFG_STM32_OTG_MODE			0x0010		//!< OTG Mode
 #define CFG_STM32_OTG_HS_CORE		0x0020		//!< OTG HS peripheral
 #define CFG_STM32_OTG_LOW_POWER		0x0040		//!< low power
-#define CFG_STM32_OTG_DEDICATED_EP1	0x0080		//!< Dedicated EP1 handler
 
 /// Number of endpoints used
 #ifndef USB_NUMENDPOINTS
 #define	USB_NUMENDPOINTS CHIP_USB_NUMENDPOINTS
+#endif
+
+/// Dedicated EP1 interrupts (not recommended)
+#ifndef USB_STM32_DEDICATED_EP1
+#define USB_STM32_DEDICATED_EP1 0
 #endif
 
 

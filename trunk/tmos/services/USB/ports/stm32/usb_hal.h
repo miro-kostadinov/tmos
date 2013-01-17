@@ -38,8 +38,10 @@ void usb_hal_config_fifo(USB_DRV_INFO drv_info);
 
 void USB_HS_WKUP_ISR(USB_DRV_INFO drv_info);
 void USB_OTG_ISR(USB_DRV_INFO drv_info);
+#if USB_STM32_DEDICATED_EP1
 void USB_EP1_IN_ISR(USB_DRV_INFO drv_info);
 void USB_EP1_OUT_ISR(USB_DRV_INFO drv_info);
+#endif
 
 
 #endif /* USB_HAL_H_ */
