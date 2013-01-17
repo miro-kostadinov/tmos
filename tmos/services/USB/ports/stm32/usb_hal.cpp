@@ -559,14 +559,16 @@ static void stm_otg_core_init_dev(USB_TypeDef* otg, const usb_config_t* cfg)
 	}
 	otg->device_regs.DIEPMSK = OTG_DIEPMSK_BIM | OTG_DIEPMSK_TXFURM |
 			OTG_DIEPMSK_TOCM | OTG_DIEPMSK_EPDM |OTG_DIEPMSK_XFRCM;
+#if USB_STM32_DEDICATED_EP1
 	otg->device_regs.DINEP1MSK = OTG_DIEPMSK_BIM | OTG_DIEPMSK_TXFURM |
 			OTG_DIEPMSK_TOCM | OTG_DIEPMSK_EPDM | OTG_DIEPMSK_XFRCM;
-
+#endif
 	otg->device_regs.DOEPMSK = OTG_DOEPMSK_BOIM | OTG_DOEPMSK_OPEM |
 			OTG_DOEPMSK_B2BSTUP | OTG_DOEPMSK_EPDM;
+#if USB_STM32_DEDICATED_EP1
 	otg->device_regs.DOUTEP1MSK = OTG_DOEPMSK_BOIM | OTG_DOEPMSK_OPEM |
 			OTG_DOEPMSK_B2BSTUP | OTG_DOEPMSK_EPDM;
-
+#endif
 	stm_enable_dev_int(otg, cfg->stm32_otg);
 }
 
@@ -628,10 +630,12 @@ static void stm_ept_config(USB_DRV_INFO drv_info, uint32_t ept_num,
         if(ept_num & 0x80)
         {
             epdir = &drv_info->drv_data->endpoints[ept_indx].epd_in;
+#if USB_STM32_DEDICATED_EP1
             if(ept_indx == EPT_1 && drv_info->cfg->stm32_otg & CFG_STM32_OTG_DEDICATED_EP1)
             	otg->device_regs.DEACHINTMSK |= OTG_DEACHINTMSK_IEP1INT;
             else
-            	otg->device_regs.DAINTMSK |= OTG_DAINTMSK_IEPM(ept_indx);
+#endif
+            otg->device_regs.DAINTMSK |= OTG_DAINTMSK_IEPM(ept_indx);
 
         	depctl = &otg->in_ept_regs[ept_indx].DIEPCTL;
         	reg = *depctl;
@@ -647,10 +651,12 @@ static void stm_ept_config(USB_DRV_INFO drv_info, uint32_t ept_num,
         } else
         {
             epdir = &drv_info->drv_data->endpoints[ept_indx].epd_out;
+#if USB_STM32_DEDICATED_EP1
             if(ept_indx == EPT_1 && drv_info->cfg->stm32_otg & CFG_STM32_OTG_DEDICATED_EP1)
             	otg->device_regs.DEACHINTMSK |= OTG_DEACHINTMSK_OEP1INTM;
             else
-            	otg->device_regs.DAINTMSK |= OTG_DAINTMSK_OEPM(ept_indx);
+#endif
+           	otg->device_regs.DAINTMSK |= OTG_DAINTMSK_OEPM(ept_indx);
         	depctl = &otg->out_ept_regs[ept_indx].DOEPCTL;
         	reg = *depctl;
         	if(!(reg & OTG_DOEPCTL_USBAEP))
@@ -665,6 +671,7 @@ static void stm_ept_config(USB_DRV_INFO drv_info, uint32_t ept_num,
 		epdir->epd_fifo_sz = fifo_sz;
     	epdir->epd_state = ENDPOINT_STATE_IDLE;
 
+#if USB_STM32_DEDICATED_EP1
     	if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_DEDICATED_EP1)
     	{
     		switch(ept_num)
@@ -678,7 +685,7 @@ static void stm_ept_config(USB_DRV_INFO drv_info, uint32_t ept_num,
     		}
 
     	}
-
+#endif
     }
 }
 
@@ -1173,6 +1180,7 @@ static void usb_b_ept_rx_handler(USB_DRV_INFO drv_info)
 	}
 }
 
+#if USB_STM32_DEDICATED_EP1
 /**
  * handles EP1_OUT Handler
  * (USBD_OTG_EP1OUT_ISR_Handler)
@@ -1199,7 +1207,7 @@ void USB_EP1_OUT_ISR(USB_DRV_INFO drv_info)
 		TRACELN1_USB("usb 1 dis");
 	}
 }
-
+#endif
 
 /**
  * Handles out endpoint interrupts, except endpoint 1
@@ -1267,6 +1275,7 @@ static void usb_b_ept_tx_handler(USB_DRV_INFO drv_info)
 	}
 }
 
+#if USB_STM32_DEDICATED_EP1
 /**
  *  USBD_OTG_EP1IN_ISR_Handler
  * @param drv_info
@@ -1318,7 +1327,7 @@ void USB_EP1_IN_ISR(USB_DRV_INFO drv_info)
 		stm_write_payload(drv_info, 1);
 	}
 }
-
+#endif
 
 /**
  *  Indicates that the USB_OTG controller has detected a resume or remote Wake-up sequence
