@@ -383,7 +383,7 @@ const PIN_DESC usb_pins[]=
 const usb_config_t usb_config =
 {
 	/*CFG_STM32_OTG_MODE |*/ CFG_STM32_OTG_HS_CORE | CFG_STM32_OTG_LOW_POWER |
-	CFG_STM32_OTG_DEDICATED_EP1 | CFG_STM32_OTG_VBUS_SENS,
+	CFG_STM32_OTG_VBUS_SENS,
 	128,			// RxFIFO depth
 	{
 		64,			// TX0_FIFO_HS_SIZE
@@ -396,38 +396,6 @@ const usb_config_t usb_config =
 	usb_pins
 };
 
-const USB_DRIVER_INFO usb_ep1_in_driver =
-{
-		{
-			DRIVER_INFO_STUB,
-			(DRV_ISR)USB_EP1_IN_ISR,
-			(DRV_DCR)USB_DCR,
-			(DRV_DSR)USB_DSR,
-			OTG_HS_EP1_IN_IRQn,
-			DRV_PRIORITY_USB,
-			ID_NO_PERIPH
-		},
-		OTG_HS,
-		&usb_drv_data,
-		&fpp100_descriptors
-};
-
-const USB_DRIVER_INFO usb_ep1_out_driver =
-{
-		{
-			DRIVER_INFO_STUB,
-			(DRV_ISR)USB_EP1_OUT_ISR,
-			(DRV_DCR)USB_DCR,
-			(DRV_DSR)USB_DSR,
-			OTG_HS_EP1_OUT_IRQn,
-			DRV_PRIORITY_USB,
-			ID_NO_PERIPH
-		},
-		OTG_HS,
-		&usb_drv_data,
-		&fpp100_descriptors,
-		&usb_config
-};
 
 const USB_DRIVER_INFO usb_wkup_driver =
 {
@@ -645,8 +613,8 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&DefaultDriver, 	/*!< 71 USART6 global interrupt                                           */
     1+ (char * const)&DefaultDriver, 	/*!< 72 I2C3 event interrupt                                              */
     1+ (char * const)&DefaultDriver, 	/*!< 73 I2C3 error interrupt                                              */
-    1+ (char * const)&usb_ep1_out_driver,/*!<74 USB OTG HS End Point 1 Out global interrupt                       */
-    1+ (char * const)&usb_ep1_in_driver,/*!< 75 USB OTG HS End Point 1 In global interrupt                        */
+    1+ (char * const)&DefaultDriver,	/*!<74 USB OTG HS End Point 1 Out global interrupt                       */
+    1+ (char * const)&DefaultDriver,	/*!< 75 USB OTG HS End Point 1 In global interrupt                        */
     1+ (char * const)&usb_wkup_driver, 	/*!< 76 USB OTG HS Wakeup through EXTI interrupt                          */
     1+ (char * const)&usb_driver, 		/*!< 77 USB OTG HS global interrupt                                       */
     1+ (char * const)&DefaultDriver, 	/*!< 78 DCMI global interrupt                                             */
