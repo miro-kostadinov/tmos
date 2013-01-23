@@ -61,13 +61,10 @@ enum USB_OTG_MODE : unsigned char
 #define ENDPOINT_STATE_RECEIVING      0x08 //!< Endpoint is receiving data.
 #define ENDPOINT_STATE_RECEIVING_OFF  0x10 //!< Endpoint is receiving data (rxfifo_cnt).
 #define ENDPOINT_STATE_STALL		  0x20 //!< Endpoint is receiving data (rxfifo_cnt).
-#define ENDPOINT_STATE_BUSY		(UDP_ENDPOINT_SENDING | UDP_ENDPOINT_RECEIVING)
 
 /*   Constants: USB device API return values */
-#define USBD_STATUS_SUCCESS	  RES_SIG_OK	//!< Indicates the operation was successful.
-#define USBD_STATUS_LOCKED    RES_SIG_EOF	//!< Endpoint/device is already busy.
-#define USBD_STATUS_ABORTED   RES_SIG_IDLE	//!< Operation has been aborted.
-#define USBD_STATUS_RESET     RES_SIG_ERROR //!< Operation has been aborted because the device has been reset.
+#define USBD_STATUS_ABORTED   RES_SIG_IDLE	//!< Operation has been aborted (stalled)
+#define USBD_STATUS_RESET     RES_SIG_ERROR //!< Operation has been aborted because the device has been reset
 
 enum USB_EVENT
 {

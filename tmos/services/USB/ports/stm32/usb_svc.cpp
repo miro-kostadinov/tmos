@@ -154,8 +154,7 @@ void usb_svc_halt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 		epdir = &endpoint->epd_out;
 
     // Check that endpoint is enabled and not already in Halt state
-    if ((epdir->epd_state != ENDPOINT_STATE_DISABLED)
-        && (epdir->epd_state != ENDPOINT_STATE_HALTED))
+    if (epdir->epd_state >= ENDPOINT_STATE_IDLE)
    	{
         // Abort the current transfer if necessary
     	usb_drv_end_transfers(epdir, USBD_STATUS_ABORTED);
