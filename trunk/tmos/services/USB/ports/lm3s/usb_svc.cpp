@@ -146,8 +146,7 @@ void usb_svc_halt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 	TRACE_USB(" Halt(%d)", eptnum);
 
     // Check that endpoint is enabled and not already in Halt state
-    if ((endpoint->state != ENDPOINT_STATE_DISABLED)
-        && (endpoint->state != ENDPOINT_STATE_HALTED))
+	if (endpoint->state >= ENDPOINT_STATE_IDLE)
    	{
         // Abort the current transfer if necessary
     	usb_drv_end_transfers(endpoint, USBD_STATUS_ABORTED);
@@ -157,12 +156,6 @@ void usb_svc_halt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
         // Put endpoint into Halt state
     	usb_hal_stall(drv_info->hw_base, eptnum);
 
-        // Enable the endpoint interrupt
-//        eptnum = 1 << (eptnum & 0xF);
-//        if(hnd->src.as_int & 0x80)
-//        	drv_info->hw_base->USBRXIE |= eptnum;
-//        else
-//        	drv_info->hw_base->USBTXIE |= eptnum;
     }
 }
 
