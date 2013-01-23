@@ -8,13 +8,15 @@
 ##########################################################################
 
 # local sources
-local_as_src-y	:=  
- 
-local_c_src-y 	:= 
+local_as_src-y	:=
+local_c_src-y 	:=
+local_cpp_src-y	:=
+local_h_src-y 	:= 
 
-local_cpp_src-y	:= eefc.cpp pmc.cpp rtc.cpp rtt.cpp wdt.cpp
+local_cpp_src-y	+= eefc.cpp pmc.cpp rtc.cpp rtt.cpp wdt.cpp
 
-local_h_src-y 	:= platform_cpp.h platform_inc.h pmc.h
+local_h_src-y 	+= platform_cpp.h platform_inc.h pmc.h eefc.h supc.h rtc.h rtt.h
+local_h_src-y 	+= wdt.h rstc.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
