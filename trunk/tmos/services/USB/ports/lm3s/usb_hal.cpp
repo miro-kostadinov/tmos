@@ -1111,7 +1111,6 @@ static void usb_b_usbis_handler(USB_DRV_INFO drv_info, unsigned int status)
         {
     		TRACE1_USB(" suspend");
         	usb_drv_event(drv_info, e_susppend);
-	        drv_data->usb_state = USB_STATE_SUSPENDED;
 
         }
 

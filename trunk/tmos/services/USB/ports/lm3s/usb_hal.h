@@ -8,17 +8,7 @@
 #include <usb_drv.h>
 
 
-/** Enable interrupt for endpoint
- *
- * Not implemented from LM3S ????
- */
-#define ENTPOINT_IS_PING_PONG(hw_base, eptnum) 					\
-	((hw_base->USBTXDPKTBUFDIS & (1<<eptnum)))
-
 #define ENTPOINT_FIFO(hw_base, eptnum) &hw_base->USBFIFO[eptnum]
-
-/** Force Stall on endpoint  */
-#define FORCE_STALL(hw_base, eptnum) SET_CSR(&hw_base->UDP_CSR[eptnum], UDP_CSR_FORCESTALL);
 
 /**
  * Indicates if the device is running in high or full-speed. Always returns 0
