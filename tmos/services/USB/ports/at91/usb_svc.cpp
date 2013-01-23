@@ -14,13 +14,15 @@ void usb_svc_stall_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 	unsigned char eptnum = hnd->mode.as_bytes[0];
     Endpoint *endpoint = &drv_info->drv_data->endpoints[eptnum];
 
+    eptnum |= 0x80; // ENDPOINT_DIRECTION_IN
+
     // Check that endpoint is in Idle state
     if (endpoint->state != ENDPOINT_STATE_IDLE)
     {
-    	TRACE_USB("USBD_Stall: Endpoint%d locked\r\n", eptnum);
+    	TRACE_USB(" Stall(%d): locked", eptnum);
     } else
     {
-	    TRACE_USB("Stall%d ", eptnum);
+	    TRACE_USB(" Stall(%d)", eptnum);
 	    usb_hal_stall(drv_info->hw_base, eptnum);
     }
 
@@ -43,7 +45,7 @@ void usb_svc_setconfiguration_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 	unsigned char cfgnum = hnd->src.as_int;
 
-	TRACE_USB("SetCfg(%d) ", cfgnum);
+	TRACE_USB(" SetCfg(%d)", cfgnum);
 
     // If the configuration number if non-zero, the device enters the
     // Configured state
@@ -80,25 +82,21 @@ void usb_svc_setconfiguration(HANDLE hnd, unsigned int cfg)
 //-----------------------------------------------------------------------------
 void usb_svc_configendpoints_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 {
-	const USBGenericDescriptor** pDescriptors;
+	const USBGenericDescriptor* endpoint;
 
 
-	pDescriptors = (const USBGenericDescriptor**)hnd->src.as_int;
+	endpoint = (const USBGenericDescriptor*)hnd->src.as_int;
 
-	while(pDescriptors[0])
-	{
-		usb_hal_ept_config(drv_info, pDescriptors[0]);
-		pDescriptors++;
-	}
+	usb_hal_ept_config(drv_info, endpoint);
 }
 
 /**
  * Sets the current device configuration
 */
-void usb_svc_configendpoints(HANDLE hnd, const USBEndpointDescriptor** ds)
+void usb_svc_configendpoint(HANDLE hnd, const USBGenericDescriptor* ds)
 {
 	// note: Stall will be performed for the last endpoint used by this handle!!
-	hnd->dst.as_voidptr = (void*)usb_svc_setconfiguration_hook;
+	hnd->dst.as_voidptr = (void*)usb_svc_configendpoints_hook;
 	hnd->src.as_cvoidptr = ds;
 	hnd->hcontrol(DCR_HANDLE);
 }
@@ -107,9 +105,10 @@ void usb_svc_configendpoints(HANDLE hnd, const USBEndpointDescriptor** ds)
 void usb_svc_setaddress_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 {
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+	Udp* pUDP = drv_info->hw_base;
 	unsigned char address = hnd->src.as_int;
 
-	TRACE_USB("SetAddr(%d) ", address);
+	TRACE_USB(" SetAddr(%d)", address);
 
     // Set address
     pUDP->UDP_FADDR = UDP_FADDR_FEN | address;
@@ -135,26 +134,31 @@ void usb_svc_setaddress_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 */
 void usb_svc_setaddress(HANDLE hnd, unsigned int adr)
 {
-	// note: Stall will be performed for the last endpoint used by this handle!!
-	hnd->dst.as_voidptr = (void*)usb_svc_setaddress_hook;
-	hnd->src.as_int = adr;
-	hnd->hcontrol(DCR_HANDLE);
+    /* Sends a zero-length packet and then set the device address */
+    if(hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT)==RES_OK)
+    {
+    	// note: Stall will be performed for the last endpoint used by this handle!!
+    	hnd->dst.as_voidptr = (void*)usb_svc_setaddress_hook;
+    	hnd->src.as_int = adr;
+    	hnd->hcontrol(DCR_HANDLE);
+    }
 }
 //-----------------------------------------------------------------------------
 void usb_svc_halt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 {
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+	Udp* pUDP = drv_info->hw_base;
 	unsigned int eptnum = hnd->src.as_int;
     Endpoint *endpoint = &drv_data->endpoints[eptnum];
 
-	TRACE_USB("Halt%d ", eptnum);
+	TRACE_USB(" Halt%d", eptnum);
 
     // Check that endpoint is enabled and not already in Halt state
     if ((endpoint->state != ENDPOINT_STATE_DISABLED)
         && (endpoint->state != ENDPOINT_STATE_HALTED))
    	{
         // Abort the current transfer if necessary
-    	UDP_EndOfTransfer(endpoint, USBD_STATUS_ABORTED);
+    	usb_drv_end_transfers(endpoint, USBD_STATUS_ABORTED);
 
         // Put endpoint into Halt state
         SET_CSR(&pUDP->UDP_CSR[eptnum], UDP_CSR_FORCESTALL);
@@ -180,10 +184,11 @@ void usb_svc_halt(HANDLE hnd, unsigned int eptnum)
 void usb_svc_unhalt_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 {
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+	Udp* pUDP = drv_info->hw_base;
 	unsigned char eptnum = hnd->src.as_int;
     Endpoint *endpoint = &drv_data->endpoints[eptnum];
 
-	TRACE_USB("Unhalt%d ", eptnum);
+	TRACE_USB(" Unhalt(%d)", eptnum);
 
     if (endpoint->state == ENDPOINT_STATE_HALTED)
     {

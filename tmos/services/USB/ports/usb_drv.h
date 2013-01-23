@@ -94,6 +94,7 @@ enum USB_EVENT
 struct USB_DRIVER_DATA
 {
 	USB_DRV_STATE 	usb_state;			//!< Current device state (USBD_STATE_XXX)
+	USB_DRV_STATE 	usb_previous_state;	//!< Previous device state (USBD_STATE_XXX)
 	USB_OTG_MODE 	usb_device_mode;	//!< Device mode
 	USB_OTG_MODE 	usb_host_mode;		//!< Host mode
 	unsigned char 	usb_power;			//!< Power status
