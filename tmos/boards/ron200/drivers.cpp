@@ -17,12 +17,11 @@
 #include <usart_drv.h>
 #include <adc_drv.h>
 #include <dacc_drv.h>
-#include <usbd_drv.h>
 #include <key2_drv.h>
 #include <ssc_drv.h>
-//#include <gui_drv.h>
-//#include <lcd_ST7565S.h>
-#include <cdc_descriptors.h>
+#include <usb_drv.h>
+#include <usb_setup.h>
+#include <usb_hal.h>
 
 const char restart_on_exception =0;
 
@@ -348,23 +347,38 @@ const DACC_DRIVER_INFO dacc_driver =
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		(34) USB DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-USBD_DRIVER_DATA usb_driver_data;
 
-const USBD_DRIVER_INFO usb_driver =
+const PIN_DESC usb_pins[]=
+{
+//	USB_ID,
+//	USB_VBUS,
+//	USB_PEN,
+	0
+};
+
+const usb_config_t usb_config =
+{
+	usb_pins
+};
+
+USB_DRIVER_DATA usb_drv_data;
+const USB_DRIVER_INFO usb_driver =
 {
 	{
 		DRIVER_INFO_STUB,
 		(DRV_ISR)USBD_ISR,
-		(DRV_DCR)USBD_DCR,
-		(DRV_DSR)USBD_DSR,
+		(DRV_DCR)USB_DCR,
+		(DRV_DSR)USB_DSR,
 		UDP_IRQn,
 		DRV_PRIORITY_KERNEL,
 		ID_UDP
 	},
 	UDP,
-	&usb_driver_data,
-	&cdcdSerialDriverDescriptors
+	&usb_drv_data,
+	&ron200_descriptors,
+	&usb_config
 };
+
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		(35) KEY2 DRIVER

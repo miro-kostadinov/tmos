@@ -33,6 +33,7 @@
 #define USE_TIME			0
 #define USE_TMOS_STDIO		1
 #define USE_GUI				0
+#define USE_USB				1
 
 
 /*----------------------------------------------------------------------------*/

@@ -62,6 +62,8 @@ USE_OBJ_LIST	?=n
 # GUI
 USE_GUI			?=n
 
+# USB
+USE_USB			?=y
 
 ##########################################################################
 
@@ -70,7 +72,7 @@ local_as_src-y	:=
  
 local_c_src-y 	:= swi_tab.c
 
-local_cpp_src-y	:= drivers.cpp key2_drv.cpp 
+local_cpp_src-y	:= drivers.cpp key2_drv.cpp usb_setup.cpp
 
 local_h_src-y 	:= brd_cfg.h brd_cpp.h swi_tab.h trace.h
 
