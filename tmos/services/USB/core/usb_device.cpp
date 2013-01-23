@@ -572,6 +572,7 @@ void usb_device::RequestHandler(const void* drv,
                     hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
                     break;
 
+#if USE_USB_OTGHS
                 case USBFeatureRequest_OTG_B_HNP_ENABLE:
                         TRACE1_USB(" HNP_ENABLE");
                         otg_features_supported |=
@@ -592,7 +593,7 @@ void usb_device::RequestHandler(const void* drv,
                             1<<USBFeatureRequest_OTG_A_ALT_HNP_SUPPORT;
                         hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
                     break;
-
+#endif
                 default:
                 	TRACELN_USB(" Unknown feature selector(%d)",
                 			pRequest->GetFeatureSelector());
