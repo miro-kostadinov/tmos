@@ -204,7 +204,7 @@ static void stm_start_rx(USB_DRV_INFO drv_info, uint32_t ept_indx, Endpoint *end
 	HANDLE hnd;
 
 	hnd = endpoint->epd_out.epd_pending;
-	if(hnd && (!ept_indx || drv_info->drv_data->usb_state >= USB_STATE_ADDRESS))
+	if(hnd && (!ept_indx || drv_info->drv_data->usb_state >= USBST_DEVICE_ADDRESS))
 	{
     	OTG_OUT_EPT_REGS* otg_regs;
     	uint32_t depctl, deptsiz, maxpacket;
@@ -698,22 +698,25 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 
 	switch(event)
 	{
-	case e_init:
-		drv_data->usb_state = USB_STATE_DOWN;
-		break;
-
 	case e_powered:
-		drv_data->usb_state = USB_STATE_POWERED;
+		drv_data->usb_state = USBST_DEVICE_POWERED;
 		break;
 
 	case e_susppend:
-		drv_data->usb_state = USB_STATE_SUSPENDED;
+		if(drv_data->usb_state > USBST_DEVICE_SUSPENDED)
+		{
+			drv_data->usb_previous_state = drv_data->usb_state;
+			drv_data->usb_state = USBST_DEVICE_SUSPENDED;
+		}
 		break;
 
+	case e_resume:
+		if(drv_data->usb_state < USBST_DEVICE_DEFAULT)
+			drv_data->usb_state = USBST_DEVICE_DEFAULT;
+		break;
 
 	case e_reset:
-		drv_data->usb_state = USB_STATE_DEFAULT;
-		drv_data->usb_power &= ~(USB_POWER_WAKING);
+		drv_data->usb_state = USBST_DEVICE_DEFAULT;
 		drv_data->frame_count = 0;
 		break;
 
@@ -998,7 +1001,7 @@ void usb_hal_stall_clear(USB_TypeDef* hw_base, unsigned int ept_num)
  * called from the usbdrv thread
  * @param drv_info
  */
-void usb_hal_configure(USB_DRV_INFO drv_info)
+void usb_hal_device_start(USB_DRV_INFO drv_info)
 {
 	USB_CONTROLLER* otg = drv_info->hw_base;
 
@@ -1363,23 +1366,25 @@ static void usb_b_gint_wkupint(USB_DRV_INFO drv_info)
  */
 static void usb_b_gint_usbsusp(USB_DRV_INFO drv_info)
 {
-	USB_DRV_STATE prev_state;
+	uint32_t prev_state;;
 	USB_TypeDef* otg = drv_info->hw_base;
 
-	/* Inform upper layer by the Suspend Event */
-	prev_state = drv_info->drv_data->usb_state;
-	usb_drv_event(drv_info, e_susppend);
 
 	/* Clear interrupt */
 	otg->core_regs.GINTSTS = OTG_GINTSTS_USBSUSP | OTG_GINTSTS_ESUSP;
 
-	if( (drv_info->cfg->stm32_otg & CFG_STM32_OTG_LOW_POWER) &&
-			(otg->device_regs.DSTS & OTG_DSTS_SUSPSTS) &&
-			(prev_state == USB_STATE_CONFIGURED))
+	prev_state = drv_info->drv_data->usb_state;
+	if(prev_state != USBST_DEVICE_SUSPENDED)
 	{
-		/*  switch-off the clocks */
-		otg->PCGCCTL |= OTG_PCGCCTL_STPPCLK;
-		otg->PCGCCTL |= OTG_PCGCCTL_GATEHCLK;
+		if( (drv_info->cfg->stm32_otg & CFG_STM32_OTG_LOW_POWER) &&
+			(otg->device_regs.DSTS & OTG_DSTS_SUSPSTS)  &&
+			(prev_state == USBST_DEVICE_CONFIGURED))
+		{
+			/*  switch-off the clocks */
+			otg->PCGCCTL |= OTG_PCGCCTL_STPPCLK;
+			otg->PCGCCTL |= OTG_PCGCCTL_GATEHCLK;
+		}
+		usb_drv_event(drv_info, e_susppend);
 	}
 }
 
@@ -1544,13 +1549,16 @@ static void usb_b_gint_rxflvl(USB_DRV_INFO drv_info)
  */
 static void usb_b_gint_srqint(USB_DRV_INFO drv_info)
 {
-	/* Clear interrupt */
-	drv_info->hw_base->core_regs.GINTSTS = OTG_GINTSTS_SRQINT;
+	USB_TypeDef* otg = drv_info->hw_base;
 
-	usb_drv_event(drv_info, e_powered);
+	/* Clear interrupt */
+	otg->core_regs.GINTSTS = OTG_GINTSTS_SRQINT;
 
 	// enable otg interrupts
-	drv_info->hw_base->core_regs.GINTMSK |= OTG_GINTMSK_OTGM;
+	otg->core_regs.GINTMSK |= OTG_GINTMSK_OTGM;
+
+	stm_otg_ungate_clock(otg, drv_info->cfg->stm32_otg);
+	usb_drv_event(drv_info, e_powered);
 }
 
 /**

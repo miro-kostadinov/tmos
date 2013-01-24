@@ -51,13 +51,13 @@ void usb_svc_setconfiguration_hook(USB_DRV_INFO drv_info, HANDLE hnd)
     // Configured state
     if (cfgnum != 0)
     {
-        drv_data->usb_state = USB_STATE_CONFIGURED;
+        drv_data->usb_state = USBST_DEVICE_CONFIGURED;
     }
     // If the configuration number is zero, the device goes back to the Address
     // state
     else
     {
-        drv_data->usb_state = USB_STATE_ADDRESS;
+        drv_data->usb_state = USBST_DEVICE_ADDRESS;
 
         // Abort all transfers
     	for(int i= 1; i<USB_NUMENDPOINTS; i++)
@@ -116,16 +116,14 @@ void usb_svc_setaddress_hook(USB_DRV_INFO drv_info, HANDLE hnd)
     // If the address is 0, the device returns to the Default state
     if (address == 0)
     {
-
         pUDP->UDP_GLB_STAT = 0;
-        drv_data->usb_state = USB_STATE_DEFAULT;
+        drv_data->usb_state = USBST_DEVICE_DEFAULT;
     }
     // If the address is non-zero, the device enters the Address state
     else
     {
-
         pUDP->UDP_GLB_STAT = UDP_GLB_STAT_FADDEN;
-        drv_data->usb_state = USB_STATE_ADDRESS;
+        drv_data->usb_state = USBST_DEVICE_ADDRESS;
     }
 }
 

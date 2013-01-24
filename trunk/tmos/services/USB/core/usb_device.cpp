@@ -471,15 +471,10 @@ void usb_device::RequestHandler(const void* drv,
                 break;
 
             case USBGenericRequest_SETADDRESS:
-            {
-                USB_DRIVER_DATA* drv_data = ((USB_DRV_INFO )drv)->drv_data;
-    //			drv_data->dev_adr = pRequest->wValue & 0x7F;
-    	        drv_data->usb_state = USB_STATE_DEFAULT;
             	TRACE_USB(" sAddr(%d)", pRequest->wValue & 0x7F);
 
             	usb_svc_setaddress(hnd, pRequest->wValue & 0x7F);
                 break;
-            }
 
             case USBGenericRequest_SETCONFIGURATION:
             	TRACE1_USB(" sCfg");
