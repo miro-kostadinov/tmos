@@ -187,22 +187,21 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 
 	switch(event)
 	{
-	case e_init:
-		drv_data->usb_state = USB_STATE_DOWN;
-		break;
-
-	case e_powered:
-		drv_data->usb_state = USB_STATE_POWERED;
-		break;
+//	case e_powered:
+//		drv_data->usb_state = USB_STATE_POWERED;
+//		break;
 
 	case e_susppend:
-		drv_data->usb_state = USB_STATE_SUSPENDED;
+		drv_data->usb_state = USBST_DEVICE_SUSPENDED;
 		break;
 
+	case e_resume:
+		if(drv_data->usb_state < USBST_DEVICE_DEFAULT)
+			drv_data->usb_state = USBST_DEVICE_DEFAULT;
+		break;
 
 	case e_reset:
-		drv_data->usb_state = USB_STATE_DEFAULT;
-		drv_data->usb_power &= ~(USB_POWER_WAKING);
+		drv_data->usb_state = USBST_DEVICE_DEFAULT;
 		drv_data->frame_count = 0;
 		break;
 
@@ -478,7 +477,7 @@ void usb_hal_stall_clear(USB_Type* hw_base, unsigned int ept_num)
  *
  * @param drv_info
  */
-void usb_hal_configure(USB_DRV_INFO drv_info)
+void usb_hal_device_start(USB_DRV_INFO drv_info)
 {
 	USB_CONTROLLER* hw_base = drv_info->hw_base;
 
@@ -1076,28 +1075,13 @@ static void usb_b_usbis_handler(USB_DRV_INFO drv_info, unsigned int status)
     // If device initialization has not been performed then just disconnect
     // from the USB bus and return from the handler.
     //
-    if(drv_data->usb_state == USB_STATE_DOWN)
+    if(drv_data->usb_state == USBST_ALL_DOWN)
     {
     	//Disconnect
 		TRACELN1_USB("USB: session end");
     	drv_info->hw_base->USBPOWER &= ~(USB_USBPOWER_SOFTCONN);
     } else
     {
-    	//Received Session request
-    	if(status & USB_USBIS_SESREQ)
-    	{
-    		TRACE1_USB(" session start");
-        	if(drv_data->usb_device_mode == USB_MODE_ENABLED)
-        	{
-        		drv_data->usb_device_mode = USB_MODE_STARTING;
-            	drv_info->hw_base->USBPOWER |= USB_USBPOWER_SOFTCONN;
-
-        	} else
-        	{
-        		// restart maybe?
-        	}
-    	}
-
         // Received a reset from the host.
         if(status & USB_USBIS_RESET)
         {
@@ -1133,20 +1117,6 @@ static void usb_b_usbis_handler(USB_DRV_INFO drv_info, unsigned int status)
         //
         if(status & USB_USBIS_SOF)
         {
-        	drv_data->frame_count++;
-
-        	if( drv_data->usb_power & USB_POWER_REMOTE_WAKE_ACTIVE)
-        	{
-        		drv_data->wake_count++;
-        		if(drv_data->wake_count == 10)
-        			drv_info->hw_base->USBPOWER &= USB_USBPOWER_RESUME;
-        		if(drv_data->wake_count >= 20)
-        		{
-        			//Wakeup complete
-        			drv_data->usb_power &= ~USB_POWER_REMOTE_WAKE_ACTIVE;
-                	usb_drv_event(drv_info, e_wakeup);
-        		}
-        	}
         }
     }
 

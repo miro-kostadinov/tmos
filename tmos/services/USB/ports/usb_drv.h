@@ -27,31 +27,18 @@
 
 #define DCR_USB_STALL					0x01
 
-/// USB device states
-enum USB_DRV_STATE : unsigned char
-{
-	USB_STATE_DOWN,  	  	//!< The USB is down
-	USB_STATE_SUSPENDED,	//!< The device is currently suspended.
-	USB_STATE_ATTACHED,		//!< USB cable is plugged into the device.
-	USB_STATE_POWERED,		//!< Host is providing +5V through the USB cable.
-	USB_STATE_DEFAULT,		//!< Device has been reset.
-	USB_STATE_ADDRESS,		//!< The device has been given an address on the bus.
-	USB_STATE_CONFIGURED	//!< A valid configuration has been selected.
-};
+/// USB states
+#define	USBST_ALL_DOWN			0x00	//!< The USB is down (no host, no device)
 
-/// USB OTG modes
-enum USB_OTG_MODE : unsigned char
-{
-	USB_MODE_NONE			=0x00,	//!< The mode is not allowed
-	USB_MODE_ENABLED		=0x01,	//!< The mode is enabled.
-	USB_MODE_STARTING		=0x02,	//!< The mode is starting.
-	USB_MODE_ACTIVE			=0x04	//!< The mode is active.
-};
+#define	USBST_DEVICE_MODE		0x40	//!< The USB is in device mode
+#define USBST_DEVICE_POWERED	0x41	//!< Host is providing +5V through the USB cable
+#define USBST_DEVICE_SUSPENDED	0x42	//!< The device is currently suspended
+#define USBST_DEVICE_DEFAULT	0x43	//!< Device has been reset
+#define	USBST_DEVICE_ADDRESS	0x44	//!< The device has been given an address on the bus
+#define	USBST_DEVICE_CONFIGURED	0x45	//!< A valid configuration has been selected
 
+#define	USBST_HOST_MODE			0x80	//!< The USB is in host mode
 
-#define USB_POWER_REMOTE_WAKE_ACTIVE	0x01  //!< Remote wake up in progress
-#define USB_POWER_REMOTE_WAKE_ENABLED	0x02  //!< Remote wake up is enabled
-#define USB_POWER_WAKING				0x03
 
 /*    Constants: Endpoint states	*/
 #define ENDPOINT_STATE_DISABLED       0x00 //!< Endpoint is disabled.
@@ -68,7 +55,6 @@ enum USB_OTG_MODE : unsigned char
 
 enum USB_EVENT
 {
-	e_init,						//!< Init after Driver (DCR) RESET
 	e_powered,
 	e_reset,					//!< USB bus reset signaled
 	e_susppend,
@@ -90,11 +76,8 @@ enum USB_EVENT
 
 struct USB_DRIVER_DATA
 {
-	USB_DRV_STATE 	usb_state;			//!< Current device state (USBD_STATE_XXX)
-	USB_DRV_STATE 	usb_previous_state;	//!< Previous device state (USBD_STATE_XXX)
-	USB_OTG_MODE 	usb_device_mode;	//!< Device mode
-	USB_OTG_MODE 	usb_host_mode;		//!< Host mode
-	unsigned char 	usb_power;			//!< Power status
+	uint8_t		 	usb_state;			//!< Current usb state (USBST_XXX)
+	uint8_t		 	usb_previous_state;	//!< Previous usb state (USDST_XXX)
 //	unsigned char	dev_adr;
 
 	unsigned int 	frame_count;

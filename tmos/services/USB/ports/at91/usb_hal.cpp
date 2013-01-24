@@ -233,23 +233,29 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 
 	switch(event)
 	{
-	case e_init:
-		drv_data->usb_state = USB_STATE_DOWN;
-		break;
-
-	case e_powered:
-		drv_data->usb_state = USB_STATE_POWERED;
-		break;
+//	case e_powered:
+//		drv_data->usb_state = USB_STATE_POWERED;
+//		break;
 
 	case e_susppend:
-		drv_data->usb_previous_state = drv_data->usb_state;
-		drv_data->usb_state = USB_STATE_SUSPENDED;
+		if(drv_data->usb_state > USBST_DEVICE_SUSPENDED)
+		{
+			drv_data->usb_previous_state = drv_data->usb_state;
+			drv_data->usb_state = USBST_DEVICE_SUSPENDED;
+		}
 		break;
 
+	case e_resume:
+		if (drv_data->usb_state == USBST_DEVICE_SUSPENDED)
+		{
+			drv_data->usb_state = drv_data->usb_previous_state;
+		}
+		if(drv_data->usb_state < USBST_DEVICE_DEFAULT)
+			drv_data->usb_state = USBST_DEVICE_DEFAULT;
+		break;
 
 	case e_reset:
-		drv_data->usb_state = USB_STATE_DEFAULT;
-		drv_data->usb_power &= ~(USB_POWER_WAKING);
+		drv_data->usb_state = USBST_DEVICE_DEFAULT;
 		drv_data->frame_count = 0;
 		break;
 
@@ -523,26 +529,18 @@ void usb_hal_stall_clear(Udp* hw_base, unsigned int ept_num)
  * Poweron
  * @param drv_info
  */
-void usb_hal_configure(USB_DRV_INFO drv_info)
+void usb_hal_device_start(USB_DRV_INFO drv_info)
 {
-	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-
 	TRACELN1_USB("POWERON!\r\n");
-	if (drv_data->usb_state < USB_STATE_POWERED)
-	{
-		// Reset endpoint structures
-		at91_reset_endpoints(drv_info);
 
-		// Device is in the Attached state
-		drv_data->usb_previous_state = drv_data->usb_state;
-		drv_data->usb_state = USB_STATE_POWERED;
+	at91_usb_activate(drv_info);
 
-		at91_usb_activate(drv_info);
+	// Reset endpoint structures
+	at91_reset_endpoints(drv_info);
 
-		drv_isr_enable(&drv_info->info);
+	drv_isr_enable(&drv_info->info);
 
-		at91_pullup_enable(drv_info);
-	}
+	at91_pullup_enable(drv_info);
 }
 
 /**
@@ -791,13 +789,7 @@ void USBD_ISR(USB_DRV_INFO drv_info)
 		pUDP->UDP_ICR = UDP_ICR_SOFINT;
 
 	status &= pUDP->UDP_IMR;
-	TRACELN_USB("USB:%u[%04x]", drv_data->usb_state, status);
-
-	if (drv_data->usb_state < USB_STATE_POWERED)
-	{
-		status &= UDP_ICR_WAKEUP | UDP_ICR_RXRSM | UDP_ICR_RXSUSP;
-		pUDP->UDP_ICR = ~status;
-	}
+	TRACELN_USB("USB:%x[%04x]", drv_data->usb_state, status);
 
 	/* Return immediately if there is no interrupt to service */
 	if (status == 0)
@@ -815,10 +807,7 @@ void USBD_ISR(USB_DRV_INFO drv_info)
 
 		/* Active the device */
 		at91_usb_activate(drv_info);
-		if (drv_data->usb_state == USB_STATE_SUSPENDED)
-		{
-			drv_data->usb_state = drv_data->usb_previous_state;
-		}
+    	usb_drv_event(drv_info, e_resume);
 	}
 
 	/* Suspend      This interrupt is always treated last (hence the '==') */
@@ -830,7 +819,7 @@ void USBD_ISR(USB_DRV_INFO drv_info)
 		TRACE1_USB(" Susp");
 
 		/* Don't do anything if the device is already suspended */
-		if (drv_data->usb_state != USB_STATE_SUSPENDED)
+		if (drv_data->usb_state != USBST_DEVICE_SUSPENDED)
 		{
 			/* Suspend HW interface */
 			at91_usb_suspend(drv_info);

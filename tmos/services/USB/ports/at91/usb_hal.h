@@ -27,7 +27,7 @@ HANDLE usb_drv_end_transfers(Endpoint *endpoint, unsigned int status);
 bool usb_hal_get_ep_status(USB_DRV_INFO drv_info, uint8_t ept_num, uint16_t* data);
 void usb_hal_stall(Udp* hw_base, unsigned int ept_num);
 void usb_hal_stall_clear(Udp* hw_base, unsigned int ept_num);
-void usb_hal_configure(USB_DRV_INFO drv_info);
+void usb_hal_device_start(USB_DRV_INFO drv_info);
 void usb_hal_ept_reset(USB_DRV_INFO drv_info, unsigned int ept_indx);
 void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDescriptor);
 

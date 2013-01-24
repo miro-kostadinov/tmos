@@ -22,15 +22,14 @@ RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client)
 	const USBDDriverDescriptors* descriptors;
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 
-	if(drv_data->usb_device_mode == USB_MODE_NONE)
+	if(drv_data->usb_state == USBST_ALL_DOWN)
 	{
-		drv_data->usb_device_mode = USB_MODE_ENABLED;
-		drv_data->usb_state = USB_STATE_SUSPENDED;
+		drv_data->usb_state = USBST_DEVICE_MODE;
 		descriptors = (const USBDDriverDescriptors*)client->dst.as_cvoidptr;
 		if(!descriptors)
 			descriptors = drv_info->dev_descriptors;
 		drv_data->device.Initialize(descriptors);
-		usb_hal_configure(drv_info);
+		usb_hal_device_start(drv_info);
 	}
 
 	return RES_SIG_OK;
