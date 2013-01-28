@@ -328,6 +328,25 @@ RES_CODE CHandle::tsk_read(void * buf, unsigned int l, unsigned int time)
    return (res);
 }
 
+RES_CODE CHandle::tsk_read_pkt(void * buf, unsigned int l, unsigned int time)
+{
+	unsigned int dwRead;
+
+	tsk_read(buf, l, time);
+	dwRead = l - len;
+	l -= dwRead;
+	while(l && dwRead && res <= RES_OK )
+	{
+		buf = (char*)buf + dwRead;
+		tsk_resume_read(buf, l);
+		dwRead = l - len;
+		l -= dwRead;
+	}
+	if(!l && !res)
+		res = RES_OK;
+	return (res);
+}
+
 /**
  * Blocking locked read
  * @param buf
