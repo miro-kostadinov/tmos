@@ -142,6 +142,7 @@ struct CHandle {
 	bool tsk_start_read(void * buf, unsigned int l);
 	RES_CODE tsk_read(void * buf, unsigned int l);
 	RES_CODE tsk_read(void * buf, unsigned int l, unsigned int time);
+	RES_CODE tsk_read_pkt(void * buf, unsigned int l, unsigned int time);
 	RES_CODE tsk_read_locked(void * buf, unsigned int l);
 	RES_CODE tsk_read_locked(void * buf, unsigned int l, unsigned int time);
 	RES_CODE tsk_resume_read(void * buf, unsigned int l);
