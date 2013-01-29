@@ -188,9 +188,9 @@ void SPI_DCR(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
         					&drv_info->tx_dma_mode))
         				break;
 #endif
-        			drv_data->cnt++;
         			SPI_ENABLE(drv_info);
         		}
+    			drv_data->cnt++;
         		PIO_Cfg(mode->cs_pin);
 				hnd->res = RES_OK;
         	}
