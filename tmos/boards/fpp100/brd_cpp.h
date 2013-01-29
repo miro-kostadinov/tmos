@@ -114,6 +114,8 @@
 
     KEY_DRV_INDX,					//81
     GUI_DRV_INDX,					//82
+    FILE_DRV_INDX,					//83
+    GSM_DRV_INDX,					//84
 
     INALID_DRV_INDX	                /*!<  invalid	                         */
 };

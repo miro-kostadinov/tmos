@@ -57,7 +57,8 @@ USE_TMOS_STDIO	?=y
 USE_TMOS_LLONG	?=y
 
 #CalculateCRC32()
-USE_CRC16		?=n
+#CalculateCRC32()
+USE_CRC16		?=y
 USE_CRC32		?=y
 
 # class CCache
