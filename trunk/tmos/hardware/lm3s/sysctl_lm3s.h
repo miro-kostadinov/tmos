@@ -12,6 +12,8 @@
 #ifndef SYSCTL_LM3S_H_
 #define SYSCTL_LM3S_H_
 
+#include <tmos.h>
+#include <mcu_inc.h>
 
 /*----------       System Controller (SYSCTL)                     -----------*/
 /// System Controller (SYSCTL)
@@ -564,6 +566,10 @@ void SysCtlPeripheralDisable(unsigned long ulPeripheral);
 #define SYSCTL_MAIN_OSC_DIS     0x00000001  //!< Disable main oscillator
 
 #define SYSCTL          ((SYSCTL_Type *)SYSCTL_BASE) //!< doc!
+
+#ifndef FLASH_SIZE
+#define FLASH_SIZE SYSCTL->SysCtlFlashSizeGet()
+#endif
 
 #endif /* SYSCTL_LM3S_H_ */
 /** @} ingroup	 lm3s_sysctl */
