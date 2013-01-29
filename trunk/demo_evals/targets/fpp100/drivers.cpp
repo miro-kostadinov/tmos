@@ -622,6 +622,8 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
     1+ (char * const)&DefaultDriver, 	/*!< 80 Hash and Rng global interrupt                                     */
     1+ (char * const)&key_driver, 		//81 key drv
     1+ (char * const)&gui_driver, 		//82 gui drv
+    1+ (char * const)&DefaultDriver, 	//83 File Drv
+    1+ (char * const)&DefaultDriver, 	//84 Gsm Drv
 
 
    NULL				//null terminated list
