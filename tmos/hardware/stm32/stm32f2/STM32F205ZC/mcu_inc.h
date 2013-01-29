@@ -30,6 +30,9 @@
 
 #define FSMC_R_BASE         (0xA0000000) //!< FSMC registers base address
 
+#define FLASH_PAGE_SIZE		0x4000		 //!< 4*16K sectors, 1*64K, 1(-7)*128K
+
+
 /*!< Peripheral memory map */
 #define APB1PERIPH_BASE       PERIPH_BASE
 #define APB2PERIPH_BASE       (PERIPH_BASE + 0x00010000)
