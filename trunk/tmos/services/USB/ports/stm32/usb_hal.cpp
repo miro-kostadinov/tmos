@@ -215,7 +215,7 @@ static void stm_start_rx(USB_DRV_INFO drv_info, uint32_t ept_indx, Endpoint *end
     	if( !( depctl & OTG_DOEPCTL_EPENA) )
     	{
     		deptsiz = otg_regs->DOEPTSIZ;
-    		TRACELN_USB("usb sr%u sz=%08x", ept_indx, deptsiz);
+//    		TRACELN_USB("usb sr%u sz=%08x", ept_indx, deptsiz);
     		deptsiz &= OTG_DOEPTSIZ_STUPCNT_Msk;
 
     	    /* Program the transfer size and packet count as follows:
@@ -241,7 +241,7 @@ static void stm_start_rx(USB_DRV_INFO drv_info, uint32_t ept_indx, Endpoint *end
 
     	} else
     	{
-    		TRACELN_USB("usb rr%u sz=%08x", ept_indx, otg_regs->DOEPTSIZ);
+//    		TRACELN_USB("usb rr%u sz=%08x", ept_indx, otg_regs->DOEPTSIZ);
     	}
 	}
 }
@@ -763,7 +763,7 @@ void usb_drv_cancel_hnd(USB_DRV_INFO drv_info, HANDLE hnd)
 		if(hnd->list_remove(epdir->epd_pending))
 		{
 			svc_HND_SET_STATUS(hnd, FLG_SIGNALED | (hnd->res & FLG_OK));
-			TRACE1_USB("Can!");
+//			TRACE1_USB("Can!");
 			if(!epdir->epd_pending && epdir->epd_state == ENDPOINT_STATE_SENDING)
 				epdir->epd_state = ENDPOINT_STATE_IDLE;
 
