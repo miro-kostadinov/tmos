@@ -30,6 +30,7 @@ typedef unsigned int  NET_CODE;
 #define NET_ERR_SOCK_ABORT			0x96	//!< User disconnect socket
 #define NET_ERR_SOCK_READ			0x97	//!< Failed to read from socket
 #define NET_ERR_SOCK_WRITE			0x98 	//!< Failed to write into socket
+
 //-----------------		URL error codes						 -----------------//
 #define NET_ERR_URL_SCHEME			0xA0	//!< BAD or unsupported URL scheme
 #define NET_ERR_URL_INVALID			0xA1	//!< URL is invalid
@@ -37,6 +38,12 @@ typedef unsigned int  NET_CODE;
 #define NET_ERR_URL_REDIRECTED		0xA3	//!< Redirected
 #define NET_ERR_HTTP_CODE			0xA4	//!< HTTP code is not 200 OK
 
+//-----------------		file error codes					 -----------------//
+#define NET_ERR_FILE_SYSTEM			0xB0	//!< BAD or broken file system
+#define NET_ERR_BAD_SECTOR			0xB1	//!< BAD sector
+#define NET_ERR_FILE_READ			0xB2	//!< Failed to read sector
+#define NET_ERR_FILE_WRITE			0xB3	//!< Failed to write sector
+#define NET_ERR_WRITE_PROTECT		0xB4	//!< Failed to write sector
 
 
 
