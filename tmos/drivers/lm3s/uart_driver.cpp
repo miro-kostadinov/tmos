@@ -51,18 +51,19 @@ static inline void RESUME_RX(UART_DRIVER_DATA * drv_data, UART_Type * Uart)
 	// get free space
 	if (drv_data->rx_wrptr < drv_data->rx_ptr)
 	{
-		free_space = drv_data->rx_ptr - drv_data->rx_wrptr;
+		free_space = (drv_data->rx_ptr - drv_data->rx_wrptr)-1;
 		drv_data->rx_remaining = free_space;
 	}
 	else
 	{
-		free_space = &drv_data->rx_buf[RX_BUF_SIZE] - drv_data->rx_wrptr;
+		free_space = &drv_data->rx_buf[RX_BUF_SIZE-1] - drv_data->rx_wrptr;
+		if( drv_data->rx_buf != drv_data->rx_ptr)
+			free_space ++;
 		drv_data->rx_remaining = free_space;
-		free_space += drv_data->rx_ptr - drv_data->rx_buf;
 	}
 
 	// enable or disable the receiver...
-	if(free_space <= 1)
+	if(free_space == 0)
 	{
 		Uart->UARTIntDisable(UART_INT_RX | UART_INT_RT);
 	}
@@ -81,7 +82,7 @@ static inline void START_RX_BUF(UART_Type * Uart, UART_DRIVER_INFO * drv_info, U
 #endif
 	drv_data->rx_ptr = drv_data->rx_buf;
 	drv_data->rx_wrptr = drv_data->rx_buf;
-	drv_data->rx_remaining = RX_BUF_SIZE;
+	drv_data->rx_remaining = RX_BUF_SIZE-1;
 	Uart->UARTIntEnable(UART_INT_RX|UART_INT_RT);
 }
 
@@ -391,15 +392,22 @@ void isr_SerilaDriver(UART_DRIVER_INFO* drv_info )
     {
     	while(Uart->UARTCharsAvail())
     	{
-    		*drv_data->rx_wrptr++ = Uart->DR;
-    		if(!--drv_data->rx_remaining )
+    		if(drv_data->rx_remaining)
     		{
-    	    	if( (hnd=drv_data->hnd_rcv) )
-    				STOP_RX_HND(Uart, drv_info, hnd);
-    	      	else
-    	      	{
-    	      		RESUME_RX(drv_data, Uart);
-    	      	}
+        		*drv_data->rx_wrptr++ = Uart->DR;
+        		if(!--drv_data->rx_remaining )
+        		{
+        	    	if( (hnd=drv_data->hnd_rcv) )
+        				STOP_RX_HND(Uart, drv_info, hnd);
+        	      	else
+        	      	{
+        	      		RESUME_RX(drv_data, Uart);
+        	      	}
+        		}
+    		} else
+    		{
+    			Uart->UARTIntDisable(UART_INT_RX | UART_INT_RT);
+    			break;
     		}
     	}
     	if( (Status&UART_INT_RT) && drv_data->mode.rx_tout )
