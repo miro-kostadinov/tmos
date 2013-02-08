@@ -93,6 +93,18 @@ public:
 		return (((in+1) & size_mask) == out);
 	}
 
+	/** checks if the queue is half_full **/
+	bool half_full()
+	{
+		signed free_space;
+
+		free_space = out-in;
+		if(free_space<=0)
+			free_space += size_mask;
+
+		return (free_space < (size_mask/2) );
+	}
+
 	/** Push item in the queue **/
 	bool push(T item)
 	{
