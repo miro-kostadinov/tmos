@@ -311,7 +311,11 @@ void SPI_DSR(SPI_DRIVER_INFO* drv_info, HANDLE hnd)
 	} else
 	{
 		if(!drv_data->locker)
+		{
 			SPI_END_TRANSACTION((SPI_DRIVER_MODE *)hnd->mode.as_voidptr);
+			//resume waiting
+			SPI_RESUME(drv_info, drv_data);
+		}
 
 		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
 	}
