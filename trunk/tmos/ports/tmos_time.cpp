@@ -197,7 +197,7 @@ time_t::operator unsigned int() const
 		unsigned int y, m, d;
 
 		y = year;
-		if(y >2000)
+		if(y >= 2000)
 			y -= 2000;
 		m = mon-1;
 		d = mday-1;
