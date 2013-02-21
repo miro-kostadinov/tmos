@@ -23,6 +23,8 @@
 #include "gpio_f2.h"
 #include "usart_f2.h"
 #include "dma_f2.h"
+#include "pwr_f2.h"
+#include "rtc_f2.h"
 
 #endif /* SERIES_CPP_H_ */
 /** @} ingroup hardware_stm32f2 */

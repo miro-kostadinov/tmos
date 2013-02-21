@@ -11,6 +11,7 @@
 
 #include <mcu_inc.h>
 #include <tmos_types.h>
+#include <tmos_time.h>
 
 /*******************************************************************************
  *  Real-Time Clock
@@ -88,6 +89,13 @@ typedef struct
 #define RTC_CR_REFCKON              0x00000010 //!< REFCKON: Reference clock detection enable (50 or 60 Hz)
 #define RTC_CR_TSEDGE               0x00000008 //!< TSEDGE: Timestamp event active edge
 #define RTC_CR_WUCKSEL              0x00000007 //!< WUCKSEL[2:0]: Wakeup clock selection
+#define RTC_CR_WUCKSEL_RTC_16       0x00000000 //!<  RTC/16 clock is selected
+#define RTC_CR_WUCKSEL_RTC_8        0x00000001 //!<  RTC/8 clock is selected
+#define RTC_CR_WUCKSEL_RTC_4        0x00000002 //!<  RTC/4 clock is selected
+#define RTC_CR_WUCKSEL_RTC_2        0x00000003 //!<  RTC/2 clock is selected
+#define RTC_CR_WUCKSEL_CK_SPRE      0x00000004 //!<  ck_spre (usually 1 Hz) clock is selected
+#define RTC_CR_WUCKSEL_CK_SPRE2     0x00000006 //!<  ck_spre (usually 1 Hz) clock is selected and 216 is added to the WUT counter value
+
 /** @} */
 
 /** @defgroup RTC_ISR:     	(rtc Offset: 0x0C) RTC initialization and status register */
@@ -111,7 +119,9 @@ typedef struct
 
 /** @defgroup RTC_PRER:    	(rtc Offset: 0x10) RTC prescaler register 		  */
 #define RTC_PRER_PREDIV_A           0x007F0000 //!< PREDIV_A[6:0]: Asynchronous prescaler factor
+#define RTC_PRER_PREDIV_A_Set(x)    ((x)<<16)
 #define RTC_PRER_PREDIV_S           0x00001FFF //!< PREDIV_S[12:0]: Synchronous prescaler factor
+#define RTC_PRER_PREDIV_S_Set(x)    (x)
 /** @} */
 
 /** @defgroup RTC_WUTR:    	(rtc Offset: 0x14) RTC wakeup timer register	  */
@@ -192,6 +202,11 @@ typedef struct
 
 /** @} */ // @defgroup RTC_regs_define
 
-
+bool rtc_wait_sync(RTC_TypeDef* rtc);
+bool rtc_enter_init_mode(RTC_TypeDef* rtc);
+void rtc_exit_init_mode(RTC_TypeDef* rtc);
+void rtc_get_time(RTC_TypeDef* rtc, time_t* time);
+bool rtc_set_time(RTC_TypeDef* rtc, const time_t* time);
+bool rtc_set_wut(RTC_TypeDef* rtc, uint32_t period);
 
 #endif /* RTC_F2_H_ */
