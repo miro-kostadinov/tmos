@@ -10,6 +10,7 @@
 
 #include <mcu_inc.h>
 #include <tmos_types.h>
+#include <gpio_stm32.h>
 
 /*******************************************************************************
  *  External Interrupt/Event Controller (EXTI) registers
@@ -29,6 +30,30 @@ typedef struct
  * @{
  ******************************************************************************/
 
+
+#define EXTI_Line0         		0x00000001 //!< External Interrupt line 0
+#define EXTI_Line1              0x00000002 //!< External Interrupt line 1
+#define EXTI_Line2              0x00000004 //!< External Interrupt line 2
+#define EXTI_Line3              0x00000008 //!< External Interrupt line 3
+#define EXTI_Line4              0x00000010 //!< External Interrupt line 4
+#define EXTI_Line5              0x00000020 //!< External Interrupt line 5
+#define EXTI_Line6              0x00000040 //!< External Interrupt line 6
+#define EXTI_Line7              0x00000080 //!< External Interrupt line 7
+#define EXTI_Line8              0x00000100 //!< External Interrupt line 8
+#define EXTI_Line9              0x00000200 //!< External Interrupt line 9
+#define EXTI_Line10             0x00000400 //!< External Interrupt line 10
+#define EXTI_Line11             0x00000800 //!< External Interrupt line 11
+#define EXTI_Line12             0x00001000 //!< External Interrupt line 12
+#define EXTI_Line13             0x00002000 //!< External Interrupt line 13
+#define EXTI_Line14             0x00004000 //!< External Interrupt line 14
+#define EXTI_Line15             0x00008000 //!< External Interrupt line 15
+#define EXTI_Line16             0x00010000 //!< External Interrupt line 16
+#define EXTI_Line17             0x00020000 //!< External Interrupt line 17
+#define EXTI_Line18             0x00040000 //!< External Interrupt line 18
+#define EXTI_Line19             0x00080000 //!< External Interrupt line 19
+#define EXTI_Line20             0x00100000 //!< External Interrupt line 20
+#define EXTI_Line21             0x00200000 //!< External Interrupt line 21
+#define EXTI_Line22             0x00400000 //!< External Interrupt line 22
 
 /** @defgroup EXTI_IMR:  	(exti Offset: 0x00) EXTI Interrupt mask register	*/
 #define EXTI_IMR_MR0         	0x00000001 //!< Interrupt Mask on line 0
@@ -51,6 +76,9 @@ typedef struct
 #define EXTI_IMR_MR17           0x00020000 //!< Interrupt Mask on line 17
 #define EXTI_IMR_MR18           0x00040000 //!< Interrupt Mask on line 18
 #define EXTI_IMR_MR19           0x00080000 //!< Interrupt Mask on line 19
+#define EXTI_IMR_MR20           0x00100000 //!< Interrupt Mask on line 20
+#define EXTI_IMR_MR21           0x00200000 //!< Interrupt Mask on line 21
+#define EXTI_IMR_MR22           0x00400000 //!< Interrupt Mask on line 22
 /** @} */
 
 /** @defgroup EXTI_EMR:   	(exti Offset: 0x04) EXTI Event mask register		*/
@@ -74,6 +102,9 @@ typedef struct
 #define EXTI_EMR_MR17           0x00020000 //!< Event Mask on line 17
 #define EXTI_EMR_MR18           0x00040000 //!< Event Mask on line 18
 #define EXTI_EMR_MR19           0x00080000 //!< Event Mask on line 19
+#define EXTI_EMR_MR20           0x00100000 //!< Event Mask on line 20
+#define EXTI_EMR_MR21           0x00200000 //!< Event Mask on line 21
+#define EXTI_EMR_MR22           0x00400000 //!< Event Mask on line 22
 /** @} */
 
 /** @defgroup EXTI_RTSR:  	(exti Offset: 0x05) EXTI Rising trigger selection register */
@@ -174,6 +205,10 @@ typedef struct
 
 /** @} */ // @defgroup EXTI_regs_define
 
+void exti_enable_irq(EXTI_TypeDef* exti, uint32_t lines, pio_def type);
+void exti_enable_event(EXTI_TypeDef* exti, uint32_t lines, pio_def type);
+void exti_disable_irq(EXTI_TypeDef* exti, uint32_t lines);
+void exti_disable_event(EXTI_TypeDef* exti, uint32_t lines);
 
 
 
