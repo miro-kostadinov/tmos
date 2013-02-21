@@ -205,6 +205,7 @@ void EXTI_ISR(EXTI_DRIVER_INFO* drv_info )
 	unsigned int status;
 
 	status = drv_info->hw_base->EXTI_IMR & drv_info->int_mask;
+	status &= drv_info->hw_base->EXTI_PR;
 
 	if(status)
 	{
