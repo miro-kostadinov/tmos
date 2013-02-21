@@ -49,7 +49,16 @@
 #define SPI3        CAST(SPI_TypeDef 	, SPI3_BASE)	//!< SPI 3
 #define OTG_HS		CAST(USB_TypeDef 	, 0x40040000)	//!< OTG HS
 #define OTG_FS		CAST(USB_TypeDef 	, 0x50000000)	//!< OTG FS
+#define RTC			CAST(RTC_TypeDef 	, RTC_BASE)		//!< RTC
+#define PWR			CAST(PWR_TypeDef 	, PWR_BASE)		//!< Power control
+/** @} */
 
+/**
+ * @ingroup	 STM32F205ZC
+ * \addtogroup STM32_base Bit-banding Peripheral aliases
+ * @{
+ */
+#define PWR_BB		CAST(PWR_BB_TypeDef , PWR_BB_BASE)	//!< Power control
 /** @} */
 
 /* ************************************************************************** */
@@ -60,6 +69,7 @@
  * \addtogroup STM32_id Peripheral Ids Definitions
  * @{
  */
+// ------------------- index 0 ->   RCC_AHB1ENR  -------------------------------
 #define ID_PERIPH_GPIOA     ((0<<5)|00) //!< GPIO A
 #define ID_PERIPH_GPIOB     ((0<<5)|01) //!< GPIO B
 #define ID_PERIPH_GPIOC     ((0<<5)|02) //!< GPIO C
@@ -82,36 +92,45 @@
 #define ID_PERIPH_ETHPTP	((0<<5)|28) //!< ETH PTP
 #define ID_PERIPH_OTGHS		((0<<5)|29) //!< OTG HS
 #define ID_PERIPH_OTGHS_ULPI ((0<<5)|30) //!< OTG HS ULPI
+
+// ------------------- index 1 ->   RCC_AHB2ENR  -------------------------------
 #define ID_PERIPH_DCMI		((1<<5)|00) //!< DCMI
 #define ID_PERIPH_CRYP		((1<<5)|04) //!< CRYP
 #define ID_PERIPH_HASH		((1<<5)|05) //!< HASH
 #define ID_PERIPH_RNG		((1<<5)|06) //!< RNG
 #define ID_PERIPH_OTGFS		((1<<5)|07) //!< OTG FS
-#define ID_PERIPH_FSMC		((2<<5)|00) //!< FSMC
-#define ID_PERIPH_TIM2      ((3<<5)|00) //!< TIM 2
-#define ID_PERIPH_TIM3      ((3<<5)|01) //!< TIM 3
-#define ID_PERIPH_TIM4      ((3<<5)|02) //!< TIM 4
-#define ID_PERIPH_TIM5      ((3<<5)|03) //!< TIM 5
-#define ID_PERIPH_TIM6      ((3<<5)|04) //!< TIM 6
-#define ID_PERIPH_TIM7      ((3<<5)|05) //!< TIM 7
-#define ID_PERIPH_TIM12     ((3<<5)|06) //!< TIM 12
-#define ID_PERIPH_TIM13     ((3<<5)|07) //!< TIM 13
-#define ID_PERIPH_TIM14     ((3<<5)|08) //!< TIM 14
-#define ID_PERIPH_WWDG      ((3<<5)|11) //!< W WDG
-#define ID_PERIPH_SPI2      ((3<<5)|14) //!< SPI 2
-#define ID_PERIPH_SPI3      ((3<<5)|15) //!< SPI 3
-#define ID_PERIPH_USART2    ((3<<5)|17) //!< USART 2
-#define ID_PERIPH_USART3    ((3<<5)|18) //!< USART 3
-#define ID_PERIPH_USART4    ((3<<5)|19) //!< USART 4
-#define ID_PERIPH_USART5    ((3<<5)|20) //!< USART 5
-#define ID_PERIPH_I2C1      ((3<<5)|21) //!< I2C 1
-#define ID_PERIPH_I2C2      ((3<<5)|22) //!< I2C 2
-#define ID_PERIPH_I2C3      ((3<<5)|23) //!< I2C 3
-#define ID_PERIPH_CAN1      ((3<<5)|25) //!< CAN 1
-#define ID_PERIPH_CAN2      ((3<<5)|26) //!< CAN 2
-#define ID_PERIPH_PWR       ((3<<5)|28) //!< PWR
-#define ID_PERIPH_DAC       ((3<<5)|29) //!< DAC
 
+// ------------------- index 2 ->   RCC_AHB3ENR  -------------------------------
+#define ID_PERIPH_FSMC		((2<<5)|00) //!< FSMC
+
+// ------------------- index 3 ->   reserved     -------------------------------
+
+// ------------------- index 4 ->   RCC_APB1ENR  -------------------------------
+#define ID_PERIPH_TIM2      ((4<<5)|00) //!< TIM 2
+#define ID_PERIPH_TIM3      ((4<<5)|01) //!< TIM 3
+#define ID_PERIPH_TIM4      ((4<<5)|02) //!< TIM 4
+#define ID_PERIPH_TIM5      ((4<<5)|03) //!< TIM 5
+#define ID_PERIPH_TIM6      ((4<<5)|04) //!< TIM 6
+#define ID_PERIPH_TIM7      ((4<<5)|05) //!< TIM 7
+#define ID_PERIPH_TIM12     ((4<<5)|06) //!< TIM 12
+#define ID_PERIPH_TIM13     ((4<<5)|07) //!< TIM 13
+#define ID_PERIPH_TIM14     ((4<<5)|08) //!< TIM 14
+#define ID_PERIPH_WWDG      ((4<<5)|11) //!< W WDG
+#define ID_PERIPH_SPI2      ((4<<5)|14) //!< SPI 2
+#define ID_PERIPH_SPI3      ((4<<5)|15) //!< SPI 3
+#define ID_PERIPH_USART2    ((4<<5)|17) //!< USART 2
+#define ID_PERIPH_USART3    ((4<<5)|18) //!< USART 3
+#define ID_PERIPH_USART4    ((4<<5)|19) //!< USART 4
+#define ID_PERIPH_USART5    ((4<<5)|20) //!< USART 5
+#define ID_PERIPH_I2C1      ((4<<5)|21) //!< I2C 1
+#define ID_PERIPH_I2C2      ((4<<5)|22) //!< I2C 2
+#define ID_PERIPH_I2C3      ((4<<5)|23) //!< I2C 3
+#define ID_PERIPH_CAN1      ((4<<5)|25) //!< CAN 1
+#define ID_PERIPH_CAN2      ((4<<5)|26) //!< CAN 2
+#define ID_PERIPH_PWR       ((4<<5)|28) //!< PWR
+#define ID_PERIPH_DAC       ((4<<5)|29) //!< DAC
+
+// ------------------- index 5 ->   RCC_APB2ENR  -------------------------------
 #define ID_PERIPH_TIM1      ((5<<5)|00) //!< TIM 1
 #define ID_PERIPH_TIM8      ((5<<5)|01) //!< TIM 8
 #define ID_PERIPH_USART1    ((5<<5)|04) //!< USART 1
