@@ -20,14 +20,13 @@
 static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 {
     Endpoint* endpoint;
-    uint32_t bcnt, top_rx_cnt, tr_cnt;
+    uint32_t bcnt, top_rx_cnt;
     HANDLE hnd;
     __IO uint32_t* fifo = drv_info->hw_base->DFIFO[0].DFIFO;
 
 	endpoint = &drv_info->drv_data->endpoints[status & OTG_GRXSTSP_EPNUM_Msk];
 	bcnt = OTG_GRXSTSP_BCNT_Get(status);
 	top_rx_cnt = 0;
-	tr_cnt=0;
 	TRACE_USB(" que%x(%ub)", status & OTG_GRXSTSP_EPNUM_Msk, bcnt);
 
 	if(endpoint->epd_out.epd_state == ENDPOINT_STATE_IDLE)
@@ -46,7 +45,6 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 						*hnd->dst.as_intptr++ = *fifo;
 						hnd->len -= 4;
 						bcnt -= 4;
-						tr_cnt+=4;
 					}
 
 					if(!bcnt)
@@ -58,7 +56,6 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 							usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 						} else
 							hnd->res |= FLG_OK;
-						TRACE_USB("(%u)", tr_cnt);
 						return true;
 					}
 
@@ -69,7 +66,6 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 						endpoint->top_rx_word = *fifo;
 						top_rx_cnt = (bcnt>3)?4:bcnt;
 						bcnt -= top_rx_cnt;
-						tr_cnt += top_rx_cnt;
 					}
 				}
 
@@ -113,7 +109,6 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 		while(bcnt--)
 			status = *fifo;
 	}
-	TRACE_USB("(-%u)", tr_cnt);
 	return true;
 }
 
