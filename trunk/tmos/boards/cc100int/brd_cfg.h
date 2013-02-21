@@ -16,6 +16,7 @@
 #define USE_TMOS_STDLIB		1
 #define USE_TIME			1
 #define USE_TMOS_STDIO		1
+#define USE_CRC16			1
 #define USE_CRC32			1
 #define USE_CACHE			1
 #define USE_SHA_1			1
