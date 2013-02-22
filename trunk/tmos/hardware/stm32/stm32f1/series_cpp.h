@@ -23,6 +23,8 @@
 #include "gpio_f1.h"
 #include "usart_f1.h"
 #include "dma_f1.h"
+#include "pwr_f1.h"
+#include "rtc_f1.h"
 
 
 /**

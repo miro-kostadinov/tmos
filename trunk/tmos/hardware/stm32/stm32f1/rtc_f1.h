@@ -81,8 +81,10 @@ typedef struct
 /** @} */
 
 
-
 /** @} */ // @defgroup RTC_regs_define
+
+
+bool rtc_enter_init_mode(RTC_TypeDef* rtc);
 
 
 #endif /* RTC_F1_H_ */
