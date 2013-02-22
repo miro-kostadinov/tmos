@@ -32,7 +32,16 @@
 #define USART3      CAST(USART_TypeDef  , USART3_BASE)	//!< USART3
 #define UART4       CAST(USART_TypeDef  , UART4_BASE) 	//!< UART4
 #define UART5       CAST(USART_TypeDef  , UART5_BASE) 	//!< UART5
+#define RTC			CAST(RTC_TypeDef 	, RTC_BASE)		//!< RTC
+#define PWR			CAST(PWR_TypeDef 	, PWR_BASE)		//!< Power control
+/** @} */
 
+/**
+ * @ingroup	 STM32F103RB
+ * \addtogroup STM32_base Bit-banding Peripheral aliases
+ * @{
+ */
+#define PWR_BB		CAST(PWR_BB_TypeDef , PWR_BB_BASE)	//!< Power control
 /** @} */
 
 /* ************************************************************************** */

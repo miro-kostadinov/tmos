@@ -121,4 +121,7 @@
 
 #define DBGMCU_BASE         (0xE0042000) /*!< Debug MCU registers base address */
 
+/** Bit-banding registers */
+#define PWR_BB_BASE           (PERIPH_BB_BASE + (PWR_BASE - PERIPH_BASE)*32 )
+
 #endif /* MCU_INC_H_ */
