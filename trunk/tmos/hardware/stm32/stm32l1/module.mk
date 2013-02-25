@@ -14,7 +14,7 @@ local_cpp_src-y	:=
 local_h_src-y 	:= 
 
  
-local_h_src-y 	+= rcc_l1.h rtc_l1.h
+local_h_src-y 	+= rcc_l1.h rtc_l1.h adc_l1.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
