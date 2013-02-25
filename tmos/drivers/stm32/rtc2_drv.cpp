@@ -8,7 +8,7 @@
 
 #include <tmos.h>
 #include <cmsis_cpp.h>
-#include <rtc_drv.h>
+#include <rtc2_drv.h>
 
 /**
  * RTC Config

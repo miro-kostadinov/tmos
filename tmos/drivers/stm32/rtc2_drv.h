@@ -1,12 +1,14 @@
 /*
  * rtc_drv.h
  *
+ * RTC driver for F2 family (could be ported for F4 etc).
+ *
  *  Created on: Feb 14, 2013
  *      Author: miro
  */
 
-#ifndef RTC_DRV_H_
-#define RTC_DRV_H_
+#ifndef RTC2_DRV_H_
+#define RTC2_DRV_H_
 
 #include <port_cpp.h>
 #include <hardware_cpp.h>
@@ -41,4 +43,4 @@ void RTC_WKUP_ISR(RTC_DRIVER_INFO* drv_info);
 
 
 
-#endif /* RTC_DRV_H_ */
+#endif /* RTC2_DRV_H_ */
