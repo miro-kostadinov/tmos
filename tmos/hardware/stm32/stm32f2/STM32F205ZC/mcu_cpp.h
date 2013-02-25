@@ -51,6 +51,10 @@
 #define OTG_FS		CAST(USB_TypeDef 	, 0x50000000)	//!< OTG FS
 #define RTC			CAST(RTC_TypeDef 	, RTC_BASE)		//!< RTC
 #define PWR			CAST(PWR_TypeDef 	, PWR_BASE)		//!< Power control
+#define ADC         CAST(ADCS_TypeDef 	, ADC1_BASE)	//!< ADC common
+#define ADC1        CAST(ADC_TypeDef 	, ADC1_BASE)	//!< ADC1
+#define ADC2        CAST(ADC_TypeDef 	, ADC2_BASE)	//!< ADC2
+#define ADC3        CAST(ADC_TypeDef 	, ADC3_BASE)	//!< ADC3
 /** @} */
 
 /**

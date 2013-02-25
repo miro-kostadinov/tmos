@@ -14,7 +14,7 @@ local_cpp_src-y	:=
 local_h_src-y 	:= 
 
  
-local_h_src-y 	+= rtc_f4.h
+local_h_src-y 	+= rtc_f4.h adc_f4.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
