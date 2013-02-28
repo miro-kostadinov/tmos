@@ -122,7 +122,10 @@ void stm32_dma_ch_cfg(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode)
 	ch->DMA_SxFCR = mode->dma_ch_fr;
 
 	// Enable DMA interrupts
-	ch->DMA_SxCR |= DMA_SxCR_TCIE | DMA_SxCR_DMEIE | DMA_SxCR_TEIE;
+	if(mode->dma_ch_cr & DMA_SxCR_CIRC)
+		ch->DMA_SxCR |= DMA_SxCR_DMEIE | DMA_SxCR_TEIE;
+	else
+		ch->DMA_SxCR |= DMA_SxCR_TCIE | DMA_SxCR_DMEIE | DMA_SxCR_TEIE;
 
 }
 
