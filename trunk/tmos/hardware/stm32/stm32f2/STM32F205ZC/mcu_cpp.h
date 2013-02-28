@@ -74,15 +74,15 @@
  * @{
  */
 // ------------------- index 0 ->   RCC_AHB1ENR  -------------------------------
-#define ID_PERIPH_GPIOA     ((0<<5)|00) //!< GPIO A
-#define ID_PERIPH_GPIOB     ((0<<5)|01) //!< GPIO B
-#define ID_PERIPH_GPIOC     ((0<<5)|02) //!< GPIO C
-#define ID_PERIPH_GPIOD     ((0<<5)|03) //!< GPIO D
-#define ID_PERIPH_GPIOE     ((0<<5)|04) //!< GPIO E
-#define ID_PERIPH_GPIOF     ((0<<5)|05) //!< GPIO F
-#define ID_PERIPH_GPIOG     ((0<<5)|06) //!< GPIO G
-#define ID_PERIPH_GPIOH     ((0<<5)|07) //!< GPIO H
-#define ID_PERIPH_GPIOI     ((0<<5)|08) //!< GPIO I
+#define ID_PERIPH_GPIOA     ((0<<5)| 0) //!< GPIO A
+#define ID_PERIPH_GPIOB     ((0<<5)| 1) //!< GPIO B
+#define ID_PERIPH_GPIOC     ((0<<5)| 2) //!< GPIO C
+#define ID_PERIPH_GPIOD     ((0<<5)| 3) //!< GPIO D
+#define ID_PERIPH_GPIOE     ((0<<5)| 4) //!< GPIO E
+#define ID_PERIPH_GPIOF     ((0<<5)| 5) //!< GPIO F
+#define ID_PERIPH_GPIOG     ((0<<5)| 6) //!< GPIO G
+#define ID_PERIPH_GPIOH     ((0<<5)| 7) //!< GPIO H
+#define ID_PERIPH_GPIOI     ((0<<5)| 8) //!< GPIO I
 #define ID_PERIPH_CRC 		((0<<5)|12) //!< CRC
 #define ID_PERIPH_FLITF     ((0<<5)|15) //!< FLITF
 #define ID_PERIPH_SRAM1     ((0<<5)|16) //!< SRAM 1
@@ -98,27 +98,27 @@
 #define ID_PERIPH_OTGHS_ULPI ((0<<5)|30) //!< OTG HS ULPI
 
 // ------------------- index 1 ->   RCC_AHB2ENR  -------------------------------
-#define ID_PERIPH_DCMI		((1<<5)|00) //!< DCMI
-#define ID_PERIPH_CRYP		((1<<5)|04) //!< CRYP
-#define ID_PERIPH_HASH		((1<<5)|05) //!< HASH
-#define ID_PERIPH_RNG		((1<<5)|06) //!< RNG
-#define ID_PERIPH_OTGFS		((1<<5)|07) //!< OTG FS
+#define ID_PERIPH_DCMI		((1<<5)| 0) //!< DCMI
+#define ID_PERIPH_CRYP		((1<<5)| 4) //!< CRYP
+#define ID_PERIPH_HASH		((1<<5)| 5) //!< HASH
+#define ID_PERIPH_RNG		((1<<5)| 6) //!< RNG
+#define ID_PERIPH_OTGFS		((1<<5)| 7) //!< OTG FS
 
 // ------------------- index 2 ->   RCC_AHB3ENR  -------------------------------
-#define ID_PERIPH_FSMC		((2<<5)|00) //!< FSMC
+#define ID_PERIPH_FSMC		((2<<5)| 0) //!< FSMC
 
 // ------------------- index 3 ->   reserved     -------------------------------
 
 // ------------------- index 4 ->   RCC_APB1ENR  -------------------------------
-#define ID_PERIPH_TIM2      ((4<<5)|00) //!< TIM 2
-#define ID_PERIPH_TIM3      ((4<<5)|01) //!< TIM 3
-#define ID_PERIPH_TIM4      ((4<<5)|02) //!< TIM 4
-#define ID_PERIPH_TIM5      ((4<<5)|03) //!< TIM 5
-#define ID_PERIPH_TIM6      ((4<<5)|04) //!< TIM 6
-#define ID_PERIPH_TIM7      ((4<<5)|05) //!< TIM 7
-#define ID_PERIPH_TIM12     ((4<<5)|06) //!< TIM 12
-#define ID_PERIPH_TIM13     ((4<<5)|07) //!< TIM 13
-#define ID_PERIPH_TIM14     ((4<<5)|08) //!< TIM 14
+#define ID_PERIPH_TIM2      ((4<<5)| 0) //!< TIM 2
+#define ID_PERIPH_TIM3      ((4<<5)| 1) //!< TIM 3
+#define ID_PERIPH_TIM4      ((4<<5)| 2) //!< TIM 4
+#define ID_PERIPH_TIM5      ((4<<5)| 3) //!< TIM 5
+#define ID_PERIPH_TIM6      ((4<<5)| 4) //!< TIM 6
+#define ID_PERIPH_TIM7      ((4<<5)| 5) //!< TIM 7
+#define ID_PERIPH_TIM12     ((4<<5)| 6) //!< TIM 12
+#define ID_PERIPH_TIM13     ((4<<5)| 7) //!< TIM 13
+#define ID_PERIPH_TIM14     ((4<<5)| 8) //!< TIM 14
 #define ID_PERIPH_WWDG      ((4<<5)|11) //!< W WDG
 #define ID_PERIPH_SPI2      ((4<<5)|14) //!< SPI 2
 #define ID_PERIPH_SPI3      ((4<<5)|15) //!< SPI 3
@@ -135,12 +135,12 @@
 #define ID_PERIPH_DAC       ((4<<5)|29) //!< DAC
 
 // ------------------- index 5 ->   RCC_APB2ENR  -------------------------------
-#define ID_PERIPH_TIM1      ((5<<5)|00) //!< TIM 1
-#define ID_PERIPH_TIM8      ((5<<5)|01) //!< TIM 8
-#define ID_PERIPH_USART1    ((5<<5)|04) //!< USART 1
-#define ID_PERIPH_USART6    ((5<<5)|05) //!< USART 6
-#define ID_PERIPH_ADC1		((5<<5)|08) //!< ADC 1
-#define ID_PERIPH_ADC2      ((5<<5)|09) //!< ADC 2
+#define ID_PERIPH_TIM1      ((5<<5)| 0) //!< TIM 1
+#define ID_PERIPH_TIM8      ((5<<5)| 1) //!< TIM 8
+#define ID_PERIPH_USART1    ((5<<5)| 4) //!< USART 1
+#define ID_PERIPH_USART6    ((5<<5)| 5) //!< USART 6
+#define ID_PERIPH_ADC1		((5<<5)| 8) //!< ADC 1
+#define ID_PERIPH_ADC2      ((5<<5)| 9) //!< ADC 2
 #define ID_PERIPH_ADC3      ((5<<5)|10) //!< ADC 3
 #define ID_PERIPH_SDIO      ((5<<5)|11) //!< SDIO
 #define ID_PERIPH_SPI1      ((5<<5)|12) //!< SPI 1
