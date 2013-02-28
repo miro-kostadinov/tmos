@@ -19,8 +19,8 @@ local_h_src-y 	+= tmos_drivers.h exti_drv.h usart_drv.h spi_drv.h dma_drv.h
 
 #conditional drivers
 ifeq "$(CFG_SERIES)" "stm32f2"
-local_cpp_src-y	+= rtc2_drv.cpp
-local_h_src-y 	+= rtc2_drv.h
+local_cpp_src-y	+= rtc2_drv.cpp adc2_drv.cpp
+local_h_src-y 	+= rtc2_drv.h adc2_drv.h
 endif
 
 #updating global variables
