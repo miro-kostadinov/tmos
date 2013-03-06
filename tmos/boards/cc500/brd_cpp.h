@@ -95,6 +95,7 @@
     FILE_DRV_INDX,					//57
     FD_DRV_INDX,					//58
     GSM_DRV_INDX,					//59
+    PRN0_DRV_INDX,					//60
     INALID_DRV_INDX	                /*!<  invalid	                         */
 };
 
