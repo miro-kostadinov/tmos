@@ -507,7 +507,7 @@ const SPI_DRIVER_MODE lcd2_mode_stru =
 
 GUI_DRIVER_DATA gui_drv_data;
 
-GUI_DRIVER_INFO gui_driver =
+const GUI_DRIVER_INFO gui_driver =
 {
 	{
 		DRIVER_INFO_STUB,
