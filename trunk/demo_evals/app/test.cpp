@@ -4,8 +4,17 @@
  *  Created on: Mar 20, 2013
  *      Author: miro
  */
+#include <brd_cfg.h>
 
+#ifndef USE_TMOS_TL_V2
+#define USE_TMOS_TL_V2 0
+#endif
 
+#ifndef USE_TMOS_TL_V3
+#define USE_TMOS_TL_V3 0
+#endif
+
+#if USE_TMOS_TL_V2
 //#include <iostream>
 //#include <array>
 //#include <vector>
@@ -67,3 +76,11 @@ void test()
 //	v.resize (15);
 }
 
+#endif
+
+#if USE_TMOS_TL_V3
+void test()
+{
+
+}
+#endif
