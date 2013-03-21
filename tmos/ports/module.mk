@@ -1,6 +1,6 @@
 ##########################################################################
 #
-#	Make include for cpu
+#	Make include for ports
 #	
 #   Platform: MPOS rev.3.0	
 #
@@ -17,14 +17,10 @@ local_as_src-$(USE_CRC16)		+= crc16.S
 
 local_c_src-$(USE_CRC32)		+= crc32.c
 
-local_cpp_src-y	+= tmos_time.cpp   
-local_cpp_src-$(USE_CSTRING)	+= str_list.cpp
 local_cpp_src-$(USE_CACHE)		+= cache.cpp
 
-local_h_src-y 	+= tmos.h tmos_cfg.h tmos_inc.h tmos_types.h memory.h mqueue.h 
-local_h_src-y 	+= tmos_time.h
+local_h_src-y 	+= tmos.h tmos_cfg.h tmos_inc.h tmos_types.h
  
-local_h_src-$(USE_CSTRING)		+= str_list.h
 local_h_src-$(USE_CACHE)		+= cache.h
 local_h_src-$(USE_CRC32)		+= crc32.h
 local_h_src-$(USE_CRC16)		+= crc16.h

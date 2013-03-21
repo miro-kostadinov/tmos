@@ -27,8 +27,10 @@
 #define WM_INIT				0x04
 
 
-#define USE_TMOS_STRING		1
+#define USE_TMOS_TL_V1		1
 #define USE_CSTRING			1
+
+#define USE_TMOS_STRING		1
 #define USE_TMOS_STDLIB		1
 #define USE_TIME			0
 #define USE_TMOS_STDIO		1

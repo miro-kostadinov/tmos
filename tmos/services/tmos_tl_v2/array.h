@@ -11,6 +11,19 @@
 #include <tmos.h>
 
 // array<TYPE>
+namespace tmos
+{
+
+
+
+
+
+
+
+
+
+
+
 
 template<class TYPE>
 class array
@@ -85,5 +98,6 @@ private:
 	void ConstructElements(int from, int count);
 
 };
+}
 
 #endif /* ARRAY_H_ */

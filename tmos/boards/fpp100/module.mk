@@ -41,7 +41,8 @@ DEBUG 		?= dwarf-2
 # strncasecmp() toupper() tolower() XNUM_TO_DIGIT()
 USE_TMOS_STRING	?=y
 
-#CSTRING class
+# TMOS_TL_V2
+USE_TMOS_TL_V2	?=y
 USE_CSTRING		?=y
 
 # tmos stdlib -> sys_malloc() sys_realloc() svc_free()
