@@ -303,10 +303,13 @@ static unsigned int get_clocks_per200ms(void)
 	return res;
 }
 
+void test();
+
 int main(void)
 {
 	unsigned int clock_freq;
 
+	test();
 
 	//start other tasks
     usr_task_init_static(&led_task_desc, true);
