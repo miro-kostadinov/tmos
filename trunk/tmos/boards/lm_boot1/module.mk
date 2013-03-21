@@ -44,7 +44,8 @@ BOARD_TYPE  ?= HW_VER_11
 # strncasecmp() toupper() tolower() XNUM_TO_DIGIT()
 USE_TMOS_STRING	?=y
 
-#CSTRING class
+# TMOS_TL_V1
+USE_TMOS_TL_V1	?=n
 USE_CSTRING		?=n
 
 # tmos stdlib -> sys_malloc() sys_realloc() svc_free()

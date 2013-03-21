@@ -14,8 +14,10 @@
 //#define HW_VER_11			1
 
 
-#define USE_TMOS_STRING		1
+#define USE_TMOS_TL_V1		0
 #define USE_CSTRING			0
+
+#define USE_TMOS_STRING		1
 #define USE_TMOS_STDLIB		0
 #define USE_TIME			0
 #define USE_TMOS_STDIO		1

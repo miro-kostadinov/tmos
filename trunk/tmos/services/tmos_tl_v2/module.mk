@@ -1,6 +1,6 @@
 ##########################################################################
 #
-#	Make include for services
+#	Make include for services/tmos_tl_v2
 #	
 #   Platform: MPOS rev.3.0	
 #
@@ -13,17 +13,14 @@ local_c_src-y 	:=
 local_cpp_src-y	:=   
 local_h_src-y 	:=
 
-local_as_src-$(USE_AES_TMOS)+= aes_tmos.S
+ 
+local_cpp_src-y	+= tmos_time.cpp str_list.cpp
 
-local_cpp_src-$(USE_SHA_1) 	+= sha_1.cpp
-local_cpp_src-$(USE_SHA_1) 	+= hmac_sha1.cpp
-
-local_c_src-$(USE_BASE32)	+= base32.c
-
-local_h_src-$(USE_SHA_1) 	+= sha_1.h
-local_h_src-$(USE_SHA_1) 	+= hmac_sha1.h
-local_h_src-$(USE_AES_TMOS)	+= aes_tmos.h
-local_h_src-$(USE_BASE32)	+= base32.h
+local_h_src-y 	+= memory.h mqueue.h tmos_time.h str_list.h 
+local_h_src-y 	+= tmos++.h tl_iterator.h tl_type_traits.h tl_cpp_type_traits.h  
+local_h_src-y 	+= tl_move.h tl_iterator_base.h tl_algorithm.h tl_pair.h
+local_h_src-y 	+= tl_allocator.h tl_array.h tl_vector.h tl_uninitialized.h
+local_h_src-y 	+= tl_construct.h tl_initializer_list.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -31,17 +28,12 @@ c_sources  	+= $(call changepath,$(local_c_src-y))
 cpp_sources += $(call changepath,$(local_cpp_src-y))
 h_sources  	+= $(call changepath,$(local_h_src-y))
 
+#add current directory to include path
+inc_dirs += $(subdirectory) 
 
 #submodules
 local_modules-y := 
 
-local_modules-$(USE_POLARSSL)	+= PolarSSL
-local_modules-$(USE_GUI)		+= GUI
-local_modules-$(USE_USB)		+= USB
-local_modules-$(USE_LWIP_1_4)	+= lwip-1.4.0.rc1
-local_modules-$(USE_NET)		+= net
-local_modules-$(USE_TMOS_TL_V1)	+= tmos_tl_v1
-local_modules-$(USE_TMOS_TL_V2)	+= tmos_tl_v2 
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
