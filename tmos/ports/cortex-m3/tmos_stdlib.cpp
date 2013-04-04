@@ -255,9 +255,9 @@ void* tsk_malloc_clear(unsigned int size)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 					 helper functions
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-unsigned int atoi(const char *ptr )
+int atoi(const char *ptr )
 {
-	unsigned int res=0;
+	int res=0;
 	if(ptr)
 		tmos_sscanf(ptr, "%d", &res);
 	return (res);

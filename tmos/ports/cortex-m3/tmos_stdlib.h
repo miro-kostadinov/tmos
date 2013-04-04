@@ -48,7 +48,7 @@ void* tsk_malloc_clear(unsigned int size);
  * @param ptr
  * @return
  */
-unsigned int atoi(const char *ptr );
+int atoi(const char *ptr );
 
 /** Convert hes string to integer
  *
