@@ -15,12 +15,31 @@
 
 #ifdef __cplusplus
 #	define EXTERN_C		extern "C"
+namespace tmos
+{
+typedef unsigned int size_t;
+typedef unsigned long long uint64_t;
+typedef long long int64_t;
+typedef unsigned int uint32_t;
+typedef int int32_t;
+typedef unsigned short uint16_t;
+typedef short int16_t;
+typedef unsigned char uint8_t;
+typedef char int8_t;
+typedef unsigned int RES_CODE;
+#ifndef min
+#define min(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+#endif
+#ifndef max
+#define max(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
+#endif
+#ifndef NULL
+#define NULL 0
+#endif
+}
+using namespace tmos;
 #else
 #	define EXTERN_C		extern
-#endif
-
-#define WEAK 			__attribute__ ((weak))
-#define WEAK_C 			EXTERN_C WEAK
 
 typedef unsigned int size_t;
 typedef unsigned long long uint64_t;
@@ -32,11 +51,21 @@ typedef short int16_t;
 typedef unsigned char uint8_t;
 typedef char int8_t;
 typedef unsigned int RES_CODE;
-
-#define NULL 0
-
+#ifndef min
 #define min(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+#endif
+#ifndef max
 #define max(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
+#endif
+#ifndef NULL
+#define NULL 0
+#endif
+
+#endif
+
+#define WEAK 			__attribute__ ((weak))
+#define WEAK_C 			EXTERN_C WEAK
+
 
 /**
  * IO definitions
