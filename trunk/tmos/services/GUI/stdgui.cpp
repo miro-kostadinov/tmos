@@ -327,7 +327,7 @@ static void draw_box_frame(CMessageBox* msg_hnd, LCD_MODULE* lcd)
 	if(txt)
 	{
 		lcd->set_xy_all(posy, ALL_CENTER);
-		while(txt[0] && ((posy+lcd->font->hight) < msg_hnd->rect.y1))
+		while(txt[0] && ((posy+lcd->font->height) < msg_hnd->rect.y1))
 		{
 			lcd->clear_rect(1, posy, lcd->size_x-1, posy+10);
 			txt = lcd->draw_text(txt);
@@ -455,7 +455,7 @@ void DrawButtonsRow(unsigned int n, const char* btns, signed char sx, LCD_MODULE
 	for(x=2; x < 100; x += 10)
 	{
 		lcd->draw_bitmap(x, y, lcd->font->font_data + ((*btns++) - 0x20)
-				* lcd->font->char_bytes, lcd->font->width, lcd->font->hight);
+				* lcd->font->char_bytes, lcd->font->width, lcd->font->height);
 	}
 
 	if (sx >= 0)
@@ -592,9 +592,9 @@ RES_CODE getbox_cb(CGetBox* box, unsigned int param, unsigned int msg)
     	}
 		if(box->flags & (TXT_FLAGS_CURSOR|TXT_FLAGS_CONST))
 		{
-			pos = 2 + pos * lcd->font->spacing;
-		   lcd->draw_hline(pos, pos + lcd->font->spacing, offset+15-2);
-		   lcd->draw_hline(pos, pos + lcd->font->spacing, offset+15-1);
+			pos = 2 + pos * lcd->font->hspacing;
+		   lcd->draw_hline(pos, pos + lcd->font->hspacing, offset+15-2);
+		   lcd->draw_hline(pos, pos + lcd->font->hspacing, offset+15-1);
 		}
         return (0);
     }

@@ -502,23 +502,42 @@ const unsigned char fontd7x9_1[1792] = {
 
 const RENDER_MODE FNT10x21 = {
     fontd10x21_1,			// font_data;
-    12,						// spacing;		- space
-    10,						// width;		- width
-    21,						// hight;		- hight
-    2,						// distance;
-    25,						// vspacing;	-
+	27,						// char_bytes;  - size in bytes of the character image
+	{
+		{ // size
+		10,						// width;		- width
+		21,						// height;		- height
 
-	27						// char_bytes;  -
+		12,						// h spacing;	- char width + spacing between characters
+		25						// v spacing;	- char height + spacing between rows
+		}
+	},
+	{
+		{ // distance
+		2,						// h distance;  - spacing between characters
+		4						// v distance;  - spacing between rows
+		}
+	}
 };
 
 
 
 const RENDER_MODE FNT7x9 = {
     fontd7x9_1,				// font_data;
-    9,						// spacing;
-    7,						// width;
-    9,						// hight;
-    2,						// distance;
-    11,						// vspacing;
 	8,						// char_bytes;
+	{
+		{
+		7,						// width;
+		9,						// height;
+
+		9,						// h spacing;
+		11						// v spacing;
+		}
+	},
+	{
+		{
+		2,						// h distance;
+		2						// v distance;
+		}
+	}
 };
