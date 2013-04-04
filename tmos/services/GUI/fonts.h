@@ -1,16 +1,38 @@
 #ifndef FONTS_H
 #define FONTS_H
 
+#include <tmos.h>
 
 typedef struct
 {
-    const unsigned char *font_data;
-    unsigned char	spacing;
-    unsigned char	width;
-    unsigned char	hight;
-	unsigned char 	distance;
-	unsigned char 	vspacing;
-	unsigned char	char_bytes;
+    const uint8_t *font_data;
+	uint8_t	char_bytes;
+
+	union
+	{
+		struct
+		{
+		    uint8_t	width;
+		    uint8_t	height;
+		    uint8_t	hspacing;
+			uint8_t vspacing;
+		};
+		struct
+		{
+		    uint16_t char_size;
+		    uint16_t spacing;
+		};
+		uint32_t size;
+	};
+	union
+	{
+		struct
+		{
+			uint8_t 	hdistance;
+			uint8_t 	vdistance;
+		};
+		uint16_t distance;
+	};
 } RENDER_MODE;
 
 extern const RENDER_MODE FNT10x21;

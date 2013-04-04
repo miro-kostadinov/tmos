@@ -71,7 +71,7 @@ void LCD_MODULE::backlight_signal(void)
 void LCD_MODULE::set_font(const RENDER_MODE* afont)
 {
 	font = afont;
-	chars_per_row = size_x / font->spacing;
+	chars_per_row = size_x / font->hspacing;
 }
 
 void LCD_MODULE::set_xy_all(unsigned int xy, unsigned int all)
@@ -90,7 +90,7 @@ const char* LCD_MODULE::get_next_txt_row(const char *txt)
 		while(*txt == ' ' || *txt =='\r' || *txt == '\n')
 			txt++;
 
-	    pos = pos_x + font->distance;
+	    pos = pos_x + font->hdistance;
 	    len = 0;
 	    width = 0;
 	    while( pos < size_x )
@@ -102,18 +102,18 @@ const char* LCD_MODULE::get_next_txt_row(const char *txt)
 	        	if(c == 0 || c =='\r' || c == '\n')
 	        		break;
 	        }
-	    	pos += font->spacing;
+	    	pos += font->hspacing;
 	    }
 
 	    if(!width && len)
 	    {
-	    	width = pos_x + font->distance + (len-1)*font->spacing;
+	    	width = pos_x + font->hdistance + (len-1)*font->hspacing;
 	    }
 
 
 	    if(width)
 	    {
-	    	len = width -pos_x -font->distance;
+	    	len = width -pos_x -font->hdistance;
 	    	if(allign != ALL_LEFT)
 	    	{
 	            pos = size_x - len;
@@ -121,14 +121,14 @@ const char* LCD_MODULE::get_next_txt_row(const char *txt)
 	    			pos >>= 1;
 	    	}
 	    	else
-	    		pos = pos_x + font->distance;
+	    		pos = pos_x + font->hdistance;
 
 	    	width = pos + len;
 
 	    	while( (pos < width) && *txt)
 	    	{
 	    		txt++;
-	    		pos += font->spacing;
+	    		pos += font->hspacing;
 	    	}
 	    }
 		if(txt[0])
@@ -150,7 +150,7 @@ const char* LCD_MODULE::draw_text(const char *txt)
 	while(*txt == ' ' || *txt =='\r' || *txt == '\n')
 		txt++;
 
-    pos = pos_x + font->distance;
+    pos = pos_x + font->hdistance;
     len = 0;
     width = 0;
     while( pos < size_x )
@@ -162,18 +162,18 @@ const char* LCD_MODULE::draw_text(const char *txt)
         	if(c == 0 || c =='\r' || c == '\n')
         		break;
         }
-    	pos += font->spacing;
+    	pos += font->hspacing;
     }
 
     if(!width && len)
     {
-    	width = pos_x + font->distance + (len-1)*font->spacing;
+    	width = pos_x + font->hdistance + (len-1)*font->hspacing;
     }
 
 
     if(width)
     {
-    	len = width -pos_x -font->distance;
+    	len = width -pos_x -font->hdistance;
     	if(allign != ALL_LEFT)
     	{
             pos = size_x - len;
@@ -181,7 +181,7 @@ const char* LCD_MODULE::draw_text(const char *txt)
     			pos >>= 1;
     	}
     	else
-    		pos = pos_x + font->distance;
+    		pos = pos_x + font->hdistance;
 
     	width = pos + len;
 
@@ -193,9 +193,9 @@ const char* LCD_MODULE::draw_text(const char *txt)
                 c -= 0x20;
 
 				draw_bitmap(pos, pos_y, font->font_data + c * font->char_bytes,
-						font->width, font->hight);
+						font->width, font->height);
     		}
-    		pos += font->spacing;
+    		pos += font->hspacing;
     	}
     }
 
@@ -215,7 +215,7 @@ const char* LCD_MODULE::draw_row(const char *txt)
 	while(*txt == ' ')
 		txt++;
 
-    pos = pos_x + font->distance;
+    pos = pos_x + font->hdistance;
     len = 0;
     width = 0;
     while( pos < size_x )
@@ -225,18 +225,18 @@ const char* LCD_MODULE::draw_row(const char *txt)
         {
             break;
         }
-    	pos += font->spacing;
+    	pos += font->hspacing;
     }
 
     if(!width && len)
     {
-    	width = pos_x + font->distance + (len-1)*font->spacing;
+    	width = pos_x + font->hdistance + (len-1)*font->hspacing;
     }
 
 
     if(width)
     {
-    	len = width -pos_x -font->distance;
+    	len = width -pos_x -font->hdistance;
     	if(allign != ALL_LEFT)
     	{
             pos = size_x - len;
@@ -244,7 +244,7 @@ const char* LCD_MODULE::draw_row(const char *txt)
     			pos >>= 1;
     	}
     	else
-    		pos = pos_x + font->distance;
+    		pos = pos_x + font->hdistance;
 
     	width = pos + len;
 
@@ -256,9 +256,9 @@ const char* LCD_MODULE::draw_row(const char *txt)
                 c -= 0x20;
 
 				draw_bitmap(pos, pos_y, font->font_data + c * font->char_bytes,
-						font->width, font->hight);
+						font->width, font->height);
     		}
-    		pos += font->spacing;
+    		pos += font->hspacing;
     	}
     }
 
