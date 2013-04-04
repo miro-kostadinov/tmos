@@ -12,21 +12,21 @@
  extern "C" {
 #endif
 
-size_t strlen(const char *dst);
-void memclr(void *dst, size_t length);
-void* memcpy(void *dst, const void *src, size_t length);
-void* memmove(void *dst, const void *src, size_t length);
-void* memset(void *dst, int c, size_t length);
+unsigned int strlen(const char *dst);
+void memclr(void *dst, unsigned int length);
+void* memcpy(void *dst, const void *src, unsigned int length);
+void* memmove(void *dst, const void *src, unsigned int length);
+void* memset(void *dst, int c, unsigned int length);
 char* strcpy(char *dst, const char *src);
-char* strncpy(char *dst, const char *src, size_t len);
+char* strncpy(char *dst, const char *src, unsigned int len);
 char* strchr(const char *dst, int i);
 char* strrchr(const char *dst, int i);
 const char* strpbrk(const char * str1, const char * str2);
-int memcmp(const void * ptr1, const void * ptr2, size_t num);
+int memcmp(const void * ptr1, const void * ptr2, unsigned int num);
 int strcmp(const void *dst, const void *src);
-int strncmp(const void *dst, const void *src, size_t len);
+int strncmp(const void *dst, const void *src, unsigned int len);
 int strcasecmp(const char *dst, const char *src);
-int strncasecmp(const char *dst, const char *src, size_t len);
+int strncasecmp(const char *dst, const char *src, unsigned int len);
 char* strstr(const char*, const char*);
 
 extern char G_char_2_type_[256];
