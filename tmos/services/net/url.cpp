@@ -859,10 +859,10 @@ NET_CODE CURL::url_resolve(const CURL & old_link)
 
 	if(url_flags & (URL_FLAG_SCHEME_FTP | URL_FLAG_SCHEME_HTTP))
 	{
-		if (s.length())
+		if (!s.empty())
 		{
 			s += path;
-			if (!s.storage.rom)
+			if (s.empty())
 				return NET_ERR_OUT_OF_MEMORY;
 			path = s;
 		}
@@ -924,8 +924,7 @@ void CURL::url_print(CSTRING& str)
 
 	if(port != i)
 	{
-		str += ':';
-		str.appendf("%u/", port);
+		str.appendf(":%u/", port);
 	} else
 	{
 		if(!host.empty())

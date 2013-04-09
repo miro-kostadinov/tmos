@@ -114,8 +114,9 @@ RES_CODE menu_draw(MENU_WINDOW menu_hnd, LCD_MODULE* lcd)
     	}
 		if(line.length() >= lcd->chars_per_row)
 		{
-			line[lcd->chars_per_row]=0;
-			line.storage.ram->len = lcd->chars_per_row;
+			line.erase(lcd->chars_per_row, -1u);
+//			line[lcd->chars_per_row]=0;
+//			line.storage.ram->len = lcd->chars_per_row;
 		}
     	lcd->draw_text(line.c_str());
 //    	lcd->draw_text(line.c_str()+ offset);
