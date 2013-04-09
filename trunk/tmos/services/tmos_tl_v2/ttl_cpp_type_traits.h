@@ -1,39 +1,27 @@
 /*
- * tl_cpp_type_traits.h
+ * ttl_cpp_type_traits.h
  *
- *  Created on: Mar 18, 2013
+ *  Created on: Mar 28, 2013
  *      Author: miro
  */
 
-// This file is derived from the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-#ifndef TL_CPP_TYPE_TRAITS_H_
-#define TL_CPP_TYPE_TRAITS_H_
+#ifndef TTL_CPP_TYPE_TRAITS_H_
+#define TTL_CPP_TYPE_TRAITS_H_
 
 
-#include <tmos++.h>
+#include <ttl_config.h>
 
-namespace tmos
+// Forward declaration hack, should really include this from somewhere.
+namespace __ttl_cxx
 {
 
+  template<typename _Iterator, typename _Container>
+    class __normal_iterator;
+
+} // namespace
+
+namespace ttl
+{
 struct __true_type { };
 struct __false_type { };
 
@@ -120,6 +108,29 @@ template<>
 
 template<>
   struct __is_integer<unsigned char>
+  {
+    enum { __value = 1 };
+    typedef __true_type __type;
+  };
+
+# ifdef _GLIBCXX_USE_WCHAR_T
+template<>
+  struct __is_integer<wchar_t>
+  {
+    enum { __value = 1 };
+    typedef __true_type __type;
+  };
+# endif
+
+template<>
+  struct __is_integer<char16_t>
+  {
+    enum { __value = 1 };
+    typedef __true_type __type;
+  };
+
+template<>
+  struct __is_integer<char32_t>
   {
     enum { __value = 1 };
     typedef __true_type __type;
@@ -240,13 +251,13 @@ template<typename _Tp>
     typedef __false_type __type;
   };
 
-//template<typename _Iterator, typename _Container>
-//  struct __is_normal_iterator< __gnu_cxx::__normal_iterator<_Iterator,
-//							      _Container> >
-//  {
-//    enum { __value = 1 };
-//    typedef __true_type __type;
-//  };
+template<typename _Iterator, typename _Container>
+  struct __is_normal_iterator< __ttl_cxx::__normal_iterator<_Iterator,
+							      _Container> >
+  {
+    enum { __value = 1 };
+    typedef __true_type __type;
+  };
 
 //
 // An arithmetic type is an integer type or a floating point type
@@ -289,7 +300,7 @@ template<>
     typedef __true_type __type;
   };
 
-#ifdef TMOS_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
 template<>
   struct __is_char<wchar_t>
   {
@@ -336,7 +347,16 @@ template<typename _Tp>
     typedef __false_type __type;
   };
 
+template<typename _Iterator>
+  class move_iterator;
 
-} // namespace tmos
+template<typename _Iterator>
+  struct __is_move_iterator< move_iterator<_Iterator> >
+  {
+    enum { __value = 1 };
+    typedef __true_type __type;
+  };
 
-#endif /* TL_CPP_TYPE_TRAITS_H_ */
+} // namespace ttl
+
+#endif /* TTL_CPP_TYPE_TRAITS_H_ */
