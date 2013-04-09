@@ -187,7 +187,7 @@ private:
 	pointer _M_p;
 
 public:
-	atomic() = default;
+	atomic():_M_p(nullptr) {};
 	~atomic() = default;
 	atomic(const atomic &) = delete;
 	atomic& operator=(const atomic&) = delete;
