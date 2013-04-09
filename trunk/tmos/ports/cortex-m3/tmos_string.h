@@ -30,8 +30,8 @@ int strncasecmp(const char *dst, const char *src, unsigned int len);
 char* strstr(const char*, const char*);
 
 extern char G_char_2_type_[256];
-int islower(unsigned int c);
-int isupper(unsigned int c);
+int islower(int c);
+int isupper(int c);
 int tolower(int c);
 int toupper(int c);
 
