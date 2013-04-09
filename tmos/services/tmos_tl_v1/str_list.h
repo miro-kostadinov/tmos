@@ -202,6 +202,14 @@ public:
 	unsigned int find_in_list(STR_LIST sl, unsigned int* dwRead) const;
 	int format(const char *fmt, ...);
 	int appendf(const char *fmt, ...);
+
+	// Use with care (when this is in RAM, e.g. after reserve() )
+	void m_set_size(unsigned int n)
+	{
+		storage.ram->buf[n] = 0;
+		storage.ram->len = n;
+	}
+
 };
 
 CSTRING operator+(const CSTRING& s1, const CSTRING& s2 );
