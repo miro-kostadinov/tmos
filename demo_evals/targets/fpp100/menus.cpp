@@ -154,7 +154,7 @@ unsigned int menu_set_backlight(void *p, MENU_WINDOW menu_hnd)
 
 
 
-RES_CODE msgbox_cb(CMessageBox* msg_hnd, unsigned int param, unsigned int msg);
+//RES_CODE msgbox_cb(CMessageBox* msg_hnd, unsigned int param, unsigned int msg);
 
 //*----------------------------------------------------------------------------
 //*			Menu structures
