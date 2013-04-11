@@ -23,8 +23,8 @@ local_h_src-$(USE_CSTRING)		+= str_list.h
 
 
 local_h_src-y 	+= ttl_config.h ttl_atomic.h ttl_iterator.h ttl_cpp_type_traits.h 
-local_h_src-y 	+= ttl_initializer_list.h ttl_type_traits.h ttl_move.h 
-local_h_src-y 	+= ttl_string.h
+local_h_src-y 	+= ttl_initializer_list.h ttl_type_traits.h ttl_move.h ttl_algo.h 
+local_h_src-y 	+= ttl_function.h ttl_string.h ttl_tree.h
 
 local_cpp_src-y	+= ttl_config.cpp    
 
