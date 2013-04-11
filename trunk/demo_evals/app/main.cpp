@@ -254,7 +254,7 @@ void usb_thread()
 
 	while(1)
 	{
-		res = usb_hnd.tsk_read(buf, sizeof(buf));
+		res = usb_hnd.tsk_read(buf, (unsigned int)sizeof(buf));
 		TRACELN("usb tsk rcv %x", res);
 		if(res <= RES_OK)
 		{

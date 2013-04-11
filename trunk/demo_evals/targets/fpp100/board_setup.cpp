@@ -169,13 +169,13 @@ extern "C" void LowLevelInit( void )
 
 	if(exception_record.record_crc != exception_crc((const unsigned int*)&exception_record))
 	{
-		memclr((void *)&exception_record,sizeof(exception_record));
+		memclr((void *)&exception_record, (unsigned int)sizeof(exception_record));
 	}
 
 	exception_record.reset_cause = LowLevelResetCause();
 	if(exception_record.reset_cause & RCC_CSR_PORRSTF)
 	{
-		memclr((void *)&exception_record,sizeof(exception_record));
+		memclr((void *)&exception_record, (unsigned int) sizeof(exception_record));
 	}
 	else
 	{
