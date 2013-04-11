@@ -1661,13 +1661,14 @@ int basic_string<CharT>::compare(size_type pos1, size_type n1, const basic_strin
 template<typename CharT>
 int basic_string<CharT>::compare(const CharT* s) const
 {
-	const size_type sz = this->size();
-	const size_type osz = strlen(s);
-
-	int res = m_compare(m_data, s, min(sz, osz));
-	if (!res)
-		res = sz - osz;
-	return res;
+//	const size_type sz = this->size();
+//	const size_type osz = strlen(s);
+//
+//	int res = m_compare(m_data, s, min(sz, osz));
+//	if (!res)
+//		res = sz - osz;
+//	return res;
+	return strcmp(m_data, s);
 }
 
 
@@ -2032,8 +2033,6 @@ template<typename CharT>
   inline void
   swap(basic_string<CharT>& lhs, basic_string<CharT>& rhs)
   { lhs.swap(rhs); }
-
-
 
 } // namespace ttl
 
