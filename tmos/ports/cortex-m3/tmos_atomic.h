@@ -72,7 +72,7 @@ static inline int atomic_store(volatile char* obj, int arg)
 	asm volatile (
 		"	strexb			%0, %2, [%1]		\n\t"
 
-	  : "=r"(res)
+	  : "=&r"(res)
 	  : "r" (obj), "r" (arg)
 	  : "memory"
 	  );
@@ -85,7 +85,7 @@ static inline int atomic_store(volatile short* obj, int arg)
 	asm volatile (
 		"	strexh			%0, %2, [%1]		\n\t"
 
-	  : "=r"(res)
+	  : "=&r"(res)
 	  : "r" (obj), "r" (arg)
 	  : "memory"
 	  );
@@ -98,7 +98,7 @@ static inline int atomic_store(volatile int* obj, int arg)
 	asm volatile (
 		"	strex			%0, %2, [%1]		\n\t"
 
-	  : "=r"(res)
+	  : "=&r"(res)
 	  : "r" (obj), "r" (arg)
 	  : "memory"
 	  );
