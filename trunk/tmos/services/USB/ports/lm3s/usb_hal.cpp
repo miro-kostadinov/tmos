@@ -12,6 +12,8 @@
 #include <usb_hal.h>
 #include <gpio_drv.h>
 #include <usb_drv.h>
+#include <cmsis_cpp.h>
+#include <tmos_atomic.h>
 
 
 //-------------------  local static functions --------------------------------//
@@ -113,7 +115,7 @@ static void usb_txpktrdy(USB_Type* hw_base, unsigned int ept_indx, int len)
 }
 
 
-static unsigned int usb_ept0_status(USB_CONTROLLER* hw_base)
+static unsigned int usb_ept0_status(USB_Type* hw_base)
 {
 	unsigned int status, clear;
 
@@ -136,7 +138,7 @@ static unsigned int usb_ept0_status(USB_CONTROLLER* hw_base)
     return (status);
 }
 
-static unsigned int usb_ept_tx_status(USB_CONTROLLER* hw_base, unsigned int ept_indx)
+static unsigned int usb_ept_tx_status(USB_Type* hw_base, unsigned int ept_indx)
 {
 	unsigned int status;
 
@@ -147,7 +149,7 @@ static unsigned int usb_ept_tx_status(USB_CONTROLLER* hw_base, unsigned int ept_
     return (status);
 }
 
-static unsigned int usb_ept_rx_status(USB_CONTROLLER* hw_base, unsigned int ept_indx)
+static unsigned int usb_ept_rx_status(USB_Type* hw_base, unsigned int ept_indx)
 {
 	unsigned int status;
 
@@ -210,23 +212,163 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 	}
 }
 
+#if USB_ENABLE_HOST
+WEAK_C void usb_host_power(USB_DRV_INFO drv_info, bool enable)
+{
+	unsigned int reg;
+
+	reg = drv_info->hw_base->USBEPC;
+	reg &= ~(USB_USBEPC_EPENDE | USB_USBEPC_EPEN_Msk);
+	if(enable)
+	{
+		TRACE1_USB(" USB pwr en");
+		reg |= USB_USBEPC_EPENDE | USB_USBEPC_EPEN_VBHIGH;
+		drv_info->hw_base->USBVDC = USB_USBVDC_VBDEN;
+		drv_info->hw_base->USBVDCIM = USB_USBVDCIM_VD;
+	} else
+	{
+		TRACE1_USB(" USB pwr dis");
+		drv_info->hw_base->USBVDC = 0;
+		drv_info->hw_base->USBVDCIM = 0;
+	}
+	drv_info->hw_base->USBEPC = reg;
+}
+
+void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
+{
+    USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+
+	if(flags & USB_OTG_FLG_HOST)
+		flags |= USB_OTG_FLG_HOST_CON | USB_OTG_FLG_HOST_PWR
+				| USB_OTG_FLG_HOST_RST | USB_OTG_FLG_HOST_OK;
+	if(flags & USB_OTG_FLG_DEV)
+		flags |= USB_OTG_FLG_DEV_CON | USB_OTG_FLG_DEV_OK;
+
+	flags &= drv_data->otg_flags;
+	drv_data->otg_flags &= ~flags;
+
+	// host power
+	if(flags & USB_OTG_FLG_HOST_PWR)
+	{
+		usb_host_power(drv_info, false);
+	}
+
+	// device con
+	if(flags & USB_OTG_FLG_DEV_CON)
+	{
+        // Abort all transfers
+    	for(int i= 1; i<USB_NUMENDPOINTS; i++)
+    	{
+    		usb_hal_ept_reset(drv_info, i);
+    	}
+	}
+
+	// disconnect
+	if(flags & (USB_OTG_FLG_HOST | USB_OTG_FLG_DEV))
+	{
+		if(!(drv_data->otg_flags & (USB_OTG_FLG_HOST_OK | USB_OTG_FLG_DEV_OK)))
+			drv_data->otg_state_cnt  |= USB_STATE_CNT_INVALID;
+		if(drv_info->drv_data->pending)
+		{
+			HANDLE hnd;
+			while( (hnd=drv_data->pending) )
+			{
+				drv_data->pending = hnd->next;
+				usr_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+			}
+			atomic_clrex();
+		}
+	}
+
+}
+
+void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
+{
+    USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+
+	// do not set twice
+	flags &= ~drv_data->otg_flags;
+	if(flags)
+	{
+		if(flags >= USB_OTG_FLG_HOST )
+		{
+			// host flags
+			if(drv_data->otg_flags & USB_OTG_FLG_HOST)
+			{
+				usb_otg_clr_flags(drv_info, USB_OTG_FLG_DEV);
+
+				switch(flags)
+				{
+				case USB_OTG_FLG_HOST_PWR:
+					usb_host_power(drv_info, true);
+					flags |= USB_OTG_FLG_HOST_CON;
+					break;
+
+				case USB_OTG_FLG_HOST_RST:
+					if(drv_data->helper_task)
+						usr_send_signal(drv_data->helper_task, USB_DRIVER_SIG);
+					break;
+
+				case USB_OTG_FLG_HOST_OK:
+					HANDLE hnd;
+					while( (hnd=drv_data->pending) )
+					{
+						drv_data->pending = hnd->next;
+						usr_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+					}
+
+					drv_data->otg_state_cnt += drv_data->otg_state_cnt & USB_STATE_CNT_INVALID;
+					break;
+
+				}
+
+				drv_info->drv_data->otg_flags |= flags;
+			}
+		} else
+		{
+			//device flags
+			if(drv_info->drv_data->otg_flags & USB_OTG_FLG_DEV)
+			{
+				usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST);
+
+				switch(flags)
+				{
+				case USB_OTG_FLG_DEV_OK:
+					drv_data->otg_state_cnt += drv_data->otg_state_cnt & USB_STATE_CNT_INVALID;
+					break;
+
+				case USB_OTG_FLG_DEV_CON:
+					drv_info->hw_base->USBPOWER |= USB_USBPOWER_SOFTCONN;
+					break;
+				}
+
+				if(drv_data->helper_task)
+					usr_send_signal(drv_data->helper_task, USB_DRIVER_SIG);
+				drv_info->drv_data->otg_flags |= flags;
+			}
+		}
+
+	}
+
+}
+
+#endif
+
 /**
  * Called once after boot (on DCR_RESET) to reset the driver
  * @param drv_info
  */
 void usb_drv_reset(USB_DRV_INFO drv_info)
 {
-	Task* task;
-
     TRACELN1_USB("USBD_Init");
 	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
 
-	task = usr_task_create_dynamic("USBH", (TASK_FUNCTION)usbdrv_thread,
-			60,	400+TRACE_SIZE);
-	if(task)
+	drv_info->drv_data->helper_task = usr_task_create_dynamic("USBH",
+			(TASK_FUNCTION) usbdrv_thread, 60, 400 + TRACE_SIZE);
+	if(drv_info->drv_data->helper_task)
 	{
-		svc_task_schedule(task);
-       	task->sp->r0.as_cvoidptr = drv_info;
+		drv_info->drv_data->helper_task->sp->r0.as_cvoidptr = drv_info;
+		svc_task_schedule(drv_info->drv_data->helper_task);
 	}
 }
 
@@ -293,6 +435,25 @@ void usb_drv_start_tx(USB_DRV_INFO drv_info, HANDLE hnd)
 		    endpoint->state = ENDPOINT_STATE_SENDING;
 		    endpoint->pending = hnd;		//sending
 
+#if USB_ENABLE_HOST
+		    //host mode?
+		    if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
+		    {
+		    	usb_remote_device* dev;
+		    	USBHOSTFUNS_t* host_ept;
+
+		    	dev = &drv_info->drv_data->host_bus.usb_device[hnd->mode0];
+		    	host_ept = &drv_info->hw_base->HOST_EP[ept_indx];
+
+		    	//set host transmit address
+		    	host_ept->USBTXFUNCADDR = dev->dev_adress;
+
+		    	//set hub transmit address
+		    	host_ept->USBTXHUBADDR = (dev->hub_num << 8) | (dev->hub_port);
+
+		    }
+#endif
+
 		    usb_write_payload(ENTPOINT_FIFO(drv_info->hw_base, ept_indx), hnd,
 		    					endpoint->txfifo_size);
 		    usb_txpktrdy(drv_info->hw_base, ept_indx, hnd->len);
@@ -314,13 +475,15 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 {
 	uint32_t ept_indx;
 	Endpoint *endpoint;
+	USB_Type* hw_base;
+    HANDLE prev;
 
 	ept_indx = hnd->mode.as_bytes[0];
 	endpoint = &drv_info->drv_data->endpoints[ept_indx];
+	hw_base = drv_info->hw_base;
 
 	if(endpoint->state == ENDPOINT_STATE_RECEIVING_OFF)
 	{
-		USB_Type* hw_base = drv_info->hw_base;
 
 		endpoint->rxfifo_cnt = usb_read_payload(ENTPOINT_FIFO(hw_base, ept_indx),
 												hnd, endpoint->rxfifo_cnt);
@@ -341,17 +504,35 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
         }
 	}
 
-	if(hnd->len)
+#if USB_ENABLE_HOST
+	//host mode?
+	if (drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
 	{
-	    HANDLE prev;
-
 	    if( (prev=endpoint->pending) )	//receiving
 	    {
 	    	while(prev->next)
 	    		prev = prev->next;
 	    	prev->next = hnd;
 	    } else
+	    {
 	    	endpoint->pending = hnd;	//receiving
+			// request IN packet
+			hw_base->DEVICE_EP[ept_indx].USBTXCSRL = USB_USBRXCSRL_REQPKT;
+	    }
+		return;
+	}
+#endif
+	if(hnd->len)
+	{
+	    if( (prev=endpoint->pending) )	//receiving
+	    {
+	    	while(prev->next)
+	    		prev = prev->next;
+	    	prev->next = hnd;
+	    } else
+	    {
+	    	endpoint->pending = hnd;	//receiving
+	    }
 
 	} else
 	{
@@ -473,13 +654,9 @@ void usb_hal_stall_clear(USB_Type* hw_base, unsigned int ept_num)
 	}
 }
 
-/** Configure as device
- *
- * @param drv_info
- */
-void usb_hal_device_start(USB_DRV_INFO drv_info)
+static void usb_hal_start(USB_DRV_INFO drv_info, unsigned int ie)
 {
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
+	USB_Type* hw_base = drv_info->hw_base;
 
     // Enable Clocking to the USB controller.
 	SysCtlPeripheralEnable(drv_info->info.peripheral_indx);
@@ -498,22 +675,78 @@ void usb_hal_device_start(USB_DRV_INFO drv_info)
     hw_base->USBRXIS;
 
 	// Enable USB Interrupts.
-    hw_base->USBIE |= USB_USBIE_RESET | USB_USBIE_DISCON | USB_USBIE_SESREQ
-			| USB_USBIE_CONN | USB_USBIE_RESUME | USB_USBIE_SUSPND
-			/*| USB_USBIE_SOF*/;
+    hw_base->USBIE = ie;
 
 	hw_base->USBIDVIM = USB_USBIDVIM_ID;
 	hw_base->USBTXIE = USB_USBTXIE_EP0;
 	hw_base->USBRXIE = 0;
+
 	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+}
+
+/** Configure as device
+ *
+ * @param drv_info
+ */
+void usb_hal_device_start(USB_DRV_INFO drv_info)
+{
+	usb_hal_start(drv_info, USB_USBIE_SESREQ
+			| USB_USBIE_DISCON | USB_USBIE_CONN | USB_USBIE_RESET
+			| USB_USBIE_RESUME | USB_USBIE_SUSPND);
+
 
 	drv_info->hw_base->USBPOWER |= USB_USBPOWER_SOFTCONN;
-	//hw_base->USBGPCS = USB_USBGPCS_DEVMOD | USB_USBGPCS_DEVMODOTG;
 }
+
+#if USB_ENABLE_HOST
+void usb_hal_host_start(USB_DRV_INFO drv_info)
+{
+	usb_hal_start(drv_info, USB_USBIE_VBUSERR | USB_USBIE_SESREQ
+			| USB_USBIE_DISCON | USB_USBIE_CONN | USB_USBIE_RESET
+			| USB_USBIE_RESUME | USB_USBIE_SUSPND);
+
+	USB_Type* hw_base = drv_info->hw_base;
+
+
+	// reset devices
+	for(int i=0; i<= MAX_USB_DEVICES; i++)
+	{
+		usb_remote_device* dev;
+
+		dev = &drv_info->drv_data->host_bus.usb_device[i];
+		dev->dev_adress = 0;
+		dev->dev_interface = 0;
+		if(dev->config_descriptor)
+		{
+			tsk_free(dev->config_descriptor);
+			dev->config_descriptor = NULL;
+		}
+		dev->dev_descriptor.bMaxPacketSize0 = 0;
+		dev->dev_descriptor.as_generic.bLength = 0;
+	}
+
+	//configure endpoint 0
+    Endpoint *pEndpoint;
+    pEndpoint = &drv_info->drv_data->endpoints[0];
+	usb_drv_end_transfers(pEndpoint, USBD_STATUS_RESET);
+    pEndpoint->state = ENDPOINT_STATE_IDLE;
+    pEndpoint->txfifo_size = 64;
+	hw_base->DEVICE_EP[EPT_0].USBTXTYPE = USB_USBTXTYPE_SPEED_FULL;
+
+	//enable all TX interrupts
+	hw_base->USBTXIE = USB_USBTXIE_ALL;
+
+	//enable receive interrupts
+	hw_base->USBRXIE = USB_USBRXIE_ALL;
+
+	// request session now
+	hw_base->USBDEVCTL |= USB_USBDEVCTL_SESSION;
+}
+#endif
 
 void usb_hal_ept_reset(USB_DRV_INFO drv_info, unsigned int eptnum)
 {
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
+	USB_Type* hw_base = drv_info->hw_base;
 	unsigned int mask;
 
 	mask = ~(1 << eptnum);
@@ -557,7 +790,7 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
     unsigned int eptnum, reg;
     EndpointAttribute_TransferType ept_type;
     EndpointDirection ept_dir;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
+    USB_Type* hw_base = drv_info->hw_base;
 
 	switch(pDescriptor->bDescriptorType)
 	{
@@ -661,7 +894,7 @@ void usb_hal_config_fifo(USB_DRV_INFO drv_info)
 {
 	unsigned int size, limit, address, size_code;
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
+	USB_Type* hw_base = drv_info->hw_base;
 
 	TRACELN1_USB("USB FIFOS:");
 
@@ -746,6 +979,7 @@ void usb_hal_config_fifo(USB_DRV_INFO drv_info)
 static void usb_handle_bus_reset(USB_DRV_INFO drv_info)
 {
 	const USBDDriverDescriptors * dev_descriptors;
+	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 
 	//Step 1. enable clocks etc.
 
@@ -755,18 +989,34 @@ static void usb_handle_bus_reset(USB_DRV_INFO drv_info)
 		usb_hal_ept_reset(drv_info, i);
 	}
 
-	dev_descriptors = drv_info->drv_data->device.pDescriptors;
+	dev_descriptors = drv_data->device.pDescriptors;
 
 	if(dev_descriptors)
 	{
 		usb_hal_ept_config(drv_info, &dev_descriptors->pFsDevice->as_generic);
 	}
+
+#if USB_ENABLE_OTG
+	//Step 3. Wakeup clients..
+	usb_otg_set_flags(drv_info, USB_OTG_FLG_DEV_OK);
+	if(drv_info->drv_data->pending)
+	{
+		HANDLE hnd;
+		while( (hnd=drv_data->pending) )
+		{
+			drv_data->pending = hnd->next;
+			usr_HND_SET_STATUS(hnd, RES_SIG_IDLE);
+		}
+		atomic_clrex();
+	}
+#endif
+
 }
 
 void usb_b_ept0_handler(USB_DRV_INFO drv_info)
 {
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
+	USB_Type* hw_base = drv_info->hw_base;
     Endpoint *endpoint;
     unsigned int status;
     HANDLE hnd;
@@ -785,6 +1035,23 @@ void usb_b_ept0_handler(USB_DRV_INFO drv_info)
 	    	TRACE_USB(" Stl0 state=%d", endpoint->state);
 		}
 	}
+#if USB_ENABLE_HOST
+	if (status & USB_USBTXCSRL0_ERROR)
+	{
+	    //host mode?
+	    if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST)
+	    {
+			while((hnd=endpoint->pending) )
+			{
+		   		// End of transfer ?
+		    	TRACE1_USB(" err!");
+				endpoint->pending = hnd->next;
+				usr_HND_SET_STATUS(hnd, RES_SIG_ERROR);
+			}
+			endpoint->state = ENDPOINT_STATE_IDLE;
+	    }
+	}
+#endif
 
 	if ( (endpoint->state == ENDPOINT_STATE_SENDING)  )
 	{
@@ -836,6 +1103,18 @@ void usb_b_ept0_handler(USB_DRV_INFO drv_info)
 	    		endpoint->rxfifo_cnt = size;
 	        } else
 	        {
+#if USB_ENABLE_HOST
+				//host mode?
+				if (drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
+				{
+			    	if((hnd = endpoint->pending) && !hnd->len)
+			    	{
+			    		endpoint->pending = hnd->next;
+			    	    TRACE_USB("(%d)", size);
+						usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+			    	}
+				}
+#endif
 	        	hw_base->DEVICE_EP[0].USBTXCSRL = USB_USBTXCSRL0_RXRDYC ;
 	        }
 		} else
@@ -848,7 +1127,7 @@ void usb_b_ept0_handler(USB_DRV_INFO drv_info)
 void usb_b_ept_rx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
 {
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
+	USB_Type* hw_base = drv_info->hw_base;
     Endpoint *endpoint;
     unsigned int status;
     HANDLE hnd;
@@ -916,7 +1195,7 @@ void usb_b_ept_rx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
 void usb_b_ept_tx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
 {
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
+	USB_Type* hw_base = drv_info->hw_base;
     Endpoint *endpoint;
     unsigned int status;
     HANDLE hnd;
@@ -1163,7 +1442,7 @@ void usb_a_int_handler(USB_DRV_INFO drv_info, unsigned int status)
 void USB_A_ISR(USB_DRV_INFO drv_info)
 {
 	unsigned int status;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
+	USB_Type* hw_base = drv_info->hw_base;
 
     //----- Process USBIS interrupts
     status = hw_base->USBIS;
@@ -1213,17 +1492,128 @@ void USB_A_ISR(USB_DRV_INFO drv_info)
 }
 #endif /*USB_A_ENABLED*/
 
-void USB_B_ISR(USB_DRV_INFO drv_info)
+void USB_ISR(USB_DRV_INFO drv_info)
 {
 	unsigned int status, eptnum;
-	USB_CONTROLLER* hw_base = drv_info->hw_base;
+	USB_Type* hw_base = drv_info->hw_base;
+	bool irq_found = false;
+
+
+    //----- Process USBIDVISC interrupt
+    status = hw_base->USBIDVISC & USB_USBIDVISC_ID;
+    if(status)
+    {
+    	irq_found = true;
+    	//ID Valid Detect Interrupt
+    	hw_base->USBIDVISC = status;
+    	status = hw_base->USBDEVCTL & (USB_USBDEVCTL_DEV | USB_USBDEVCTL_HOST
+				| USB_USBDEVCTL_SESSION | USB_USBDEVCTL_VBUS_Msk);
+    	TRACE_USB("\r\nUSB:[id=%02x]", status);
+#if USB_ENABLE_HOST
+
+		switch (status)
+		{
+		case USB_USBDEVCTL_SESSION:								//host
+		case USB_USBDEVCTL_SESSION | USB_USBDEVCTL_HOST:
+		case USB_USBDEVCTL_SESSION | USB_USBDEVCTL_VBUS_AVALID:
+			//enable usb power
+			usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_PWR);
+			if (drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST)
+				hw_base->USBDEVCTL |= USB_USBDEVCTL_SESSION;
+			break;
+
+		case USB_USBDEVCTL_SESSION | USB_USBDEVCTL_VBUS_VALID:	// host, vbus valid
+
+			break;
+
+		// device mode
+		case USB_USBDEVCTL_SESSION | USB_USBDEVCTL_DEV | USB_USBDEVCTL_VBUS_VALID:
+			usb_otg_set_flags(drv_info, USB_OTG_FLG_DEV_CON);
+			break;
+
+		// disconnect
+		default:
+			usb_otg_clr_flags(drv_info, USB_OTG_FLG_ALL);
+			break;
+		}
+#endif
+    }
+
+
+    //Process VBUS Droop
+#if USB_ENABLE_HOST
+    status = hw_base->USBVDCISC;
+	if(status)
+	{
+    	irq_found = true;
+		hw_base->USBVDCISC = status;
+		TRACE1_USB(" vdc");
+		// disconnect
+		usb_otg_clr_flags(drv_info, USB_OTG_FLG_ALL);
+	}
+#endif
 
     //----- Process USBIS interrupts
     status = hw_base->USBIS;
+    if(status & USB_USBIS_SOF)
+    {
+    	irq_found = true;
+    	status &=  ~USB_USBIS_SOF;
+    }
     if(status)
     {
-    	if(status != 8 )
-    		TRACELN_USB("USB:[is=%02x]", status);
+    	irq_found = true;
+   		TRACELN_USB("USB:[is=%02x]", status);
+
+#if USB_ENABLE_HOST
+    	// VBUS error
+    	if(status & USB_USBIS_VBUSERR )
+    	{
+       		TRACE_USB(" droop");
+			if (drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST)
+       		{
+				hw_base->USBDEVCTL |= USB_USBDEVCTL_SESSION;
+       		}
+    	}
+
+    	// disconnect
+    	if(status & USB_USBIS_DISCON)
+    	{
+    		TRACE1_USB(" DISCON");
+			usb_otg_clr_flags(drv_info, USB_OTG_FLG_ALL);
+    	}
+
+		//connect
+		if(status & USB_USBIS_CONN)
+		{
+    		TRACE1_USB(" CON");
+			usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_RST);
+		}
+		status &=  ~(USB_USBIS_VBUSERR | USB_USBIS_DISCON | USB_USBIS_CONN);
+
+
+		if(status == USB_USBIS_SUSPEND)
+		{
+			if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_PWR)
+			{
+	    		TRACE1_USB(" discon");
+				usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST);
+
+			}
+			if( !(drv_info->drv_data->otg_flags & USB_OTG_FLG_DEV_CON) )
+				status = 0;
+		}
+
+    	// Bus reset
+    	if(status & USB_USBIS_RESET)
+    	{
+    		// reset, we must switch to otg device
+			usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST);
+			usb_otg_set_flags(drv_info, USB_OTG_FLG_DEV_CON);
+    	}
+
+    	if(status)
+#endif
     	usb_b_usbis_handler(drv_info, status);
     }
 
@@ -1231,6 +1621,7 @@ void USB_B_ISR(USB_DRV_INFO drv_info)
     status = hw_base->USBTXIS;
     if(status & USB_USBTXIS_EP0)
     {
+    	irq_found = true;
     	TRACELN1_USB("USB:[E0=");
     	usb_b_ept0_handler(drv_info);
     }
@@ -1239,6 +1630,7 @@ void USB_B_ISR(USB_DRV_INFO drv_info)
     {
 		if(status & 1)
 		{
+	    	irq_found = true;
 	    	TRACELN_USB("USB:[T%x=", eptnum);
    			usb_b_ept_tx_handler(drv_info, eptnum);
 		}
@@ -1249,6 +1641,7 @@ void USB_B_ISR(USB_DRV_INFO drv_info)
     status = hw_base->USBRXIS;
     if(status)
     {
+    	irq_found = true;
     	eptnum=0;
     	do
     	{
@@ -1266,20 +1659,15 @@ void USB_B_ISR(USB_DRV_INFO drv_info)
     status = hw_base->USBEPCISC & USB_USBEPCISC_PF;
     if(status)
     {
+    	irq_found = true;
     	//Power Fault status has been detected
     	hw_base->USBEPCISC = status;
 
-    	TRACE_USB("\r\nUSB:[pc=%02x]", status);
+    	TRACELN_USB("USB:[pc=%02x]", status);
     }
 
-    //----- Process USBIDVISC interrupt
-    status = hw_base->USBIDVISC & USB_USBIDVISC_ID;
-    if(status)
-    {
-    	//ID Valid Detect Interrupt
-    	hw_base->USBIDVISC = status;
-    	TRACE_USB("\r\nUSB:[id=%02x]", status);
-    }
+    if (!irq_found)
+    	TRACELN1_USB("USB: dummy ISR");
 
 
 }
