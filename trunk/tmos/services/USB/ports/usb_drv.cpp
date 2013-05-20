@@ -16,6 +16,9 @@
 #include <usb_requests.h>
 #include <usb_svc.h>
 #include <cmsis_cpp.h>
+#if USB_ENABLE_HOST
+#include <usb_host.h>
+#endif
 
 
 void usbdrv_thread(USB_DRV_INFO drv_info)
@@ -23,17 +26,17 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
     CHandle helper;
     CHandle req_hnd;
     USBGenericRequest request;
+    bool requested = false;
+	unsigned int sig=0;
 
-
+    ALLOCATE_SIGNAL(USB_DRIVER_SIG);
 	helper.tsk_safe_open(drv_info->info.drv_index, 0);
 	helper.tsk_start_command(NULL, 0);
 	req_hnd.tsk_safe_open(drv_info->info.drv_index, USB_DRV_MODE(EPT_0, EPT_0));
-	req_hnd.tsk_start_read(&request, 8);
     while(1)
     {
-    	unsigned int sig;
 
-    	sig = tsk_get_signal(SIGNAL_ANY);
+    	sig |= tsk_get_signal(SIGNAL_ANY);
 
 
         // 2) get waiting clients
@@ -41,6 +44,7 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
         {
 			HANDLE client;
 
+			sig ^= helper.signal;
         	helper.res &= ~FLG_SIGNALED;
 			client = (HANDLE)helper.dst.as_voidptr;
 			if(client)
@@ -58,13 +62,37 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
         }
 		if(sig & req_hnd.signal)
 		{
+			sig ^= req_hnd.signal;
         	req_hnd.res &= ~FLG_SIGNALED;
 			if(req_hnd.res == RES_OK)
 			{
 				TRACE_USB(" | req:");
 				drv_info->drv_data->device.RequestHandler(drv_info, &request, &req_hnd);
 			}
-			req_hnd.tsk_start_read(&request, 8);
+			requested = false;
+		}
+		if(!requested)
+		{
+#if USB_ENABLE_OTG
+			if(sig == USB_DRIVER_SIG)
+			{
+				sig = 0;
+				if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_RST)
+				{
+					// Reset requested
+					for(int retries =0; retries <3; ++retries)
+						if(usb_host_reset_bus(drv_info, &req_hnd) == RES_OK)
+							break;
+				}
+			}
+			if(drv_info->drv_data->otg_flags & USB_OTG_FLG_DEV_OK)
+			{
+
+				req_hnd.mode.as_ushort[1] = drv_info->drv_data->otg_state_cnt;
+				req_hnd.tsk_start_read(&request, 8);
+				requested = true;
+			}
+#endif
 		}
 
     }
@@ -77,6 +105,9 @@ void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
     {
         case DCR_RESET:
         	// drv_data constructor is not called yet!
+#if USB_ENABLE_OTG
+        	drv_info->drv_data->otg_state_cnt = USB_STATE_CNT_INVALID;
+#endif
         	usb_drv_reset(drv_info);
             break;
 
@@ -136,6 +167,15 @@ void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd)
 		}
 		return;
 	}
+
+#if USB_ENABLE_OTG
+	if(hnd->mode.as_ushort[1] != drv_data->otg_state_cnt)
+	{
+		//driver state has changed, handle must update...
+		svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+		return;
+	}
+#endif
 
 	if (hnd->cmd & FLAG_WRITE)
     {

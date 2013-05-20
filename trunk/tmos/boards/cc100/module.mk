@@ -68,8 +68,9 @@ USE_SHA_1		?=y
 # GUI
 USE_GUI			?=y
 
-# GUI
+# USB
 USE_USB			?=y
+USB_ENABLE_HOST ?=n
 
 # GPIO output expander (shift register)
 USE_GPIO_EXPANDER ?=y

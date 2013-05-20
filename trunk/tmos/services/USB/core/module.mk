@@ -14,10 +14,12 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= usb_device.cpp cdc_data_inf.cpp cdc_acm_inf.cpp
+local_cpp_src-y	+= usb_device.cpp cdc_data_inf.cpp cdc_acm_inf.cpp 
+local_cpp_src-$(USB_ENABLE_HOST) += usb_host.cpp
 
 local_h_src-y 	+= usb_device.h usb_descriptors.h cdc_descriptors.h 
 local_h_src-y 	+= usb_requests.h usb_interface.h
+local_h_src-$(USB_ENABLE_HOST) += usb_host.h usb_printer.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

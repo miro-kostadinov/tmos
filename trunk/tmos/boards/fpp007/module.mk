@@ -1,16 +1,16 @@
 #-------------------------------------------------------------------------------
 #
-#	Config file for cc500
+#	Config file for fpp007
 #	
 #   www.thumbos.com
 #
 #-------------------------------------------------------------------------------
 
-OUT_NAME	?= cc500
+OUT_NAME	?= fpp007
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].
-OPT			?= -Os
+OPT			?= -O1
 
 # Build library/binary/hex. can be [y, n]
 BUILD_LIB	?= y
@@ -76,7 +76,7 @@ USE_GUI			?=y
 
 # USB
 USE_USB			?=y
-USB_ENABLE_HOST ?=n
+USB_ENABLE_HOST ?=y
   
 # AES TMOS
 USE_AES_TMOS	?=y
