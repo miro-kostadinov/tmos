@@ -48,6 +48,7 @@ typedef union
 	unsigned char * as_string;		/**< as uchar *			*/
 	unsigned char * as_byteptr;		/**< as uchar *			*/
 	unsigned char	as_bytes[4];	/**< as bytes			*/
+	unsigned short	as_ushort[2];	/**< as ushort			*/
 	char * 			as_charptr;		/**< as char *			*/
 	const char* 	as_ccharptr;	/**< as const char *	*/
 	unsigned short int* as_shortptr;/**< as short *			*/
