@@ -20,10 +20,6 @@ void* operator new(size_t size)
     return (tsk_malloc(size));
 }
 
-void* operator new(size_t size, void* obj)
-{
-    return (obj);
-}
 
 void* operator new[](size_t size)
 {

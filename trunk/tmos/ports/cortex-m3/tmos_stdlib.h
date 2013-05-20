@@ -57,7 +57,12 @@ int atoi(const char *ptr );
  */
 unsigned int ahextoi(const char *ptr );
 
+
 #ifdef __cplusplus
+constexpr void* operator new(size_t size, void* obj)
+{
+    return (obj);
+}
 }
 #endif
 
