@@ -72,8 +72,8 @@ typedef USB_TypeDef USB_CONTROLLER;
 #endif
 
 /// System has a high speed USB OTG controller.
-#ifndef USE_USB_OTGHS
-#define USE_USB_OTGHS 0
+#ifndef USB_ENABLE_OTG
+#define USB_ENABLE_OTG 0
 #endif
 
 

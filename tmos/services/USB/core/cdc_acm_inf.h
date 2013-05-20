@@ -72,7 +72,12 @@ struct usb_cdc_acm_interface: usb_interface
     /** interface descriptor **/
 	const USBInterfaceDescriptor* descriptor;
 
-	usb_cdc_acm_interface(unsigned char bAS): usb_interface(bAS){};
+	usb_cdc_acm_interface(unsigned char bAS):	usb_interface(bAS),
+			bControlLineState(), wSerialState(), descriptor(NULL)
+
+	{
+	}
+	;
 
 	virtual void Initialize(const USBInterfaceDescriptor* ds, int size);
 	virtual void RequestHandler(const void* drv,

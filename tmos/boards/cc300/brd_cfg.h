@@ -77,4 +77,8 @@
 #define KEY_DEBOUNCE_TIME 	50 //30 //300
 #define KEY_REPEAT_TIME 	300//150 //1000
 
+/// USB stack options
+#define USB_ENABLE_HOST 	0
+#define USB_ENABLE_OTG 		0
+
 #endif /* BRD_CFG_H_ */

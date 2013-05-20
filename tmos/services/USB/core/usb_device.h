@@ -70,7 +70,7 @@ struct usb_device
 	unsigned char cfgnum;
 	/// Indicates if remote wake up has been enabled by the host.
 	unsigned char isRemoteWakeUpEnabled;
-#if USE_USB_OTGHS
+#if USB_ENABLE_OTG
 	/// Features supported by OTG
 	unsigned char otg_features_supported;
 #endif

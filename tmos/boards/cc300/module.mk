@@ -74,9 +74,10 @@ USE_BASE32		?=y
 # GUI
 USE_GUI			?=y
 
-# GUI
+# USB
 USE_USB			?=y
-
+USB_ENABLE_HOST ?=n
+  
 # AES TMOS
 USE_AES_TMOS	?=y
 

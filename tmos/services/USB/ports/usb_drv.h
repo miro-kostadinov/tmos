@@ -63,6 +63,25 @@ enum USB_EVENT
 	e_wakeup
 };
 
+#if USB_ENABLE_OTG
+#define USB_OTG_FLG_DEV			0x01	//!< Device mode requested. Set on USB_CMD_DEVICE_CONFIG. Cleared
+#define USB_OTG_FLG_DEV_CON		0x02	//!< Device detected. Set on USBIDVISC, BRST
+#define USB_OTG_FLG_DEV_OK		0x04	//!< Device mode entered. Set on BRST
+#define USB_OTG_FLG_HOST		0x08	//!< Host mode requested. Set on USB_CMD_OTG. Cleared on USBIDVISC, vbus droop, DISCON, SUSPEND, BRST
+#define USB_OTG_FLG_HOST_CON	0x10	//!< Host connected. Set on USB_CMD_OTG. Cleared on !FLG_HOST
+#define USB_OTG_FLG_HOST_PWR	0x20	//!< Host power enabled. Set on USBIDVISC. Cleared on !FLG_HOST
+#define USB_OTG_FLG_HOST_RST	0x40	//!< Set from interrupt to tell helper that it can reset the bus
+#define USB_OTG_FLG_HOST_OK		0x80	//!< Host mode entered. Set on HBRST. Cleared on !FLG_HOST
+#define USB_OTG_FLG_ALL			0xFF
+#endif
+//TODO: clear DEV, DEV_CONECT
+
+
+///** USB state counter
+// * This a 16 bit counter which is updated when the driver state changes.
+// */
+#define USB_STATE_CNT_INVALID	1		//!< when OTG state is in progress the LSB bit is set
+
 #ifndef USB_NUMENDPOINTS
 #define USB_NUMENDPOINTS 16
 #endif
@@ -74,8 +93,34 @@ enum USB_EVENT
 
 #define USB_DRV_MODE(tx_ep, rx_ep) ((const void*)(((tx_ep)<< 8) | (rx_ep)))
 
+#if USB_ENABLE_HOST
+struct usb_remote_device
+{
+	uint8_t dev_adress;    //!< current address
+	uint8_t dev_interface; //!< current interface
+	uint8_t	dev_flags;
+	uint8_t hub_num;		//!< hub number to which this device is attached
+	uint8_t hub_port;		//!< hub port to which this device is attached
+
+
+	USBDeviceDescriptor 		dev_descriptor;
+	USBConfigurationDescriptor	*config_descriptor;
+
+};
+
+struct usb_bus
+{
+	usb_remote_device usb_device[MAX_USB_DEVICES + 1];
+
+};
+#endif
+
 struct USB_DRIVER_DATA
 {
+#if USB_ENABLE_OTG
+	uint16_t		otg_state_cnt;
+	uint8_t			otg_flags;
+#endif
 	uint8_t		 	usb_state;			//!< Current usb state (USBST_XXX)
 	uint8_t		 	usb_previous_state;	//!< Previous usb state (USDST_XXX)
 //	unsigned char	dev_adr;
@@ -83,10 +128,14 @@ struct USB_DRIVER_DATA
 	unsigned int 	frame_count;
 	unsigned int 	wake_count;
 	HANDLE			helper;
-	HANDLE			waiting;
+	HANDLE			waiting;			//!< waiting for the helper thread
 	HANDLE			pending;			//!< waiting for connections etc
 	usb_device		device;
 	Endpoint		endpoints[USB_NUMENDPOINTS]; //!< Endpoint structures
+#if USB_ENABLE_HOST
+	usb_bus			host_bus;
+#endif
+	Task* 			helper_task;
 };
 
 struct USB_DRIVER_INFO
@@ -100,11 +149,13 @@ struct USB_DRIVER_INFO
 
 typedef const USB_DRIVER_INFO* USB_DRV_INFO;
 
+#define USB_DRIVER_SIG	1
+
 void usbdrv_thread(USB_DRV_INFO drv_info);
 
 void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param);
 void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd);
-void USB_B_ISR(USB_DRV_INFO drv_info);
+void USB_ISR(USB_DRV_INFO drv_info);
 
 
 #endif /* USB_DRV_H_ */
