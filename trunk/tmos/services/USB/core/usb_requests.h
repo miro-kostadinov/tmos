@@ -86,19 +86,19 @@ union USBRequestType
   };
 }__attribute__ ((packed));
 
-enum USBGenericRequests : unsigned char
+enum USBDeviceRequests : unsigned char
 {
-	USBGenericRequest_GETSTATUS 		= 0,	//!< GET_STATUS request code
-	USBGenericRequest_CLEARFEATURE 		= 1,	//!< CLEAR_FEATURE request code
-	USBGenericRequest_SETFEATURE		= 3,	//!< SET_FEATURE request code
-	USBGenericRequest_SETADDRESS		= 5,	//!< SET_ADDRESS request code
-	USBGenericRequest_GETDESCRIPTOR		= 6,	//!< GET_DESCRIPTOR request code
-	USBGenericRequest_SETDESCRIPTOR		= 7,	//!< SET_DESCRIPTOR request code
-	USBGenericRequest_GETCONFIGURATION	= 8,	//!< GET_CONFIGURATION request code
-	USBGenericRequest_SETCONFIGURATION	= 9,	//!< SET_CONFIGURATION request code
-	USBGenericRequest_GETINTERFACE		=10,	//!< GET_INTERFACE request code
-	USBGenericRequest_SETINTERFACE		=11,	//!< SET_INTERFACE request code
-	USBGenericRequest_SYNCHFRAME		=12		//!< SYNCH_FRAME request code
+	USBGenericRequest_GET_STATUS 		= 0,	//!< GET_STATUS request code
+	USBGenericRequest_CLEAR_FEATURE 	= 1,	//!< CLEAR_FEATURE request code
+	USBGenericRequest_SET_FEATURE		= 3,	//!< SET_FEATURE request code
+	USBDeviceRequest_SET_ADDRESS		= 5,	//!< SET_ADDRESS request code
+	USBDeviceRequest_GET_DESCRIPTOR		= 6,	//!< GET_DESCRIPTOR request code
+	USBDeviceRequest_SET_DESCRIPTOR		= 7,	//!< SET_DESCRIPTOR request code
+	USBDeviceRequest_GET_CONFIGURATION	= 8,	//!< GET_CONFIGURATION request code
+	USBDeviceRequest_SET_CONFIGURATION	= 9,	//!< SET_CONFIGURATION request code
+	USBInterfaceRequest_GET_INTERFACE	=10,	//!< GET_INTERFACE request code
+	USBInterfaceRequest_SET_INTERFACE	=11,	//!< SET_INTERFACE request code
+	USBEndpointRequest_SYNCH_FRAME		=12		//!< SYNCH_FRAME request code
 };
 
 

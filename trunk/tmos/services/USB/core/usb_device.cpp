@@ -451,87 +451,59 @@ void usb_device::GetInterface(uint8_t infnum, HANDLE hnd)
 void usb_device::RequestHandler(const void* drv,
 		const USBGenericRequest *pRequest, HANDLE hnd)
 {
-    uint8_t infnum;
-    uint8_t eptnum;
-    uint8_t setting;
+	uint8_t infnum;
 
+    /* Check who is the recipient */
     switch (pRequest->bmRequestType.recipient)
     {
+    //------------ Device Requests ---------------------------------------------
     case USB_REQUEST_RECIPIENT_DEVICE:
-        TRACE1_USB(" Std");
+        TRACE1_USB(" Dev");
 
         /* Check request code */
         switch (pRequest->bRequest)
         {
-            case USBGenericRequest_GETDESCRIPTOR:
+            case USBDeviceRequest_GET_DESCRIPTOR:
             	TRACE1_USB(" gDesc");
 
                 /* Send the requested descriptor */
                 GetDescriptor(pRequest, hnd);
                 break;
 
-            case USBGenericRequest_SETADDRESS:
+            case USBDeviceRequest_SET_ADDRESS:
             	TRACE_USB(" sAddr(%d)", pRequest->wValue & 0x7F);
 
             	usb_svc_setaddress(hnd, pRequest->wValue & 0x7F);
                 break;
 
-            case USBGenericRequest_SETCONFIGURATION:
+            case USBDeviceRequest_SET_CONFIGURATION:
             	TRACE1_USB(" sCfg");
 
                 /* Set the requested configuration */
                 SetConfiguration(drv, pRequest->GetConfiguration(), hnd);
                 break;
 
-            case USBGenericRequest_GETCONFIGURATION:
+            case USBDeviceRequest_GET_CONFIGURATION:
             	TRACE1_USB(" gCfg");
 
                 /* Send the current configuration number */
-
                 //Function: GetConfiguration(pDriver);
                 hnd->tsk_write( &cfgnum, 1, USB_SETUP_WRITE_TOUT);
                 break;
 
-            case USBGenericRequest_GETSTATUS:
+            case USBGenericRequest_GET_STATUS:
             	TRACE1_USB(" gSta");
 
-                /* Check who is the recipient */
-                switch (pRequest->GetRecipient())
-                {
-                    case USB_REQUEST_RECIPIENT_DEVICE:
-                        TRACE1_USB(" Dev");
-
-                        /* Send the device status */
-                        GetDeviceStatus(hnd);
-                        break;
-
-                    case USB_REQUEST_RECIPIENT_ENDPOINT:
-                        TRACE1_USB(" Ept");
-
-                        /* Send the endpoint status */
-                        eptnum = pRequest->GetEndpointNumber();
-                        GetEndpointStatus(drv, eptnum, hnd);
-                        break;
-
-                    default:
-                        TRACE_USB(" Unknown recipient(%d)",
-                        		pRequest->GetRecipient());
-                        usb_svc_stall(hnd);
-                        break;
-                }
+                /* Send the device status */
+                GetDeviceStatus(hnd);
                 break;
 
-            case USBGenericRequest_CLEARFEATURE:
+            case USBGenericRequest_CLEAR_FEATURE:
                 TRACE1_USB(" cFeat");
 
                 /* Check which is the requested feature */
                 switch (pRequest->GetFeatureSelector())
                 {
-                    case USBFeatureRequest_ENDPOINTHALT:
-                    	usb_svc_unhalt(hnd, pRequest->GetEndpointNumber());
-                        hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
-                        break;
-
                     case USBFeatureRequest_DEVICEREMOTEWAKEUP:
                         TRACE1_USB(" RmWU");
 
@@ -548,7 +520,7 @@ void usb_device::RequestHandler(const void* drv,
                 }
                 break;
 
-        case USBGenericRequest_SETFEATURE:
+        case USBGenericRequest_SET_FEATURE:
             TRACE1_USB(" sFeat");
 
             /* Check which is the selected feature */
@@ -562,12 +534,7 @@ void usb_device::RequestHandler(const void* drv,
                     hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
                     break;
 
-                case USBFeatureRequest_ENDPOINTHALT:
-                	usb_svc_halt(hnd, pRequest->GetEndpointNumber());
-                    hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
-                    break;
-
-#if USE_USB_OTGHS
+#if USB_ENABLE_OTG
                 case USBFeatureRequest_OTG_B_HNP_ENABLE:
                         TRACE1_USB(" HNP_ENABLE");
                         otg_features_supported |=
@@ -597,41 +564,107 @@ void usb_device::RequestHandler(const void* drv,
             }
             break;
 
-        case USBGenericRequest_SETINTERFACE:
-            TRACE1_USB(" sInterface");
-
-            infnum = pRequest->GetInterface();
-            setting = pRequest->GetAlternateSetting();
-            SetInterface(infnum, setting, hnd);
-            break;
-
-        case USBGenericRequest_GETINTERFACE:
-            TRACE1_USB(" gInterface");
-
-            infnum = pRequest->GetInterface();
-            GetInterface(infnum, hnd);
-            break;
-
         default:
-        	TRACE_USB(" Unknown request(%d)",
-                      pRequest->GetRequest());
+        	TRACE_USB(" Unknown request(%d)", pRequest->GetRequest());
             usb_svc_stall(hnd);
             break;
         }
     	break;
 
+    //------------ Interface Requests ---------------------------------------------
     case USB_REQUEST_RECIPIENT_INTERFACE:
+        TRACE1_USB(" Iface");
         infnum = pRequest->GetInterface();
-    	if ( (infnum < USB_MAX_INTERACES) && interfaces[infnum])
-    	{
-    		// dispatch the request to the interface
-    		interfaces[infnum]->RequestHandler(drv, pRequest, hnd);
-    	}
-    	else
-    	{
-    		usb_svc_stall(hnd);
-        	TRACE_USB(" Invalid infnum(%d)", infnum);
-    	}
+
+        /* Check request code */
+        switch (pRequest->bRequest)
+        {
+
+        case USBInterfaceRequest_SET_INTERFACE:
+            TRACE1_USB(" sInterface");
+
+            SetInterface(infnum, pRequest->GetAlternateSetting(), hnd);
+            break;
+
+        case USBInterfaceRequest_GET_INTERFACE:
+            TRACE1_USB(" gInterface");
+
+            GetInterface(infnum, hnd);
+            break;
+
+        default:
+        	if ( (infnum < USB_MAX_INTERACES) && interfaces[infnum])
+        	{
+        		// dispatch the request to the interface
+        		interfaces[infnum]->RequestHandler(drv, pRequest, hnd);
+        	}
+        	else
+        	{
+        		usb_svc_stall(hnd);
+            	TRACE_USB(" Invalid infnum(%d)", infnum);
+        	}
+            break;
+        }
+    	break;
+
+    //------------ Endpoint Requests ---------------------------------------------
+    case USB_REQUEST_RECIPIENT_ENDPOINT:
+        TRACE1_USB(" Ept");
+
+        /* Check request code */
+        switch (pRequest->bRequest)
+        {
+
+        case USBGenericRequest_GET_STATUS:
+        	TRACE1_USB(" gSta");
+
+            /* Send the endpoint status */
+			GetEndpointStatus(drv, pRequest->GetEndpointNumber(), hnd);
+			break;
+
+        case USBGenericRequest_CLEAR_FEATURE:
+            TRACE1_USB(" cFeat");
+
+            /* Check which is the requested feature */
+            switch (pRequest->GetFeatureSelector())
+            {
+                case USBFeatureRequest_ENDPOINTHALT:
+                	usb_svc_unhalt(hnd, pRequest->GetEndpointNumber());
+                    hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
+                    break;
+
+                default:
+                	TRACELN_USB(" Unknown feature selector(%d)",
+                			pRequest->GetFeatureSelector());
+                    usb_svc_stall(hnd);
+                    break;
+            }
+            break;
+
+            case USBGenericRequest_SET_FEATURE:
+                TRACE1_USB(" sFeat");
+
+                /* Check which is the selected feature */
+                switch (pRequest->GetFeatureSelector())
+                {
+                    case USBFeatureRequest_ENDPOINTHALT:
+                    	usb_svc_halt(hnd, pRequest->GetEndpointNumber());
+                        hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
+                        break;
+
+                    default:
+                    	TRACELN_USB(" Unknown feature selector(%d)",
+                    			pRequest->GetFeatureSelector());
+                        usb_svc_stall(hnd);
+                        break;
+                }
+                break;
+
+        default:
+        	TRACE_USB(" Unknown request(%d)", pRequest->GetRequest());
+            usb_svc_stall(hnd);
+            break;
+        }
     	break;
 
     default:
