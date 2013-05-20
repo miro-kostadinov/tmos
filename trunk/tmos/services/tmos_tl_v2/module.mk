@@ -26,7 +26,7 @@ local_h_src-y 	+= ttl_config.h ttl_atomic.h ttl_iterator.h ttl_cpp_type_traits.h
 local_h_src-y 	+= ttl_initializer_list.h ttl_type_traits.h ttl_move.h ttl_algo.h 
 local_h_src-y 	+= ttl_function.h ttl_string.h ttl_tree.h
 
-local_cpp_src-y	+= ttl_config.cpp    
+local_cpp_src-y	+= ttl_config.cpp  ttl_tree.cpp  
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
