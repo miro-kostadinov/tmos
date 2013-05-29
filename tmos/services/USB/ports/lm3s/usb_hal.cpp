@@ -789,7 +789,7 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
     Endpoint *pEndpoint;
     unsigned int eptnum, reg;
     EndpointAttribute_TransferType ept_type;
-    EndpointDirection ept_dir;
+    EndpointDirection ept_dir = ENDPOINT_DIRECTION_OUT;
     USB_Type* hw_base = drv_info->hw_base;
 
 	switch(pDescriptor->bDescriptorType)
@@ -841,20 +841,23 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
 
     } else
     {
-        reg = 0;
+        // Enable isochronous mode if requested.
+        if(ept_type == ENDPOINT_TYPE_ISOCHRONOUS)
+        {
+            reg = USB_USBTXCSRH_ISO;
+        } else
+            reg = 0;
 
         // Determine if a transmit or receive endpoint is being configured.
         //
         if(ept_dir == ENDPOINT_DIRECTION_IN)
         {
+#if USB_ENABLE_HOST
+            hw_base->DEVICE_EP[eptnum].USBTXTYPE = (ept_type << 4) | eptnum;
+#endif
+
             // Set the maximum packet size.
             hw_base->DEVICE_EP[eptnum].USBTXMAXP = pEndpoint->txfifo_size;
-
-            // Enable isochronous mode if requested.
-            if(ept_type == ENDPOINT_TYPE_ISOCHRONOUS)
-            {
-                reg |= USB_USBTXCSRH_ISO;
-            }
 
             // Write the transmit control value.
             hw_base->DEVICE_EP[eptnum].USBTXCSRH = reg;
@@ -867,14 +870,11 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
         }
         else
         {
+#if USB_ENABLE_HOST
+            hw_base->DEVICE_EP[eptnum].USBRXTYPE = (ept_type << 4) | eptnum;
+#endif
             // Set the MaxPacketSize.
             hw_base->DEVICE_EP[eptnum].USBRXMAXP = pEndpoint->rxfifo_size;
-
-            // Enable isochronous mode if requested.
-            if(ept_type == ENDPOINT_TYPE_ISOCHRONOUS)
-            {
-                reg |= USB_USBRXCSRH_ISO;
-            }
 
             // Write the receive control value.
             hw_base->DEVICE_EP[eptnum].USBRXCSRH = reg;
@@ -887,7 +887,7 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
         }
     }
 
-    TRACE_USB(" CfgEp(%d)", eptnum);
+    TRACE_USB(" CfgEp(%x)", eptnum + (ept_dir <<7));
 }
 
 void usb_hal_config_fifo(USB_DRV_INFO drv_info)
