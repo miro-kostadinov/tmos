@@ -508,6 +508,18 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 	//host mode?
 	if (drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
 	{
+    	usb_remote_device* dev;
+    	USBHOSTFUNS_t* host_ept;
+
+    	dev = &drv_info->drv_data->host_bus.usb_device[hnd->mode0];
+    	host_ept = &drv_info->hw_base->HOST_EP[ept_indx];
+
+    	//set host receive address
+    	host_ept->USBRXFUNCADDR = dev->dev_adress;
+
+    	//set hub receive address
+    	host_ept->USBRXHUBADDR = (dev->hub_num << 8) | (dev->hub_port);
+
 	    if( (prev=endpoint->pending) )	//receiving
 	    {
 	    	while(prev->next)
@@ -517,7 +529,10 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 	    {
 	    	endpoint->pending = hnd;	//receiving
 			// request IN packet
-			hw_base->DEVICE_EP[ept_indx].USBTXCSRL = USB_USBRXCSRL_REQPKT;
+	    	if(ept_indx)
+				hw_base->DEVICE_EP[ept_indx].USBRXCSRL = USB_USBRXCSRL_REQPKT;
+	    	else
+	    		hw_base->DEVICE_EP[ept_indx].USBTXCSRL = USB_USBRXCSRL_REQPKT;
 	    }
 		return;
 	}
