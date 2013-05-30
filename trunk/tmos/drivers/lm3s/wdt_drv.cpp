@@ -19,6 +19,7 @@ void wdt_feet(WDT_INFO drv_info)
 	unsigned int ctrl;
 	unsigned int locked;
 
+	__disable_irq();
 	locked = wdt->WDTLOCK;
 	//Unlock
 	ctrl = wdt->WDTCTL;
@@ -52,6 +53,7 @@ void wdt_feet(WDT_INFO drv_info)
 		{
 		}
 	}
+	__enable_irq();
 
 }
 /**
