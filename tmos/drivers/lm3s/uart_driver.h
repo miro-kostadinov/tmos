@@ -18,7 +18,7 @@
 #define CTS_PIN	3
 
 #define UART_RX_TIMEOUT			  1
-#define UART_HW_FLOWCTRL		  2
+#define UART_HW_FLOWCTRL		  UART_FLOWCONTROL_TX
 
 /** UART Driver mode structure **/
 struct UART_DRIVER_MODE
