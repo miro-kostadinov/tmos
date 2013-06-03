@@ -17,7 +17,14 @@ void ConfigureUart(UART_DRIVER_INFO * drv_info, UART_DRIVER_DATA * drv_data, UAR
 //	Uart->UARTTxIntModeSet(UART_TXINT_MODE_FIFO);//UART_TXINT_MODE_EOT);
 	Uart->UARTTxIntModeSet(UART_TXINT_MODE_EOT);
 	if(uart_mode->hw_flow && drv_info->info.drv_index == UART1_IRQn)
-		Uart->UARTFlowControlSet(UART_FLOWCONTROL_TX |UART_FLOWCONTROL_RX);
+	{
+		//Uart->UARTFlowControlSet(UART_FLOWCONTROL_TX |UART_FLOWCONTROL_RX);
+		Uart->UARTFlowControlSet(uart_mode->hw_flow);
+		if(!(uart_mode->hw_flow & UART_FLOWCONTROL_RX))
+		{
+			Uart->UARTModemControlSet(UART_OUTPUT_RTS);
+		}
+	}
 	Uart->UARTConfigSetExpClk(SYSCTL->SysCtlClockGet(), uart_mode->baudrate, uart_mode->mode); // enable uart
 	Uart->UARTEnable();
 
@@ -38,6 +45,25 @@ static inline void STOP_TX(UART_Type * Uart)
 static inline void STOP_RX(UART_Type * Uart)
 {
 	Uart->UARTIntDisable(UART_INT_RX|UART_INT_RT);
+	if(!(Uart->UARTFlowControlGet() & UART_FLOWCONTROL_RX) && Uart == UART1)
+	{
+		if(Uart->UARTModemControlGet() & UART_OUTPUT_RTS)
+		{
+			Uart->UARTModemControlClear(UART_OUTPUT_RTS);
+		}
+	}
+}
+
+static inline void START_RX(UART_Type * Uart)
+{
+	Uart->UARTIntEnable(UART_INT_RX|UART_INT_RT);
+	if(!(Uart->UARTFlowControlGet() & UART_FLOWCONTROL_RX) && Uart == UART1)
+	{
+		if(!(Uart->UARTModemControlGet() & UART_OUTPUT_RTS) )
+		{
+			Uart->UARTModemControlSet(UART_OUTPUT_RTS);
+		}
+	}
 }
 
 static inline void RESUME_RX(UART_DRIVER_DATA * drv_data, UART_Type * Uart)
@@ -65,11 +91,13 @@ static inline void RESUME_RX(UART_DRIVER_DATA * drv_data, UART_Type * Uart)
 	// enable or disable the receiver...
 	if(free_space == 0)
 	{
-		Uart->UARTIntDisable(UART_INT_RX | UART_INT_RT);
+		//Uart->UARTIntDisable(UART_INT_RX | UART_INT_RT);
+		STOP_RX(Uart);
 	}
 	else
 	{
-		Uart->UARTIntEnable(UART_INT_RX | UART_INT_RT);
+		//Uart->UARTIntEnable(UART_INT_RX | UART_INT_RT);
+		START_RX(Uart);
 	}
 
 }
@@ -83,7 +111,8 @@ static inline void START_RX_BUF(UART_Type * Uart, UART_DRIVER_INFO * drv_info, U
 	drv_data->rx_ptr = drv_data->rx_buf;
 	drv_data->rx_wrptr = drv_data->rx_buf;
 	drv_data->rx_remaining = RX_BUF_SIZE-1;
-	Uart->UARTIntEnable(UART_INT_RX|UART_INT_RT);
+//	Uart->UARTIntEnable(UART_INT_RX|UART_INT_RT);
+	START_RX(Uart);
 }
 
 static inline void START_RX_HND(UART_Type * Uart, UART_DRIVER_INFO * drv_info, HANDLE hnd)
@@ -94,12 +123,14 @@ static inline void START_RX_HND(UART_Type * Uart, UART_DRIVER_INFO * drv_info, H
 #endif
 	drv_info->drv_data->rx_remaining = hnd->len;
 	drv_info->drv_data->rx_wrptr = hnd->dst.as_byteptr;
-	Uart->UARTIntEnable(UART_INT_RX|UART_INT_RT);
+//	Uart->UARTIntEnable(UART_INT_RX|UART_INT_RT);
+	START_RX(Uart);
 }
 
 static inline void STOP_RX_HND(UART_Type *Uart, UART_DRIVER_INFO * drv_info, HANDLE hnd)
 {
-	STOP_RX(Uart);
+//	STOP_RX(Uart);
+	Uart->UARTIntDisable(UART_INT_RX|UART_INT_RT);
 	drv_info->drv_data->hnd_rcv = hnd->next;
 	hnd->dst.as_int += hnd->len - drv_info->drv_data->rx_remaining;
 	hnd->len = drv_info->drv_data->rx_remaining;
@@ -406,7 +437,8 @@ void isr_SerilaDriver(UART_DRIVER_INFO* drv_info )
         		}
     		} else
     		{
-    			Uart->UARTIntDisable(UART_INT_RX | UART_INT_RT);
+    			//Uart->UARTIntDisable(UART_INT_RX | UART_INT_RT);
+    			STOP_RX(Uart);
     			break;
     		}
     	}
