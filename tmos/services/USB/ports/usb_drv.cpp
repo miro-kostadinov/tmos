@@ -89,8 +89,10 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 			{
 
 				req_hnd.mode.as_ushort[1] = drv_info->drv_data->otg_state_cnt;
+#endif
 				req_hnd.tsk_start_read(&request, 8);
 				requested = true;
+#if USB_ENABLE_OTG
 			}
 #endif
 		}
