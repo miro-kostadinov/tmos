@@ -502,6 +502,8 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
             }
         	endpoint->state = ENDPOINT_STATE_IDLE;
         }
+    	svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+    	return;
 	}
 
 #if USB_ENABLE_HOST
