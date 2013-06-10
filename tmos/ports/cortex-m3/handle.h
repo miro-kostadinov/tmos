@@ -176,6 +176,7 @@ struct CHandle {
 
 	bool tsk_start_command(void * c, void *ptr);
 	RES_CODE tsk_command(void * cmd, void *ptr);
+	RES_CODE tsk_command(unsigned int c, void * par, void *ptr);
 	RES_CODE tsk_command_locked(void * cmd, void *ptr);
 
 	//----------------------   task related ---------------------------//
