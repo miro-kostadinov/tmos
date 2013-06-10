@@ -621,6 +621,25 @@ RES_CODE CHandle::tsk_command(void * c, void *ptr)
 }
 
 /**
+ *
+ * @param cmd
+ * @param par
+ * @param ptr
+ * @return
+ */
+RES_CODE CHandle::tsk_command(unsigned int c, void * par, void *ptr)
+{
+	if(!complete())
+		return (res);
+
+	//handle is idle and open
+	set_res_cmd(c);
+	dst.as_voidptr = ptr;
+	src.as_voidptr = par;
+	return (tsk_start_and_wait());
+}
+
+/**
  * Locked command
  * @param c
  * @param ptr
