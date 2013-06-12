@@ -130,7 +130,7 @@ static inline void START_RX_HND(UART_Type * Uart, UART_DRIVER_INFO * drv_info, H
 static inline void STOP_RX_HND(UART_Type *Uart, UART_DRIVER_INFO * drv_info, HANDLE hnd)
 {
 //	STOP_RX(Uart);
-	Uart->UARTIntDisable(UART_INT_RX|UART_INT_RT);
+	Uart->UARTIntDisable(UART_INT_RX/*|UART_INT_RT*/);
 	drv_info->drv_data->hnd_rcv = hnd->next;
 	hnd->dst.as_int += hnd->len - drv_info->drv_data->rx_remaining;
 	hnd->len = drv_info->drv_data->rx_remaining;
@@ -155,9 +155,9 @@ static inline void START_TX_HND(UART_Type * Uart, HANDLE hnd)
 */
 static inline void START_TX_HND(UART_Type * Uart, HANDLE hnd)
 {
-	Uart->UARTIntDisable(UART_INT_TX);
-	Uart->UARTTxIntModeSet(UART_TXINT_MODE_EOT);
-	if(Uart->UARTSpaceAvail() && hnd->len)
+//	Uart->UARTIntDisable(UART_INT_TX);
+//	Uart->UARTTxIntModeSet(UART_TXINT_MODE_EOT);
+	while(Uart->UARTSpaceAvail() && hnd->len)
 	{
 		Uart->DR = *hnd->src.as_charptr++;
 		--hnd->len;
@@ -343,6 +343,11 @@ void dsr_SerialDriver(UART_DRIVER_INFO* drv_info, HANDLE hnd)
       			hnd->dst.as_int += size;
       			drv_data->rx_ptr += size;
       		}
+          	if(drv_data->mode.rx_tout)
+          	{
+          		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+          		return;
+          	}
       	}
       	if (hnd->len == 0)
       	{
@@ -407,10 +412,6 @@ void isr_SerilaDriver(UART_DRIVER_INFO* drv_info )
 				hnd->len--;
 				Uart->DR = *hnd->src.as_charptr++;
 			}
-			if(hnd)
-			{
-				Uart->UARTTxIntModeSet(UART_TXINT_MODE_FIFO);
-			}
 		}
 		else
 		{
@@ -421,25 +422,23 @@ void isr_SerilaDriver(UART_DRIVER_INFO* drv_info )
 	//check the receiver
     if(Status&(UART_INT_RT|UART_INT_RX))
     {
-    	while(Uart->UARTCharsAvail())
+    	if(Uart->UARTCharsAvail())
     	{
-    		if(drv_data->rx_remaining)
+    		do
     		{
-        		*drv_data->rx_wrptr++ = Uart->DR;
-        		if(!--drv_data->rx_remaining )
-        		{
-        	    	if( (hnd=drv_data->hnd_rcv) )
-        				STOP_RX_HND(Uart, drv_info, hnd);
-        	      	else
-        	      	{
-        	      		RESUME_RX(drv_data, Uart);
-        	      	}
-        		}
-    		} else
+        		if(!drv_data->rx_remaining)
+        			break;
+        		drv_data->rx_remaining--;
+
+            	*drv_data->rx_wrptr++ = Uart->DR;
+
+    		} while(Uart->UARTCharsAvail());
+    		if(!drv_data->rx_remaining || drv_data->mode.rx_tout)
     		{
-    			//Uart->UARTIntDisable(UART_INT_RX | UART_INT_RT);
-    			STOP_RX(Uart);
-    			break;
+				if( (hnd=drv_data->hnd_rcv) )
+					STOP_RX_HND(Uart, drv_info, hnd);
+				else
+					RESUME_RX(drv_data, Uart);
     		}
     	}
     	if( (Status&UART_INT_RT) && drv_data->mode.rx_tout )
