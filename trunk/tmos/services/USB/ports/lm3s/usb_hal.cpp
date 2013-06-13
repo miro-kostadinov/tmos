@@ -1621,12 +1621,20 @@ void USB_ISR(USB_DRV_INFO drv_info)
 				status = 0;
 		}
 
+
     	// Bus reset
     	if(status & USB_USBIS_RESET)
     	{
+    		uint32_t babble;
+
+    		babble = drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON;
+
     		// reset, we must switch to otg device
 			usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST);
-			usb_otg_set_flags(drv_info, USB_OTG_FLG_DEV_CON);
+			if(babble)
+				status = 0; // the only way to recover is to close and reopen the session
+			else
+				usb_otg_set_flags(drv_info, USB_OTG_FLG_DEV_CON);
     	}
 
     	if(status)
