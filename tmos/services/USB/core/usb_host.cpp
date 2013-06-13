@@ -16,26 +16,32 @@ RES_CODE hdc_request(USBGenericRequest* req, HANDLE hnd, void* ptr)
 {
 	RES_CODE res;
 
-	res = hnd->tsk_write(req, sizeof(USBGenericRequest), USB_SETUP_WRITE_TOUT);
-	if(res == RES_OK)
+	for(int i=0; i<5; i++)
 	{
-		hnd->len = req->wLength;
-		do
+		res = hnd->tsk_write(req, sizeof(USBGenericRequest), USB_SETUP_WRITE_TOUT);
+		if(res == RES_OK)
 		{
-			res = hnd->tsk_read(ptr, hnd->len, USB_SETUP_WRITE_TOUT);
-			ptr = hnd->dst.as_voidptr;
-		} while(hnd->len && res == RES_OK);
-
-		if(hnd->mode1 && (res == RES_OK) && !hnd->len)
-		{
-			char buf[8];
-
-			while(hnd->tsk_read(buf, sizeof(buf), USB_SETUP_WRITE_TOUT)== RES_OK)
+			hnd->len = req->wLength;
+			do
 			{
-				if(!hnd->mode1)
-					break;
+				res = hnd->tsk_read(ptr, hnd->len, USB_SETUP_WRITE_TOUT);
+				ptr = hnd->dst.as_voidptr;
+			} while(hnd->len && res == RES_OK);
+
+			if(hnd->mode1 && (res == RES_OK) && !hnd->len)
+			{
+				char buf[8];
+
+				while(hnd->tsk_read(buf, sizeof(buf), USB_SETUP_WRITE_TOUT)== RES_OK)
+				{
+					if(!hnd->mode1)
+						break;
+				}
 			}
 		}
+		if(res == RES_OK)
+			break;
+		tsk_sleep(50);
 	}
 	return res;
 }
