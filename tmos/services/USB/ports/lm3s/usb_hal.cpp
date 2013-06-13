@@ -91,6 +91,11 @@ static uint32_t usb_read_payload(volatile void* src, HANDLE hnd, unsigned int si
 
 	hnd->res = RES_BUSY | FLG_OK;
 
+	if(size >0xff)
+		hnd->mode1 = 0xff;
+	else
+		hnd->mode1 = size;
+
     return (size);
 }
 
@@ -1126,6 +1131,7 @@ void usb_b_ept0_handler(USB_DRV_INFO drv_info)
 				{
 			    	if((hnd = endpoint->pending) && !hnd->len)
 			    	{
+			    		hnd->mode1 = 0;
 			    		endpoint->pending = hnd->next;
 			    	    TRACE_USB("(%d)", size);
 						usr_HND_SET_STATUS(hnd, RES_SIG_OK);
