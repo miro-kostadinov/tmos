@@ -460,6 +460,9 @@ void usb_drv_start_tx(USB_DRV_INFO drv_info, HANDLE hnd)
 		    	//set hub transmit address
 		    	host_ept->USBTXHUBADDR = (dev->hub_num << 8) | (dev->hub_port);
 
+		    	//enable TX dir
+		    	if(ept_indx)
+		    		drv_info->hw_base->DEVICE_EP[ept_indx].USBTXCSRH |= USB_USBTXCSRH_MODE;
 		    }
 #endif
 
@@ -543,7 +546,10 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 	    	endpoint->pending = hnd;	//receiving
 			// request IN packet
 	    	if(ept_indx)
+	    	{
+	        	drv_info->hw_base->DEVICE_EP[ept_indx].USBTXCSRH &= ~USB_USBTXCSRH_MODE;
 				hw_base->DEVICE_EP[ept_indx].USBRXCSRL = USB_USBRXCSRL_REQPKT;
+	    	}
 	    	else
 	    		hw_base->DEVICE_EP[ept_indx].USBTXCSRL = USB_USBRXCSRL_REQPKT;
 	    }
@@ -1174,6 +1180,14 @@ void usb_b_ept_rx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
 
 	if (status & USB_USBRXCSRL_OVER)
 	{
+#if USB_ENABLE_HOST
+		if( drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
+		{
+			status |= USB_USBRXCSRL_RXRDY;
+	    	TRACE1_USB(" RXERR");
+		}
+		else
+#endif
     	TRACE1_USB(" OVER");
 	}
 
