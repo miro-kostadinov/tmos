@@ -812,7 +812,7 @@ void usb_hal_ept_reset(USB_DRV_INFO drv_info, unsigned int eptnum)
  * Configures an endpoint according to its Endpoint Descriptor.
  * \param pDescriptor Pointer to an Endpoint descriptor.
  */
-void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDescriptor)
+void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDescriptor, unsigned int rindx)
 {
     Endpoint *pEndpoint;
     unsigned int eptnum, reg;
@@ -881,7 +881,8 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
         if(ept_dir == ENDPOINT_DIRECTION_IN)
         {
 #if USB_ENABLE_HOST
-            hw_base->DEVICE_EP[eptnum].USBTXTYPE = (ept_type << 4) | eptnum;
+        	if(rindx)
+        		hw_base->DEVICE_EP[eptnum].USBTXTYPE = (ept_type << 4) | rindx;
 #endif
 
             // Set the maximum packet size.
@@ -899,7 +900,8 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
         else
         {
 #if USB_ENABLE_HOST
-            hw_base->DEVICE_EP[eptnum].USBRXTYPE = (ept_type << 4) | eptnum;
+        	if(rindx)
+        		hw_base->DEVICE_EP[eptnum].USBRXTYPE = (ept_type << 4) | rindx;
 #endif
             // Set the MaxPacketSize.
             hw_base->DEVICE_EP[eptnum].USBRXMAXP = pEndpoint->rxfifo_size;
