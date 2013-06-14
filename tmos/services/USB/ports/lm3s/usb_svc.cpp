@@ -87,7 +87,7 @@ void usb_svc_configendpoints_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 
 	endpoint = (const USBGenericDescriptor*)hnd->src.as_int;
 
-	usb_hal_ept_config(drv_info, endpoint);
+	usb_hal_ept_config(drv_info, endpoint, hnd->mode.as_bytes[0]);
 	if(hnd->len)
 		usb_hal_config_fifo(drv_info);
 }
