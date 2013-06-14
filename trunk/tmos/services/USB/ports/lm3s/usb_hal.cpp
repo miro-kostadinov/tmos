@@ -394,8 +394,12 @@ void usb_drv_cancel_hnd(USB_DRV_INFO drv_info, HANDLE hnd)
     	{
     		svc_HND_SET_STATUS(hnd, FLG_SIGNALED);
 //   		TRACE1_USB("Can!");
-    		if(!endpoint->pending && endpoint->state == ENDPOINT_STATE_SENDING)
-    			endpoint->state = ENDPOINT_STATE_IDLE;
+    		if(!endpoint->pending && (endpoint->state & ENDPOINT_STATE_SENDING))
+    		{
+    			endpoint->state &= ~ENDPOINT_STATE_SENDING;
+    			if(!endpoint->state)
+    				endpoint->state = ENDPOINT_STATE_IDLE;
+    		}
 
     	}
     }
@@ -432,7 +436,7 @@ void usb_drv_start_tx(USB_DRV_INFO drv_info, HANDLE hnd)
     	prev->next = hnd;
     } else
     {
-	    if (endpoint->state != ENDPOINT_STATE_IDLE)
+	    if (endpoint->state != ENDPOINT_STATE_IDLE && endpoint->state != ENDPOINT_STATE_RECEIVING_OFF)
 	    {
 			svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 	    } else
@@ -487,7 +491,7 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 	endpoint = &drv_info->drv_data->endpoints[ept_indx];
 	hw_base = drv_info->hw_base;
 
-	if(endpoint->state == ENDPOINT_STATE_RECEIVING_OFF)
+	if(endpoint->state & ENDPOINT_STATE_RECEIVING_OFF)
 	{
 
 		endpoint->rxfifo_cnt = usb_read_payload(ENTPOINT_FIFO(hw_base, ept_indx),
@@ -505,7 +509,9 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
                 // Clear RxPktRdy on all other endpoints.
             	hw_base->DEVICE_EP[ept_indx].USBRXCSRL &= ~(USB_USBRXCSRL_RXRDY);
             }
-        	endpoint->state = ENDPOINT_STATE_IDLE;
+            endpoint->state &= ~ENDPOINT_STATE_RECEIVING_OFF;
+            if(!endpoint->state)
+            	endpoint->state = ENDPOINT_STATE_IDLE;
         }
     	svc_HND_SET_STATUS(hnd, RES_SIG_OK);
     	return;
@@ -1185,7 +1191,13 @@ void usb_b_ept_rx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
 	{
 		// there is a packet
 
+#if USB_ENABLE_HOST
+		//host mode?
+		if( (endpoint->state == ENDPOINT_STATE_IDLE) ||
+				(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON) )
+#else
 		if(endpoint->state == ENDPOINT_STATE_IDLE)
+#endif
 		{
 			unsigned int size;
 			size = hw_base->DEVICE_EP[eptnum].USBRXCOUNT;
@@ -1200,7 +1212,8 @@ void usb_b_ept_rx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
 	    	if(size)
 			{
 	            // mark that we have data
-	        	endpoint->state = ENDPOINT_STATE_RECEIVING_OFF;
+	    		endpoint->state &= ~ENDPOINT_STATE_IDLE;
+	        	endpoint->state |= ENDPOINT_STATE_RECEIVING_OFF;
 	    		endpoint->rxfifo_cnt = size;
 	        } else
 	        {
@@ -1243,7 +1256,7 @@ void usb_b_ept_tx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
     	TRACE1_USB(" UNDRN");
 	}
 
-	if ( (endpoint->state == ENDPOINT_STATE_SENDING)  )
+	if ( (endpoint->state & ENDPOINT_STATE_SENDING)  )
 	{
 		//check if we have pending write
 		while((hnd=endpoint->pending) && ( hnd->len == 0) && !(hnd->res & FLG_EOF))
@@ -1265,7 +1278,9 @@ void usb_b_ept_tx_handler(USB_DRV_INFO drv_info, unsigned int eptnum)
 			}
 		} else
 		{
-			endpoint->state = ENDPOINT_STATE_IDLE;
+			endpoint->state &= ~ENDPOINT_STATE_SENDING;
+			if(!endpoint->state)
+				endpoint->state = ENDPOINT_STATE_IDLE;
 		}
 
 	}
