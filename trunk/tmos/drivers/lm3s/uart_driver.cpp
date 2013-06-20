@@ -192,6 +192,7 @@ static void dcr_cancel_handle(UART_DRIVER_INFO* drv_info,
 	      		res  = hnd->res ^ (FLG_SIGNALED | FLG_BUSY);
 	      		if(hnd->len > drv_data->rx_remaining  )
 	      		{
+	      			hnd->dst.as_int += hnd->len - drv_data->rx_remaining;
 	      			hnd->len = drv_data->rx_remaining;
 	      			res = RES_SIG_OK;
 	      		}
@@ -318,7 +319,7 @@ void dsr_SerialDriver(UART_DRIVER_INFO* drv_info, HANDLE hnd)
 			return;
       	}
 
-		//try to read from buffer
+		// first try to read from buffer
       	ptr = drv_data->rx_wrptr;
       	if( hnd->len && (ptr!= drv_data->rx_ptr) )
       	{
@@ -343,22 +344,27 @@ void dsr_SerialDriver(UART_DRIVER_INFO* drv_info, HANDLE hnd)
       			hnd->dst.as_int += size;
       			drv_data->rx_ptr += size;
       		}
-          	if(drv_data->mode.rx_tout)
-          	{
-          		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
-          		return;
-          	}
-      	}
-      	if (hnd->len == 0)
+          	size = drv_data->mode.rx_tout;
+      	} else
+      		size = 0;
+
+      	//second try to receive directly
+    	while(hnd->len && Uart->UARTCharsAvail())
+    	{
+			*hnd->dst.as_charptr++ = Uart->DR;
+			hnd->len--;
+			size = drv_data->mode.rx_tout;
+    	}
+      	if ( (hnd->len == 0) || size )
       	{
       		RESUME_RX(drv_data, Uart);
       		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
-      		return;
+      	} else
+      	{
+			drv_data->hnd_rcv = hnd;
+			START_RX_HND(Uart, drv_info, hnd);
       	}
 
-      	//receive directly
-      	drv_data->hnd_rcv = hnd;
-      	START_RX_HND(Uart, drv_info, hnd);
 		return;
     }
 
@@ -422,25 +428,37 @@ void isr_SerilaDriver(UART_DRIVER_INFO* drv_info )
 	//check the receiver
     if(Status&(UART_INT_RT|UART_INT_RX))
     {
-    	if(Uart->UARTCharsAvail())
+    	hnd = NULL;
+    	while(Uart->UARTCharsAvail())
     	{
-    		do
+    		if(drv_data->rx_remaining)
     		{
-        		if(!drv_data->rx_remaining)
-        			break;
-        		drv_data->rx_remaining--;
+        		*drv_data->rx_wrptr++ = Uart->DR;
 
-            	*drv_data->rx_wrptr++ = Uart->DR;
-
-    		} while(Uart->UARTCharsAvail());
-    		if(!drv_data->rx_remaining || drv_data->mode.rx_tout)
+        		hnd = drv_data->hnd_rcv;
+        		if(!--drv_data->rx_remaining )
+        		{
+        	    	if( hnd )
+        	    	{
+        				STOP_RX_HND(Uart, drv_info, hnd);
+        				hnd = NULL;
+        	    	}
+        	      	else
+        	      	{
+        	      		RESUME_RX(drv_data, Uart);
+        	      	}
+        		}
+    		} else
     		{
-				if( (hnd=drv_data->hnd_rcv) )
-					STOP_RX_HND(Uart, drv_info, hnd);
-				else
-					RESUME_RX(drv_data, Uart);
+    			Uart->UARTIntDisable(UART_INT_RX | UART_INT_RT);
+    			break;
     		}
     	}
+    	if(hnd && drv_data->mode.rx_tout)
+		{
+			STOP_RX_HND(Uart, drv_info, hnd);
+		}
+
     	if( (Status&UART_INT_RT) && drv_data->mode.rx_tout )
     	{
 	    	if( (hnd=drv_data->hnd_rcv) )
