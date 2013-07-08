@@ -18,6 +18,7 @@
 #include <cmsis_cpp.h>
 #if USB_ENABLE_HOST
 #include <usb_host.h>
+#include <tmos_atomic.h>
 #endif
 
 
@@ -76,14 +77,64 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 #if USB_ENABLE_OTG
 			if(sig == USB_DRIVER_SIG)
 			{
-				sig = 0;
-				if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_RST)
+				if(drv_info->drv_data->otg_h_sig & OTG_H_SIG_CON)
 				{
-					// Reset requested
-					for(int retries =0; retries <3; ++retries)
-						if(usb_host_reset_bus(drv_info, &req_hnd) == RES_OK)
+					do
+					{
+						sig = atomic_fetch((volatile int*)&drv_info->drv_data->otg_h_sig);
+						sig &= ~OTG_H_SIG_CON;
+					} while(atomic_store((volatile int*)&drv_info->drv_data->otg_h_sig, sig));
+
+					//wait 1s for connect
+					for(int retries =0; retries <10; ++retries)
+					{
+						if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_RST)
 							break;
+				    	sig = tsk_wait_signal(USB_DRIVER_SIG, 100);
+				    	if (sig)
+				    		break;
+					}
+					if( !(drv_info->drv_data->otg_h_sig & OTG_H_SIG_RST))
+					{
+						usb_api_otg_off(drv_info, NULL);
+					}
 				}
+				if(drv_info->drv_data->otg_h_sig & OTG_H_SIG_RST)
+				{
+					do
+					{
+						sig = atomic_fetch((volatile int*)&drv_info->drv_data->otg_h_sig);
+						sig &= ~OTG_H_SIG_RST;
+					} while(atomic_store((volatile int*)&drv_info->drv_data->otg_h_sig, sig));
+
+					if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_RST)
+					{
+						RES_CODE res;
+
+						// Reset requested
+						for(int retries =0; retries <3; ++retries)
+						{
+							res = usb_host_reset_bus(drv_info, &req_hnd);
+							if( res == RES_OK)
+								break;
+						}
+						if(res != RES_OK)
+							usb_api_otg_off(drv_info, NULL);
+
+					}
+				}
+				if(drv_info->drv_data->otg_h_sig & OTG_H_SIG_RESUME)
+				{
+					do
+					{
+						sig = atomic_fetch((volatile int*)&drv_info->drv_data->otg_h_sig);
+						sig &= ~OTG_H_SIG_RESUME;
+					} while(atomic_store((volatile int*)&drv_info->drv_data->otg_h_sig, sig));
+					usb_host_resume(drv_info);
+
+
+				}
+				sig = 0;
 			}
 			if(drv_info->drv_data->otg_flags & USB_OTG_FLG_DEV_OK)
 			{

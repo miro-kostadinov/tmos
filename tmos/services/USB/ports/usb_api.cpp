@@ -109,4 +109,12 @@ RES_CODE usb_api_otg_config(USB_DRV_INFO drv_info, HANDLE client)
 	return RES_IDLE;
 
 }
+
+RES_CODE usb_api_otg_off(USB_DRV_INFO drv_info, HANDLE client)
+{
+	usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST_CON | USB_OTG_FLG_HOST_PWR
+			| USB_OTG_FLG_HOST_RST | USB_OTG_FLG_HOST_OK);
+	return RES_SIG_OK;
+}
+
 #endif

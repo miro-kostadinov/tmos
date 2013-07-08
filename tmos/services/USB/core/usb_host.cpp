@@ -462,9 +462,9 @@ RES_CODE usb_host_reset_bus(USB_DRV_INFO drv_info, HANDLE hnd)
 					res = hcd_config_descriptor(drv_info, hnd, 0);
 					if(res == RES_OK)
 					{
-						__disable_irq();
+//						__disable_irq();
 						usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_OK);
-						__enable_irq();
+//						__enable_irq();
 
 						trace_usb_dev(&drv_info->drv_data->host_bus.usb_device[0]);
 
