@@ -227,14 +227,16 @@ WEAK_C void usb_host_power(USB_DRV_INFO drv_info, bool enable)
 	if(enable)
 	{
 		TRACE1_USB(" USB pwr en");
-		reg |= USB_USBEPC_EPENDE | USB_USBEPC_EPEN_VBHIGH;
+		reg |= USB_USBEPC_EPENDE | USB_USBEPC_EPEN_HIGH/*USB_USBEPC_EPEN_VBHIGH*/;
 		drv_info->hw_base->USBVDC = USB_USBVDC_VBDEN;
 		drv_info->hw_base->USBVDCIM = USB_USBVDCIM_VD;
+//		drv_info->hw_base->USBDRIM = USB_USBDRIM_RESUME;
 	} else
 	{
 		TRACE1_USB(" USB pwr dis");
 		drv_info->hw_base->USBVDC = 0;
 		drv_info->hw_base->USBVDCIM = 0;
+//		drv_info->hw_base->USBDRIM = 0;
 	}
 	drv_info->hw_base->USBEPC = reg;
 }
@@ -269,7 +271,7 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 	}
 
 	// disconnect
-	if(flags & (USB_OTG_FLG_HOST | USB_OTG_FLG_DEV))
+	if(flags & (USB_OTG_FLG_HOST | USB_OTG_FLG_DEV | USB_OTG_FLG_HOST_PWR))
 	{
 		if(!(drv_data->otg_flags & (USB_OTG_FLG_HOST_OK | USB_OTG_FLG_DEV_OK)))
 			drv_data->otg_state_cnt  |= USB_STATE_CNT_INVALID;
@@ -311,15 +313,26 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 
 				case USB_OTG_FLG_HOST_RST:
 					if(drv_data->helper_task)
+					{
+						int sig;
+						do
+						{
+							sig = atomic_fetch((volatile int*)&drv_data->otg_h_sig);
+							sig |= OTG_H_SIG_RST;
+						} while(atomic_store((volatile int*)&drv_data->otg_h_sig, sig));
 						usr_send_signal(drv_data->helper_task, USB_DRIVER_SIG);
+					}
 					break;
 
 				case USB_OTG_FLG_HOST_OK:
 					HANDLE hnd;
+					__disable_irq();
 					while( (hnd=drv_data->pending) )
 					{
 						drv_data->pending = hnd->next;
+						__enable_irq();
 						usr_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+						__disable_irq();
 					}
 
 					drv_data->otg_state_cnt += drv_data->otg_state_cnt & USB_STATE_CNT_INVALID;
@@ -328,6 +341,7 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 				}
 
 				drv_info->drv_data->otg_flags |= flags;
+				__enable_irq();
 			}
 		} else
 		{
@@ -355,6 +369,18 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 
 	}
 
+}
+
+void usb_host_resume(USB_DRV_INFO drv_info)
+{
+	USB_Type* hw_base = drv_info->hw_base;
+
+	hw_base->USBPOWER |= USB_USBPOWER_RESUME;
+	tsk_sleep(20);
+	hw_base->USBPOWER &= ~USB_USBPOWER_RESUME;
+
+	hw_base->USBDRISC = USB_USBDRISC_RESUME;
+	hw_base->USBDRIM = USB_USBDRIM_RESUME;
 }
 
 #endif
@@ -775,6 +801,8 @@ void usb_hal_host_start(USB_DRV_INFO drv_info)
 
 	// request session now
 	hw_base->USBDEVCTL |= USB_USBDEVCTL_SESSION;
+	TRACELN1_USB("USB sh ses");
+
 }
 #endif
 
@@ -1573,16 +1601,37 @@ void USB_ISR(USB_DRV_INFO drv_info)
 			//enable usb power
 			usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_PWR);
 			if (drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST)
+			{
+				hw_base->USBDEVCTL &= ~USB_USBDEVCTL_SESSION;
 				hw_base->USBDEVCTL |= USB_USBDEVCTL_SESSION;
+				TRACE1_USB(" ses");
+			}
+//			drv_info->hw_base->USBEPC |= USB_USBEPC_EPEN_VBHIGH;
 			break;
 
 		case USB_USBDEVCTL_SESSION | USB_USBDEVCTL_VBUS_VALID:	// host, vbus valid
-
+			if(drv_info->drv_data->helper_task)
+			{
+				int sig;
+				do
+				{
+					sig = atomic_fetch((volatile int*)&drv_info->drv_data->otg_h_sig);
+					sig |= OTG_H_SIG_CON;
+				} while(atomic_store((volatile int*)&drv_info->drv_data->otg_h_sig, sig));
+				usr_send_signal(drv_info->drv_data->helper_task, USB_DRIVER_SIG);
+			}
 			break;
 
 		// device mode
 		case USB_USBDEVCTL_SESSION | USB_USBDEVCTL_DEV | USB_USBDEVCTL_VBUS_VALID:
 			usb_otg_set_flags(drv_info, USB_OTG_FLG_DEV_CON);
+			break;
+
+		case USB_USBDEVCTL_SESSION | USB_USBDEVCTL_VBUS_SEND:
+			TRACE1_USB(" (send < vbus < valid)");
+			hw_base->USBDEVCTL &= ~USB_USBDEVCTL_SESSION;
+			hw_base->USBDEVCTL |= USB_USBDEVCTL_SESSION;
+			TRACE1_USB(" ses");
 			break;
 
 		// disconnect
@@ -1627,6 +1676,7 @@ void USB_ISR(USB_DRV_INFO drv_info)
 			if (drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST)
        		{
 				hw_base->USBDEVCTL |= USB_USBDEVCTL_SESSION;
+				TRACE1_USB(" ses");
        		}
     	}
 
@@ -1727,6 +1777,30 @@ void USB_ISR(USB_DRV_INFO drv_info)
 
     	TRACELN_USB("USB:[pc=%02x]", status);
     }
+
+    //----- Process USBDRISC interrupt
+//    status = hw_base->USBDRISC & USB_USBDRISC_RESUME;
+//    if(status)
+//    {
+//    	irq_found = true;
+//    	//Power Fault status has been detected
+//		hw_base->USBDRIM = 0;
+//    	hw_base->USBDRISC = status;
+//#if USB_ENABLE_OTG
+//
+//		if(drv_info->drv_data->helper_task)
+//		{
+//			int sig;
+//			do
+//			{
+//				sig = atomic_fetch((volatile int*)&drv_info->drv_data->otg_h_sig);
+//				sig |= OTG_H_SIG_RESUME;
+//			} while(atomic_store((volatile int*)&drv_info->drv_data->otg_h_sig, sig));
+//			usr_send_signal(drv_info->drv_data->helper_task, USB_DRIVER_SIG);
+//		}
+//#endif
+//    	TRACELN_USB("USB:[rm=%02x]", status);
+//    }
 
     if (!irq_found)
     	TRACELN1_USB("USB: dummy ISR");

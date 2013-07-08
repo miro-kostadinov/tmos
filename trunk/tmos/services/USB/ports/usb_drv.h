@@ -73,6 +73,10 @@ enum USB_EVENT
 #define USB_OTG_FLG_HOST_RST	0x40	//!< Set from interrupt to tell helper that it can reset the bus
 #define USB_OTG_FLG_HOST_OK		0x80	//!< Host mode entered. Set on HBRST. Cleared on !FLG_HOST
 #define USB_OTG_FLG_ALL			0xFF
+
+#define OTG_H_SIG_RST			0x01
+#define OTG_H_SIG_RESUME		0x02
+#define OTG_H_SIG_CON			0x04
 #endif
 //TODO: clear DEV, DEV_CONECT
 
@@ -120,6 +124,7 @@ struct USB_DRIVER_DATA
 #if USB_ENABLE_OTG
 	uint16_t		otg_state_cnt;
 	uint8_t			otg_flags;
+	uint32_t		otg_h_sig;
 #endif
 	uint8_t		 	usb_state;			//!< Current usb state (USBST_XXX)
 	uint8_t		 	usb_previous_state;	//!< Previous usb state (USDST_XXX)

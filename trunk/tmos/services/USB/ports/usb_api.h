@@ -19,10 +19,15 @@ typedef RES_CODE (*USB_API_FUNC)(USB_DRV_INFO drv_info, HANDLE client);
 
 RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client);
 RES_CODE usb_api_otg_config(USB_DRV_INFO drv_info, HANDLE client);
+RES_CODE usb_api_otg_off(USB_DRV_INFO drv_info, HANDLE client);
 
 
 #define USB_CMD_DEVICE_CONFIG 	((void*)usb_api_device_config)
+
+#if USB_ENABLE_HOST
 #define USB_CMD_OTG_CONFIG 		((void*)usb_api_otg_config)
+#define USB_CMD_OTG_OFF			((void*)usb_api_otg_off)
+#endif
 
 
 #endif /* USB_API_H_ */
