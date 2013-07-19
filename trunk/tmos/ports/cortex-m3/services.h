@@ -72,6 +72,8 @@ void TRACE_BUF(const void* buf, unsigned int len, unsigned int color);
 void TRACE_BUF(const void* buf, unsigned int len, unsigned int c1, unsigned int c2);
 void TRACE_TEXT(const void* buf, unsigned int len);
 void TRACE_TEXT(const void* buf, unsigned int len, unsigned int color);
+void TRACE_COLOR(unsigned int color);
+void TRACE_COLOR_END();
 #endif
 
 #define TC_BRIGHT				1
