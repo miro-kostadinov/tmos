@@ -229,7 +229,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 
 }
 
-TASK_DECLARE_STATIC(gui_task, "GUIT", (void (*)(void))gui_thread, 4, 250 + TRACE_SIZE);
+TASK_DECLARE_STATIC(gui_task, "GUIT", (void (*)(void))gui_thread, 4, 350 + TRACE_SIZE);
 
 // must be called at boot to start the display functionality
 static void display_init(GUI_DRIVER_INFO* drv_info)
