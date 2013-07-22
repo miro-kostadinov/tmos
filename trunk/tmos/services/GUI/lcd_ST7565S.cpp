@@ -305,6 +305,7 @@ void ST7565S::redraw_screen(WINDOW desktop)
 {
     WINDOW win;
     WINDOW top;
+	bool update=false;
 
 	if( (unsigned)(CURRENT_TIME-reset_timeout) > 500 )
 	{
@@ -319,6 +320,7 @@ void ST7565S::redraw_screen(WINDOW desktop)
     	win = desktop;
     	while(win)
     	{
+    		update = true;
     		top = (WINDOW)win->next;
 			#if GUI_DISPLAYS > 1
 			while(top && !(display & top->displays))
@@ -331,13 +333,16 @@ void ST7565S::redraw_screen(WINDOW desktop)
 				{
 					set_font(&FNT7x9);
 					color = PIX_WHITE;
-					win->callback((unsigned int)this, WM_DRAW);
+					if( win->callback((unsigned int)this, WM_DRAW))
+					{
+						update = false;
+					}
 				}
 			}
 
     		win = top;
     	}
-
-    	update_screen();
+    	if(update)
+    		update_screen();
     }
 }
