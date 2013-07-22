@@ -75,10 +75,11 @@ const unsigned short tft_init[] =
 };
 
 
-const unsigned short tft_init_3[] =
+const unsigned short tft_init_address[] =
 {
-	TFT_CASET, TFT_DATA(0), TFT_DATA(0), TFT_DATA(0), TFT_DATA(127),
-	TFT_RASET, TFT_DATA(0), TFT_DATA(0), TFT_DATA(0), TFT_DATA(127),
+//	TFT_CASET, TFT_DATA(0), TFT_DATA(0), TFT_DATA(0), TFT_DATA(127),
+	TFT_RASET, TFT_DATA(0), TFT_DATA(0), TFT_DATA(0), TFT_DATA(0),
+	TFT_RAMWR
 };
 
 
@@ -212,14 +213,18 @@ void SPFD5414D::redraw_screen(WINDOW desktop)
 {
     WINDOW win;
     WINDOW top;
-	unsigned int tft_cmd = TFT_RAMWR;
+	bool update=false;
+//	unsigned int tft_cmd = TFT_RAMWR;
+	unsigned short cmd_address[sizeof(tft_init_address)/sizeof(unsigned short)];
+
+	memcpy(cmd_address, tft_init_address, sizeof(tft_init_address));
 
 	if( (unsigned)(CURRENT_TIME-reset_timeout) > 500 )
 	{
 		reset_timeout = CURRENT_TIME;
 		lcd_reset();
 	}
-	lcd_hnd->tsk_write(&tft_cmd, 1);
+
 	disp_buf = video_buf;
     for(frame_y0=0; frame_y0<size_y-1; frame_y0++)
     {
@@ -228,6 +233,7 @@ void SPFD5414D::redraw_screen(WINDOW desktop)
     	win = desktop;
     	while(win)
     	{
+        	update = true;
     		top = (WINDOW)win->next;
 			#if GUI_DISPLAYS > 1
 			while(top && !(display & top->displays))
@@ -240,14 +246,23 @@ void SPFD5414D::redraw_screen(WINDOW desktop)
 				{
 					set_font(&FNT7x9);
 					color = PIX_WHITE;
-					win->callback((unsigned int)this, WM_DRAW);
+					if (win->callback((unsigned int) this, WM_DRAW))
+					{
+						reset_timeout = CURRENT_TIME;
+						update = false;
+					}
 				}
 			}
 
     		win = top;
     	}
-
-    	update_screen();
+    	if(update)
+    	{
+    		lcd_hnd->tsk_write(cmd_address, sizeof(cmd_address)/2);
+    		update_screen();
+    	}
+		cmd_address[2]++;// = TFT_DATA(frame_y0);
+		cmd_address[4]++;// = TFT_DATA(frame_y0);
     }
 #if GUI_DISPLAYS > 1
 	if (display == 2)
@@ -262,6 +277,7 @@ void SPFD5414D::redraw_screen(WINDOW desktop)
 		invert_hline(size_x-1-mem_use, size_x-1, 127);
 #endif
 	}
+	lcd_hnd->tsk_write(cmd_address, sizeof(cmd_address)/2);
 	update_screen();
 
 }
