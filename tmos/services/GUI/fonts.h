@@ -37,6 +37,7 @@ typedef struct
 
 extern const RENDER_MODE FNT10x21;
 extern const RENDER_MODE FNT7x9;
+extern const RENDER_MODE FNT5x7;
 
 extern const unsigned char fontd10x21_1[];
 
