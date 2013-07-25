@@ -64,7 +64,7 @@ RES_CODE menu_draw(MENU_WINDOW menu_hnd, LCD_MODULE* lcd)
     lcd->color = PIX_BLUE;
     lcd->set_xy_all(2, ALL_CENTER);
     lcd->draw_text(menu_hnd->menu->name[current_laguage].c_str());
-    lcd->draw_hline(0, lcd->size_x-1, 12);
+    lcd->draw_hline(0, lcd->size_x-1, lcd->font->height + 3);
     lcd->color = PIX_WHITE;
 
     unsigned int menu_lines = (lcd->size_y - 22)/ lcd->font->vspacing;
@@ -85,7 +85,7 @@ RES_CODE menu_draw(MENU_WINDOW menu_hnd, LCD_MODULE* lcd)
         last = menu_hnd->menu->count;
 
     CSTRING line;
-    lcd->set_xy_all(16, ALL_LEFT);
+    lcd->set_xy_all (lcd->font->height + 7, ALL_LEFT);
     for(unsigned int i=first; i<last; i++)
     {
     	unsigned int offset = 0;
@@ -121,8 +121,8 @@ RES_CODE menu_draw(MENU_WINDOW menu_hnd, LCD_MODULE* lcd)
     	lcd->draw_text(line.c_str());
 //    	lcd->draw_text(line.c_str()+ offset);
     }
-    first = 14 + (menu_hnd->pos - first)*11;
-    last = first+11;
+    first = (lcd->font->height + 6) + (menu_hnd->pos - first) * lcd->font->vspacing;
+    last = first + lcd->font->height + 2;
     for(unsigned int i=first; i<last; i++)
     {
     	lcd->invert_hline(0, lcd->size_x-1, i);
