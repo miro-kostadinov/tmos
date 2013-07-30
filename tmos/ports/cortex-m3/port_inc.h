@@ -24,6 +24,10 @@
 
 #include <tmos_cfg.h>
 
+#ifndef TASK_HISTORY_LOG
+#define TASK_HISTORY_LOG 0
+#endif
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 task structure offsets
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -50,6 +54,13 @@
 #ifdef USE_MEMORY_TRACKING
 #define tsk_aloc_mem	0x48
 #define tsk_aloc_ptrs	0x4C
+# if TASK_HISTORY_LOG
+#  define tsk_lastt		0x50
+# endif
+#else
+# if TASK_HISTORY_LOG
+#  define tsk_lastt		0x48
+# endif
 #endif
 
 //	offsets in stacked context structure

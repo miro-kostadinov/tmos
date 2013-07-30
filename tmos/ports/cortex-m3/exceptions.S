@@ -251,7 +251,13 @@ ENDF(	sys_debug_handler	)
 FUNC(	sys_pendsv_handler	)
 				mrs 		r3, PSP 						// Recover PSP into R12
 				stmia 		REG_CTASK, {r3-r9}				// Push non-stack registers
+#if TASK_HISTORY_LOG
+				mov         r4, REG_CTASK
+#endif
 				ldr			REG_CTASK, [REG_MTASK, #tsk_renext]
+#if TASK_HISTORY_LOG
+				str         r4, [REG_CTASK, #tsk_lastt]
+#endif
 				ldmia		REG_CTASK, {r3-r9}				// Restore non-stacked registers
 				msr 		PSP, r3 						// Set PSP to R12
 				bx 			lr 								// Return back to Thread
