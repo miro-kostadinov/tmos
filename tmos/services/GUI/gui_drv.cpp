@@ -194,7 +194,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 						redraw |= 1;
 					#endif
 				}
-	            win->mode1 = tmp;
+	            win->mode1 |= tmp;
 
             }
 
