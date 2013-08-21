@@ -52,6 +52,8 @@ static void set_index( unsigned int pos )
 		menu_index += pos +1;
 }
 
+
+
 RES_CODE menu_draw(MENU_WINDOW menu_hnd, LCD_MODULE* lcd)
 {
     unsigned int first, last;
@@ -60,14 +62,14 @@ RES_CODE menu_draw(MENU_WINDOW menu_hnd, LCD_MODULE* lcd)
 //    tmos_sprintf(buf,"code:%d", menu_index );
 //    lcd->set_xy_all(77, ALL_LEFT);
 //    lcd->draw_text(buf);
-
+//    lcd->set_font(&FNT10x21);
     lcd->color = PIX_BLUE;
     lcd->set_xy_all(2, ALL_CENTER);
     lcd->draw_text(menu_hnd->menu->name[current_laguage].c_str());
     lcd->draw_hline(0, lcd->size_x-1, lcd->font->height + 3);
     lcd->color = PIX_WHITE;
 
-    unsigned int menu_lines = (lcd->size_y - 22)/ lcd->font->vspacing;
+    unsigned int menu_lines = (lcd->size_y - (lcd->font->height + 7))/ lcd->font->vspacing;
     if(!(menu_lines&1))
     	menu_lines--;
 
@@ -90,36 +92,38 @@ RES_CODE menu_draw(MENU_WINDOW menu_hnd, LCD_MODULE* lcd)
     {
     	unsigned int offset = 0;
 		line = menu_hnd->menu->items[i].name[current_laguage];
-    	if(menu_hnd->pos == i )
-    	{
-    		if(line.length() >= lcd->chars_per_row)
-    		{
-    			if(lcd->frame_y0 == 0)
-					if(line.length()+ 2 < ++menu_hnd->text_offset)
-						menu_hnd->text_offset = 0;
-    			offset = menu_hnd->text_offset;
-    			CSTRING tmp("  ");
-    			tmp += line;
-    			line += tmp;
-    			line.erase(0, offset);
-//    	    	if(line.length() - (lcd->chars_per_row - 2) < offset)
-//    	    	{
-//    	    		CSTRING str(line);
-//    	    		line = str.c_str() + menu_hnd->text_offset;
-//    	    		line += "  ";
-//    	    		line += str;
-//    	    		offset = 0;
-//    	    	}
-    		}
-    	}
-		if(line.length() >= lcd->chars_per_row)
+//    	if(menu_hnd->pos == i )
+//    	{
+//    		if(line.length() > lcd->chars_per_row)
+//    		{
+//    			if(lcd->frame_y0 == menu_hnd->rect.y1 )//lcd->size_y - 2)
+//					if(line.length() + 2 < ++menu_hnd->text_offset)
+//						menu_hnd->text_offset = 0;
+//    			offset = menu_hnd->text_offset;
+//    			CSTRING tmp("  ");
+//    			tmp += line;
+//    			line += tmp;
+//    			line.erase(0, offset);
+//    		}
+//    	}
+		if(line.length() > lcd->chars_per_row)
 		{
-			line.erase(lcd->chars_per_row, -1u);
-//			line[lcd->chars_per_row]=0;
-//			line.storage.ram->len = lcd->chars_per_row;
+	    	if(menu_hnd->pos == i )
+	    	{
+				offset = menu_hnd->text_offset;
+				CSTRING tmp("  ");
+
+				if(lcd->frame_y0 == menu_hnd->rect.y1 -1)//lcd->size_y - 2)
+					if(line.length() + 2 < ++menu_hnd->text_offset)
+						menu_hnd->text_offset = 0;
+
+				tmp += line;
+				line += tmp;
+				line.erase(0, offset);
+	    	}
+    		line.erase(lcd->chars_per_row, -1u);
 		}
-    	lcd->draw_text(line.c_str());
-//    	lcd->draw_text(line.c_str()+ offset);
+		lcd->draw_text(line.c_str(), true);
     }
     first = (lcd->font->height + 6) + (menu_hnd->pos - first) * lcd->font->vspacing;
     last = first + lcd->font->height + 2;
@@ -127,7 +131,7 @@ RES_CODE menu_draw(MENU_WINDOW menu_hnd, LCD_MODULE* lcd)
     {
     	lcd->invert_hline(0, lcd->size_x-1, i);
     }
-	return (0);
+    return (0);
 }
 #else
 RES_CODE menu_draw(MENU_HANDLE menu_hnd)
