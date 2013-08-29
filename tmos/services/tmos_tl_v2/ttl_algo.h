@@ -143,6 +143,41 @@ inline _InputIterator find(_InputIterator __first, _InputIterator __last,
 	return ttl::__find(__first, __last, __val, ttl::__iterator_category(__first));
 }
 
+/*******************************************************************************
+ * 									fill_n
+ *
+ * Assigns value to the first n elements of the sequence pointed by first.
+ * The return value is first + n.
+ ******************************************************************************/
+template <typename OutputIterator, typename T>
+inline OutputIterator fill_n (OutputIterator first, size_t n, const T& value)
+{
+	for (; n; --n, ++first)
+		*first = value;
+	return (first);
+}
+
+/*******************************************************************************
+ * 								 swap
+ ******************************************************************************/
+template <typename Iterator>
+inline void iter_swap (Iterator a, Iterator b)
+{
+    swap(*a, *b);
+}
+
+/*******************************************************************************
+ * 								 swap_ranges
+ * Swaps corresponding elements of [first, last) and [result,)
+ ******************************************************************************/
+template <typename ForwardIterator1, typename ForwardIterator2>
+inline ForwardIterator2 swap_ranges (ForwardIterator1 first, ForwardIterator2 last, ForwardIterator2 result)
+{
+	for (; first != last; ++first, ++result)
+		iter_swap(first, result);
+	return (result);
+}
+
 } // namespace ttl
 
 

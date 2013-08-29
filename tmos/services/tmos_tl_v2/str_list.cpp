@@ -13,9 +13,10 @@
 #include "str_list.h"
 #include <stdarg.h>
 
-using namespace ttl;
 
 #if USE_TTL_STRING
+
+using namespace ttl;
 
 unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead)
 {

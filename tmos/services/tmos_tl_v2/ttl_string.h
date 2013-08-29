@@ -369,7 +369,7 @@ protected:
 			{
 				if(len == m_capacity(p))
 				{
-					p = static_cast<pointer>(realloc(mem_head(p),
+					p = static_cast<pointer>(tsk_realloc(mem_head(p),
 							sizeof(data_header) + len * sizeof(CharT) + 8));
 					if(p == nullptr)
 						return p;
