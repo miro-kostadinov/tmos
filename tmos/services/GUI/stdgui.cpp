@@ -123,7 +123,7 @@ RES_CODE menu_draw(MENU_WINDOW menu_hnd, LCD_MODULE* lcd)
 	    	}
     		line.erase(lcd->chars_per_row, -1u);
 		}
-		lcd->draw_text(line.c_str(), true);
+		lcd->draw_text_no_space(line.c_str());
     }
     first = (lcd->font->height + 6) + (menu_hnd->pos - first) * lcd->font->vspacing;
     last = first + lcd->font->height + 2;
