@@ -137,7 +137,16 @@ const char* LCD_MODULE::get_next_txt_row(const char *txt)
 	return NULL;
 }
 
-const char* LCD_MODULE::draw_text(const char *txt)
+const char* LCD_MODULE::draw_text (const char* txt)
+{
+	if(!txt)
+		return NULL;
+	while(*txt == ' ' || *txt =='\r' || *txt == '\n')
+		txt++;
+	return draw_text_no_space (txt);
+}
+
+const char* LCD_MODULE::draw_text_no_space (const char *txt)
 {
     unsigned int width,len, pos;
 	unsigned int c;
@@ -147,8 +156,8 @@ const char* LCD_MODULE::draw_text(const char *txt)
 	if(!txt)
 		return NULL;
 
-	while(*txt == ' ' || *txt =='\r' || *txt == '\n')
-		txt++;
+//	while(*txt == ' ' || *txt =='\r' || *txt == '\n')
+//		txt++;
 
     pos = pos_x + font->hdistance;
     len = 0;
@@ -279,7 +288,10 @@ void LCD_MODULE::clear_rect(unsigned int x0, unsigned int y0, unsigned int x1, u
 void LCD_MODULE::lcd_single_window(GUI_CB callback)
 {
 	CWindow win;
-
+	win.rect.x0 = 0;
+	win.rect.y0 = 0;
+	win.rect.x1 = size_x;
+	win.rect.y1 = size_y;
 	win.mode.as_voidptr = (void*)callback;
     win.next = NULL;
 #if GUI_DISPLAYS > 1
