@@ -68,7 +68,7 @@ typedef struct
 #define USART_CR1_IDLEIE            0x0010 //!< IDLE Interrupt Enable
 #define USART_CR1_RXNEIE            0x0020 //!< RXNE Interrupt Enable
 #define USART_CR1_TCIE              0x0040 //!< Transmission Complete Interrupt Enable
-#define USART_CR1_TXEIE             0x0080 //!< PE Interrupt Enable
+#define USART_CR1_TXEIE             0x0080 //!< TXE Interrupt Enable
 #define USART_CR1_PEIE              0x0100 //!< PE Interrupt Enable
 #define USART_CR1_PS                0x0200 //!< Parity Selection
 #define USART_CR1_PCE               0x0400 //!< Parity Control Enable
@@ -128,6 +128,7 @@ typedef struct
 
 /** @} */ // @defgroup USART_regs_define
 
+#define USART_STATUS_TC 	USART_SR_TC		//!< TC flag for F2 family
 #define USART_STATUS_TXE 	USART_SR_TXE	//!< TXE flag for F2 family
 #define USART_STATUS_RXNE 	USART_SR_RXNE	//!< RXNE flag for F2 family
 #define USART_STATUS_IDLE 	USART_SR_IDLE	//!< IDLE flag for F2 family
