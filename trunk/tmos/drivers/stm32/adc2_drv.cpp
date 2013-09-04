@@ -314,7 +314,7 @@ void ADC_ISR(const ADC_DRIVER_INFO* drv_info)
 
 	status = drv_info->hw_base->ADC_CSR;
 
-	TRACELN("ADC-%x", status);
+//	TRACELN("ADC-%x", status);
 	for(uint32_t adc = 0; adc<3; adc++)
 	{
 		if(status & ASC_SR_FLAGS)
