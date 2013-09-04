@@ -347,6 +347,15 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 	status = get_usart_sr(uart);
 	status &= get_usart_imr(uart);
 
+	if( status & USART_STATUS_TC )
+	{
+		if((hnd=drv_data->hnd_snd))
+		{
+			drv_data->hnd_snd = hnd->next;
+			usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+		}
+		uart->USART_CR1 = (uart->USART_CR1 &~USART_CR1_TCIE) | USART_CR1_TXEIE;
+	}
 	if( status & USART_STATUS_TXE )
 	{
 		if((hnd=drv_data->hnd_snd))
@@ -358,8 +367,14 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 				get_usart_tdr(uart) = *hnd->src.as_charptr++;
 			} else
 			{
-				drv_data->hnd_snd = hnd->next;
-				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+				if(hnd->cmd & FLAG_LOCK)
+				{
+					uart->USART_CR1 = (uart->USART_CR1 &~USART_CR1_TXEIE) | USART_CR1_TCIE;
+				} else
+				{
+					drv_data->hnd_snd = hnd->next;
+					usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+				}
 			}
 
 		}
