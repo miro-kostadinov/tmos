@@ -30,7 +30,7 @@ struct ST7565S: public LCD_MODULE
 	}
 	;
 
-	void lcd_command(unsigned int cmd);
+	virtual void lcd_command(unsigned int cmd);
 
 	//virtual functions
 	void lcd_init(GUI_CB splash);
@@ -42,7 +42,7 @@ struct ST7565S: public LCD_MODULE
 	void draw_vline(unsigned int y0, unsigned int y1, unsigned int x);
 	void invert_vline(unsigned int y0, unsigned int y1, unsigned int x);
 	void invert_hline(unsigned int x0, unsigned int x1, unsigned int y);
-	void update_screen();
+	virtual void update_screen();
 	void clear_screen();
 	void redraw_screen(WINDOW desktop);
 };
