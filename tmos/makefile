@@ -214,7 +214,7 @@ LIBNAME = $(OUT_DIR)lib$(OUT_NAME)
 ###########################   rules    #########################################
 
 .PHONY: begin end all clean sizebefore sizeafter build elf hex bin lib lss sym \
-		clean clean_list $(modules)/module.mk makefile headers
+		clean clean_list $(modules)/module.mk makefile headers tftp_copy
 
 # Default target.
 all: begin sizebefore $(prebuild) build $(postbuild) sizeafter end
@@ -243,13 +243,13 @@ $(error "Nothing to build. Set BUILD_LIB, BUILD_HEX or BUILD_BIN")
 endif
 
 lib: $(LIBNAME).a
-bin: $(PROJECT).bin
+bin: $(PROJECT).bin $(if $(TFTP_PATH),tftp_copy,)
 hex: $(PROJECT).hex
 elf: $(PROJECT).elf
 lss: $(PROJECT).lss 
 sym: $(PROJECT).sym
 headers: $(h_objects)
-
+tftp_copy: $(TFTP_PATH)$(OUT_NAME).bin
 
 #make a
 $(LIBNAME).a: $(objects)
@@ -271,15 +271,16 @@ $(LIBNAME).a: $(objects)
 
 
 # Create final output file (.bin) from ELF output file.
-DO_COPY_TFTP := $(lastword $(subst \\, ,$(TFTP_PATH)))
 $(PROJECT).bin: %.bin: %.elf
 	@echo
 	@echo Creating load file for Flash: $@
 	$(OBJCOPY) -O binary $< $@
-	@if test "$(DO_COPY_TFTP)"; then echo copy...$(shell cp $@ $(TFTP_PATH)$(@F)); fi
 	
+#Copy bin file
+$(TFTP_PATH)$(OUT_NAME).bin: $(PROJECT).bin
+	@echo Copy to tftp: $@  
+	@echo $(shell cp $(PROJECT).bin $@)
 
-	
 # Create extended listing file from ELF output file.
 # testing: option -C
 %.lss: %.elf
