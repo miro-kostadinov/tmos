@@ -57,10 +57,8 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 KEY DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#define KEY_COUNT			4
-
-#define KEY_POLLING_TIME	10
-#define KEY_DEBOUNCE_TIME 	50 //30 //300
-#define KEY_REPEAT_TIME 	300//150 //1000
+#define KEY_RD_COUNT		5
+#define KEY_DRV_COUNT		7
+#define KEY_FIX_COUNT		1
 
 #endif /* BRD_CFG_H_ */
