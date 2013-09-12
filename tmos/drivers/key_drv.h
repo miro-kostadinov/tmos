@@ -26,6 +26,7 @@ void KEY_DSR(KEY_DRIVER_INFO* drv_info, HANDLE hnd);
 
 extern const unsigned char key_codes[];
 extern const unsigned int KEY_RD_PINS[];
+extern const unsigned int KEY_DRV_PINS[];
 
 
 
