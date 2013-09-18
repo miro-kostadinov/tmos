@@ -36,8 +36,10 @@ void ST7565S_RS::update_screen()
 {
 	unsigned int cmd;
 
-	cmd = CMD_PAGE_ADR(frame_y0 /8) +	(CMD_COLUMN_ADR_LO(4) << 8 )+
-			(CMD_COLUMN_ADR_HI(0) << 16) + (CMD_READ_WRITE_START << 24);
+//	cmd = CMD_PAGE_ADR(frame_y0 /8) +	(CMD_COLUMN_ADR_LO(4) << 8 )+
+//			(CMD_COLUMN_ADR_HI(0) << 16) + (CMD_READ_WRITE_START << 24);
+	cmd = CMD_PAGE_ADR(frame_y0 /8) +	(CMD_COLUMN_ADR_LO((lcd_mode>>16)&0x0F) << 8 )+
+			(CMD_COLUMN_ADR_HI((lcd_mode>>20)&0x0F) << 16) + (CMD_READ_WRITE_START << 24);
 	cmd = __REV(__RBIT(cmd));
 
 	// A0=0
