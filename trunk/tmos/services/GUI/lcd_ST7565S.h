@@ -14,8 +14,12 @@
 #define ST7565S_RaRb_RATIO(x) (x)
 ///electric volume register value (0-63)
 #define ST7565S_VOLUME(x)  ((x)<< 8)
-#define ST7565S_H_FLIP		(0x10000)	//!< Flip horizontally
-#define ST7565S_V_FLIP		(0x20000)	//!< Flip vertically
+///start Column Address Set(0..131)
+#define ST7565S_START_COLUMN(x)  ((x)<< 16)
+
+#define ST7565S_H_FLIP		(0x1000000)	//!< Flip horizontally
+#define ST7565S_V_FLIP		(0x2000000)	//!< Flip vertically
+#define ST7565S_BIAS2		(0x4000000)	//!< LCD Bias Set (1/7 1/6 ..)
 
 
 struct ST7565S: public LCD_MODULE

@@ -62,8 +62,10 @@ void ST7565S::lcd_reset()
 	lcd_command(CMD_RESET);
 
 	// LCD bias select
-	lcd_command(CMD_BIAS2);
-
+	if(lcd_mode & ST7565S_BIAS2)
+		lcd_command(CMD_BIAS2);
+	else
+		lcd_command(CMD_BIAS1);
 	// ADC select
 	if(lcd_mode & ST7565S_H_FLIP)
 		lcd_command(CMD_ADC_REVERSE);
@@ -227,8 +229,8 @@ void ST7565S::update_screen()
 {
 	unsigned int cmd;
 
-	cmd = CMD_PAGE_ADR(frame_y0 /8) +	(CMD_COLUMN_ADR_LO(4) << 8 )+
-			(CMD_COLUMN_ADR_HI(0) << 16) + (CMD_READ_WRITE_START << 24);
+	cmd = CMD_PAGE_ADR(frame_y0 /8) +	(CMD_COLUMN_ADR_LO((lcd_mode>>16)&0x0F) << 8 )+
+			(CMD_COLUMN_ADR_HI((lcd_mode>>20)&0x0F) << 16) + (CMD_READ_WRITE_START << 24);
 
 	//lock
 	lcd_hnd->tsk_read_locked(NULL, 0);
