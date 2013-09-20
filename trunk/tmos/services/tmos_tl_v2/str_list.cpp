@@ -600,6 +600,14 @@ CSTRING& CSTRING::append(char ch)
 	return (*this);
 }
 
+CSTRING& CSTRING::insert (char ch, unsigned int index)
+{
+	CSTRING tmp (c_str(), index);
+	tmp.append (ch);
+	tmp.append (substr(index, length() - index));
+	return (*this = tmp);
+}
+
 
 /**
  * Concatenate two c-strings
@@ -1122,25 +1130,38 @@ str_storage * CSTRING::get_storage()
 CSTRING& CSTRING::erase(unsigned int index, unsigned int count)
 {
 	str_storage * tmp;
-
-	if(count && (tmp = get_storage()) )
+	if(count && length() > index)
 	{
-		if(index < tmp->len)
+		tmp = get_storage();
+		if(!tmp)
 		{
-			if(tmp->len > count)
+			CSTRING str(c_str() ,index);
+
+			if(count < length() - index)
 			{
-				tmp->len -= count;
-
-				while(index < tmp->len)
-				{
-					tmp->buf[index] = tmp->buf[index+count];
-					index++;
-				}
+				str.append(c_str() + index + count);
 			}
+			*this = str;
+		}
+		else
+		{
+			if(index < tmp->len)
+			{
+				if(tmp->len > count)
+				{
+					tmp->len -= count;
 
-			//cut rightmost
-			tmp->len = index;
-			tmp->buf[index] = 0;
+					while(index < tmp->len)
+					{
+						tmp->buf[index] = tmp->buf[index+count];
+						index++;
+					}
+				}
+
+				//cut rightmost
+				tmp->len = index;
+				tmp->buf[index] = 0;
+			}
 		}
 	}
 
