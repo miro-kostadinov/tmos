@@ -72,7 +72,7 @@ USE_SHA_1		?=y
 USE_BASE32		?=n
 
 # GUI
-USE_GUI			?=y
+USE_GUI2		?=y
 
 # GUI
 USE_USB			?=y
