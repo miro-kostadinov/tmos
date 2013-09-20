@@ -12,6 +12,44 @@
 #include <tmos_types.h>
 
 /*******************************************************************************
+ *  STM32 F2 family timers
+ ******************************************************************************
+ *
+ *	Timer channels	BIF	TIF	COMIF	BITS
+ *	  1		4		 *	 *	  *		 16
+ *	  2		4			 *			 32
+ *	  3		4			 *			 16
+ *	  4		4			 *			 16
+ *	  5		4			 *			 32
+ *	  6		0						 16
+ *	  7		0						 16
+ *	  8		4		 *	 *	  *		 16
+ *	  9		2			 *			 16
+ *	 10		1						 16
+ *	 11		1						 16
+ *	 12		2			 *			 16
+ *	 13		1						 16
+ *	 14		1						 16
+ *
+ *	IRQ
+ *	 24		BIF1	9
+ *	 25		UI1		10
+ *	 26		TIF1	COMIF1	11
+ *	 27		CC1
+ *	 28		2
+ *	 29		3
+ *	 30		4
+ *	 43		BIF8	12
+ *	 44		UI8		13
+ *	 45		TIF8	COMIF8	14
+ *	 46		CC8
+ *	 50		5
+ *	 54		6 		(DACxx)
+ *	 55		7
+ *
+ ******************************************************************************/
+
+/*******************************************************************************
  *  Timers
  ******************************************************************************/
 typedef struct
@@ -29,10 +67,7 @@ typedef struct
   __IO uint32_t TIM_PSC;       //!< (adc Offset: 0x28) TIM prescaler
   __IO uint32_t TIM_ARR;       //!< (adc Offset: 0x2C) TIM auto-reload register
   __IO uint32_t TIM_RCR;       //!< (adc Offset: 0x30) TIM repetition counter register
-  __IO uint32_t TIM_CCR1;      //!< (adc Offset: 0x34) TIM capture/compare register 1
-  __IO uint32_t TIM_CCR2;      //!< (adc Offset: 0x38) TIM capture/compare register 2
-  __IO uint32_t TIM_CCR3;      //!< (adc Offset: 0x3C) TIM capture/compare register 3
-  __IO uint32_t TIM_CCR4;      //!< (adc Offset: 0x40) TIM capture/compare register 4
+  __IO uint32_t TIM_CCRx[4];   //!< (adc Offset: 0x34) TIM capture/compare register 1-4
   __IO uint32_t TIM_BDTR;      //!< (adc Offset: 0x44) TIM break and dead-time register
   __IO uint32_t TIM_DCR;       //!< (adc Offset: 0x48) TIM DMA control register
   __IO uint32_t TIM_DMAR;      //!< (adc Offset: 0x4C) TIM DMA address for full transfer
