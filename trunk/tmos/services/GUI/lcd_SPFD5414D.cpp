@@ -111,17 +111,17 @@ void SPFD5414D::draw_bitmap(unsigned int x0, unsigned int y0,
 		if(offset >= rows)
 			return;
 		y0 += offset;
-		rows -= offset;
+//		rows -= offset;
 		offset *= width;
 		src += offset /8;
 		offset %= 8;
 	}
 	if(y0 < frame_y1)
 	{
-		rows += y0;
-		if(rows > frame_y1)
-			rows = frame_y1;
-		rows -= y0;
+//		rows += y0;
+//		if(rows > frame_y1)
+//			rows = frame_y1;
+//		rows -= y0;
 
 		offset = 1<< offset;
 		while(width--)
