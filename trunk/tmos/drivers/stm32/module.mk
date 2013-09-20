@@ -13,9 +13,11 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= exti_drv.cpp usart_drv.cpp spi_drv.cpp dma_drv.cpp 
+local_cpp_src-y	+= exti_drv.cpp usart_drv.cpp spi_drv.cpp dma_drv.cpp
+local_cpp_src-y	+= tim_drv.cpp
 
 local_h_src-y 	+= tmos_drivers.h exti_drv.h usart_drv.h spi_drv.h dma_drv.h
+local_h_src-y 	+= tim_drv.h
 
 #conditional drivers
 ifeq "$(CFG_SERIES)" "stm32f2"
