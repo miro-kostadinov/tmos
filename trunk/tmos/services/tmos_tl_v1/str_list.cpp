@@ -564,6 +564,14 @@ CSTRING& CSTRING::append(char ch)
 	return (*this);
 }
 
+CSTRING& CSTRING::insert (char ch, unsigned int index)
+{
+	CSTRING tmp (c_str(), index);
+	tmp.append (ch);
+	tmp.append (substr(index, length() - index));
+	return (*this = tmp);
+}
+
 
 /**
  * Concatenate two c-strings
