@@ -6,6 +6,7 @@
  */
 
 #include <tmos.h>
+#include <cmsis_cpp.h>
 
 //*----------------------------------------------------------------------------
 //*			Unsafe (this=NULL) methods
@@ -152,7 +153,10 @@ bool CHandle::drv_open(DRIVER_INDEX index, const void * m)
 
 		signal = DCR_SIGNAL;
 		res = RES_CLOSED;
-		svc_drv_icontrol(index, DCR_OPEN, this);
+		if (__get_CONTROL() & 2)
+			usr_drv_icontrol(index, DCR_OPEN, this);
+		else
+			svc_drv_icontrol(index, DCR_OPEN, this);
 
 		if (res == RES_OK)
 		{
