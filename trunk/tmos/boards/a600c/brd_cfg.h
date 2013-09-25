@@ -55,6 +55,7 @@
 #define KEY_OK				KEY_TOTAL
 #define KEY_ENTER			KEY_TOTAL
 #define KEY_CANCEL			KEY_CL
+#define KEY_C				KEY_CL
 #define KEY_UP				KEY_DEP_3
 #define KEY_DOWN			KEY_DEP_2
 #define KEY_LEFT			KEY_STL
