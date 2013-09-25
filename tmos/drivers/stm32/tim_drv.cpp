@@ -211,28 +211,45 @@ void TIM_ISR(TIM_DRV_INF drv_info)
 			hnd = drv_data->pending[channel];
 			if(hnd)
 			{
-				//write CCRx ?
-				if ( (hnd->cmd & FLAG_WRITE) && (hnd->len >3) )
+				//Callback ?
+				if ( (hnd->client.callback & 3) && (hnd->client.drv_index >= INALID_DRV_INDX) )
 				{
-					timer->TIM_CCRx[channel] = *hnd->src.as_intptr++;
+					RES_CODE res;
 
-					hnd->len -=4;
+					res = ((TIMER_DRV_CBF)hnd->client.callback)(hnd, RES_IDLE);
+					if( res & FLG_SIGNALED)
+					{
+						hnd->res = res;
+						drv_data->pending[channel] = NULL;
+						hnd = NULL;
+					}
 				}
 
-				//Read CCRx ?
-				if ( (hnd->cmd & FLAG_READ) && (hnd->len >3) )
+				if(hnd)
 				{
-					*hnd->dst.as_intptr++ = timer->TIM_CCRx[channel];
+					//write CCRx ?
+					if ( (hnd->cmd & FLAG_WRITE) && (hnd->len >3) )
+					{
+						timer->TIM_CCRx[channel] = *hnd->src.as_intptr++;
 
-					hnd->len -=4;
-				}
+						hnd->len -=4;
+					}
 
-				// signal?
-				if((mask>>8) || (hnd->len < 4))
-				{
-					//signal error=overflow, ok=capture
-					usr_HND_SET_STATUS(hnd, (mask>>8)?RES_SIG_ERROR:RES_SIG_OK);
-					drv_data->pending[channel] = NULL;
+					//Read CCRx ?
+					if ( (hnd->cmd & FLAG_READ) && (hnd->len >3) )
+					{
+						*hnd->dst.as_intptr++ = timer->TIM_CCRx[channel];
+
+						hnd->len -=4;
+					}
+
+					// signal?
+					if((mask>>8) || (hnd->len < 4))
+					{
+						//signal error=overflow, ok=capture
+						usr_HND_SET_STATUS(hnd, (mask>>8)?RES_SIG_ERROR:RES_SIG_OK);
+						drv_data->pending[channel] = NULL;
+					}
 				}
 
 
@@ -256,27 +273,49 @@ void TIM_ISR(TIM_DRV_INF drv_info)
 		hnd = drv_data->pending[0];
 		if(hnd)
 		{
-			//write CCRx ?
-			if ( (hnd->cmd & FLAG_WRITE) && (hnd->len >3) )
+			//Callback ?
+			if ( (hnd->client.callback & 3) && (hnd->client.drv_index >= INALID_DRV_INDX) )
 			{
-				timer->TIM_ARR = *hnd->src.as_intptr++;
-				hnd->len -=4;
+				RES_CODE res;
+
+				res = ((TIMER_DRV_CBF)hnd->client.callback)(hnd, RES_IDLE);
+				if( res & FLG_SIGNALED)
+				{
+					hnd->res = res;
+					drv_data->pending[0] = NULL;
+					hnd = NULL;
+					timer->TIM_CR1 &= ~TIM_CR1_CEN;
+					timer->TIM_CNT = 0;
+				}
 			}
 
-			//Read CCRx ?
-			if ( (hnd->cmd & FLAG_READ) && (hnd->len >3) )
+			if(hnd)
 			{
-				*hnd->dst.as_intptr++ = timer->TIM_CNT;
-				hnd->len -=4;
+				//write CCRx ?
+				if ( (hnd->cmd & FLAG_WRITE) && (hnd->len >3) )
+				{
+					timer->TIM_ARR = *hnd->src.as_intptr++;
+					hnd->len -=4;
+				}
+
+				//Read CCRx ?
+				if ( (hnd->cmd & FLAG_READ) && (hnd->len >3) )
+				{
+					*hnd->dst.as_intptr++ = timer->TIM_CNT;
+					hnd->len -=4;
+				}
+
+				// signal?
+				if(hnd->len < 4)
+				{
+					//signal error=overflow, ok=capture
+					usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+					drv_data->pending[0] = NULL;
+				}
 			}
 
-			// signal?
-			if(hnd->len < 4)
-			{
-				//signal error=overflow, ok=capture
-				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-				drv_data->pending[0] = NULL;
-			}
+
+
 
 			//clear interrupt
 			timer->TIM_SR = ~status;
