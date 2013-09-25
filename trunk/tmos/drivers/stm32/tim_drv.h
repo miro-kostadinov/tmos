@@ -77,7 +77,7 @@ void TIM_DSR(TIM_DRV_INF drv_info, HANDLE hnd);
 void TIM_ISR(TIM_DRV_INF drv_info);
 
 
-typedef RES_CODE(*TIMER_DRV_CBF)(TIM_DRV_INF drv_info, HANDLE hnd);
+typedef RES_CODE(*TIMER_DRV_CBF)(HANDLE hnd, RES_CODE reason);
 
 
 #endif /* TIM_DRV_H_ */
