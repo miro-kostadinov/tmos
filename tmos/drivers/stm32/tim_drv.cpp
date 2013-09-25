@@ -212,7 +212,7 @@ void TIM_ISR(TIM_DRV_INF drv_info)
 			if(hnd)
 			{
 				//Callback ?
-				if ( (hnd->client.callback & 3) && (hnd->client.drv_index >= INALID_DRV_INDX) )
+				if ( (hnd->client.drv_index & 3) && (hnd->client.drv_index >= INALID_DRV_INDX) )
 				{
 					RES_CODE res;
 
@@ -274,7 +274,7 @@ void TIM_ISR(TIM_DRV_INF drv_info)
 		if(hnd)
 		{
 			//Callback ?
-			if ( (hnd->client.callback & 3) && (hnd->client.drv_index >= INALID_DRV_INDX) )
+			if ( (hnd->client.drv_index & 3) && (hnd->client.drv_index >= INALID_DRV_INDX) )
 			{
 				RES_CODE res;
 
