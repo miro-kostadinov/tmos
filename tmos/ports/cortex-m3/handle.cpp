@@ -76,11 +76,10 @@ void CHandle::close()
 				res = RES_CLOSED;
 			} else
 			{
-				if( client.drv_index < INALID_DRV_INDX )
+				//this is driver îr callback handle...
+				if( res < RES_BUSY )
 				{
-					//this is a driver handle...
-
-					svc_drv_icontrol(drv_index, DCR_CLOSE, this);
+					hcontrol(DCR_CLOSE);
 
 					drv_index = INALID_DRV_INDX;
 					res = RES_CLOSED;
@@ -153,10 +152,7 @@ bool CHandle::drv_open(DRIVER_INDEX index, const void * m)
 
 		signal = DCR_SIGNAL;
 		res = RES_CLOSED;
-		if (__get_CONTROL() & 2)
-			usr_drv_icontrol(index, DCR_OPEN, this);
-		else
-			svc_drv_icontrol(index, DCR_OPEN, this);
+		hcontrol(DCR_OPEN);
 
 		if (res == RES_OK)
 		{
