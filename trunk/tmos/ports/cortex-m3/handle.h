@@ -11,6 +11,7 @@
 #ifndef TMOS_H
 #error "use tmos.h"
 #endif
+#include <cmsis_cpp.h>
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 HANDLE
@@ -67,13 +68,10 @@ struct CHandle {
 	 * @param reason
 	 */
 	void hcontrol(unsigned int reason) {
-		register HANDLE _hnd asm ("r0") = this;
-		register unsigned int _reason asm("r1") = reason;
-
-		asm volatile ("swi %0"
-				:
-				: "I" (usr_drv_hcontrol_swi), "r"(_hnd), "r"(_reason)
-				: "memory");
+		if (__get_CONTROL() & 2)
+			usr_drv_icontrol(drv_index, reason, this);
+		else
+			svc_drv_icontrol(drv_index, reason, this);
 	}
 
 	/**
