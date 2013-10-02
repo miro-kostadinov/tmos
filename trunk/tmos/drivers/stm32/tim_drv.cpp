@@ -19,8 +19,7 @@ static void ConfigureTimer(TIM_DRV_INF drv_info, const TIMER_CONTROL_MODE *mode)
 	hw_base->TIM_PSC = mode->psc;
 	hw_base->TIM_RCR = mode->rcr;
 	hw_base->TIM_SMCR = mode->smcr;
-	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
-	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+	hw_base->TIM_EGR = TIM_EGR_UG;
 }
 
 static void ConfigureChannel(TIM_DRV_INF drv_info, const TIMER_CHANNEL_MODE *mode)
@@ -92,6 +91,8 @@ void TIM_DCR(TIM_DRV_INF drv_info, unsigned int reason, HANDLE hnd)
 					RCCPeripheralReset(drv_info->info.peripheral_indx);
 					ConfigureTimer(drv_info, (TIMER_CONTROL_MODE*)timer_mode);
 				}
+				NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
+				NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
 				drv_data->cnt++;
 				hnd->mode0 = timer_mode->ch_indx;
 				hnd->mode1 = timer_mode->tim_indx;
@@ -160,13 +161,23 @@ void TIM_DSR(TIM_DRV_INF drv_info, HANDLE hnd)
 
 	if (hnd->cmd & FLAG_LOCK)
 	{
+		uint32_t mask;
+
 		//wait for interrupt
 		drv_info->drv_data_tbl[hnd->mode1].pending[hnd->mode0] = hnd;
 		hnd->res = RES_BUSY;
+		mask = ((TIMER_DRIVER_MODE*)hnd->mode.as_voidptr)->dier;
 		if(hnd->mode0)
-			drv_info->hw_ch_base->TIM_DIER |= ((TIMER_DRIVER_MODE*)hnd->mode.as_voidptr)->dier;
+		{
+
+			drv_info->hw_ch_base->TIM_SR = ~mask;
+			drv_info->hw_ch_base->TIM_DIER |= mask;
+		}
 		else
-			drv_info->hw_tmr_base->TIM_DIER |= ((TIMER_DRIVER_MODE*)hnd->mode.as_voidptr)->dier;
+		{
+			drv_info->hw_tmr_base->TIM_SR = ~mask;
+			drv_info->hw_tmr_base->TIM_DIER |= mask;
+		}
 	}else
 	{
 		if ( (hnd->cmd & FLAG_READ) && (hnd->len >3) )
@@ -230,7 +241,7 @@ void TIM_ISR(TIM_DRV_INF drv_info)
 					//write CCRx ?
 					if ( (hnd->cmd & FLAG_WRITE) && (hnd->len >3) )
 					{
-						timer->TIM_CCRx[channel] = *hnd->src.as_intptr++;
+						timer->TIM_CCRx[channel-1] = *hnd->src.as_intptr++;
 
 						hnd->len -=4;
 					}
@@ -238,7 +249,7 @@ void TIM_ISR(TIM_DRV_INF drv_info)
 					//Read CCRx ?
 					if ( (hnd->cmd & FLAG_READ) && (hnd->len >3) )
 					{
-						*hnd->dst.as_intptr++ = timer->TIM_CCRx[channel];
+						*hnd->dst.as_intptr++ = timer->TIM_CCRx[channel-1];
 
 						hnd->len -=4;
 					}
