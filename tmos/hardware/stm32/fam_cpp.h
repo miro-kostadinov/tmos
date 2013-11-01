@@ -20,6 +20,7 @@
 #include <gpio_stm32.h>
 #include <exti_stm32.h>
 #include <spi_stm32.h>
+#include <sdio_stm32.h>
 
 #endif /* FAM_CPP_H_ */
 /** @} ingroup hardware_stm32 */
