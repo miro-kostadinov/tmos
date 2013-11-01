@@ -69,6 +69,7 @@
 #define TIM12       CAST(TIM_TypeDef    , TIM12_BASE)   //!< TIM12
 #define TIM13       CAST(TIM_TypeDef    , TIM13_BASE)   //!< TIM13
 #define TIM14       CAST(TIM_TypeDef    , TIM14_BASE)   //!< TIM14
+#define SDIO        CAST(SDIO_TypeDef	, SDIO_BASE)	//!< SDIO
 /** @} */
 
 /**
