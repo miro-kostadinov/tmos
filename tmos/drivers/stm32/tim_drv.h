@@ -42,23 +42,22 @@ struct TIMER_CONTROL_MODE 	//: public TIMER_DRIVER_MODE
 	uint16_t	dier;			//!< dma/interrupt enable register (TIM_DIER)
 	uint32_t	arr_or_ccr;		//!< auto reload or capture/compare register (TIM_ARR or TIM_CCRx)
 
-	uint16_t cr1;			//!< control register 1 (TIM_CR1)
-	uint16_t cr2;			//!< control register 2 (TIM_CR2)
-	uint16_t smcr;			//!< slave mode register (TIM_SMCR)
-	uint16_t psc;			//!< prescaler (TIM_PSC)
-	uint8_t  rcr;			//!< repetition counter	(TIM_RCR)
+	uint16_t cr1;				//!< control register 1 (TIM_CR1)
+	uint16_t cr2;				//!< control register 2 (TIM_CR2)
+	uint16_t smcr;				//!< slave mode register (TIM_SMCR)
+	uint16_t psc;				//!< prescaler (TIM_PSC)
+	uint8_t  rcr;				//!< repetition counter	(TIM_RCR)
 };
 
 
-/** USART Driver data structure **/
+/** SDIO Driver data structure **/
 struct TIMER_DRIVER_DATA
 {
-	unsigned int cnt;							//!< number of open handles
-	HANDLE pending[5];							//!< 1-4 channels, 0 = control
-//	const TIMER_CONTROL_MODE* 	timer_config;	//!< current timer config
+	unsigned int cnt;			//!< number of open handles
+	HANDLE pending[5];			//!< 1-4 channels, 0 = control
 };
 
-/** UART Driver Info structure **/
+/** SDIO Driver Info structure **/
 struct TIMER_DRIVER_INFO
 {
 	DRIVER_INFO_Type   info;			//!< Standard driver info

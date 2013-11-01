@@ -49,6 +49,22 @@ static void ConfigureChannel(TIM_DRV_INF drv_info, const TIMER_CHANNEL_MODE *mod
 	PIO_Cfg(mode->ch_pin);
 }
 
+static void DebugFreezeTimer(unsigned int periph_id)
+{
+	__IO uint32_t* reg;
+	unsigned int index;
+
+    if(periph_id < ID_NO_PERIPH)
+    {
+    	index = (periph_id>>5)-4;
+
+		reg = &DBGMCU->DBGMCU_APB1FZ;
+
+		// The clock of the involved Timer counter is stopped when the core is halted
+		reg[index] |= 1<<(periph_id&0x1f);
+    }
+}
+
 //*----------------------------------------------------------------------------
 //*			DCR function
 //*----------------------------------------------------------------------------
@@ -63,6 +79,7 @@ void TIM_DCR(TIM_DRV_INF drv_info, unsigned int reason, HANDLE hnd)
 		case DCR_RESET:
 			RCCPeripheralReset(drv_info->info.peripheral_indx);
 			RCCPeripheralDisable(drv_info->info.peripheral_indx); // ??? turn off
+			DebugFreezeTimer(drv_info->info.peripheral_indx);
 			break;
 
 		case DCR_OPEN:
@@ -86,7 +103,7 @@ void TIM_DCR(TIM_DRV_INF drv_info, unsigned int reason, HANDLE hnd)
 					{
 						break; // control must be open first
 					}
-					// Enable AND Reset the UART peripheral
+					// Enable AND Reset the Timer peripheral
 					RCCPeripheralEnable(drv_info->info.peripheral_indx);
 					RCCPeripheralReset(drv_info->info.peripheral_indx);
 					ConfigureTimer(drv_info, (TIMER_CONTROL_MODE*)timer_mode);
