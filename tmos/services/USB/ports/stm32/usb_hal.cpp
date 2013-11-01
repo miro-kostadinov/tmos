@@ -636,6 +636,7 @@ static void stm_ept_config(USB_DRV_INFO drv_info, uint32_t ept_num,
 
     	default:
     		fifo_sz = 0;
+    		break;
         }
 
         if(ept_num & 0x80)
@@ -729,6 +730,10 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 	case e_reset:
 		drv_data->usb_state = USBST_DEVICE_DEFAULT;
 		drv_data->frame_count = 0;
+		break;
+
+	case e_disconnect:
+		drv_data->usb_state = USBST_ALL_DOWN;
 		break;
 
 	default: ;
@@ -1395,6 +1400,38 @@ static void usb_b_gint_usbsusp(USB_DRV_INFO drv_info)
 			otg->PCGCCTL |= OTG_PCGCCTL_STPPCLK;
 			otg->PCGCCTL |= OTG_PCGCCTL_GATEHCLK;
 		}
+
+
+		// reset endpoints
+	    if( !(drv_info->cfg->stm32_otg & CFG_STM32_OTG_VBUS_SENS))
+	    {
+			if(drv_info->drv_data->usb_state == USBST_DEVICE_CONFIGURED)
+			{
+				uint32_t dev_endpoints;
+				if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_HS_CORE)
+				{
+				    dev_endpoints    = 6-1;
+				} else
+				{
+				    dev_endpoints    = 4-1;
+				}
+				for(uint32_t i= 0; i<dev_endpoints; i++)
+				{
+					Endpoint* endpoint;
+
+					endpoint = &drv_info->drv_data->endpoints[i];
+					usb_drv_end_transfers(&endpoint->epd_out, RES_FATAL | FLG_SIGNALED);
+					usb_drv_end_transfers(&endpoint->epd_in, RES_FATAL | FLG_SIGNALED);
+				}
+			    /* Turn off forced host/peripheral mode  */
+				otg->core_regs.GUSBCFG &= ~(OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_FHMOD);
+
+				usb_drv_event(drv_info, e_disconnect);
+				return;
+			}
+	    }
+
+
 		usb_drv_event(drv_info, e_susppend);
 	}
 }
