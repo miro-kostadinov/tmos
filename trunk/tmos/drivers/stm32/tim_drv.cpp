@@ -49,22 +49,6 @@ static void ConfigureChannel(TIM_DRV_INF drv_info, const TIMER_CHANNEL_MODE *mod
 	PIO_Cfg(mode->ch_pin);
 }
 
-static void DebugFreezeTimer(unsigned int periph_id)
-{
-	__IO uint32_t* reg;
-	unsigned int index;
-
-    if(periph_id < ID_NO_PERIPH)
-    {
-    	index = (periph_id>>5)-4;
-
-		reg = &DBGMCU->DBGMCU_APB1FZ;
-
-		// The clock of the involved Timer counter is stopped when the core is halted
-		reg[index] |= 1<<(periph_id&0x1f);
-    }
-}
-
 //*----------------------------------------------------------------------------
 //*			DCR function
 //*----------------------------------------------------------------------------

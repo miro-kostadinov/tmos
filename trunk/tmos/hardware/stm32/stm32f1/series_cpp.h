@@ -25,7 +25,7 @@
 #include "dma_f1.h"
 #include "pwr_f1.h"
 #include "rtc_f1.h"
-
+#include "tim_f1.h"
 
 /**
   * The RCC feeds the Cortex System Timer (SysTick) external clock with the AHB
