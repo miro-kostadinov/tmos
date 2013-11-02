@@ -1,26 +1,26 @@
 /*
- * tim_f2.h
+ * tim_f1.h
  *
- *  Created on: Feb 28, 2013
+ *  Created on: Nov 2, 2013
  *      Author: miro
  */
 
-#ifndef TIM_F2_H_
-#define TIM_F2_H_
+#ifndef TIM_F1_H_
+#define TIM_F1_H_
 
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
 /*******************************************************************************
- *  STM32 F2 family timers
+ *  STM32 F1 family timers
  ******************************************************************************
  *
  *	Timer channels	BIF	TIF	COMIF	BITS
  *	  1		4		 *	 *	  *		 16
- *	  2		4			 *			 32
+ *	  2		4			 *			 16
  *	  3		4			 *			 16
  *	  4		4			 *			 16
- *	  5		4			 *			 32
+ *	  5		4			 *			 16
  *	  6		0						 16
  *	  7		0						 16
  *	  8		4		 *	 *	  *		 16
@@ -71,7 +71,6 @@ typedef struct
   __IO uint32_t TIM_BDTR;      //!< (adc Offset: 0x44) TIM break and dead-time register
   __IO uint32_t TIM_DCR;       //!< (adc Offset: 0x48) TIM DMA control register
   __IO uint32_t TIM_DMAR;      //!< (adc Offset: 0x4C) TIM DMA address for full transfer
-  __IO uint32_t TIM_OR;        //!< (adc Offset: 0x50) TIM option register
 } TIM_TypeDef;
 
 /*******************************************************************************
@@ -265,26 +264,12 @@ typedef struct
 #define TIM_DMAR_DMAB               0xFFFF //!< DMA register for burst accesses
 /** @} */
 
-/** @defgroup TIM_OR:       (adc Offset: 0x50) TIM option register			  */
-#define TIM_OR_ITR1_RMP             0x0C00 //!< ITR1_RMP[1:0] bits (TIM2 Internal trigger 1 remap)
-#define TIM_OR_TI4_RMP              0x00C0 //!< TI4_RMP[1:0] bits (TIM5 Input 4 remap)
-/** @} */
-
-// The clock of the involved Timer counter is stopped when the core is halted
-#define DebugFreezeTimer(periph_id) 						\
-{															\
-	__IO uint32_t* reg;										\
-    if(periph_id < ID_NO_PERIPH)							\
-    {														\
-		reg = &DBGMCU->DBGMCU_APB1FZ;						\
-		reg[((periph_id)>>5)-4] |= 1<<((periph_id)&0x1f);	\
-    }														\
-}
-
 
 
 /** @} */ // @defgroup TIM_regs_define
 
+// The clock of the involved Timer counter is stopped when the core is halted
+#define DebugFreezeTimer(periph_id) 			(void)0
 
 
-#endif /* TIM_F2_H_ */
+#endif /* TIM_F1_H_ */
