@@ -128,6 +128,7 @@ typedef struct
 
 /** @} */ // @defgroup USART_regs_define
 
+#define USART_STATUS_TC 	USART_SR_TC		//!< TC flag for F1 family
 #define USART_STATUS_TXE 	USART_SR_TXE	//!< TXE flag for F1 family
 #define USART_STATUS_RXNE 	USART_SR_RXNE	//!< RXNE flag for F1 family
 #define USART_STATUS_IDLE 	USART_SR_IDLE	//!< IDLE flag for F1 family
