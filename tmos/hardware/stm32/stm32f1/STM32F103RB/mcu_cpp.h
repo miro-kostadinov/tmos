@@ -34,6 +34,20 @@
 #define UART5       CAST(USART_TypeDef  , UART5_BASE) 	//!< UART5
 #define RTC			CAST(RTC_TypeDef 	, RTC_BASE)		//!< RTC
 #define PWR			CAST(PWR_TypeDef 	, PWR_BASE)		//!< Power control
+#define TIM1        CAST(TIM_TypeDef    , TIM1_BASE)    //!< TIM1
+#define TIM2        CAST(TIM_TypeDef    , TIM2_BASE)    //!< TIM2
+#define TIM3        CAST(TIM_TypeDef    , TIM3_BASE)    //!< TIM3
+#define TIM4        CAST(TIM_TypeDef    , TIM4_BASE)    //!< TIM4
+#define TIM5        CAST(TIM_TypeDef    , TIM5_BASE)    //!< TIM5
+#define TIM6        CAST(TIM_TypeDef    , TIM6_BASE)    //!< TIM6
+#define TIM7        CAST(TIM_TypeDef    , TIM7_BASE)    //!< TIM7
+#define TIM8        CAST(TIM_TypeDef    , TIM8_BASE)    //!< TIM8
+#define TIM9        CAST(TIM_TypeDef    , TIM9_BASE)    //!< TIM9
+#define TIM11       CAST(TIM_TypeDef    , TIM11_BASE)   //!< TIM11
+#define TIM10       CAST(TIM_TypeDef    , TIM10_BASE)   //!< TIM10
+#define TIM12       CAST(TIM_TypeDef    , TIM12_BASE)   //!< TIM12
+#define TIM13       CAST(TIM_TypeDef    , TIM13_BASE)   //!< TIM13
+#define TIM14       CAST(TIM_TypeDef    , TIM14_BASE)   //!< TIM14
 /** @} */
 
 /**
