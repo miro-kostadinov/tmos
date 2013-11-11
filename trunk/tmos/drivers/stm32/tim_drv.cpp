@@ -25,8 +25,10 @@ static void ConfigureTimer(TIM_DRV_INF drv_info, const TIMER_CONTROL_MODE *mode)
 static void ConfigureChannel(TIM_DRV_INF drv_info, const TIMER_CHANNEL_MODE *mode)
 {
 	TIM_TypeDef* hw_base = drv_info->hw_ch_base;
+	unsigned int indx;
 
-	switch(mode->ch_indx)
+	indx = mode->ch_indx;
+	switch(indx)
 	{
 	case 1:
 		hw_base->TIM_CCMR1 = (hw_base->TIM_CCMR1 & ~0xFF) | mode->ccmr;
@@ -42,7 +44,10 @@ static void ConfigureChannel(TIM_DRV_INF drv_info, const TIMER_CHANNEL_MODE *mod
 		break;
 	}
 
-	hw_base->TIM_CCRx[mode->ch_indx-1] = mode->arr_or_ccr;
+	indx --;
+	hw_base->TIM_CCRx[indx] = mode->arr_or_ccr;
+	indx <<= 2;
+	hw_base->TIM_CCER = (hw_base->TIM_CCER & ~(0xF << indx)) | (mode->ccer << indx);
 
 	hw_base->TIM_DIER |= mode->dier;
 
