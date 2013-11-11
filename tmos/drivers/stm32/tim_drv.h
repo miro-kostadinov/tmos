@@ -32,6 +32,7 @@ struct TIMER_CHANNEL_MODE	//: public TIMER_DRIVER_MODE
 
 	PIN_DESC	ch_pin;			//!< channel pin configuration
 	uint8_t 	ccmr;			//!< capture/compare mode register (TIM_CCMR1/2)
+	uint8_t 	ccer;			//!< capture/compare enable register (TIM_CCER)
 };
 
 /** Timer Control mode structure **/
@@ -50,14 +51,14 @@ struct TIMER_CONTROL_MODE 	//: public TIMER_DRIVER_MODE
 };
 
 
-/** SDIO Driver data structure **/
+/** Timer Driver data structure **/
 struct TIMER_DRIVER_DATA
 {
 	unsigned int cnt;			//!< number of open handles
 	HANDLE pending[5];			//!< 1-4 channels, 0 = control
 };
 
-/** SDIO Driver Info structure **/
+/** Timer Driver Info structure **/
 struct TIMER_DRIVER_INFO
 {
 	DRIVER_INFO_Type   info;			//!< Standard driver info
