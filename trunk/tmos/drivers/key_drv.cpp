@@ -42,11 +42,17 @@
 	#define KEY_REPEAT_TIME 	300
 #endif
 
+WEAK_C void on_key(unsigned int key)
+{
+
+}
 static void key_post(unsigned int key)
 {
-	TRACELN("[%2X]%d", key, (key&0x3f));
+	//TRACELN("[%2X]%d", key, (key&0x3f));
     usr_drv_icontrol(KEY_DRV_INDX, DCR_PARAMS, (void *)key);
+    on_key(key);
 }
+
 #include "key_drv.h"
 
 template <const unsigned int size>
