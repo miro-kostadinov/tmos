@@ -159,6 +159,18 @@ typedef struct
 #define TIM_EGR_UG                  0x0001 //!< Update Generation
 /** @} */
 
+#define TIM_CCMRx_OCxCE             0x0080 //!< Output Compare 1Clear Enable
+#define TIM_CCMRx_OCxM              0x0070 //!< OC1M[2:0] bits (Output Compare 1 Mode)
+#define  TIM_CCMRx_OCxM_000		    0x0000 //!<  The comparison between the output compare register TIMx_CCRx and the counter TIMx_CNT has no effect on the outputs
+#define  TIM_CCMRx_OCxM_001		    0x0010 //!<  Set channel 1 to active level on match
+#define  TIM_CCMRx_OCxM_010		    0x0020 //!<  Set channel 1 to inactive level on match
+#define  TIM_CCMRx_OCxM_011		    0x0030 //!<  Toggle
+#define  TIM_CCMRx_OCxM_100		    0x0040 //!<  Force inactive level - OC1REF is forced low
+#define  TIM_CCMRx_OCxM_101		    0x0050 //!<  Force active level - OC1REF is forced high.
+#define  TIM_CCMRx_OCxM_110		    0x0060 //!<  PWM mode 1
+#define  TIM_CCMRx_OCxM_111		    0x0070 //!<  PWM mode 2
+
+
 /** @defgroup TIM_CCMR1:    (adc Offset: 0x18) TIM capture/compare mode register 1  */
 #define TIM_CCMR1_OC2CE             0x8000 //!< Output Compare 2 Clear Enable
 #define TIM_CCMR1_OC2M              0x7000 //!< OC2M[2:0] bits (Output Compare 2 Mode)
@@ -211,6 +223,11 @@ typedef struct
 #define TIM_CCER_CC1NE              0x0004 //!< Capture/Compare 1 Complementary output enable
 #define TIM_CCER_CC1P               0x0002 //!< Capture/Compare 1 output Polarity
 #define TIM_CCER_CC1E               0x0001 //!< Capture/Compare 1 output enable
+
+#define TIM_CCER_CCxNP              0x0008 //!< Capture/Compare X Complementary output Polarity
+#define TIM_CCER_CCxNE              0x0004 //!< Capture/Compare X Complementary output enable
+#define TIM_CCER_CCxP               0x0002 //!< Capture/Compare X output Polarity
+#define TIM_CCER_CCxE               0x0001 //!< Capture/Compare X output enable
 /** @} */
 
 /** @defgroup TIM_CNT:      (adc Offset: 0x24) TIM counter register			  */
