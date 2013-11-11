@@ -15,14 +15,49 @@
 #define GUI_DEFAULT_DISP	0xFF
 #endif
 
+
+#ifndef GO_SCROLL_WIDTH
+#define GO_SCROLL_WIDTH		5
+#endif
+
+#define GUI_DEBUG			1
+// object messages
+enum WM_MESSAGE:unsigned int
+{
+	WM_QUIT=0,
+	WN_DESTROY,
+	WM_CLOSE,
+	WM_COMMAND,
+	WM_CHANGE,
+	WM_IDLE,
+	WM_SET_FLAGS,
+	WM_CLR_FLAGS,
+	WM_INIT,
+	WM_DRAW,
+	WM_KEY
+};
+
+extern STR_LIST wm_dbg_str;
+
+#define MAX_MESSAGES 10
+
+
+
+// base object flags
 #define GO_FLG_BORDER		0x01
 #define GO_FLG_SELECTED		0x02
 #define GO_FLG_CHECKED		0x04
 #define GO_FLG_ENABLED		0x08
+#define GO_FLG_HSCROLL		0x10
+#define GO_FLG_VSCROLL		0x20
+#define GO_FLG_SHOW			0x40
+#define GO_FLG_TRANSPARENT	0x80
 
-#define GO_FLG_DEFAULT		GO_FLG_ENABLED
+#define GO_FLG_DEFAULT		GO_FLG_ENABLED|GO_FLG_SHOW
 typedef unsigned char GFlags;
 
+// reserved command/return id
+#define GO_EXIT				0x00
 #define GO_IDOK				0x01
 #define GO_IDCANCEL			0x02
 #define GO_IDRETRY			0x03
@@ -31,173 +66,105 @@ typedef unsigned char GFlags;
 
 typedef unsigned char GId;
 
+// client handle states
+#define GUI_HND_OPEN	1
+#define GUI_HND_ATTACH	2
+#define GUI_HND_DETACH	3
+#define GUI_HND_UNUSED	0
+
+
+#define TA_LEFT			0x00
+#define TA_CENTER		0x01
+#define TA_RIGHT 		0x02
+#define TA_HORIZONTAL	0x03
+
+#define TA_TOP			(0x00<<2)
+#define TA_MIDDLE		(0x01<<2)
+#define TA_BOTTOM		(0x02<<2)
+#define TA_VERTICAL		(0x03<<2)
+
 extern unsigned int current_laguage;
 
-//----- GUI Objects
-typedef struct CWindow  *WINDOW;
-typedef RES_CODE (* GUI_CB)(WINDOW obj, unsigned int param, unsigned int msg);
+extern "C" char TranslateKey( unsigned int key_code);
+
+
+struct POINT_T
+{
+	union{
+		struct {short int x, y;};
+		int as_int;
+	};
+	POINT_T() : as_int(0) {}
+	POINT_T(const short int& x_t, const short int& y_t): x(x_t), y(y_t) {}
+	POINT_T(int p): as_int(p) {}
+
+	POINT_T& operator= (POINT_T p_t);
+	bool operator== (POINT_T p_t) const;
+	POINT_T operator+(const POINT_T& op) const;
+	POINT_T& operator+=(const POINT_T& op);
+
+	operator bool() const;
+};
+
+struct point_t
+{
+	union{
+	struct {short int x, y;};
+	int as_int;
+	};
+	operator POINT_T() const
+	{
+		return POINT_T (as_int);
+	}
+};
+
+union rec_t{
+	struct {short int x0, y0, x1, y1;};
+	unsigned long long as_int;
+};
+
 struct RECT_T
 {
 	union{
 		struct {short int x0, y0, x1, y1;};
 		unsigned long long as_int;
+		struct {
+			point_t p0;
+			point_t p1;
+		};
 	};
 
-	RECT_T ();
-	RECT_T (unsigned long long val) : as_int(val) {};
-	RECT_T (short int x0_t, short int y0_t, short int x1_t, short int y1_t);
-    bool normalize (RECT_T rect_t);
+	RECT_T ()
+		: as_int(0) {;}
+	RECT_T (const unsigned long long& val)
+		: as_int(val) {;}
+	RECT_T (const short int& x0_t, const short int& y0_t, const short int& x1_t, const short int& y1_t)
+		: x0(x0_t),  y0(y0_t), x1(x1_t), y1(y1_t) {;}
+	RECT_T (const POINT_T& p0_t, const POINT_T& p1_t);
+	RECT_T (const POINT_T& p0_t, const short int& xs, const short int& ys );
+
+    bool normalize (const RECT_T& rect_t);
     bool normalize (short int x0_t, short int y0_t, short int x1_t, short int y1_t);
-    RECT_T& operator= (RECT_T rect_t);
+
+    RECT_T& operator= (const RECT_T& rect_t);
     RECT_T& operator= (int val);
-    RECT_T& operator= (unsigned long long val) {as_int = val; return *this;};
-    bool operator== (int val);
-	bool operator== (RECT_T rect_t);
-};
+    RECT_T& operator= (unsigned long long val);
+    bool operator== (int val) const;
+	bool operator== (RECT_T rect_t) const;
+	short int width() const;
+	short int height()const;
+	operator bool() const;
 
-typedef union
-{
-    struct {unsigned char x0, y0, x1, y1;};
-    unsigned int as_int;
-} RECT_STRU;
+	RECT_T& operator<<=(const POINT_T& pt);
 
-struct CWindow : CHandle
-{
-	//-- common fields with handle
-		//	mode0 =  set from the driver/cleared from helper (FLG_SIGNALED to close, FLG_OK to callback)
-		//	mode1 =  last callback result.
-						// FLG_BUSY - request a redraw
-						// FLG_SIGNALED	- setting this flag will close the GUI object
-		//	next  =	 next in down direction (Z-order)
-		//	mode  =  cb_fun
-
-	// common edns
-    RECT_STRU		rect;
-#if GUI_DISPLAYS > 1
-    unsigned char	displays;		// bitmask for displays
-    CWindow():displays(GUI_DEFAULT_DISP){};
+#if GUI_DEBUG
+	void dump()
+	{
+		TRACE("[%d, %d, %d, %d]", x0, x1, y0, y1);
+	}
+#else
+	void dump() {};
 #endif
-
-	RES_CODE	callback(unsigned int param, unsigned int msg)
-	{
-		return (((GUI_CB)mode.as_voidptr)(this, param, msg));
-	}
-	bool tsk_window_init( GUI_CB cback);
-
-	RES_CODE tsk_window_showmodal()
-	{
-		return (tsk_read(NULL, 0));
-	}
-
-	void tsk_window_show()
-	{
-		tsk_start_read(NULL, 0);
-	}
-
 };
-
-WINDOW tsk_new_window(GUI_CB callback);
-
-//----- menus
-
-typedef struct MENU_ITEM_STRU* MENU_ITEM;
-typedef struct CMenu * MENU_WINDOW;
-
-typedef unsigned int (*MENU_CBF)(void *param, MENU_WINDOW menu_hnd);
-
-struct  MENU_ITEM_STRU
-{
-	unsigned int	priority;
-    CSTRING			name[GUI_LANGUAGES];
-    MENU_CBF		menu_func;
-    void *			param;
-};
-
-struct  STATIC_MENU_ITEM
-{
-	unsigned int	priority;
-    const char*		name[GUI_LANGUAGES];
-    MENU_CBF		menu_func;
-    void *			param;
-};
-
-struct MENU_STRU
-{
-    unsigned int count;
-    CSTRING			name[GUI_LANGUAGES];
-    CSTRING			file;
-    MENU_ITEM_STRU	items[];
-};
-
-struct CMenu: CWindow
-{
-    unsigned short int		pos;
-    unsigned short int		text_offset;
-    const MENU_STRU		*menu;
-};
-
-RES_CODE menu_cb(MENU_WINDOW menu_hnd, unsigned int param, unsigned int msg);
-RES_CODE menu_box(const MENU_STRU *menu, MENU_WINDOW menu_hnd);
-
-#define MENU_DECLARE_STATIC(amenu, acount)	\
-    typedef struct { unsigned int count;  const char* name[GUI_LANGUAGES]; const char *file; STATIC_MENU_ITEM	items[acount];} amenu##_type;
-
-//----- message box
-
-struct CMessageBox: CWindow
-{
-    CSTRING			msg_text;
-    const char*		msg_start;
-    signed int		up_downs;
-    CMessageBox(): CWindow(), msg_start(NULL), up_downs(0) {};
-
-    void update(const char* str)
-    {
-    	if(this)
-    	{
-    		msg_text = str;
-    		msg_start = msg_text.c_str();
-    	}
-    };
-    void update(CSTRING& str)
-    {
-    	if(this)
-    	{
-    		msg_text = str;
-    		msg_start = msg_text.c_str();
-    	}
-    };
-};
-
-
-#define TXT_FLAGS_CURSOR	0x01
-#define TXT_FLAGS_EDIT		0x02
-#define TXT_FLAGS_CONST		0x04
-#define TXT_FLAGS_RES		0x08
-
-struct CGetBox: CWindow
-{
-	CSTRING			title;
-	CSTRING			data;
-	unsigned char	pos;
-	unsigned char	flags;
-	char			ch;
-	unsigned char	x, y;
-	unsigned char	sy;
-};
-
-//----- status box
-void status_box_free(CMessageBox* msg_hnd);
-CMessageBox* status_box_show(const char *msg);
-CMessageBox* status_box_show(const char *msg, unsigned int displays);
-CMessageBox* status_box_show(CSTRING& msg);
-CMessageBox* status_box_show(CSTRING& msg, unsigned int displays);
-
-RES_CODE msg_box(const char *msg);
-RES_CODE msg_box(CSTRING& msg);
-RES_CODE msg_error(CSTRING& msg, int err_code);
-RES_CODE msg_error(const char *msg, int err_code);
-RES_CODE get_box(const char * title, CSTRING& data, bool constant = false);
-RES_CODE get_box(CSTRING& title, CSTRING& data, bool constant = false);
 
 #endif

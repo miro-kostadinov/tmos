@@ -1,7 +1,9 @@
 #ifndef	GUI_DRV_H
 #define	GUI_DRV_H
 
-#include <lcd.h>
+//#include <lcd.h>
+
+struct LCD_MODULE;
 
 #define SIG_GUI_TASK		2
 

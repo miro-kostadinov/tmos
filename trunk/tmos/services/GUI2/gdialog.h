@@ -13,13 +13,14 @@
 
 struct GDialog : GWindow
 {
-	GDialog(GId id_t, RECT_T rect_t,
+	GDialog(GId id_t, const RECT_T& rect_t,
 			unsigned char displays_t, GFlags flags_t = GO_FLG_DEFAULT)
 	:GWindow (id_t, rect_t, displays_t, flags_t) {};
 
-	unsigned int process_key (GMessage msg);
-	unsigned int process_default (GMessage msg);
-	unsigned int process_command(GMessage msg);
+	virtual unsigned int process_key (GMessage& msg);
+	virtual unsigned int process_default (GMessage& msg);
+	virtual unsigned int process_command(GMessage& msg);
+
 };
 
 

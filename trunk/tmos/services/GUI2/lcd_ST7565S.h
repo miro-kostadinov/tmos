@@ -29,11 +29,8 @@ struct ST7565S: public LCD_MODULE
 	unsigned int lcd_mode;
 	unsigned char disp_buf[8][132];
 
-	unsigned short frame_x0;
-	unsigned short frame_x1;
-
 	ST7565S(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p, unsigned int m):
-		LCD_MODULE(x, y, hnd, p), reset_timeout(0), lcd_mode(m), frame_x0(0), frame_x1(0)
+		LCD_MODULE(x, y, hnd, p), reset_timeout(0), lcd_mode(m)
 	{
 	}
 	;
@@ -41,19 +38,18 @@ struct ST7565S: public LCD_MODULE
 	virtual void lcd_command(unsigned int cmd);
 
 	//virtual functions
-	void lcd_init(GUI_CB splash);
 	void lcd_reset();
-	void draw_bitmap(unsigned int x0, unsigned int y0,
-			const unsigned char* src, unsigned int width, unsigned int rows);
-	void draw_hline(unsigned int x0, unsigned int x1, unsigned int y);
-	void draw_bline(unsigned int x0, unsigned int x1, unsigned int y);
-	void draw_vline(unsigned int y0, unsigned int y1, unsigned int x);
-	void invert_vline(unsigned int y0, unsigned int y1, unsigned int x);
-	void invert_hline(unsigned int x0, unsigned int x1, unsigned int y);
+	void draw_bitmap(int x0, int y0, const char* src,  int width,  int rows);
+	void draw_point( int x,  int y);
+	void draw_hline( int x0,  int x1,  int y);
+	void draw_bline( int x0,  int x1,  int y);
+	void draw_vline( int y0,  int y1,  int x);
+	void invert_vline( int y0,  int y1,  int x);
+	void invert_hline( int x0,  int x1,  int y);
 	virtual void update_screen();
 	void clear_screen();
-	void redraw_screen(WINDOW desktop);
 	void redraw_rect (GObject* object, RECT_T area);
+	void direct_write (GSplash draw_cb);
 	void adjust_for_screen (GObject** object, RECT_T &area);
 };
 

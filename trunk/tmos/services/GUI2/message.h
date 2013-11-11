@@ -8,29 +8,33 @@
 #ifndef MESSAGE_H_
 #define MESSAGE_H_
 
-#define MAX_MESSAGES 10
-#include <tmos.h>
+#include <stdgui.h>
 
 struct GObject;
 
 struct GMessage
 {
-	unsigned int code;
+	WM_MESSAGE code;
 	unsigned int param;
 	unsigned long long lparam;
 	GObject* dst;
 
-	GMessage () : code(0), param(0), lparam(0), dst(NULL) {};
-	GMessage (unsigned int code_t, unsigned int param_t, unsigned long long lparam_t, GObject* destination):
+	GMessage () : code(WM_QUIT), param(0), lparam(0), dst(NULL) {};
+	GMessage (WM_MESSAGE code_t, unsigned int param_t, unsigned long long lparam_t, GObject* destination):
 		code (code_t), param (param_t), lparam (lparam_t), dst (destination){};
-//	GMessage (unsigned int code_t, unsigned int param_t, GObject* destination) :
-//		code (code_t), param (param_t), lparam (0), dst (destination){};
-//	GMessage (unsigned int code_t, unsigned int param_t):
-//		code (code_t), param (param_t), lparam (0), dst (NULL){};
-//	GMessage (unsigned int code_t, unsigned int param_t, unsigned long long lparam_t):
-//		code (code_t), param (param_t), lparam (lparam_t), dst (NULL){};
-//	GMessage (unsigned int code_t, unsigned long long lparam_t, GObject* destination) :
-//		code (code_t), param (0), lparam (lparam_t), dst (destination){};
+	GMessage (WM_MESSAGE code_t, unsigned int param_t, GObject* destination):
+		code (code_t), param (param_t), lparam (0L), dst (destination){};
+
+
+	GMessage& operator= (GMessage msg)
+	{
+		code 	= msg.code;
+		param 	= msg.param;
+		lparam 	= msg.lparam;
+		dst		= msg.dst;
+		return *this;
+	}
+
 };
 
 

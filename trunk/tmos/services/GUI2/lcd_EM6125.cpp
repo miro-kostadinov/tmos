@@ -94,7 +94,7 @@ const unsigned char emm_init4[]=
 
 
 // InitLcd is called to initialize the hardware
-void EM6125::lcd_init(GUI_CB splash)
+void EM6125::lcd_init(GSplash splash)
 {
 
 	LCD_MODULE::lcd_init(splash);
@@ -109,7 +109,7 @@ void EM6125::lcd_init(GUI_CB splash)
     //Splash screen..
     if(splash)
     {
-    	lcd_single_window(splash);
+    	splash(this);
 
         //dimish the splash
         memcpy(lcd_buf.video_buf, emm_init2, sizeof(emm_init2));
@@ -184,44 +184,3 @@ extern unsigned int cpu_usage;
 extern char end;
 #endif
 
-void EM6125::redraw_screen(WINDOW desktop)
-{
-    WINDOW top;
-
-	clear_screen();
-	while(desktop)
-	{
-		top = (WINDOW)desktop->next;
-		#if GUI_DISPLAYS > 1
-		while(top && !(display & top->displays))
-			top = (WINDOW) top->next;
-
-		if(display & desktop->displays)
-		#endif
-		{
-			if( (!top) || (desktop->rect.as_int != top->rect.as_int) )
-			{
-				frame_y0 = 0;
-				set_font(&FNT7x9);
-				desktop->callback((unsigned int)this, WM_DRAW);
-			}
-		}
-
-		desktop = top;
-	}
-
-	draw_hline(0, cpu_usage, 78);
-#if USE_MEMORY_TRACKING
-	unsigned int mem_use;
-	mem_use = (SRAM_BASE + RAM_SIZE - (unsigned int)&end)>>2;
-	mem_use = (PMAIN_TASK->aloc_mem * (size_x-1))/mem_use;
-	invert_hline(size_x-1-mem_use, size_x-1, 78);
-#endif
-	if( (unsigned)(CURRENT_TIME-reset_timeout) > 500 )
-	{
-		reset_timeout = CURRENT_TIME;
-		lcd_reset();
-	}
-	update_screen();
-
-}

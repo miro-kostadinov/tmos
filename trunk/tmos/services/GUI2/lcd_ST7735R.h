@@ -20,7 +20,6 @@ struct ST7735R : public SPFD5414D
 	;
 
 	//virtual functions
-	virtual void lcd_init(GUI_CB splash);
 	virtual void lcd_reset();
 };
 

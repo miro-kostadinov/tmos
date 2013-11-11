@@ -20,7 +20,7 @@ GObject* GRadio::addChild (GObject* child)
 	return child;
 }
 
-unsigned int GRadio::process_key (GMessage msg)
+unsigned int GRadio::process_key (GMessage& msg)
 {
 	if(focus && focus->message(msg))
 		return 1;
@@ -28,49 +28,67 @@ unsigned int GRadio::process_key (GMessage msg)
 	{
 	case KEY_RIGHT:
 	case KEY_DOWN:
-		if (focus)
+		if(focus)
 		{
-			if (focus->nextObj)
-				focus->nextObj->get_focus();									//sets the focus on the next child
-			else
+			GObject* last = last_available();
+			if(last && last == focus)
 			{
 				focus->clr_flag(GO_FLG_SELECTED);								//if there is not next child, clears the SELECTED flag from the current focus
-				return 0;
+				break;
 			}
 		}
-		else
-		{
-			if (children)
-			{
-				children->get_focus();											//if there isn't focus, sets the focus on the first child
-			}
-			else
-				return 0;
-		}
-		return 1;
+		return focus_on_next();
+//		if (focus)
+//		{
+//			if (focus->nextObj)
+//			{
+//				if(focus->nextObj->get_focus())									//sets the focus on the next child
+//					return 1;
+//			}
+//			else
+//			{
+//				focus->clr_flag(GO_FLG_SELECTED);								//if there is not next child, clears the SELECTED flag from the current focus
+//			}
+//		}
+//		else
+//		{
+//			if (children &&	children->get_focus())											//if there isn't focus, sets the focus on the first child
+//				return 1;
+//		}
+//		break;
 	case KEY_LEFT:
 	case KEY_UP:
-			if (children)
+		if(focus)
+		{
+			GObject* first = first_available();
+			if(first && first == focus)
 			{
-				if (focus == children)
-				{
-					focus->clr_flag(GO_FLG_SELECTED);							//if the first child is focused, clears the SELECTED flag from it
-					return 0;
-				}
-				GObject* tmp = children;
-				while (tmp->nextObj && tmp->nextObj != focus)
-					tmp = tmp->nextObj;											//sets the focus on the child before the previous focus
-				tmp->get_focus();
-				return 1;
+				focus->clr_flag(GO_FLG_SELECTED);								//if there is not next child, clears the SELECTED flag from the current focus
+				break;
 			}
-			break;
+		}
+		return focus_on_previous();
+//		if (children)
+//		{
+//			if (focus == children)
+//			{
+//				focus->clr_flag(GO_FLG_SELECTED);							//if the first child is focused, clears the SELECTED flag from it
+//				return 0;
+//			}
+//			GObject* tmp = children;
+//			while (tmp->nextObj && tmp->nextObj != focus)
+//				tmp = tmp->nextObj;											//sets the focus on the child before the previous focus
+//			if(tmp->get_focus())
+//				return 1;
+//		}
+		break;
 	default:
 		break;
 	}
 	return 0;
 }
 
-unsigned int  GRadio::process_default (GMessage msg)
+unsigned int  GRadio::process_default (GMessage& msg)
 {
 	if (msg.code == WM_CHANGE)
 	{
