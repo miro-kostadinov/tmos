@@ -87,30 +87,18 @@ const unsigned short tft_init_address[] =
 
 
 
-// InitLcd is called to initialize the hardware
-void SPFD5414D::lcd_init(GUI_CB splash)
-{
-	LCD_MODULE::lcd_init(splash);
-
-    //Splash screen..
-    if(splash)
-    {
-    	lcd_single_window(splash);
-    }
-}
 
 void SPFD5414D::lcd_reset()
 {
 	lcd_hnd->tsk_write(tft_init, sizeof(tft_init)/2);
 }
 
-void SPFD5414D::draw_bitmap(unsigned int x0, unsigned int y0,
-		const unsigned char* src, unsigned int width, unsigned int rows)
+void SPFD5414D::draw_bitmap( int x0, int y0, const char* src, int width, int rows)
 {
-	unsigned int offset=0;
-	if(y0 < frame_y0)
+	int offset=0;
+	if(y0 < frame.y0)
 	{
-		offset = frame_y0 - y0;
+		offset = frame.y0 - y0;
 		if(offset >= rows)
 			return;
 		y0 += offset;
@@ -119,18 +107,18 @@ void SPFD5414D::draw_bitmap(unsigned int x0, unsigned int y0,
 		src += offset /8;
 		offset %= 8;
 	}
-	if(y0 < frame_y1)
+	if(y0 < frame.y1)
 	{
 		rows += y0;
-		if(rows > frame_y1)
-			rows = frame_y1;
+		if(rows > frame.y1)
+			rows = frame.y1;
 		rows -= y0;
 
 		offset = 1<< offset;
 		while(width--)
 		{
 			if(src[0] & offset)
-				if (frame_x0 <= x0 && x0 <= frame_x1)
+				if (frame.x0 <= x0 && x0 <= frame.x1)
 					disp_buf[x0] = color;
 			offset <<= 1;
 			if(offset > 255)
@@ -143,58 +131,65 @@ void SPFD5414D::draw_bitmap(unsigned int x0, unsigned int y0,
 	}
 }
 
-
-void SPFD5414D::draw_hline(unsigned int x0, unsigned int x1, unsigned int y)
+void SPFD5414D::draw_point( int x, int y)
 {
-	if(y==frame_y0)
+	if(frame.y0 == y && frame.x0 <= x && x <= frame.x1)
+	{
+		disp_buf[x] |= color;
+	}
+}
+
+void SPFD5414D::draw_hline( int x0, int x1, int y)
+{
+	if(y==frame.y0)
 	{
 		while(x0 <= x1)
 		{
-			if (frame_x0 <= x0 && x0 <= frame_x1)
+			if (frame.x0 <= x0 && x0 <= frame.x1)
 				disp_buf[x0] = color;
 			x0++;
 		}
 	}
 }
 
-void SPFD5414D::draw_bline(unsigned int x0, unsigned int x1, unsigned int y)
+void SPFD5414D::draw_bline( int x0, int x1, int y)
 {
-	if(y==frame_y0)
+	if(y==frame.y0)
 	{
 		while(x0 <= x1)
 		{
-			if (frame_x0 <= x0 && x0 <= frame_x1)
+			if (frame.x0 <= x0 && x0 <= frame.x1)
 				disp_buf[x0] = PIX_BLACK;
 			x0++;
 		}
 	}
 }
 
-void SPFD5414D::draw_vline(unsigned int y0, unsigned int y1, unsigned int x)
+void SPFD5414D::draw_vline( int y0, int y1, int x)
 {
-	if((y0 <= frame_y0) && (y1 >= frame_y0))
+	if((y0 <= frame.y0) && (y1 >= frame.y0))
 	{
-		if (frame_x0 <= x && x <= frame_x1)
+		if (frame.x0 <= x && x <= frame.x1)
 			disp_buf[x] = color;
 	}
 }
 
-void SPFD5414D::invert_vline(unsigned int y0, unsigned int y1, unsigned int x)
+void SPFD5414D::invert_vline( int y0, int y1, int x)
 {
-	if((y0 <= frame_y0) && (y1 >= frame_y0))
+	if((y0 <= frame.y0) && (y1 >= frame.y0))
 	{
-		if (frame_x0 <= x && x <= frame_x1)
+		if (frame.x0 <= x && x <= frame.x1)
 			disp_buf[x] ^= (PIX_WHITE ^ PIX);
 	}
 }
 
-void SPFD5414D::invert_hline(unsigned int x0, unsigned int x1, unsigned int y)
+void SPFD5414D::invert_hline( int x0, int x1, int y)
 {
-	if(y==frame_y0)
+	if(y==frame.y0)
 	{
 		while(x0 <= x1)
 		{
-			if (frame_x0 <= x0 && x0 <= frame_x1)
+			if (frame.x0 <= x0 && x0 <= frame.x1)
 				disp_buf[x0] ^= (PIX_WHITE ^ PIX);
 			x0++;
 		}
@@ -235,14 +230,16 @@ void SPFD5414D::redraw_rect (GObject* object, RECT_T area)						//redraws an are
 		reset_timeout = CURRENT_TIME;
 		lcd_reset();
 	}
-	frame_x0 = area.x0;
-	frame_x1 = area.x1;
+	if(object && !(object->flags & GO_FLG_TRANSPARENT))
+		clear_rect(area);
+	frame.x0 = area.x0;
+	frame.x1 = area.x1;
 	disp_buf = video_buf;
-    for(frame_y0=area.y0; frame_y0 <= area.y1; frame_y0++)
+    for(frame.y0=area.y0; frame.y0 <= area.y1; frame.y0++)
     {
-    	frame_y1 = frame_y0+1;
-
-    	object->draw_this(this);
+    	frame.y1 = frame.y0+1;
+    	if(object)
+    		object->draw_this(this);
 
 		lcd_hnd->tsk_write(cmd_address, sizeof(cmd_address)/2);
 		update_screen();
@@ -254,81 +251,29 @@ void SPFD5414D::redraw_rect (GObject* object, RECT_T area)						//redraws an are
 	update_screen();
 }
 
-void SPFD5414D::redraw_screen(WINDOW desktop)
+void SPFD5414D::direct_write(GSplash draw_cb)
 {
-    WINDOW win;
-    WINDOW top;
-	bool update=false;
-//	unsigned int tft_cmd = TFT_RAMWR;
 	unsigned short cmd_address[sizeof(tft_init_address)/sizeof(unsigned short)];
 
 	memcpy(cmd_address, tft_init_address, sizeof(tft_init_address));
 
-	if( (unsigned)(CURRENT_TIME-reset_timeout) > 500 )
-	{
-		reset_timeout = CURRENT_TIME;
-		lcd_reset();
-	}
-
+	frame.x0 = 0;
+	frame.x1 = size_x-1;
 	disp_buf = video_buf;
-	frame_x0 = 0;
-	frame_x1 = size_x - 1;
-    for(frame_y0=0; frame_y0 < size_y; frame_y0++)
+    for(frame.y0=0; frame.y0 <= size_y-1; frame.y0++)
     {
-    	frame_y1 = frame_y0+1;
+    	frame.y1 = frame.y0+1;
     	clear_screen();
-    	win = desktop;
-    	while(win)
-    	{
-        	update = true;
-    		top = (WINDOW)win->next;
-			#if GUI_DISPLAYS > 1
-			while(top && !(display & top->displays))
-				top = (WINDOW) top->next;
+   		draw_cb(this);
 
-			if(display & desktop->displays)
-			#endif
-			{
-				if( (!top) || win->rect.x0 < top->rect.x0 || win->rect.x1 > top->rect.x1 || win->rect.y0 < top->rect.y0 || win->rect.y1 > top->rect.y1)//*/(win->rect.as_int != top->rect.as_int) )
-				{
-					set_font(LCD_DEF_FONT);
-					color = LCD_DEF_COL;
-					if (frame_y0 >= win->rect.y0 && frame_y0 <= win->rect.y1)
-						if (!top || (top && frame_y0 < top->rect.y0 && frame_y0 > top->rect.y1))
-							if (win->callback((unsigned int) this, WM_DRAW))
-							{
-								reset_timeout = CURRENT_TIME;
-								update = false;
-							}
-				}
-			}
+		lcd_hnd->tsk_write(cmd_address, sizeof(cmd_address)/2);
+		update_screen();
 
-    		win = top;
-    	}
-    	if(update)
-    	{
-    		lcd_hnd->tsk_write(cmd_address, sizeof(cmd_address)/2);
-    		update_screen();
-    	}
-		cmd_address[2]++;// = TFT_DATA(frame_y0);
-		cmd_address[4]++;// = TFT_DATA(frame_y0);
+		cmd_address[2]++;
+		cmd_address[4]++;
     }
-//#if GUI_DISPLAYS > 1
-//	if (display == 2)
-//#endif
-//	{
-//		color = PIX_LIGHTGRAY;
-//		draw_hline(0, (cpu_usage*127)/100, 127);
-//#if USE_MEMORY_TRACKING
-//		unsigned int mem_use;
-//		mem_use = (SRAM_BASE + RAM_SIZE - (unsigned int)&end)>>2;
-//		mem_use = (PMAIN_TASK->aloc_mem * (size_x-1))/mem_use;
-//		invert_hline(size_x-1-mem_use, size_x-1, 127);
-//#endif
-//	}
 	lcd_hnd->tsk_write(cmd_address, sizeof(cmd_address)/2);
 	update_screen();
-
 }
 
 

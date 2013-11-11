@@ -43,20 +43,6 @@ void ST7565S::lcd_command(unsigned int cmd)
 	lcd_hnd->tsk_read(NULL, 0);
 }
 
-void ST7565S::lcd_init(GUI_CB splash)
-
-{
-	LCD_MODULE::lcd_init(splash);
-
-
-    //Splash screen..
-    if(splash)
-    {
-    	lcd_single_window(splash);
-    }
-
-}
-
 void ST7565S::lcd_reset()
 {
 	lcd_command(CMD_RESET);
@@ -107,13 +93,12 @@ void ST7565S::lcd_reset()
 
 }
 
-void ST7565S::draw_bitmap(unsigned int x0, unsigned int y0,
-		const unsigned char* src, unsigned int width, unsigned int rows)
+void ST7565S::draw_bitmap( int x0, int y0, const char* src, int width, int rows)
 {
-	unsigned int offset=0;
-	if(y0 < frame_y0)
+	int offset=0;
+	if(y0 < frame.y0)
 	{
-		offset = frame_y0 - y0;
+		offset = frame.y0 - y0;
 		if(offset >= rows)
 			return;
 		y0 += offset;
@@ -122,11 +107,11 @@ void ST7565S::draw_bitmap(unsigned int x0, unsigned int y0,
 		src += offset /8;
 		offset %= 8;
 	}
-	if(y0 < frame_y1)
+	if(y0 < frame.y1)
 	{
 		rows += y0;
-		if(rows > frame_y1)
-			rows = frame_y1;
+		if(rows > frame.y1)
+			rows = frame.y1;
 		rows -= y0;
 
 		width += x0;
@@ -134,10 +119,10 @@ void ST7565S::draw_bitmap(unsigned int x0, unsigned int y0,
 		y0 = 1 << (y0&7);
 		while(rows--)
 		{
-			for(unsigned int i=x0; i<width; i++)
+			for( int i=x0; i<width; i++)
 			{
-				if(src[0] & offset)
-					disp_buf[frame_y0>>3][i] |= y0;
+				if((src[0] & offset) && frame.x0 <= i && i <= frame.x1)
+					disp_buf[frame.y0>>3][i] |= y0;
 				offset <<= 1;
 				if(offset > 255)
 				{
@@ -150,56 +135,63 @@ void ST7565S::draw_bitmap(unsigned int x0, unsigned int y0,
 	}
 }
 
-
-void ST7565S::draw_hline(unsigned int x0, unsigned int x1, unsigned int y)
+void ST7565S::draw_point( int x, int y)
 {
-	if( (y>=frame_y0) && (y<frame_y1))
+	if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
+	{
+		disp_buf[frame.y0>>3][x] |= (1 << (y&7));
+	}
+}
+
+void ST7565S::draw_hline( int x0, int x1, int y)
+{
+	if( (y>=frame.y0) && (y<frame.y1))
 	{
 		y = 1 << (y&7);
 		while(x0 <= x1)
 		{
-			disp_buf[frame_y0>>3][x0++] |= y;
+			disp_buf[frame.y0>>3][x0++] |= y;
 		}
 	}
 }
 
-void ST7565S::draw_bline(unsigned int x0, unsigned int x1, unsigned int y)
+void ST7565S::draw_bline( int x0, int x1, int y)
 {
-	if( (y>=frame_y0) && (y<frame_y1))
+	if( (y>=frame.y0) && (y<frame.y1))
 	{
 		y = ~(1 << (y&7));
 		while(x0 <= x1)
 		{
-			disp_buf[frame_y0>>3][x0++] &= y;
+			disp_buf[frame.y0>>3][x0++] &= y;
 		}
 	}
 }
 
-void ST7565S::invert_hline(unsigned int x0, unsigned int x1, unsigned int y)
+void ST7565S::invert_hline( int x0, int x1, int y)
 {
-	if( (y>=frame_y0) && (y<frame_y1))
+	if( (y>=frame.y0) && (y<frame.y1))
 	{
 		y = 1 << (y&7);
 		while(x0 <= x1)
 		{
-			disp_buf[frame_y0>>3][x0++] ^= y;
+			disp_buf[frame.y0>>3][x0++] ^= y;
 		}
 	}
 }
 
-void ST7565S::draw_vline(unsigned int y0, unsigned int y1, unsigned int x)
+void ST7565S::draw_vline( int y0, int y1, int x)
 {
-	if( (y0<=frame_y0) && (y1>=frame_y0) )
+	if( (y0<=frame.y0) && (y1>=frame.y0) )
 	{
-		disp_buf[frame_y0/8][x] |= 1 << (frame_y0&7);
+		disp_buf[frame.y0/8][x] |= 1 << (frame.y0&7);
 	}
 }
 
-void ST7565S::invert_vline(unsigned int y0, unsigned int y1, unsigned int x)
+void ST7565S::invert_vline( int y0, int y1, int x)
 {
-	if( (y0<=frame_y0) && (y1>=frame_y0) )
+	if( (y0<=frame.y0) && (y1>=frame.y0) )
 	{
-		disp_buf[frame_y0>>3][x] ^= 1 << (frame_y0&7);
+		disp_buf[frame.y0>>3][x] ^= 1 << (frame.y0&7);
 	}
 }
 
@@ -207,8 +199,8 @@ void ST7565S::update_screen()
 {
 	unsigned int cmd;
 
-	cmd = CMD_PAGE_ADR(frame_y0 /8) +	(CMD_COLUMN_ADR_LO(((lcd_mode>>16)&0xF) + (frame_x0 & 0x0F)) << 8 )+
-			(CMD_COLUMN_ADR_HI(((lcd_mode>>20)&0xF) + (frame_x0 & 0xF0)) << 16) + (CMD_READ_WRITE_START << 24);
+	cmd = CMD_PAGE_ADR(frame.y0 /8) +	(CMD_COLUMN_ADR_LO(((lcd_mode>>16)&0xF) + (frame.x0 & 0x0F)) << 8 )+
+			(CMD_COLUMN_ADR_HI(((lcd_mode>>20)&0xF) + (frame.x0 & 0xF0)) << 16) + (CMD_READ_WRITE_START << 24);
 
 	//lock
 	lcd_hnd->tsk_read_locked(NULL, 0);
@@ -223,7 +215,7 @@ void ST7565S::update_screen()
    	PIO_SetOutput(pins[A0_PIN_INDX]);
 
    	// data
-	lcd_hnd->tsk_write_locked(disp_buf[frame_y0/8], 1 + frame_x1 - frame_x0);//size_x);
+	lcd_hnd->tsk_write_locked(disp_buf[frame.y0/8], 1 + frame.x1 - frame.x0);//size_x);
 
 	//release A0
    	PIO_Cfg(pins[A0_PIN_INDX]);
@@ -254,68 +246,42 @@ void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area 
 		reset_timeout = CURRENT_TIME;
 		lcd_reset();
 	}
-	frame_x0 = area.x0;
-	frame_x1 = area.x1;
-    for(frame_y0=area.y0; frame_y0 <= area.y1; frame_y0++)
+	frame.x0 = area.x0;
+	frame.x1 = area.x1;
+    for(frame.y0=area.y0; frame.y0 <= area.y1; frame.y0++)
     {
-    	frame_y1 = frame_y0+1;
-    	object->draw_this(this);
+    	frame.y1 = frame.y0+1;
+    	if( object )
+    	{
+    		if(!(object->flags & GO_FLG_TRANSPARENT))
+    			clear_rect(area);
+    		object->draw_this(this);
+    		if(!(object->flags & GO_FLG_ENABLED))
+    		{
+    			object->draw_line(object->rect.x0, object->rect.y0, object->rect.x1, object->rect.y1);
+    			object->draw_line(object->rect.x0, object->rect.y1, object->rect.x1, object->rect.y0);
+    		}
+    	}
     }
-    for (frame_y0=(area.y0 - (area.y0&7)); frame_y0 <= area.y1; frame_y0 += 8)
+    for (frame.y0=(area.y0 - (area.y0&7)); frame.y0 <= area.y1; frame.y0 += 8)
     {
     	update_screen();
     }
 }
 
-void ST7565S::redraw_screen(WINDOW desktop)
+void ST7565S::direct_write(GSplash draw_cb)
 {
-    WINDOW win;
-    WINDOW top;
-	bool update=false;
-
-	if( (unsigned)(CURRENT_TIME-reset_timeout) > 500 )
-	{
-		reset_timeout = CURRENT_TIME;
-		lcd_reset();
-	}
-
 	clear_screen();
-	frame_x0 = rect.x0;
-	frame_x1 = rect.x1;
-    for(frame_y0=0; frame_y0<size_y; frame_y0++)
+	frame.x0 = 0;
+	frame.x1 = size_x-1;
+    for(frame.y0=0; frame.y0 < size_y; frame.y0++)
     {
-    	frame_y1 = frame_y0+1;
-    	win = desktop;
-    	while(win)
-    	{
-    		update = true;
-    		top = (WINDOW)win->next;
-			#if GUI_DISPLAYS > 1
-			while(top && !(display & top->displays))
-				top = (WINDOW) top->next;
-
-			if(display & desktop->displays)
-			#endif
-			{
-				if( (!top) || (win->rect.as_int != top->rect.as_int) )
-				{
-					set_font(&FNT7x9);
-					color = PIX_WHITE;
-					if( win->callback((unsigned int)this, WM_DRAW))
-					{
-						update = false;
-					}
-				}
-			}
-
-    		win = top;
-    	}
-
+    	frame.y1 = frame.y0+1;
+    	draw_cb(this);
     }
-	if(update)
-	for (frame_y0=(rect.y0 - (rect.y0&7)); frame_y0 <= rect.y1; frame_y0 += 8)
-	{
-		update_screen();
-	}
-
+    for (frame.y0=0; frame.y0 < size_y; frame.y0 += 8)
+    {
+    	update_screen();
+    }
 }
+

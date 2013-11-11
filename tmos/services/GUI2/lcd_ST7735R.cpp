@@ -134,17 +134,6 @@ const unsigned short ST7735R_init_3[] =
 	TFT_RASET, TFT_DATA(0), TFT_DATA(0), TFT_DATA(0), TFT_DATA(127),
 };
 
-// InitLcd is called to initialize the hardware
-void ST7735R::lcd_init(GUI_CB splash)
-{
-	LCD_MODULE::lcd_init(splash);
-
-    //Splash screen..
-    if(splash)
-    {
-    	lcd_single_window(splash);
-    }
-}
 
 void ST7735R::lcd_reset()
 {

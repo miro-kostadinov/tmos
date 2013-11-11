@@ -9,83 +9,46 @@
 
 
 
-unsigned int GDialog::process_key (GMessage msg)
+
+unsigned int GDialog::process_key (GMessage& msg)
 {
-	if(msg.param == KEY_ESC)
-	{
-		close (GO_IDCANCEL);
+	if(GWindow::process_key(msg))
 		return 1;
-	}
-	if(focus && focus->message(msg))
-		return 1;
+
 	switch (msg.param)
 	{
 	case KEY_RIGHT:
 	case KEY_DOWN:
-		if (focus)
-		{
-			if (focus->nextObj)
-				focus->nextObj->get_focus();
-		else
-			if (children)
-				children->get_focus();
-		}
-		else
-		{
-			if (children)
-			{
-				children->get_focus();
-			}
-			else
-				return 0;
-		}
-		return 1;
+		return focus_on_next();
+
 	case KEY_LEFT:
 	case KEY_UP:
-		if (!focus)
-		{
-			if (children)
-				focus = children;
-			else
-				return 0;
-		}
-		if (focus == children)
-		{
-			GObject* tmp = focus;
-			while (tmp->nextObj)
-				tmp = tmp->nextObj;
-			tmp->get_focus();
-		}
-		else
-		{
-			GObject* tmp = children;
-			while (tmp->nextObj && tmp->nextObj != focus)
-				tmp = tmp->nextObj;
-			if (tmp->nextObj == focus)
-				tmp->get_focus();
-		}
-		return 1;
+		return focus_on_previous();
+
 	default:
 		break;
 	}
 	return 0;
 }
 
-unsigned int GDialog::process_command (GMessage msg)
+unsigned int GDialog::process_command (GMessage& msg)
 {
 	switch(msg.param)
 	{
 	case GO_IDOK:
-		close(GO_IDOK);
+		notify_message(WM_CLOSE, GO_IDOK, this);								//closes the window
 		return 1;
 	case GO_IDCANCEL:
-		close(GO_IDCANCEL);
+		notify_message(WM_CLOSE, GO_IDCANCEL, this);							//closes the window
 		return 1;
+	default:
+		notify_message(WM_COMMAND, msg.param, NULL);
+		return 0;
 	}
 	return 0;
 }
 
-unsigned int GDialog::process_default (GMessage msg)
+unsigned int GDialog::process_default (GMessage& msg)
 {
 	switch (msg.code)
 	{
@@ -96,7 +59,10 @@ unsigned int GDialog::process_default (GMessage msg)
 		}
 		else
 			((GObject*)msg.param)->set_flag (GO_FLG_CHECKED);
+		notify_message(WM_COMMAND, 0, ((GObject*)msg.param));
 		return 1;
+	default:
+		return 0;
 	}
 	return 0;
 }

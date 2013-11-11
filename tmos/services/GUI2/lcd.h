@@ -3,13 +3,11 @@
 
 #include <hardware_cpp.h>
 #include <fonts.h>
-//#include <stdgui.h>
-//#include <gui_obj_list.h>
 #include <gcontainer.h>
-struct CWINDOW;
-#define ALL_LEFT		0
-#define ALL_RIGHT 		1
-#define ALL_CENTER		2
+
+//#define ALL_LEFT		0
+//#define ALL_RIGHT 		1
+//#define ALL_CENTER		2
 
 #define SIG_BACKLIGHT_TASK	1
 
@@ -42,15 +40,16 @@ struct CWINDOW;
 #define BKLT_PIN_INDX	0
 #define RST_PIN_INDX	1
 
+typedef void (* GSplash )(LCD_MODULE* lcd);
 
 struct LCD_MODULE: public GContainer
 {
+
 	short pos_x; //!< current draw pos
 	short pos_y; //!< current draw pos
 	unsigned short size_x;
 	unsigned short size_y;
-	unsigned short frame_y0;
-	unsigned short frame_y1;
+	RECT_T	frame;
 	unsigned short chars_per_row;
 	unsigned short allign;
 	const RENDER_MODE* font;
@@ -69,36 +68,33 @@ struct LCD_MODULE: public GContainer
 	;
 	virtual ~LCD_MODULE(){};
 
-	virtual void lcd_init(GUI_CB splash);
+	virtual void lcd_init(GSplash splash);
 	virtual void lcd_reset()=0;
 	virtual void backlight_signal(void);
 
-//	virtual void draw_bitmap(unsigned int x0, unsigned int y0,
-//			const unsigned char* src, unsigned int width, unsigned int rows);//=0;
-//	virtual void draw_hline(unsigned int x0, unsigned int x1, unsigned int y);//=0;
-//	virtual void draw_bline(unsigned int x0, unsigned int x1, unsigned int y);//=0;
-//	virtual void draw_vline(unsigned int y0, unsigned int y1, unsigned int x);//=0;
-//	virtual void
-//	invert_vline(unsigned int y0, unsigned int y1, unsigned int x);//=0;
-//	virtual void
-//	invert_hline(unsigned int x0, unsigned int x1, unsigned int y);//=0;
 	virtual void update_screen()=0;
 	virtual void clear_screen()=0;
-	virtual void redraw_screen(WINDOW desktop)=0;
 	void invalidate(GObject* object, RECT_T area);
 	virtual void redraw_rect (GObject* object, RECT_T area){};
 	virtual void adjust_for_screen (GObject** object, RECT_T &area){};
 
 	void set_font(const RENDER_MODE* afont);
 	void set_xy_all(unsigned int xy, unsigned int all);
-	void clear_rect(unsigned int x0, unsigned int y0, unsigned int x1,
-			unsigned int y1);
+	void clear_rect (const RECT_T& area);
 	const char* get_next_txt_row(const char *txt);
 	const char* draw_text(const char *txt);
 	const char* draw_text_no_space(const char *txt);
 	void draw_icon (unsigned char icon);
 	const char* draw_row(const char *txt);
-	void lcd_single_window(GUI_CB callback);
+	virtual void direct_write(GSplash draw_cb){};
 };
 
+struct GClientLcd : GObject
+{
+	GClientLcd(GObject* ptr): GObject(){client_rect = ptr->client_rect;}
+	~GClientLcd(){RelaseLcd();}
+	bool CreateLcd(RECT_T& area, LCD_MODULE* lcd);
+	bool RelaseLcd( );
+
+};
 #endif

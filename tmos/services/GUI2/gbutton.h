@@ -30,12 +30,15 @@ struct GButton: GObject
 	unsigned int code;
 	unsigned char type;
 
-	GButton (GId id_t, RECT_T rect_t, unsigned int msg_code,
+	GButton (GId id_t, const RECT_T& rect_t, unsigned int msg_code,
 			const char* label_t, GFlags flags_t = GO_FLG_DEFAULT, unsigned char type_t = GB_TYPE_NONE )
 		:GObject (id_t, rect_t, flags_t), label (label_t), code (msg_code), type(type_t){};
 
-	void draw_this (LCD_MODULE* lcd);
-	unsigned int process_key (GMessage msg);
+	virtual void allocate_border(void);
+	virtual void draw_border(RECT_T& frame);
+
+	virtual void draw_this (LCD_MODULE* lcd);
+	virtual unsigned int process_key (GMessage& msg);
 };
 
 

@@ -8,25 +8,50 @@
 #ifndef GWINDOW_H_
 #define GWINDOW_H_
 #include <tmos.h>
+#include <mqueue.h>
 #include <gcontainer.h>
+#include <gui_drv.h>
 
 struct GWindow: GContainer
 {
 #if GUI_DISPLAYS > 1
 	unsigned char displays;
 #endif
+private:
 	CHandle hnd;
-
-	GWindow (): displays(0xFF) {};
-	GWindow (GId id_t, RECT_T rect_t,
+	mqueue<GMessage, MAX_MESSAGES> Queue;
+public:
+	GWindow (): displays(0xFF)
+	{
+		hnd.mode1 = GUI_HND_UNUSED;
+	};
+	GWindow (GId id_t, const RECT_T& rect_t,
 			unsigned char displays_t, GFlags flags_t = GO_FLG_DEFAULT)
-	:GContainer (id_t, rect_t, flags_t), displays (displays_t) {};
+	:GContainer (id_t, rect_t, flags_t), displays (displays_t)
+	{
+		hnd.mode1 = GUI_HND_UNUSED;
+	};
+	virtual ~GWindow()
+	{
+		Destroy();
+	}
+protected:
+	virtual void draw_this(LCD_MODULE* lcd);
+	virtual unsigned int initialize (GMessage& msg);
+	virtual unsigned int process_key (GMessage& msg);
+	virtual unsigned int process_destroy(GMessage& msg);
 
-	void draw_this(LCD_MODULE* lcd);
-	unsigned int initialize (GMessage msg);
-	unsigned int process_key (GMessage msg);
+	friend void gui_thread(GUI_DRIVER_INFO* drv_info);
+
+public:
+	// client methods
+	virtual bool DefWinProc(GMessage& msg);
 	unsigned int DoModal();
-	bool close (unsigned int reason);
+	void PostMessage(WM_MESSAGE code, unsigned int param, GObject* dst = NULL);
+	bool GetMessage(GMessage& msg);
+	bool Create();
+	bool Destroy();
+	void notify_message(WM_MESSAGE code, unsigned int param, GObject* dst = NULL);
 };
 
 

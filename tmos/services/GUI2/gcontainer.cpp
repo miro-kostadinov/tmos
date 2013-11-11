@@ -10,15 +10,12 @@
 #include <lcd.h>
 
 
-unsigned int GContainer::initialize (GMessage msg)								//sets the client rectangle and calls the initialize of the children
+unsigned int GContainer::initialize (GMessage& msg)								//sets the client rectangle and calls the initialize of the children
 {
+	client_rect = rect;
 	if(flags & GO_FLG_BORDER)
-	{
-		client_rect.x0 = rect.x0 +1;
-		client_rect.y0 = rect.y0 +1;
-		client_rect.x1 = rect.x1 -1;
-		client_rect.y1 = rect.y1 -1;
-	}
+		allocate_border();
+
 	for (GObject* tmp = children; tmp; tmp = tmp->nextObj)
 	{
 		tmp->initialize(msg);
@@ -28,7 +25,7 @@ unsigned int GContainer::initialize (GMessage msg)								//sets the client rect
 	return 0;
 }
 
-unsigned int GContainer::process_idle(GMessage msg)								//broadcasts the WM_IDLE message
+unsigned int GContainer::process_idle(GMessage& msg)								//broadcasts the WM_IDLE message
 {
 	for (GObject* tmp = children; tmp; tmp = tmp->nextObj)
 	{
@@ -52,98 +49,246 @@ GObject* GContainer::addChild (GObject* child)
 	return child;
 }
 
+GObject* GContainer::get_object(GId xid)
+{
+	if(id != xid)
+	{
+		GObject* tmp = children;
+		while (tmp)
+		{
+			if(tmp->id == xid)
+				return tmp;
+			tmp = tmp->nextObj;
+		}
+		return GObject::get_object(xid);
+	}
+	return this;
+}
+
+bool GContainer::is_available()
+{
+	if((flags & (GO_FLG_ENABLED|GO_FLG_SHOW)) == (GO_FLG_ENABLED|GO_FLG_SHOW))
+	{
+		GObject* tmp = children;
+		while (tmp)
+		{
+			if(tmp->is_available())
+				return true;
+			tmp = tmp->nextObj;
+		}
+	}
+	return false;
+}
+
+//GObject* GContainer::next_available()
+//{
+//	if((flags & (GO_FLG_ENABLED|GO_FLG_SHOW)) == (GO_FLG_ENABLED|GO_FLG_SHOW))
+//	{
+//		GObject* tmp = children;
+//		while (tmp)
+//		{
+//			if(tmp->is_available())
+//				return tmp;
+//			tmp = tmp->nextObj;
+//		}
+//	}
+//	return NULL;
+////	return GObject::next_available();
+//}
+
+bool GContainer::focus_on_previous()
+{
+	GObject* tmp;
+	if (!focus)
+	{
+		tmp = children;
+		while (tmp)
+		{
+			if(tmp->is_available())
+			{
+				if(tmp->get_focus())
+					return true;
+			}
+			tmp = tmp->nextObj;
+		}
+		return false;
+	}
+	else
+	{
+		tmp = focus;
+		GObject* last = children;
+		while(tmp && last)
+		{
+			if(last->is_available())
+			{
+				if(last == focus)
+				{
+					if(tmp == focus)
+					{
+						while(last)
+						{
+							if(last->is_available())
+								tmp = last;
+							last = last->nextObj;
+						}
+					}
+					if(tmp && tmp->get_focus())
+						return true;
+				}
+				tmp = last;
+
+			}
+			last = last->nextObj;
+		}
+	}
+	return false;
+}
+
+bool GContainer::focus_on_next()
+{
+	GObject* tmp;
+	if (focus)
+	{
+		tmp = focus->nextObj;
+		while(tmp)
+		{
+			if(tmp->is_available())
+			{
+				if(tmp->get_focus())
+					return true;
+			}
+			tmp = tmp->nextObj;
+		}
+	}
+	tmp = children;
+	while (tmp)
+	{
+		if(tmp->is_available())
+		{
+			if(tmp->get_focus())
+				return true;
+		}
+		tmp = tmp->nextObj;
+	}
+	return false;
+}
+
+GObject* GContainer::first_available()
+{
+	GObject* tmp = children;
+	while (tmp)
+	{
+		if(tmp->is_available())
+			break;
+		tmp = tmp->nextObj;
+	}
+	return tmp;
+}
+
+GObject* GContainer::last_available()
+{
+	GObject* tmp = first_available();
+	GObject* last = NULL;
+	while (tmp)
+	{
+		if(tmp->is_available())
+			last = tmp;
+		tmp = tmp->nextObj;
+	}
+	return last;
+}
+
 bool GContainer::close (GObject* toClose)
 {
-	if (children == toClose)
-	{
-		if (children->nextObj)
-			children = children->nextObj;
-		if (toClose == focus)
-			set_focus_last();
-		return true;
-	}
 	GObject* tmp = children;
-	while (tmp->nextObj)
+	if(tmp)
 	{
-		if (toClose == tmp->nextObj)
+		if (children == toClose)
 		{
-			tmp->nextObj = toClose->nextObj;
+			if (children->nextObj)
+				children = children->nextObj;
 			if (toClose == focus)
 				set_focus_last();
 			return true;
 		}
-		tmp = tmp->nextObj;
+		while (tmp->nextObj)
+		{
+			if (toClose == tmp->nextObj)
+			{
+				tmp->nextObj = toClose->nextObj;
+				if (toClose == focus)
+					set_focus_last();
+				return true;
+			}
+			tmp = tmp->nextObj;
+		}
 	}
 	return false;
 }
 
-bool GContainer::close(unsigned char closeID)
+bool GContainer::get_focus()
 {
-	GObject* tmp = children;
-	while (tmp)
+	if(GObject::get_focus())
 	{
-		if (tmp->id == closeID)
-			return close(tmp);
-		tmp = tmp->nextObj;
+		if (focus)
+		{
+			if(focus->is_available())
+			{
+				focus->set_flag(GO_FLG_SELECTED);
+				return true;
+			}
+		}
+		else
+		{
+			GObject* tmp = first_available();
+			if(tmp && tmp->get_focus())
+				return true;
+//			GObject *tmp = children;
+//			while(tmp)
+//			{
+//				if(tmp->get_focus())
+//					return true;
+//				tmp = tmp->nextObj;
+//			}
+		}
 	}
 	return false;
-}
-
-void GContainer::get_focus()
-{
-	GObject::get_focus();
-	if (focus)
-		focus->set_flag(GO_FLG_SELECTED);
 }
 
 bool GContainer::set_focus_first ()
 {
-	if (children)
-	{
-		focus = children;
-		return true;
-	}
-	return false;
+	focus = first_available();
+	if(focus)
+		focus->set_flag(GO_FLG_SELECTED);
+	return (focus);
+//	if (children)
+//	{
+//		focus = children;
+//		return true;
+//	}
+//	return false;
 }
 
 bool GContainer::set_focus_last ()
 {
-	focus = children;
-	while (focus->nextObj)
-		focus = focus->nextObj;
-	if (!focus)
-		return false;
-	return true;
-}
-
-bool GContainer::set_focus(GObject* focused)
-{
-	GObject* tmp = children;
-	while (tmp)
-	{
-		if (tmp == focused)
-		{
-			focus = tmp;
-			return true;
-		}
-		tmp = tmp->nextObj;
-	}
-	return false;
-}
-
-bool GContainer::set_focus(unsigned char id_t)
-{
-	GObject* tmp = children;
-	while (tmp)
-	{
-		if (tmp->id == id_t)
-		{
-			focus = tmp;
-			return true;
-		}
-		tmp = tmp->nextObj;
-	}
-	return false;
+//	GObject *obj = children;
+//	focus = NULL;
+//	if(obj)
+//	{
+//		while (obj->nextObj)
+//		{
+//			if(obj->is_available())
+//				focus = obj;
+//			obj = obj->nextObj;
+//		}
+//		if(focus)
+//			focus->set_flag(GO_FLG_SELECTED);
+//	}
+//	return (focus);
+	focus = last_available();
+	if(focus)
+		focus->set_flag(GO_FLG_SELECTED);
+	return (focus);
 }
 
 void GContainer::draw (LCD_MODULE* lcd, RECT_T area)
@@ -154,7 +299,8 @@ void GContainer::draw (LCD_MODULE* lcd, RECT_T area)
 		GObject* tmp = children;
 		while (tmp)
 		{
-			tmp->draw(lcd, area);
+			if(tmp->flags & GO_FLG_SHOW)
+				tmp->draw(lcd, area);
 			tmp = tmp->nextObj;
 		}
 	}
@@ -162,7 +308,7 @@ void GContainer::draw (LCD_MODULE* lcd, RECT_T area)
 
 void GContainer::draw_this(LCD_MODULE* lcd)
 {
-//	clear_rect(rect.x0, rect.y0, rect.x1, rect.y1);
+//	clear_rect(rect);
 	if(flags & GO_FLG_BORDER)
 		draw_border(rect);
 }

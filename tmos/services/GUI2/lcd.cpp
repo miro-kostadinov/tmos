@@ -42,7 +42,7 @@ WEAK void backlight_thread(LCD_MODULE *lcd)
 TASK_DECLARE_STATIC(backlight_task, "BLIT", (void (*)(void))backlight_thread, 10, 30+TRACE_SIZE);
 
 
-void LCD_MODULE::lcd_init(GUI_CB splash)
+void LCD_MODULE::lcd_init(GSplash splash)
 {
 #if GUI_DISPLAYS > 1
 	if(display == 1)
@@ -62,6 +62,7 @@ void LCD_MODULE::lcd_init(GUI_CB splash)
     //LCD Handle initialization (LCD attached to SPI)
     lcd_hnd->tsk_safe_open(lcd_hnd->drv_index, lcd_hnd->mode.as_voidptr);
     lcd_reset();
+    direct_write(splash);
 }
 
 void LCD_MODULE::backlight_signal(void)
@@ -71,6 +72,10 @@ void LCD_MODULE::backlight_signal(void)
 
 void LCD_MODULE::invalidate (GObject* object, RECT_T area)						//goes through the window list and adjusts the area vertically
 {
+
+	if(!area.normalize(rect))
+		return;
+
 	GObject* tmp = object->nextObj;
 	if(object == this)
 	{
@@ -80,7 +85,7 @@ void LCD_MODULE::invalidate (GObject* object, RECT_T area)						//goes through t
 	}
 	while (tmp)
 	{
-		if (((GWindow*)tmp)->displays & display)
+		if ( (((GWindow*)tmp)->displays & display) && (tmp->flags & GO_FLG_SHOW) )
 		{
 			if (area.x0 >= tmp->rect.x0 && area.x1 <= tmp->rect.x1)
 			{
@@ -105,7 +110,10 @@ void LCD_MODULE::invalidate (GObject* object, RECT_T area)						//goes through t
 	{
 		if (((GWindow*)tmp)->displays & display)
 		{
-			tmp->draw(this, area);											//calls the adraw function (for the area) for every window after object in the Z-order
+			if (tmp->flags & GO_FLG_SHOW)
+			{
+				tmp->draw(this, area);											//calls the adraw function (for the area) for every window after object in the Z-order
+			}
 		}
 	}
 }
@@ -156,10 +164,10 @@ const char* LCD_MODULE::get_next_txt_row(const char *txt)
 	    if(width)
 	    {
 	    	len = width -pos_x -font->hdistance;
-	    	if(allign != ALL_LEFT)
+	    	if((allign & TA_HORIZONTAL) != TA_LEFT)
 	    	{
 	            pos = size_x - len;
-	    		if(allign == ALL_CENTER)
+	    		if((allign & TA_HORIZONTAL) == TA_CENTER)
 	    			pos >>= 1;
 	    	}
 	    	else
@@ -220,10 +228,10 @@ const char* LCD_MODULE::draw_text_no_space (const char *txt)
     if(width)
     {
     	len = width -pos_x -font->hdistance;
-    	if(allign != ALL_LEFT)
+    	if((allign & TA_HORIZONTAL) != TA_LEFT)
     	{
             pos = size_x - len;
-    		if(allign == ALL_CENTER)
+    		if((allign & TA_HORIZONTAL) == TA_CENTER)
     			pos >>= 1;
     	}
     	else
@@ -289,10 +297,10 @@ const char* LCD_MODULE::draw_row(const char *txt)
     if(width)
     {
     	len = width -pos_x -font->hdistance;
-    	if(allign != ALL_LEFT)
+    	if((allign & TA_HORIZONTAL) != TA_LEFT)
     	{
             pos = size_x - len;
-    		if(allign == ALL_CENTER)
+    		if((allign & TA_HORIZONTAL) == TA_CENTER)
     			pos >>= 1;
     	}
     	else
@@ -319,26 +327,32 @@ const char* LCD_MODULE::draw_row(const char *txt)
 }
 
 
-void LCD_MODULE::clear_rect(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
+void LCD_MODULE::clear_rect (const RECT_T& area)
 {
-
-    while(y0 <= y1)
-    {
-        draw_bline(x0, x1, y0++);
-    }
+	int y = area.y0;
+    while(y <= area.y1)
+        draw_bline(area.x0, area.x1, y++);
 }
 
-void LCD_MODULE::lcd_single_window(GUI_CB callback)
+bool GClientLcd::CreateLcd(RECT_T& area, LCD_MODULE* lcd)
 {
-	CWindow win;
-	win.rect.x0 = 0;
-	win.rect.y0 = 0;
-	win.rect.x1 = size_x;
-	win.rect.y1 = size_y;
-	win.mode.as_voidptr = (void*)callback;
-    win.next = NULL;
-#if GUI_DISPLAYS > 1
-    win.displays = display;
-#endif
-    redraw_screen(&win);
+	if(client_rect.normalize(lcd->frame))
+	{
+		parent = lcd;
+		rect=lcd->frame;
+		lcd->frame = client_rect;
+		client_rect = area; // replace the region of a drawing with this scrolling
+		return true;
+	}
+	return false;
+}
+
+bool GClientLcd::RelaseLcd( )
+{
+	if(parent)
+	{
+		((LCD_MODULE*)parent)->frame = rect;
+		return true;
+	}
+	return false;
 }

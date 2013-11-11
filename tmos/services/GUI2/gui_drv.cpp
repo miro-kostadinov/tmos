@@ -21,25 +21,16 @@
 #endif
 
 
-#define ID_YES_BUTTON 0x01
-#define ID_NO_BUTTON 0x02
-
 //*----------------------------------------------------------------------------
 //*			Portable
 //*----------------------------------------------------------------------------
 
-WEAK_C RES_CODE maindlg_cb(WINDOW obj, unsigned int param, unsigned int msg)
-{
-	return (0);
-}
 
 GWindow* gui_test_main ()
 {
 	GWindow* win;
-	win = new GWindow(1, RECT_T (0, 0, 120, 31), 0xFF);
-	win->addChild(new GButton(12, RECT_T(50,19,100,31), ID_NO_BUTTON, "Nooooo"));
-	win->addChild(new GButton(11, RECT_T (0,19,49,31), ID_YES_BUTTON,  "Yes"));
-	win->addChild(new GText (10, RECT_T (0,0,210,18), "Choose one of the buttons bellow!!!"));
+	win = new GWindow(1, RECT_T (0, 0, 132, 64), 0x3, GO_FLG_DEFAULT|GO_FLG_SELECTED);
+	win->addChild(new GText (1, RECT_T (0,0,132,30), "A600C", GO_FLG_DEFAULT, SS_DEFAULT, &FNT10x21));
 	return win;
 }
 
@@ -50,31 +41,30 @@ WEAK_C void init_main_menu(void)
 
 extern TASK_STRU gui_task;
 
-WEAK_C RES_CODE splashdlg_cb(WINDOW obj, LCD_MODULE* lcd, unsigned int msg)
+__attribute__ ((weak)) void splash_screen(LCD_MODULE* lcd)
 {
-	int pos;
-
-	lcd->set_font(&FNT10x21);
-	pos = (lcd->size_y - 2* lcd->font->vspacing)/2;
-	if(pos > 0)
-	{
-		lcd->set_xy_all(pos-7, ALL_CENTER);
-		lcd->color = PIX_RED;
-		lcd->draw_text("TMOS");
-		lcd->color = PIX_BLUE;
-		lcd->draw_text("DEMO");
-	} else
-	{
-		pos = (lcd->size_y - lcd->font->vspacing)/2;
-		lcd->set_xy_all(pos, ALL_CENTER);
-		lcd->color = PIX_RED;
-		lcd->draw_text("TMOS");
-		lcd->draw_hline(0, lcd->size_x-1, 0);
-		lcd->draw_hline(0, lcd->size_x-1, lcd->size_y-1);
-		lcd->draw_vline(0, lcd->size_y-1, 0);
-		lcd->draw_vline(0, lcd->size_y-1, lcd->size_x-1);
-	}
-	return (0);
+//	int pos;
+//
+//	lcd->set_font(&FNT10x21);
+//	pos = (lcd->size_y - 2* lcd->font->vspacing)/2;
+//	if(pos > 0)
+//	{
+//		lcd->set_xy_all(pos-7, TA_CENTER);
+//		lcd->color = PIX_RED;
+//		lcd->draw_text("TMOS");
+//		lcd->color = PIX_BLUE;
+//		lcd->draw_text("DEMO");
+//	} else
+//	{
+//		pos = (lcd->size_y - lcd->font->vspacing)/2;
+//		lcd->set_xy_all(pos, TA_CENTER);
+//		lcd->color = PIX_RED;
+//		lcd->draw_text("TMOS");
+//		lcd->draw_hline(0, lcd->size_x-1, 0);
+//		lcd->draw_hline(0, lcd->size_x-1, lcd->size_y-1);
+//		lcd->draw_vline(0, lcd->size_y-1, 0);
+//		lcd->draw_vline(0, lcd->size_y-1, lcd->size_x-1);
+//	}
 }
 
 WEAK_C int detect_displays(GUI_DRIVER_INFO* drv_info)
@@ -126,19 +116,19 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 #endif
 
 
-	desktop->get_focus();
 	for(int i=0; i<GUI_DISPLAYS; i++)
 	{
-		if(drv_info->lcd[i])
+		LCD_MODULE* lcd;
+		if( (lcd=drv_info->lcd[i]) )
 		{
-			drv_info->lcd[i]->children = desktop;
+			lcd->children = desktop;
 			#if GUI_DISPLAYS > 1
 				desktop->displays |= (1<<i);
 			#endif
-			drv_info->lcd[i]->lcd_init((GUI_CB)splashdlg_cb);
+			lcd->lcd_init(splash_screen);
 		}
 	}
-	tsk_sleep(3000);
+//	tsk_sleep(3000);
 
 
 	init_main_menu();
@@ -153,23 +143,70 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     // start gui handle
 	gui_hnd.tsk_safe_open(GUI_DRV_INDX, 0);			//mode = 1 - control handle
 	gui_hnd.tsk_start_read(NULL, 0);
-	for (tmp = desktop; tmp; tmp = (GWindow*)tmp->nextObj)
-		tmp->invalidate(tmp, tmp->rect);
-	GQueue.push(GMessage(WM_DRAW,0, 0L, desktop->children));
+
+	desktop->initialize(msg);
+	desktop->invalidate(desktop, desktop->rect);
+	while(GQueue.pop(msg))
+	{
+		;
+	}
 	for (;;)
 	{
 		res = tsk_wait_signal(-1u, 100 - (CURRENT_TIME %100));
 
+		if(res & SIG_GUI_TASK)
+		{
+			for (tmp = desktop; tmp; tmp = (GWindow*)tmp->nextObj)
+			{
+				if(tmp->hnd.mode0)
+					usr_HND_SET_STATUS(&tmp->hnd, FLG_SIGNALED);
+			}
+			res &=~SIG_GUI_TASK;
+			if(!res)
+				continue;
+		}
 		if(res & gui_hnd.signal)												//checks for new items
         {
 			drv_info->lcd[0]->backlight_signal();
         	gui_hnd.res &= ~FLG_SIGNALED;
 
         	GWindow* win = (GWindow*)((HANDLE)gui_hnd.dst.as_voidptr)->mode.as_voidptr;
-        	desktop->parent->focus->nextObj = win;								//adds the new item to the Z list
-        	win->parent = desktop->parent;
-        	win->get_focus();
-        	GQueue.push(GMessage(WM_INIT, 0, 0L, win));							//send WM_INIT to the new window
+        	RES_CODE hnd_ret = RES_SIG_ERROR;
+			if(win->hnd.cmd & FLAG_WRITE)
+			{
+				if(win->hnd.mode1 == GUI_HND_ATTACH)
+				{
+					msg = *(GMessage *)(((HANDLE)gui_hnd.dst.as_voidptr))->src.as_voidptr;
+					GQueue.push(msg);
+					if(msg.code == WN_DESTROY)
+					{
+						win->hnd.mode1 = GUI_HND_DETACH;
+						hnd_ret = RES_IDLE;
+					}
+					else
+						hnd_ret = RES_SIG_OK;
+				}
+				if(win->hnd.mode1 == GUI_HND_OPEN)
+				{
+					desktop->parent->focus->nextObj = win;								//adds the new item to the Z list
+					win->parent = desktop->parent;
+					GQueue.push(GMessage(WM_INIT, 0, 0L, win));							//send WM_INIT to the new window
+					win->hnd.mode1 = GUI_HND_ATTACH;
+					hnd_ret = RES_SIG_OK;										//signals the window thread
+				}
+			}
+			else
+			{
+				if(win->hnd.cmd & FLAG_READ && win->hnd.mode1 != GUI_HND_OPEN)
+				{
+					if(!win->Queue.empty())
+						hnd_ret = RES_SIG_OK;
+					else
+						hnd_ret = RES_IDLE;
+				}
+			}
+			if(hnd_ret & FLG_SIGNALED)
+				usr_HND_SET_STATUS(&win->hnd, hnd_ret);
 			gui_hnd.tsk_start_read(NULL, 0);
         }
         if(res &  key_hnd.signal)												//checks for pressed buttons
@@ -186,10 +223,28 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 		}
 		while (GQueue.pop(msg))													//processes all messages in the queue
 		{
+#if GUI_DEBUG
+			if(msg.code != WM_IDLE)
+			{
+				TRACELN("%X[%d] ( %s %X ", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param);
+				if(WM_DRAW)
+				{
+					if(msg.lparam)
+						RECT_T(msg.lparam).dump();
+					else
+						msg.dst->rect.dump();
+				}
+				else
+				{
+					TRACE("%ld ", msg.lparam);
+				}
+				TRACE1(")");
+			}
+#endif
 			if (msg.dst)
 				msg.dst->message(msg);
 			else
-				desktop->parent->message(msg);
+				desktop->parent->message(msg);    // lcd message
 		}
 	}
 }
@@ -211,7 +266,6 @@ static void display_init(GUI_DRIVER_INFO* drv_info)
 void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 {
 	GUI_DRIVER_DATA*  drv_data;
-	WINDOW win = (WINDOW)param;
 
 	drv_data = drv_info->drv_data;
 	switch(reason)
@@ -221,40 +275,39 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
             break;
 
 	    case DCR_OPEN:
-	    	if(win->mode.as_int)
+	    	if(param->mode.as_int)
 	    	{
-	    		// WINDOW objects
-//				win->rect.x0 = 0;
-//				win->rect.y0 = 0;
-//				win->rect.x1 = drv_info->lcd->size_x;
-//				win->rect.y1 = drv_info->lcd->size_y;
+	    		param->mode1 = GUI_HND_OPEN;
 	    	}
-	    	win->res = RES_OK;
+	    	param->res = RES_OK;
 	    	break;
 
 	    case DCR_HANDLE:
-	    	if(win->mode.as_int)
+	    	if(param->mode.as_int)
 	    	{
-	    		locked_set_byte(&win->mode0, FLG_OK);
+	    		locked_set_byte(&param->mode0, FLG_OK);
 	    		svc_send_signal(&gui_task, SIG_GUI_TASK);
 	    	}
 	    	break;
 
 	    case DCR_CANCEL:
-	    	if(win->mode.as_int)
+	    	if(param->mode.as_int)
 	    	{
 	    		// this is WINDOW handle...
-	    		locked_set_byte(&win->mode0, FLG_SIGNALED);
-		    	win->svc_list_cancel(drv_data->waiting);
+	    		locked_set_byte(&param->mode0, FLG_SIGNALED);
+	    		if(!param->svc_list_cancel(drv_data->waiting))
+	    		{
+		    		svc_send_signal(&gui_task, SIG_GUI_TASK);
+	    		}
 	    	} else
 	    	{
 	    		// not a WINDOW
-	    		if(win == drv_data->helper)
+	    		if(param == drv_data->helper)
 	    		{
 					//the helper task is waiting for object...
 					drv_data->helper = NULL;
-					win->dst.as_voidptr = NULL;
-					svc_HND_SET_STATUS(win, RES_SIG_OK);
+					param->dst.as_voidptr = NULL;
+					svc_HND_SET_STATUS(param, RES_SIG_OK);
 	    		}
 	    	}
 	    	break;
@@ -276,7 +329,6 @@ void GUI_DSR(GUI_DRIVER_INFO* drv_info, HANDLE hnd)
 		// this is GUI_OBJECT handle...
 		hnd->res = RES_BUSY;
 		hnd->mode0 = 0;
-		hnd->mode1 = 0;
 		if( (tmp=drv_data->helper) )
 		{
 			//the helper task is waiting for object...

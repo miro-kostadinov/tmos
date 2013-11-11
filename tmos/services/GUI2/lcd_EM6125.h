@@ -25,7 +25,7 @@ struct EM6125: public LCD_MODULE
 	;
 
 	//virtual functions
-	void lcd_init(GUI_CB splash);
+	void lcd_init(GSplash splash);
 	void lcd_reset();
 	void draw_bitmap(unsigned int x0, unsigned int y0,
 			const unsigned char* src, unsigned int width, unsigned int rows);
@@ -36,7 +36,6 @@ struct EM6125: public LCD_MODULE
 	void invert_hline(unsigned int x0, unsigned int x1, unsigned int y);
 	void update_screen();
 	void clear_screen();
-	void redraw_screen(WINDOW desktop);
 };
 
 #endif

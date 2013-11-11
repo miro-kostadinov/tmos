@@ -12,29 +12,38 @@
 
 struct GContainer:GObject {
 
+	friend GObject;
+
 	GObject* focus;
 	GObject* children;
 
 	GContainer (): focus(NULL), children(NULL) {};
-	GContainer (GId id_t, RECT_T rect_t, GFlags flags_t= GO_FLG_DEFAULT)
+	GContainer (GId id_t, const RECT_T& rect_t, GFlags flags_t= GO_FLG_DEFAULT)
 		:GObject (id_t, rect_t, flags_t), focus(NULL), children(NULL) {};
 	~GContainer();
 
-	unsigned int initialize (GMessage msg);
-	unsigned int process_idle(GMessage msg);
-
-	void draw (LCD_MODULE* lcd, RECT_T area);
-	void draw_this (LCD_MODULE* lcd);
-
 	virtual GObject* addChild (GObject* child);
+	virtual GObject* get_object(GId xid);
 
-	void get_focus ();
-	bool set_focus (GObject* focused);
-	bool set_focus (unsigned char focusId);
+protected:
+	virtual unsigned int initialize (GMessage& msg);
+	virtual unsigned int process_idle(GMessage& msg);
+
+	virtual void draw (LCD_MODULE* lcd, RECT_T area);
+	virtual void draw_this (LCD_MODULE* lcd);
+	virtual bool get_focus ();
+	virtual bool is_available();
+
+	// container specific
+	bool focus_on_previous();
+	bool focus_on_next();
+	GObject* first_available();
+	GObject* last_available();
+	bool close (GObject* toClose);
+
+private:
 	bool set_focus_first();
 	bool set_focus_last ();
-	bool close (GObject* toClose);
-	bool close (unsigned char closeId);
 };
 
 #endif /* GCONTAINER_H_ */

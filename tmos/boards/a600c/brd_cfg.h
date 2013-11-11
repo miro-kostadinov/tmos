@@ -62,16 +62,6 @@
 #define KEY_RIGHT			KEY_DEP_5
 #define KEY_ESC				KEY_ON
 
-// GUI messages
-#define WM_USER				0x01
-#define WM_DRAW				0x02
-#define WM_KEY				0x03
-#define WM_INIT				0x04
-#define WM_COMMAND			0x05
-#define WM_CHANGE			0x06
-#define WM_IDLE				0x07
-
-
 #define USE_TMOS_TL_V2		1
 #define USE_CSTRING			1
 #define USE_TTL_STRING 		0	//use old CSTRING
@@ -87,7 +77,8 @@
 #define USE_CACHE			0
 #define USE_SHA_1			1
 #define USE_BASE32			0
-#define USE_GUI				1
+#define USE_GUI				0
+#define USE_GUI2			1
 #define USE_USB				1
 #define USE_AES_TMOS		0
 #define	USE_GPIO_EXPANDER 	0
