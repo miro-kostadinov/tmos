@@ -36,7 +36,7 @@ public:
 	}
 
 	/** Push item in the queue **/
-	bool push(T item)
+	bool push(const T& item)
 	{
 		if(in2 != out)
 		{
