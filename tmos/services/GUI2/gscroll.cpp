@@ -135,7 +135,7 @@ void GScroll::SetScrollRange(GFlags sb, unsigned int p)
 	if(p > 1)
 	{
 		p--;
-		unsigned int view_size;
+		unsigned int view_size=0;
 		if(sb & GO_FLG_HSCROLL)
 			view_size = object->client_rect.width();
 		if(sb & GO_FLG_VSCROLL)
