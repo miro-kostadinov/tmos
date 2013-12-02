@@ -183,12 +183,14 @@ void ST7565S_RS::invert_vline( int y0, int y1, int x)
 void ST7565S_RS::update_screen()
 {
 	unsigned char cmd[4];
+	unsigned int* cmd_ptr;
 
 	cmd[0] = CMD_PAGE_ADR(frame.y0 /8);
 	cmd[1] = CMD_COLUMN_ADR_LO( (ST7565S_GET_START_COLUMN(lcd_mode) + frame.x0) & 0x0F);
 	cmd[2] = CMD_COLUMN_ADR_HI( ((ST7565S_GET_START_COLUMN(lcd_mode) + frame.x0) & 0xF0) >> 4);
 	cmd[3] = CMD_READ_WRITE_START;
-	*(unsigned int *)((void *)cmd) = __REV(__RBIT(*(unsigned int *)((void*)cmd)));
+	cmd_ptr = (unsigned int *)((void *)cmd);
+	*cmd_ptr = __REV(__RBIT(*cmd_ptr));
 
 	// A0=0
 //	PIO_Assert(pins[A0_PIN_INDX]);
