@@ -33,9 +33,9 @@
   * with the Cortex clock(HCLK), configurable in the SysTick Control and Status
   * Register.
   */
-#ifndef GET_SYSTICK_CLOCK
-#define GET_SYSTICK_CLOCK (system_clock_frequency >> 3)
-#endif
+//#ifndef GET_SYSTICK_CLOCK
+//#define GET_SYSTICK_CLOCK (system_clock_frequency >> 3)
+//#endif
 
 
 #endif /* SERIES_CPP_H_ */

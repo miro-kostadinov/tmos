@@ -245,6 +245,13 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 			break;
 		}
 
+		case DCR_CLOCK:
+			//patch for low speed cards
+			drv_info->hw_base->SDIO_CLKCR  = (drv_info->hw_base->SDIO_CLKCR &
+					~SDIO_CLKCR_CLKDIV) | SDIO_CLKCR_CLKDIV_Set(48000/16000 -2);
+
+			break;
+
 		case DCR_SIGNAL:
 			//signal rx/dma complete
 			// do nothing, use data end irq instead
