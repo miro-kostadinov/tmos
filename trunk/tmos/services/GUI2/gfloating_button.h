@@ -24,7 +24,7 @@ struct GFloating_Button: GContainer
 		:GContainer (id_t, rect_t, flags_t), label (label_t), code (msg_code), type(type_t){};
 
 
-	virtual void allocate_border(void);
+//	virtual void allocate_border(void);
 	virtual void draw_border(RECT_T& frame);
 	virtual unsigned int initialize (GMessage& msg);
 	virtual unsigned int process_key (GMessage& msg);

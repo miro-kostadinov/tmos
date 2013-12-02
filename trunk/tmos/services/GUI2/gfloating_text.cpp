@@ -27,6 +27,8 @@ unsigned int GFloating_Text::initialize(GMessage& msg)
 	client_rect.y1 = text_rect.y1 = text_rect.y0 + font->vdistance + font->vspacing;
 	if(text_width > client_rect.width() )
 		text_rect.x1 = text_rect.x0 + text_width;
+	if(msg.param)
+		send_message(WM_DRAW, 0, client_rect.as_int, this);
 	return 1;
 }
 

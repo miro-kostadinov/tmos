@@ -239,13 +239,25 @@ void ST7565S::adjust_for_screen (GObject** object, RECT_T& area)				//change the
 																				//*object = children;
 }
 
+unsigned int ms_since(unsigned int time);
+
 void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area of the object on the LCD by calling its draw (LCD_MODULE, RECT_T) function
 {
+#if GUI_DEBUG
+	unsigned int t0 = CURRENT_TIME;
+	TRACELN1("\e[4;1;31m");
+#endif
 	if( (unsigned)(CURRENT_TIME-reset_timeout) > 500 )
 	{
+#if GUI_DEBUG
+	TRACE1("RST");
+#endif
 		reset_timeout = CURRENT_TIME;
 		lcd_reset();
 	}
+#if GUI_DEBUG
+	TRACE("%X[%d]", object, (object)?object->id:-1);
+#endif
 	frame.x0 = area.x0;
 	frame.x1 = area.x1;
     for(frame.y0=area.y0; frame.y0 <= area.y1; frame.y0++)
@@ -256,17 +268,20 @@ void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area 
     		if(!(object->flags & GO_FLG_TRANSPARENT))
     			clear_rect(area);
     		object->draw_this(this);
-    		if(!(object->flags & GO_FLG_ENABLED))
-    		{
-    			object->draw_line(object->rect.x0, object->rect.y0, object->rect.x1, object->rect.y1);
-    			object->draw_line(object->rect.x0, object->rect.y1, object->rect.x1, object->rect.y0);
-    		}
+//    		if(!(object->flags & GO_FLG_ENABLED))
+//    		{
+//    			object->draw_line(object->rect.x0, object->rect.y0, object->rect.x1, object->rect.y1);
+//    			object->draw_line(object->rect.x0, object->rect.y1, object->rect.x1, object->rect.y0);
+//    		}
     	}
     }
     for (frame.y0=(area.y0 - (area.y0&7)); frame.y0 <= area.y1; frame.y0 += 8)
     {
     	update_screen();
     }
+#if GUI_DEBUG
+    TRACE(" %d ms\e[m", ms_since(t0));
+#endif
 }
 
 void ST7565S::direct_write(GSplash draw_cb)

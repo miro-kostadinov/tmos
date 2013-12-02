@@ -18,7 +18,9 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 			if(!(object->flags&GO_FLG_HSCROLL))
 			{
 				object->client_rect.y1 -= GO_SCROLL_WIDTH+1;
-				res = (res || object->set_flag(GO_FLG_HSCROLL));
+				object->flags |= GO_FLG_HSCROLL;
+				res = true;
+				//res = (res || object->set_flag(GO_FLG_HSCROLL));
 			}
 		}
 		else
@@ -27,7 +29,8 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 			{
 				object->flags &= ~GO_FLG_HSCROLL;
 				object->client_rect.y1 += GO_SCROLL_WIDTH+1;
-				res = ( res || object->clr_flag(GO_FLG_HSCROLL));
+				res = true;
+				//res = ( res || object->clr_flag(GO_FLG_HSCROLL));
 			}
 		}
 	}
@@ -38,7 +41,9 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 			if(!(object->flags&GO_FLG_VSCROLL))
 			{
 				object->client_rect.x1 -= GO_SCROLL_WIDTH+1;
-				res = (res || object->set_flag(GO_FLG_VSCROLL));
+				object->flags |= GO_FLG_VSCROLL;
+				res = true;
+				//res = (res || object->set_flag(GO_FLG_VSCROLL));
 			}
 		}
 		else
@@ -47,7 +52,8 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 			{
 				object->flags &= ~GO_FLG_VSCROLL;
 				object->client_rect.x1 += GO_SCROLL_WIDTH+1;
-				res = ( res || object->clr_flag(GO_FLG_VSCROLL));
+				res = true;
+				//res = ( res || object->clr_flag(GO_FLG_VSCROLL));
 			}
 		}
 	}
@@ -98,7 +104,7 @@ void GScroll::draw_scroll(LCD_MODULE* lcd)
 void GScroll::SetScrollPos(GFlags sb, unsigned short p, bool redraw)
 {
 	RECT_T rect(object->client_rect);
-	unsigned int view_size;
+	unsigned int view_size=0;
 	if(sb & GO_FLG_HSCROLL)
 	{
 		rect.y0 = rect.y1 +1;

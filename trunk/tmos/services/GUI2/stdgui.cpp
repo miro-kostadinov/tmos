@@ -12,9 +12,9 @@
 
 unsigned int current_laguage;
 #if GUI_DEBUG
-STR_LIST wm_dbg_str = SZ(WM_QUIT) SZ(WN_DESTROY) SZ(WM_CLOSE)
+STR_LIST wm_dbg_str = SZ(WM_DELETED) SZ(WM_QUIT) SZ(WN_DESTROY) SZ(WM_CLOSE)
 		SZ(WM_COMMAND) SZ(WM_CHANGE) SZ(WM_IDLE) SZ(WM_SET_FLAGS)
-		SZ(WM_CLR_FLAGS) SZ(WM_INIT) SZ(WM_DRAW) SZ(WM_KEY);
+		SZ(WM_CLR_FLAGS) SZ(WM_SETFOCUS) SZ(WM_KILLFOCUS) SZ(WM_TIMER) SZ(WM_INIT) SZ(WM_DRAW) SZ(WM_KEY);
 #endif
 
 WEAK_C char TranslateKey( unsigned int key_code)
@@ -106,15 +106,35 @@ RECT_T::operator bool() const
 	return (as_int != 0);
 }
 
-RECT_T& RECT_T::operator<<=(const POINT_T& pt)
+void RECT_T::Inflate(int x, int y)
 {
-	POINT_T size(width(), height());
-	p0.as_int = pt.as_int;
-	size += p0;
-	p1.as_int = size.as_int;
-	return *this;
+	x0 +=x; x1 -=x;
+	y0 +=y; y1 -=y;
 }
 
+void RECT_T::Inflate(int l, int t, int r, int b)
+{
+	x0 += l; x1 -=r;
+	y0 += t; y1 -=b;
+}
+
+void RECT_T::Deflate(int x, int y)
+{
+	x0 -=x; x1 +=x;
+	y0 -=y; y1 +=y;
+}
+
+void RECT_T::Deflate(int l, int t, int r, int b)
+{
+	x0 -= l; x1 +=r;
+	y0 -= t; y1 +=b;
+}
+
+void RECT_T::Offset(int x, int y)
+{
+	x0 += x; x1 += x;
+	y0 += y; y1 += y;
+}
 
 bool RECT_T::normalize (const RECT_T& rect)
 {
@@ -154,14 +174,4 @@ bool RECT_T::normalize (short int x0_t, short int y0_t, short int x1_t, short in
 	return true;
 }
 
-
-WEAK RES_CODE msg_error(CSTRING& msg, int err_code)
-{
-	return RES_ERROR;
-}
-
-WEAK RES_CODE msg_error(const char *msg, int err_code)
-{
-	return RES_ERROR;
-}
 

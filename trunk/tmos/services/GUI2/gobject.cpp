@@ -1,10 +1,141 @@
 #include <tmos.h>
 #include <gobject.h>
 #include <lcd.h>
-//#include <mqueue.h>
-//
-//extern mqueue<GMessage, MAX_MESSAGES> GQueue;
 
+GTimer* GTimer::base_timer = NULL;
+
+GObject::~GObject()
+{
+}
+
+bool GTimer::TimerProc(void)
+{
+	if(time_out && CURRENT_TIME > time_out)
+	{
+		object->send_message(WM_TIMER, timer_id, 0L, object);
+		time_out = 0;
+		return true;
+	}
+	return false;
+}
+
+GTimer::~GTimer()
+{
+	GTimer *timer = base_timer;
+	if(this)
+	{
+		if(this == base_timer)
+		{
+			base_timer = base_timer->next;
+		}
+		else
+		{
+			while(timer->next)
+			{
+				if(timer->next == this)
+				{
+					timer->next = this->next;
+					break;
+				}
+				timer = timer->next;
+			}
+		}
+	}
+}
+
+void GTimer::RegisterTimer(void)
+{
+	if(base_timer)
+		next = base_timer;
+	base_timer = this;
+}
+
+bool process_timers(void)
+{
+	bool res = false;
+	GTimer* timer = GTimer::base_timer;
+	while(timer)
+	{
+		if(timer->TimerProc())
+			res = true;
+		timer = timer->next;
+	}
+	return res;
+}
+
+void GObject::KillObjectTimers(void)
+{
+	GTimer *timer = GTimer::base_timer;
+	while(timer)
+	{
+		if(timer->object == this)
+		{
+			delete timer;
+			timer = GTimer::base_timer;
+		}
+		else
+			timer = timer->next;
+	}
+}
+
+GTimer* GObject::FindTimer(GId event)
+{
+	GTimer *timer = GTimer::base_timer;
+	while(timer)
+	{
+		if(timer->object == this && timer->timer_id == event)
+			return timer;
+		timer=timer->next;
+	}
+	return timer;
+
+}
+
+bool GObject::SetTimer(GId event, unsigned int elapse)
+{
+	GTimer* timer = FindTimer(event);
+	if(!timer)
+	{
+		timer = new GTimer(event,this);
+		if(timer)
+			timer->RegisterTimer();
+	}
+	if(timer)
+	{
+		timer->time_out = CURRENT_TIME + elapse;
+		return true;
+	}
+	return false;
+}
+
+void GObject::KillTimer(GId event)
+{
+	GTimer *del_timer = FindTimer(event);
+	if(del_timer)
+		delete del_timer;
+}
+
+bool GObject::IsActiveTimer(GId event)
+{
+	GTimer* timer = FindTimer(event);
+	if(timer && timer->time_out)
+		return true;
+	return false;
+}
+
+bool GObject::StopTimer(GId event)
+{
+	GTimer* timer = FindTimer(event);
+	if(timer)
+	{
+		if(timer->time_out)
+		{
+			timer->time_out =0;
+			return true;
+		}
+	}
+	return false;
+}
 
 void GObject::clear_rect (const RECT_T& area)
 {
@@ -57,19 +188,17 @@ int GObject::draw_text (LCD_MODULE* lcd, const char *txt)
 
 	while ((c = txt[len++]) != '\0' && lcd->pos_y <= client_rect.y1)
     {
+    	if (c == ' ' || c == '-')
+    		tmp_len = len;
+
     	if (len == max_chars)
     	{
-    		if (tmp_len)
+    		if (tmp_len && txt[len] && !strchr(" -\n\r", txt[len]))
     			len = tmp_len;
     		draw_text_line (lcd, txt, len);
     		txt += len;
     		len = tmp_len = 0;
     		rows++;
-    		continue;
-    	}
-    	if (c == ' ' || c == '-')
-    	{
-    		tmp_len = len;
     		continue;
     	}
     	if (c == '\n' || c == '\r')
@@ -92,7 +221,8 @@ void GObject::draw_text_line (LCD_MODULE* lcd, const char* txt, unsigned int len
 	if(!txt )
 		return;
 
-	if (len && (txt[len-1] == ' ' || txt[len-1] == '\0') )
+//	if (len && (txt[len-1] == ' ' || txt[len-1] == '\0') )
+	if (len && (strchr(" \r\n",txt[len-1]) || txt[len-1] == '\0'))
 		len--;
 
 	if(!len)
@@ -148,38 +278,49 @@ void GObject::invalidate(GObject* object, RECT_T area)
 }
 
 
-void GObject::allocate_border(void)
-{
-	client_rect.x0 = rect.x0 +3;
-	client_rect.y0 = rect.y0 +3;
-	client_rect.x1 = rect.x1 -3;
-	client_rect.y1 = rect.y1 -3;
-}
-
-
 void GObject::draw_poligon(RECT_T& frame, bool fill)
 {
+	draw_hline(frame.x0 +2, frame.x1 -2, frame.y0); // top line
+	draw_hline(frame.x0 +2, frame.x1 -2, frame.y1); // bottom line
+	draw_vline(frame.y0 +2, frame.y1 -2, frame.x0); // left
+	draw_vline(frame.y0 +2, frame.y1 -2, frame.x1); // right
+
+	draw_point(frame.x0+1, frame.y0+1);
+	draw_point(frame.x1-1, frame.y0+1);
+	draw_point(frame.x0+1, frame.y1-1);
+	draw_point(frame.x1-1, frame.y1-1);
 	if(fill)
 	{
-		invert_hline(frame.x0 +2, frame.x1 -2, frame.y0); // top line
-		invert_hline(frame.x0 +1, frame.x1 -1, frame.y0+1);
+		invert_hline(frame.x0 +2, frame.x1 -2, frame.y0+1); // top line
 		for(int i=frame.y0 +2; i <= frame.y1 -2; i++)
-			invert_hline(frame.x0, frame.x1, i);
-		invert_hline(frame.x0+1, frame.x1 -1, frame.y1-1);
-		invert_hline(frame.x0 +2, frame.x1 -2, frame.y1); // bottom line
-
-	}else
-	{
-		draw_hline(frame.x0 +2, frame.x1 -2, frame.y0); // top line
-		draw_hline(frame.x0 +2, frame.x1 -2, frame.y1); // bottom line
-		draw_vline(frame.y0 +2, frame.y1 -2, frame.x0); // left
-		draw_vline(frame.y0 +2, frame.y1 -2, frame.x1); // right
-
-		draw_point(frame.x0+1, frame.y0+1);
-		draw_point(frame.x1-1, frame.y0+1);
-		draw_point(frame.x0+1, frame.y1-1);
-		draw_point(frame.x1-1, frame.y1-1);
+			invert_hline(frame.x0+1, frame.x1-1, i);
+		invert_hline(frame.x0 +2, frame.x1 -2, frame.y1-1);
 	}
+}
+
+void GObject::draw_rectangle(RECT_T& frame, bool fill)
+{
+	draw_hline(frame.x0, frame.x1, frame.y0); // top line
+	draw_hline(frame.x0, frame.x1, frame.y1); // bottom line
+	draw_vline(frame.y0 +1, frame.y1 -1, frame.x0); // left
+	draw_vline(frame.y0 +1, frame.y1 -1, frame.x1); // right
+	if(fill)
+	{
+		for(int i=frame.y0 +1; i <= frame.y1 -1; i++)
+			invert_hline(frame.x0+1, frame.x1-1, i);
+	}
+}
+
+void GObject::allocate_border(void)
+{
+	POINT_T pt = get_border_size();
+	client_rect = rect;
+	client_rect.Inflate(pt.x, pt.y);
+}
+
+POINT_T GObject::get_border_size(void)
+{
+	return POINT_T(GO_OBJ_FRAME_WIDTH, GO_OBJ_FRAME_HEIGHT);
 }
 
 void GObject::draw_border(RECT_T& frame)
@@ -187,12 +328,7 @@ void GObject::draw_border(RECT_T& frame)
 	if(frame.width() >= 4 && frame.height() >= 4 )
 		draw_poligon(frame);
 	else
-	{
-		draw_hline(frame.x0, frame.x1, frame.y0); // top line
-		draw_hline(frame.x0, frame.x1, frame.y1); // bottom line
-		draw_vline(frame.y0, frame.y1, frame.x0); // left
-		draw_vline(frame.y0, frame.y1, frame.x1); // right
-	}
+		draw_rectangle(frame);
 }
 
 void GObject::draw_point( int x, int y)
@@ -327,7 +463,7 @@ unsigned int GObject::initialize(GMessage& msg)
 		allocate_border();
 
 	if((flags & GO_FLG_SELECTED) && parent)
-		parent->focus = this;
+		get_focus();
 	return 1;
 }
 
@@ -336,17 +472,37 @@ unsigned int GObject::process_destroy(GMessage& msg)
 	return close();
 }
 
-bool GObject::get_focus()
+unsigned int GObject::process_default (GMessage& msg)
+{
+	switch(msg.code)
+	{
+		case WM_SETFOCUS:
+			return get_focus(false);
+		default:
+			if(parent)
+				return parent->process_default(msg);
+			break;
+	}
+	return 0;
+}
+
+bool GObject::get_focus(bool notify_msg)
 {
 	if(flags & GO_FLG_ENABLED)
 	{
 		if (parent)
 		{
-			if (parent->focus)
+			if(parent->focus != this)
 			{
-				parent->focus->clr_flag(GO_FLG_SELECTED);
+				if (parent->focus)
+				{
+					parent->focus->clr_flag(GO_FLG_SELECTED);
+					send_message(WM_KILLFOCUS, parent->focus->id, 0L, parent->focus);
+				}
+				parent->focus = this;
+				if(notify_msg)
+					send_message(WM_SETFOCUS, id, 0L, this);
 			}
-			parent->focus = this;
 			set_flag(GO_FLG_SELECTED);
 			return true;
 		}
@@ -386,6 +542,8 @@ bool GObject::clr_flag(GFlags val)
 
 bool GObject::close()
 {
+	KillObjectTimers();
+	GQueue.del_msg_for(this);
 	if (parent)
 		return parent->close(this);
 	return false;
@@ -588,25 +746,25 @@ text_metrics_t get_text_metrics(const char* text, short int x_size, const RENDER
 
 	while ((c = text[len++]) != '\0')
     {
+    	if (c == ' ' || c == '-')
+    		tmp_len = len;
+
     	if (len == max_chars)
     	{
-    		if (tmp_len)
+    		if (tmp_len && text[len] && !strchr(" -\n\r", text[len]))
     			len = tmp_len;
     		size.height++;
-   			size.width += len;
+    		if(size.width < len)
+    			size.width = len;
     		text += len;
     		len = tmp_len = 0;
-    		continue;
-    	}
-    	if (c == ' ' || c == '-')
-    	{
-    		tmp_len = len;
     		continue;
     	}
     	if (c == '\n' || c == '\r')
     	{
     		size.height++;
-   			size.width += len-1;
+    		if(size.width < (len -1))
+    			size.width = len -1;
     		text += len;
     		len = tmp_len = 0;
     	}
@@ -614,7 +772,8 @@ text_metrics_t get_text_metrics(const char* text, short int x_size, const RENDER
     if (len)
     {
 		size.height++;
-		size.width += len -1;
+		if(size.width < (len -1))
+			size.width = len -1;
     }
     if(	x_size == 0x7FFF )
     {
@@ -627,5 +786,4 @@ text_metrics_t get_text_metrics(const char* text, short int x_size, const RENDER
     	size.height *= font->vspacing;
     }
     return (size);
-
 }

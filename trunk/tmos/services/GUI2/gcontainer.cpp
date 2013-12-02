@@ -34,6 +34,20 @@ unsigned int GContainer::process_idle(GMessage& msg)								//broadcasts the WM_
 	return 0;
 }
 
+unsigned int GContainer::process_default(GMessage& msg)
+{
+	if(parent)
+		return parent->process_default(msg);
+	return 0;
+}
+
+unsigned int GContainer::process_command(GMessage& msg)
+{
+	if(parent)
+		return parent->process_default(msg);
+	return 0;
+}
+
 GObject* GContainer::addChild (GObject* child)
 {
 	GObject* tmp = children;
@@ -79,22 +93,6 @@ bool GContainer::is_available()
 	}
 	return false;
 }
-
-//GObject* GContainer::next_available()
-//{
-//	if((flags & (GO_FLG_ENABLED|GO_FLG_SHOW)) == (GO_FLG_ENABLED|GO_FLG_SHOW))
-//	{
-//		GObject* tmp = children;
-//		while (tmp)
-//		{
-//			if(tmp->is_available())
-//				return tmp;
-//			tmp = tmp->nextObj;
-//		}
-//	}
-//	return NULL;
-////	return GObject::next_available();
-//}
 
 bool GContainer::focus_on_previous()
 {
@@ -198,6 +196,21 @@ GObject* GContainer::last_available()
 	return last;
 }
 
+bool GContainer::close()
+{
+	if(GObject::close())
+	{
+		GObject* tmp = children;
+		while(tmp)
+		{
+			tmp->close();
+			tmp = tmp->nextObj;
+		}
+		return true;
+	}
+	return false;
+}
+
 bool GContainer::close (GObject* toClose)
 {
 	GObject* tmp = children;
@@ -205,8 +218,7 @@ bool GContainer::close (GObject* toClose)
 	{
 		if (children == toClose)
 		{
-			if (children->nextObj)
-				children = children->nextObj;
+			children = children->nextObj;
 			if (toClose == focus)
 				set_focus_last();
 			return true;
@@ -226,9 +238,10 @@ bool GContainer::close (GObject* toClose)
 	return false;
 }
 
-bool GContainer::get_focus()
+
+bool GContainer::get_focus(bool notify_msg)
 {
-	if(GObject::get_focus())
+	if(GObject::get_focus(notify_msg))
 	{
 		if (focus)
 		{
@@ -243,13 +256,6 @@ bool GContainer::get_focus()
 			GObject* tmp = first_available();
 			if(tmp && tmp->get_focus())
 				return true;
-//			GObject *tmp = children;
-//			while(tmp)
-//			{
-//				if(tmp->get_focus())
-//					return true;
-//				tmp = tmp->nextObj;
-//			}
 		}
 	}
 	return false;
@@ -261,30 +267,10 @@ bool GContainer::set_focus_first ()
 	if(focus)
 		focus->set_flag(GO_FLG_SELECTED);
 	return (focus);
-//	if (children)
-//	{
-//		focus = children;
-//		return true;
-//	}
-//	return false;
 }
 
 bool GContainer::set_focus_last ()
 {
-//	GObject *obj = children;
-//	focus = NULL;
-//	if(obj)
-//	{
-//		while (obj->nextObj)
-//		{
-//			if(obj->is_available())
-//				focus = obj;
-//			obj = obj->nextObj;
-//		}
-//		if(focus)
-//			focus->set_flag(GO_FLG_SELECTED);
-//	}
-//	return (focus);
 	focus = last_available();
 	if(focus)
 		focus->set_flag(GO_FLG_SELECTED);

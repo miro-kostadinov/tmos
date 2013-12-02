@@ -69,24 +69,32 @@ const MENUTEMPLATE keyboard_menu[] =
 unsigned int GEdit::initialize (GMessage& msg)
 {
 	if((flags & GO_FLG_SELECTED) && parent)
-		parent->focus = this;
+		get_focus();
 
 	alloc_scrollbars();
 	text_size = SetTextAlign(align);
+	unsigned int max_chars = client_rect.width() / text_font->hspacing;
+	txt.erase(max_len, -1u);
 	if(!(align & ES_AUTO_SCROLL))
 	{
-		unsigned int max_chars = client_rect.width() / text_font->hspacing;
 		if(txt.length() > max_chars -1)
 		{
 			txt.erase(max_chars -1, -1u);
 			text_size = SetTextAlign(align);
 		}
 	}
-	//pos = txt.length();
-	pos = 0;
+	pos = txt.length();
 	cursor = scroll_rect;
 	cursor.y0 --;
-	set_cursor_on_char(txt.c_str(), pos);
+	if(pos >= max_chars)
+	{
+		pos -= max_chars-1;
+		set_cursor_on_char();
+		pos += max_chars-1;
+	}
+	set_cursor_on_char();
+	if(msg.param)
+		send_message(WM_DRAW, 0, 0L, this);
 	return 1;
 }
 
@@ -98,6 +106,7 @@ void GEdit::draw_this(LCD_MODULE* lcd)
 	lcd->set_font(text_font);
 	lcd->color = PIX_WHITE;
 	lcd->allign = (align & (TA_HORIZONTAL|TA_VERTICAL));
+	draw_caption(lcd);
 
 	GClientLcd dc(this);
 	if(dc.CreateLcd(scroll_rect, lcd))
@@ -108,13 +117,17 @@ void GEdit::draw_this(LCD_MODULE* lcd)
 
 		if(align & ES_PASSWORD)
 		{
-			CSTRING password(txt);
-			char ch = txt[pos];
-			for(unsigned i=0; i < txt.length(); i++)
-				password[i] = '*';
-			if (key_input_time && ((CURRENT_TIME - key_input_time) < EDIT_INPUT_TIME))
-				password[pos] = ch;
-			ptr = password.c_str();
+			ptr = txt.c_str();
+			if(ptr)
+			{
+				CSTRING password(ptr);
+				char ch = txt[pos];
+				for(unsigned i=0; i < txt.length(); i++)
+					password[i] = '*';
+				if(IsActiveTimer(EDIT_TIMER_INPUT))
+					password[pos] = ch;
+				ptr = password.c_str();
+			}
 		}
 		else
 		{
@@ -140,38 +153,28 @@ void GEdit::draw_this(LCD_MODULE* lcd)
 	{
 		if(!(align & ES_HIDE_CURSOR))
 		{
-			if (key_input_time)														//inverts the area where the new character is put
+			if(IsActiveTimer(EDIT_TIMER_INPUT))
+				draw_rectangle(cursor, true);
+			else
 			{
-				if ((CURRENT_TIME - key_input_time) < EDIT_INPUT_TIME)
-					for (int i  = cursor.y0; i <= cursor.y1; i++)
-						invert_hline (cursor.x0, cursor.x1, i);
+				if(cursor_on)
+					draw_vline(cursor.y0, cursor.y1, cursor.x0);
 			}
-			else																	//flashing cursor
-				if ((CURRENT_TIME - cursor_blink_time) < EDIT_BLINK_TIME)
-					invert_vline(cursor.y0, cursor.y1, cursor.x0);
 		}
 	}
-	else
-	{
-		if(pos)
-		{
-			pos = 0;//txt.length();
-			set_cursor_on_char(txt.c_str(), pos);
-		}
-	}
-
 }
 
 void GEdit::text_change()
 {
 	text_size = SetTextAlign(align);		//redraws the whole text
-	set_cursor_on_char(txt.c_str(), pos);
+	set_cursor_on_char();
+	send_message(WM_DRAW, 0, client_rect.as_int, this);
 }
 
-void GEdit::pos_change(int val)
+void GEdit::pos_change(int val, bool modified_text)
 {
-	key_input_time = 0;
-	cursor_blink_time = 0;
+	StopTimer(EDIT_TIMER_INPUT);
+	cursor_on = false;
 	show_cursor();
 	if(val > 0)
 	{
@@ -181,48 +184,74 @@ void GEdit::pos_change(int val)
 			if((int)pos > client_rect.width() / text_font->hspacing)
 				--pos;
 		}
+		if(pos > max_len)
+			pos = max_len;
 	}
 	if(val < 0&& pos)
 		--pos;
-	cursor_blink_time = CURRENT_TIME;
-	if(!set_cursor_on_char(txt.c_str(), pos))								//moves the cursor and the position in the string
+
+	SetTimer(EDIT_TIMER_BLINK, EDIT_BLINK_TIME);
+	cursor_on = true;
+
+	if(!set_cursor_on_char())								//moves the cursor and the position in the string
 		show_cursor();
 	else
 		invalidate(this, client_rect);
+	if(modified_text && parent)
+		send_message(WM_CHANGE, (unsigned int) this, 0L, parent);
 }
 
-unsigned int GEdit::process_idle (GMessage& msg)
+unsigned int GEdit::process_default (GMessage& msg)
 {
-	if(!(flags & GO_FLG_SELECTED) || edit_menu )
-		return 0;
-
-	if ((CURRENT_TIME - cursor_blink_time) > (EDIT_BLINK_TIME*2))
-		cursor_blink_time = CURRENT_TIME;
-	if (key_input_time && ((CURRENT_TIME - key_input_time) > EDIT_INPUT_TIME))
+	switch(msg.code)
 	{
-		last_key = 0;
-		times_pressed = 0;
-		pos_change(+1);
+	case WM_TIMER:
+		switch(msg.param)
+		{
+		case EDIT_TIMER_INPUT:
+			last_key = 0;
+			times_pressed = 0;
+			pos_change(+1);
+			break;
+		case EDIT_TIMER_BLINK:
+			SetTimer(EDIT_TIMER_BLINK, EDIT_BLINK_TIME);
+			cursor_on = (cursor_on)?false:true;
+			show_cursor();
+			break;
+		}
+		break;
+
+	case WM_SETFOCUS:
+		cursor_on = true;
+		SetTimer(EDIT_TIMER_BLINK, EDIT_BLINK_TIME);
+		break;
+	case WM_KILLFOCUS:
+		cursor_on = false;
+		KillTimer(EDIT_TIMER_BLINK);
+		break;
+	default:
+		break;
 	}
-	else
-		show_cursor();
-	return 1;
+	return GText::process_default(msg);
 }
 
 void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 {
 	if (last_key != pressed_key)												//checks if the key is pressed for the first time
 	{
-		if (key_input_time)
+		if(IsActiveTimer(EDIT_TIMER_INPUT))
 		{                                                                       //if a new key is pressed before the timer went out
 			pos_change(+1);														//invalidates the current character
 		}                                                                       //and moves to the next one
 		if(!(align & ES_AUTO_SCROLL))
 			if((int)txt.length() >= client_rect.width() / text_font->hspacing)
 				return;
+		if(txt.length() >= max_len)
+			return;
+
 		if( shift != KT_DIGIT || (align & ES_PASSWORD))
 		{
-			key_input_time = CURRENT_TIME;
+			SetTimer(EDIT_TIMER_INPUT, EDIT_INPUT_TIME);
 			times_pressed = 0;
 			last_key = pressed_key;
 			if(shift == KT_BG_CAPS || shift == KT_EN_CAPS)
@@ -232,7 +261,7 @@ void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 		}
 		else
 		{
-			key_input_time = 0;
+			StopTimer(EDIT_TIMER_INPUT);
 			last_key = 0;
 			times_pressed = 0;
 			txt.insert(key_val[0], pos);								//inserts the new character from the key array into the string
@@ -242,7 +271,7 @@ void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 	}
 	else
 	{
-		key_input_time = CURRENT_TIME;
+		SetTimer(EDIT_TIMER_INPUT, EDIT_INPUT_TIME);
 		if (shift != KT_DIGIT && ++times_pressed >= strlen(key_val))									//sets the array index in the beginning if it overflows
 			times_pressed = 0;
 		char prev_char = txt[pos];
@@ -260,8 +289,7 @@ void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 
 void GEdit::show_cursor()
 {
-	if(!(align & ES_HIDE_CURSOR))
-		invalidate (this, cursor);
+	invalidate (this, cursor);
 }
 
 unsigned int GEdit::process_key (GMessage& msg)
@@ -287,7 +315,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 		case KEY_SHIFT:
 		case KEY_CANCEL:
 			edit_menu->close();
-			send_message(WM_DRAW, 0, rect.as_int, parent);
+			send_message(WM_DRAW, 0, edit_menu->rect.as_int, parent);
 			delete edit_menu;
 			edit_menu = NULL;
 			return 1;
@@ -301,16 +329,16 @@ unsigned int GEdit::process_key (GMessage& msg)
 	{
 	case KEY_LEFT|KEY_REPEAT_CODE:
 	case KEY_LEFT:
-		if (pos && !key_input_time)												//forbids moving if char typing has been started or the position is the first one
+		if (pos && !IsActiveTimer(EDIT_TIMER_INPUT))							//forbids moving if char typing has been started or the position is the first one
 		{
-			pos_change(-1);
+			pos_change(-1, false);
 		}
 		return 1;
 	case KEY_RIGHT|KEY_REPEAT_CODE:
 	case KEY_RIGHT:
-		if (pos < txt.length() && !key_input_time)								//forbids moving if char typing has been started or the position is the last one
+		if (pos < txt.length() && !IsActiveTimer(EDIT_TIMER_INPUT))				//forbids moving if char typing has been started or the position is the last one
 		{
-			pos_change(+1);
+			pos_change(+1, false);
 		}
 		return 1;
 /*
@@ -352,17 +380,23 @@ unsigned int GEdit::process_key (GMessage& msg)
 			edit_menu = new GMenu(10, rect, NULL, GO_FLG_DEFAULT|GO_FLG_BORDER);
 			if(edit_menu)
 			{
-				int max = (5 * edit_menu->text_font->hspacing + GO_SCROLL_WIDTH+1 + 6 + 3);
+				POINT_T bs = get_border_size();
+				int max = (5 * edit_menu->text_font->hspacing + GO_SCROLL_WIDTH+1 + 2*bs.x + 3);
 				if(edit_menu->rect.width() > max)
 				{
 					edit_menu->rect.x0 = rect.x0 +((rect.width() - max)>>1);
 					edit_menu->rect.x1 = edit_menu->rect.x0 + max;
 				}
-				max = 2 * (edit_menu->text_font->vspacing + edit_menu->text_font->vdistance);
+
+				max = edit_menu->text_font->vspacing + 3*edit_menu->text_font->vdistance + 2*bs.y;
 				if(rect.height() > max)
 				{
 					edit_menu->rect.y0 = rect.y0 +((rect.height() - max)>>1);
 					edit_menu->rect.y1 = edit_menu->rect.y0 + max;
+				}
+				else
+				{
+					edit_menu->rect.Deflate(0, max - rect.height());
 				}
 				edit_menu->LoadMenu(keyboard_menu);
 				parent->addChild(edit_menu);
@@ -376,19 +410,18 @@ unsigned int GEdit::process_key (GMessage& msg)
 	case KEY_CANCEL:
 		if (pos)
 		{
+			txt.erase(pos-1, 1);												//erases the previous symbol
 			pos_change(-1);
-			txt.erase(pos, 1);												//erases the previous symbol
 			text_change();
 		}
 		return 1;
 
 	case KEY_OK:
 		if(align & ES_WANTRETURN)
-		{
 			 process_alpha_key(msg.param, table[CHAR_TABLE_INDEX_ENTER].bg_vals);
-			 return 1;
-		}
-		return 0;
+		else
+			send_message (WM_COMMAND, id, 0L, parent);
+		return 1;
 
 	case KEY_DP:
 		process_alpha_key(msg.param, table[CHAR_TABLE_INDEX_DP].bg_vals);
@@ -429,22 +462,26 @@ unsigned int GEdit::process_key (GMessage& msg)
 	return 0;
 }
 
-bool GEdit::set_cursor_on_char (const char* text, unsigned int index)
+bool GEdit::set_cursor_on_char(void)
 {
-	if(text)
+	if(!txt.empty())
 	{
 		if(align & ES_MULTILINE)
-			return set_cursor_y_char(text, index);
-		return set_cursor_x_char(text, index);
+			return set_cursor_y_char();
+		return set_cursor_x_char();
 	}
 	scroll_rect.y0 = client_rect.y0; cursor.y0 = client_rect.y0 -1;
+	cursor.y1 = cursor.y0 + text_font->vspacing;
 	scroll_rect.x0 = client_rect.x0; cursor.x0 = client_rect.x0;
 	return false;
 }
 
-bool GEdit::set_cursor_y_char (const char* text, unsigned int index)
+bool GEdit::set_cursor_y_char(void)
 {
-    unsigned int max_chars, len, tmp_len;
+	const char* text = txt.c_str();
+	unsigned int index = pos;
+
+	unsigned int max_chars, len, tmp_len;
 	unsigned int c;
 
 	bool res = false;
@@ -460,22 +497,20 @@ bool GEdit::set_cursor_y_char (const char* text, unsigned int index)
 
 	while ((c = text[len++]) != '\0')
 	{
+		if (c == ' ' || c == '-')												//if " " or "-" is encountered
+			tmp_len = len;														//updates the position of the last " " or "-" to it
+
 		if (len == max_chars)													//checks if the maximum number of characters has been reached
 		{
-			if (tmp_len)
-				len = tmp_len;
-			if ((signed int)(index - len) < 0)								//if the index is higher than this number, else breaks the cycle
+    		if (tmp_len && text[len] && !strchr(" -\n\r", text[len]))
+    			len = tmp_len;
+			if ((signed int)(index - len) < 0 || text[len] == 0)								//if the index is higher than this number, else breaks the cycle
 				break;
 			else
 				index -= len;													//subtracts it from the index
 			y += text_font->vspacing;									//moves the cursor to the next text line
 			text += len;														//increases the text pointer by the number of char written in the line
 			len = tmp_len = 0;													//resets the number of chars and the last " " or "-" position
-			continue;
-		}
-		if (c == ' ' || c == '-')												//if " " or "-" is encountered
-		{
-			tmp_len = len;														//updates the position of the last " " or "-" to it
 			continue;
 		}
 		if (c == '\n' || c == '\r')												//checks if new line is encountered
@@ -543,7 +578,7 @@ bool GEdit::set_cursor_y_char (const char* text, unsigned int index)
 			+ text_font->hspacing * index;
 		break;
 	case TA_CENTER:
-		if(len && (text[len-1]== ' '  || text[len-1] == '\0') )
+		if(len && (strchr(" \r\n",text[len-1]) || text[len-1] == '\0') )
 			len--;
 		cursor.x0 = (((client_rect.x1 + client_rect.x0) - (len * text_font->hspacing)) >> 1)
 			+ text_font->hspacing * index;
@@ -559,8 +594,10 @@ bool GEdit::set_cursor_y_char (const char* text, unsigned int index)
 }
 
 
-bool GEdit::set_cursor_x_char (const char* text, unsigned int index)
+bool GEdit::set_cursor_x_char(void)
 {
+	const char* text = txt.c_str();
+	unsigned int index = pos;
 
 	bool res = false;
     int  x=0;
@@ -581,7 +618,7 @@ bool GEdit::set_cursor_x_char (const char* text, unsigned int index)
 			break;
 		case TA_CENTER:
 			index = strlen(text);
-			if(index && (text[index-1]== ' '  || text[index-1] == '\0') )
+			if(index && (strchr(" \r\n",text[index-1]) || text[index-1] == '\0') )
 				x -= text_font->hspacing;
 			cursor.x0 = (((client_rect.x1 + client_rect.x0) - text_size.width) >> 1)
 				+ x;
@@ -647,7 +684,7 @@ bool GEdit::set_cursor_x_char (const char* text, unsigned int index)
 		scroll_rect.x1  = scroll_rect.x0 + text_size.width;
 	}
 	cursor.x1 = cursor.x0 + text_font->hspacing;								//sets the width of the cursor according to the spacing of the font
-	cursor.y1 = cursor.y0 + text_font->height;			//sets the height of the cursor according to the font
+	cursor.y1 = cursor.y0 + text_font->vspacing;			//sets the height of the cursor according to the font
 
 	return res;
 }

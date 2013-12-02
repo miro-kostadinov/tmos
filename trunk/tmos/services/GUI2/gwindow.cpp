@@ -17,7 +17,7 @@ void GWindow::draw_this(LCD_MODULE* lcd)
 
 unsigned int GWindow::initialize (GMessage& msg)
 {
-	GContainer::initialize(msg);												//initializes both the window and its items
+	GContainer::initialize(msg);									//initializes both the window and its items
 	send_message(WM_DRAW, 0, 0L, this);								//initial draw of the window and its items
 	return 0;
 }
@@ -38,7 +38,7 @@ unsigned int GWindow::process_key (GMessage& msg)
 
 unsigned int GWindow::process_destroy(GMessage& msg)
 {
-	GObject::close();
+	close();
 	if(parent && parent->focus)
 		send_message(WM_DRAW, 0, rect.as_int, parent->focus);
 	notify_message(WM_QUIT, msg.param);
@@ -48,8 +48,9 @@ unsigned int GWindow::process_destroy(GMessage& msg)
 void GWindow::notify_message(WM_MESSAGE code, unsigned int param, GObject* dst)
 {
 	GMessage msg(code, param, dst);
-	TRACELN("%s >>", CURRENT_TASK->name);
-	TRACE("%X[%d] ( %s %X ) Notify", dst, (dst)?dst->id:-1, szlist_at(wm_dbg_str, code), param);
+	TRACELN1("\e[4;1;34m");
+	TRACE("%s >>", CURRENT_TASK->name);
+	TRACE("%X[%d] ( %s %X ) Notify\e[m", dst, (dst)?dst->id:-1, szlist_at(wm_dbg_str, code), param);
 	Queue.push(msg);
 	if((hnd.res & FLG_BUSY))
 		usr_HND_SET_STATUS(&hnd, RES_SIG_OK);										//signals the window thread
@@ -68,8 +69,9 @@ void GWindow::PostMessage(WM_MESSAGE code, unsigned int param, GObject* dst)
 			hnd.res &=~FLG_SIGNALED;
 		}
 		hnd.tsk_cancel();
-		TRACELN("%s >>", CURRENT_TASK->name);
-		TRACE("%X[%d] ( %s %X ) Post", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param);
+		TRACELN1("\e[4;1;36m");
+		TRACE("%s >>", CURRENT_TASK->name);
+		TRACE("%X[%d] ( %s %X ) Post\e[m", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param);
 		hnd.tsk_write(&msg, 0);
 		hnd.tsk_start_read(NULL,0);
 	}
@@ -83,8 +85,9 @@ bool GWindow::GetMessage(GMessage& msg)
 			hnd.tsk_start_read(NULL, 0);
 		if( Queue.pop(msg) )
 		{
-			TRACELN("%s <<", CURRENT_TASK->name);
-			TRACE("%X[%d] ( %s %X ) ", msg.dst, (msg.dst)?msg.dst->id:-1, szlist_at(wm_dbg_str, msg.code), msg.param);
+			TRACELN1("\e[4;1;36m");
+			TRACE("%s <<", CURRENT_TASK->name);
+			TRACE("%X[%d] ( %s %X )\e[m ", msg.dst, (msg.dst)?msg.dst->id:-1, szlist_at(wm_dbg_str, msg.code), msg.param);
 			if(hnd.res & FLG_SIGNALED)
 			{
 				tsk_try_signal(hnd.signal);
@@ -161,8 +164,9 @@ bool GWindow::Destroy()
 		do{
 			while(Queue.pop(msg))
 			{
-				TRACELN("%s <<", CURRENT_TASK->name);
-				TRACE("%X[%d] ( %s %X ) Destroy ", msg.dst, (msg.dst)?msg.dst->id:-1, szlist_at(wm_dbg_str, msg.code), msg.param);
+				TRACELN1("\e[4;1;36m");
+				TRACE("%s <<", CURRENT_TASK->name);
+				TRACE("%X[%d] ( %s %X ) Destroy\e[m", msg.dst, (msg.dst)?msg.dst->id:-1, szlist_at(wm_dbg_str, msg.code), msg.param);
 				if(msg.code == WM_QUIT)
 				{
 					hnd.mode1 = GUI_HND_UNUSED;
@@ -172,8 +176,9 @@ bool GWindow::Destroy()
 			}
 			msg.code = WN_DESTROY;
 			msg.dst = this;
-			TRACELN("%s >>", CURRENT_TASK->name);
-			TRACE("%X[%d] ( %s %X ) Destroy ", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param);
+			TRACELN1("\e[4;1;36m");
+			TRACE("%s >>", CURRENT_TASK->name);
+			TRACE("%X[%d] ( %s %X ) Destroy\e[m", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param);
 			hnd.tsk_write(&msg, 0);
 		}while(hnd.tsk_read(NULL,0)== RES_OK);
 	}

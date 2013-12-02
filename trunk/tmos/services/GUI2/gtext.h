@@ -14,15 +14,6 @@
 #include <fonts.h>
 #include <lcd.h>
 
-#define SS_RIGHT		TA_RIGHT
-#define SS_CENTER    	TA_CENTER
-#define SS_LEFT    		TA_LEFT
-#define SS_TOP    		TA_TOP
-#define SS_MIDDLE    	TA_MIDDLE
-#define SS_BOTTOM  		TA_BOTTOM
-#define SS_WORDWRAP 	0x0100
-
-#define SS_DEFAULT		(SS_WORDWRAP|SS_CENTER|SS_MIDDLE)
 struct GText: GObject
 {
 	CSTRING txt;
@@ -31,17 +22,23 @@ struct GText: GObject
 	GScroll* vscroll;
 	GScroll* hscroll;
 	RECT_T scroll_rect;
-
-	GText (GId id_t, const RECT_T& rect_t, CSTRING txt_t,
+	const char* caption;
+	GText (GId id_t, const RECT_T& rect_t, CSTRING txt_t, const char* caption_t=NULL,
 			GFlags flags_t = GO_FLG_DEFAULT, unsigned short align_t = SS_DEFAULT, const RENDER_MODE* font_t = &FNT5x7)
 		:GObject (id_t, rect_t, flags_t), txt (txt_t), align(align_t), text_font (font_t),
-		 vscroll(NULL), hscroll(NULL) {};
+		 vscroll(NULL), hscroll(NULL), caption(caption_t) {};
 	~GText()
 	{
 		if(vscroll)
+		{
 			delete vscroll;
+			vscroll = NULL;
+		}
 		if(hscroll)
+		{
 			delete hscroll;
+			hscroll = NULL;
+		}
 	}
 
 	virtual unsigned int initialize (GMessage& msg);
@@ -50,7 +47,8 @@ struct GText: GObject
 
 	text_metrics_t SetTextAlign(unsigned int new_align );
 	void alloc_scrollbars( void );
-
+protected:
+	void draw_caption(LCD_MODULE* lcd);
 };
 
 

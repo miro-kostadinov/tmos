@@ -16,15 +16,17 @@ typedef struct
 {
 	int 		parent;
 	int 		item;
-	const char* item_name;
+	const char*	item_name;
 } MENUTEMPLATE;
 
 
 struct GEdit;
+struct GListBox;
 
 struct GMenu: GObject
 {
 	friend GEdit;
+	friend GListBox;
 
 	MENUTEMPLATE*	base;
 	MENUTEMPLATE*	menu;
@@ -40,7 +42,10 @@ struct GMenu: GObject
 		 size(0), scroll(NULL), text_font(&FNT5x7)
 	{}
 
-	GMenu(): base(NULL), menu(NULL), item(NULL){}
+	GMenu(): base(NULL), menu(NULL), item(NULL), title(NULL), size(0),
+			scroll(NULL), text_font(&FNT5x7)
+	{}
+
 	~GMenu()
 	{
 		if(scroll)
@@ -61,6 +66,8 @@ struct GMenu: GObject
 	MENUTEMPLATE* FindItem(int item_id);
 	MENUTEMPLATE* GetMenu(int parent_id, MENUTEMPLATE* start = NULL);
 	int GetMenuSize(int menu_id);
+	bool SetReplaceItem(int item_id, const char* item_name);
+	bool Select(int item_id);
 
 protected:
 	virtual void draw_this (LCD_MODULE* lcd);
@@ -73,4 +80,6 @@ private:
 	int get_item_pos(MENUTEMPLATE* ptr);
 
 };
+
+unsigned int remove_amp(CSTRING& str);
 #endif /* GMENU_H_ */

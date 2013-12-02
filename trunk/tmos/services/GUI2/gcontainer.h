@@ -28,10 +28,12 @@ struct GContainer:GObject {
 protected:
 	virtual unsigned int initialize (GMessage& msg);
 	virtual unsigned int process_idle(GMessage& msg);
+	virtual unsigned int process_default(GMessage& msg);
+	virtual unsigned int process_command(GMessage& msg);
 
 	virtual void draw (LCD_MODULE* lcd, RECT_T area);
 	virtual void draw_this (LCD_MODULE* lcd);
-	virtual bool get_focus ();
+	virtual bool get_focus (bool notify_msg = true);
 	virtual bool is_available();
 
 	// container specific
@@ -40,6 +42,7 @@ protected:
 	GObject* first_available();
 	GObject* last_available();
 	bool close (GObject* toClose);
+	bool close ();
 
 private:
 	bool set_focus_first();
