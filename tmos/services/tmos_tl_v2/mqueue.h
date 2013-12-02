@@ -14,6 +14,7 @@
 template <class T, int max_size>
 class mqueue
 {
+protected:
 	unsigned short 	size;
 	unsigned short	in2;
 	unsigned short	in;
