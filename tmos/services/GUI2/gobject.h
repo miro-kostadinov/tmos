@@ -11,12 +11,30 @@
 #include <stdgui.h>
 #include <message.h>
 #include <fonts.h>
-#include <mqueue.h>
+
 
 struct LCD_MODULE;
 struct GContainer;
 
-extern mqueue<GMessage, MAX_MESSAGES> GQueue;
+extern msgQueue<MAX_MESSAGES> GQueue;
+
+struct GTimer
+{
+	static GTimer*	base_timer;
+	GObject* 		object;
+	GId				timer_id;
+	unsigned int	time_out;
+	GTimer* 		next;
+
+	GTimer(GId id, GObject* obj): object(obj), timer_id(id), time_out(0), next(NULL)
+	{;}
+	~GTimer();
+
+	bool TimerProc(void);
+	void RegisterTimer(void);
+};
+
+bool process_timers(void);
 
 struct text_metrics_t
 {
@@ -39,16 +57,14 @@ struct GObject{
 	GObject (): parent(NULL), nextObj(NULL), id(0), flags(0) {};
 	GObject (GId id_t, const RECT_T& rect_t, GFlags flags_t = GO_FLG_DEFAULT)
 		:rect(rect_t), parent(NULL), nextObj(NULL), id(id_t), flags(flags_t) {};
-	GObject (GId id_t,
-			short int x0, short int y0, short int x1, short int y1,
-			GFlags flags_t = GO_FLG_DEFAULT)
-		:rect(x0, y0, x1, y1), parent(NULL), nextObj(NULL), id(id_t), flags(flags_t){};
 
-	virtual ~GObject()
-	{
-		;
-	}
+	virtual ~GObject();
 
+	// Timer methods
+	bool SetTimer(GId event, unsigned int elapse);
+	void KillTimer(GId event);
+	bool IsActiveTimer(GId event);
+	bool StopTimer(GId event);
 	// Draw methods
 
 	void clear_rect (const RECT_T& area);
@@ -59,9 +75,9 @@ struct GObject{
 	void draw_text_line (LCD_MODULE* lcd, const char* txt, unsigned int len);
 	void draw_line(int x1, int y1, int x2, int y2);
 	virtual bool close();
-public:
+
 	// Redraw methods
-	virtual bool get_focus();													//sets the parent focus on this
+	virtual bool get_focus(bool notify_msg = true);													//sets the parent focus on this
 	virtual void draw (LCD_MODULE* lcd, RECT_T area);
 	virtual void draw_this (LCD_MODULE* lcd)
 	{
@@ -70,7 +86,9 @@ public:
 	virtual void invalidate (GObject* object, RECT_T area);
 	// virtual draw methods ( they are used from the module )
 	virtual void allocate_border(void);
+	virtual POINT_T get_border_size(void);
 	virtual void draw_border(RECT_T& frame);
+
 	virtual void draw_point( int x, int y);
 	virtual void draw_hline( int x0, int x1, int y);
 	virtual void draw_bline( int x0, int x1, int y);
@@ -82,6 +100,7 @@ public:
 		;
 	}
 	void draw_poligon(RECT_T& frame, bool fill=false);
+	void draw_rectangle(RECT_T& frame, bool fill=false);
 
 	// queue message
 //	void send_message (GMessage msg);
@@ -91,8 +110,7 @@ public:
 	virtual unsigned int initialize (GMessage& msg);							//proceeds items with WM_INIT code
 	virtual unsigned int process_key (GMessage& msg)							//proceeds items with WM_KEY code
 		{return 0;}
-	virtual unsigned int process_default (GMessage& msg)						//proceeds items with unknown code
-		{return 0;}
+	virtual unsigned int process_default (GMessage& msg);						//proceeds items with unknown code
 	virtual unsigned int process_command(GMessage& msg)							//proceeds items with WM_COMMAND code
 		{return 0;}
 	virtual unsigned int process_idle(GMessage& msg)							//proceeds items with WM_IDLE code
@@ -105,7 +123,10 @@ public:
 	virtual GObject* get_object(GId xid);
 
 	virtual bool is_available();
-
+private:
+	// Timer methods
+	GTimer* FindTimer(GId event);
+	void KillObjectTimers(void);
 };
 
 // Draw utility

@@ -9,13 +9,11 @@
 #include <lcd.h>
 #include <gbutton.h>
 
-void GFloating_Button::allocate_border(void)
-{
-	client_rect.x0 = rect.x0 +2;
-	client_rect.y0 = rect.y0 +2;
-	client_rect.x1 = rect.x1 -3;
-	client_rect.y1 = rect.y1 -3;
-}
+//void GFloating_Button::allocate_border(void)
+//{
+//	client_rect = rect;
+//	client_rect.Inflate(2,2,3,3);
+//}
 
 void GFloating_Button::draw_border(RECT_T& frame)
 {
@@ -38,7 +36,8 @@ unsigned int GFloating_Button::initialize (GMessage& msg)
 	if (type)
 		client_rect.x0 -= (client_rect.y1 - client_rect.y0);
 	children->initialize(msg);
-	send_message(WM_DRAW, 0, 0L, this);
+	if(msg.param)
+		send_message(WM_DRAW, 0, 0L, this);
 	return 0;
 }
 

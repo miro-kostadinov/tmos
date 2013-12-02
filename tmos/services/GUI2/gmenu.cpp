@@ -83,6 +83,7 @@ bool GMenu::add_item(int parent_id, int item_id, const char* name)
 	base[size].item_name = name;
 
 	memclr(&base[++size], sizeof(MENUTEMPLATE));
+	item = menu = base;
 	return true;
 }
 
@@ -100,6 +101,31 @@ int GMenu::get_item_pos(MENUTEMPLATE* ptr)
 	return res;
 }
 
+bool GMenu::SetReplaceItem(int item_id, const char* item_name)
+{
+	MENUTEMPLATE* ptr;
+	ptr = GetItem(0,item_id);
+	if(ptr)
+	{
+		ptr->item_name = item_name;
+		return true;
+	}
+	return	AppendMenu(0, item_id, item_name);
+}
+
+bool GMenu::Select(int item_id)
+{
+	MENUTEMPLATE* ptr = FindItem(item_id);
+	if(ptr)
+	{
+		item = ptr;
+		menu = GetMenu(item->parent);
+		size = GetMenuSize(item->parent);
+		return true;
+	}
+	return false;
+}
+
 bool GMenu::AppendMenu( int parent_id, int item_id, const char* item_name)
 {
 	if(!parent_id)
@@ -108,7 +134,6 @@ bool GMenu::AppendMenu( int parent_id, int item_id, const char* item_name)
 		{
 			if(!add_item(parent_id, item_id, item_name))
 				return false;
-			item = menu = base;
 		}
 		else
 		{
@@ -161,11 +186,11 @@ unsigned int GMenu::initialize (GMessage& msg)
 	GObject::initialize(msg);
 	if(title)
 		client_rect.y0 += text_font->vspacing + 2*text_font->vdistance;
-	client_rect.x0 += text_font->hdistance;
-	client_rect.y0 += text_font->vdistance;
-	item = menu = base;
 	size = GetMenuSize(0);
+	flags &= ~GO_FLG_VSCROLL; // forced allocation of the scroll bar
 	set_scroll();
+	if(msg.param)
+		send_message(WM_DRAW, 0, 0L, this);
 	return 1;
 }
 
@@ -252,8 +277,11 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 			{
 				str = tmp->item_name;
 				rows = remove_amp(str);
-				draw_text(lcd, str.c_str());
-				if(tmp==item)
+				if(str.length())
+					draw_text_line(lcd, str.c_str(), str.length());
+				else
+					lcd->pos_y += text_font->vspacing;
+				if(tmp==item && (flags & GO_FLG_SELECTED))
 				{
 					for (int i = lcd->pos_y - row_height; i < lcd->pos_y; i++)
 						invert_hline (client_rect.x0, client_rect.x1-1, i);
@@ -285,8 +313,8 @@ bool GMenu::process_selected()
 			menu = next_menu;
 			item = next_menu;
 			size = GetMenuSize(menu->parent);
-			if(!set_scroll())
-				send_message(WM_DRAW, 0, 0L, this);
+			set_scroll();
+			send_message(WM_DRAW, 0, 0L, this);
 		}
 		return true;
 	}
@@ -305,7 +333,7 @@ unsigned int GMenu::process_key (GMessage& msg)
 			menu = tmp;
 			item = tmp;
 			size = GetMenuSize(item->parent);
-			if(!set_scroll())
+			if(set_scroll())
 				send_message(WM_DRAW, 0, 0L, this);
 		}
 		return 1;
@@ -317,7 +345,7 @@ unsigned int GMenu::process_key (GMessage& msg)
 			item = tmp;
 			menu = GetMenu(item->parent);
 			size = GetMenuSize(item->parent);
-			if(!set_scroll())
+			if(set_scroll())
 				send_message(WM_DRAW, 0, 0L, this);
 		}
 		return 1;

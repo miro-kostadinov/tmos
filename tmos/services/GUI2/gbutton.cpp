@@ -9,13 +9,11 @@
 #include <tmos.h>
 #include <lcd.h>
 
-void GButton::allocate_border(void)
-{
-	client_rect.x0 = rect.x0 +2;
-	client_rect.y0 = rect.y0 +2;
-	client_rect.x1 = rect.x1 -3;
-	client_rect.y1 = rect.y1 -3;
-}
+//void GButton::allocate_border(void)
+//{
+//	client_rect = rect;
+//	client_rect.Inflate(2,2,3,3);
+//}
 
 void GButton::draw_border(RECT_T& frame)
 {

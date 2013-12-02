@@ -12,10 +12,12 @@
 unsigned int GText::initialize (GMessage& msg)
 {
 	if((flags & GO_FLG_SELECTED) && parent)
-		parent->focus = this;
+		get_focus();
 
 	alloc_scrollbars();
 	SetTextAlign(align);
+	if(msg.param)
+		send_message(WM_DRAW, 0, 0L, this);
 	return 1;
 }
 void GText::alloc_scrollbars( void )
@@ -58,6 +60,13 @@ text_metrics_t GText::SetTextAlign(unsigned int new_align )
 	client_rect = rect;
 	if(flags & GO_FLG_BORDER)
 		allocate_border();
+	if(caption && *caption )
+	{
+		if(align & SS_WORDWRAP)
+			client_rect.y0 += text_font->vspacing + 2*text_font->vdistance;
+		else
+			client_rect.x0 += text_font->hspacing*strlen(caption);
+	}
 	client_rect.x0 += text_font->hdistance;
 	client_rect.y0 += text_font->vdistance;
 	scroll_rect = client_rect;
@@ -120,7 +129,7 @@ text_metrics_t GText::SetTextAlign(unsigned int new_align )
 			vscroll->ShowScroll(GO_FLG_VSCROLL, true);
 		}
 	}
-	send_message(WM_DRAW, 0, rect.as_int, this);
+//	send_message(WM_DRAW, 0, rect.as_int, this);
 	return txt_size;
 }
 
@@ -152,6 +161,29 @@ unsigned int GText::process_key (GMessage& msg)
 	return 0;
 }
 
+void GText::draw_caption(LCD_MODULE* lcd)
+{
+	if(caption && *caption)
+	{
+		RECT_T rc(client_rect);
+		if(align & SS_WORDWRAP)
+		{
+			lcd->pos_x = rect.x0 +text_font->hdistance;
+			lcd->pos_y = client_rect.y0 -(text_font->vspacing +2*text_font->vdistance);
+			client_rect = rect;
+			draw_text(lcd, caption);
+		}
+		else
+		{
+			lcd->pos_x = rect.x0 +text_font->hdistance +((flags&GO_FLG_BORDER)?get_border_size().x:0);
+			lcd->pos_y = client_rect.y0 +text_font->vdistance;
+			client_rect = rect;
+			draw_text_line(lcd, caption, strlen(caption));
+		}
+		client_rect = rc;
+	}
+}
+
 void GText::draw_this (LCD_MODULE* lcd)
 {
 	if(flags & GO_FLG_BORDER)
@@ -161,16 +193,17 @@ void GText::draw_this (LCD_MODULE* lcd)
 	lcd->color = PIX_WHITE;
 	lcd->allign = (align & (TA_HORIZONTAL|TA_VERTICAL));
 
+	draw_caption(lcd);
 	GClientLcd dc(this);
 	if(dc.CreateLcd(scroll_rect, lcd))
 	{
 		lcd->pos_x = dc.client_rect.x0;
-		lcd->pos_y = dc.client_rect.y0;
+		lcd->pos_y = dc.client_rect.y0 +text_font->vdistance;
 		dc.draw_text(lcd, txt.c_str());
 		dc.RelaseLcd();
 	}
 	if(vscroll)
 		vscroll->draw_scroll(lcd);
 	if (flags & GO_FLG_SELECTED)
-		draw_poligon(client_rect, true);
+		draw_poligon(client_rect);
 }

@@ -53,14 +53,15 @@ unsigned int GDialog::process_default (GMessage& msg)
 	switch (msg.code)
 	{
 	case WM_CHANGE:
-		if (((GObject*)msg.param)->flags & GO_FLG_CHECKED)
-		{
-			((GObject*)msg.param)->clr_flag (GO_FLG_CHECKED);
-		}
+	{
+		GObject* obj = (GObject*)msg.param;
+		if (obj->flags & GO_FLG_CHECKED)
+			obj->clr_flag (GO_FLG_CHECKED);
 		else
-			((GObject*)msg.param)->set_flag (GO_FLG_CHECKED);
-		notify_message(WM_COMMAND, 0, ((GObject*)msg.param));
+			obj->set_flag (GO_FLG_CHECKED);
+		notify_message(WM_CHANGE, obj->id, obj);
 		return 1;
+	}
 	default:
 		return 0;
 	}

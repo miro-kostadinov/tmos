@@ -13,6 +13,7 @@
 
 struct GDialog : GWindow
 {
+	GDialog():GWindow() {};
 	GDialog(GId id_t, const RECT_T& rect_t,
 			unsigned char displays_t, GFlags flags_t = GO_FLG_DEFAULT)
 	:GWindow (id_t, rect_t, displays_t, flags_t) {};

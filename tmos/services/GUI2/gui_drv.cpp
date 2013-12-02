@@ -8,10 +8,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <tmos.h>
-#include "gui_drv.h"
+#include <gui_drv.h>
 #include <stdgui.h>
 #include <lcd.h>
-#include <mqueue.h>
 #include <gwindow.h>
 #include <gbutton.h>
 #include <gtext.h>
@@ -26,11 +25,11 @@
 //*----------------------------------------------------------------------------
 
 
-GWindow* gui_test_main ()
+WEAK_C GWindow* gui_test_main ()
 {
 	GWindow* win;
 	win = new GWindow(1, RECT_T (0, 0, 132, 64), 0x3, GO_FLG_DEFAULT|GO_FLG_SELECTED);
-	win->addChild(new GText (1, RECT_T (0,0,132,30), "A600C", GO_FLG_DEFAULT, SS_DEFAULT, &FNT10x21));
+	win->addChild(new GText (1, RECT_T (0,0,132,30), "A600C", NULL, GO_FLG_DEFAULT, SS_DEFAULT, &FNT10x21));
 	return win;
 }
 
@@ -78,8 +77,9 @@ WEAK_C int detect_displays(GUI_DRIVER_INFO* drv_info)
 //*----------------------------------------------------------------------------
 //*  this is the GUI driver helper task
 //*----------------------------------------------------------------------------
-mqueue<GMessage, MAX_MESSAGES> GQueue;
+msgQueue<MAX_MESSAGES> GQueue;
 
+unsigned int ms_since(unsigned int time);
 
 void gui_thread(GUI_DRIVER_INFO* drv_info)
 {
@@ -89,7 +89,10 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     CHandle key_hnd;
     CHandle gui_hnd;
     GMessage msg;
-
+    unsigned int idle_time = CURRENT_TIME;
+#if GUI_DEBUG
+    unsigned int t0;
+#endif
 
     //prevent these signals not to be used from task handles
     ALLOCATE_SIGNAL(SIG_GUI_TASK);
@@ -153,10 +156,16 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	for (;;)
 	{
 		res = tsk_wait_signal(-1u, 100 - (CURRENT_TIME %100));
+        if(!process_timers() && !res )	//checks for elapsed timers
+        {
+        	if( IDLE_PERIOD > ms_since(idle_time))
+        			continue;
+        }
+        idle_time = CURRENT_TIME;
 
 		if(res & SIG_GUI_TASK)
 		{
-			for (tmp = desktop; tmp; tmp = (GWindow*)tmp->nextObj)
+			for (tmp = (GWindow*)desktop->nextObj; tmp; tmp = (GWindow*)tmp->nextObj)
 			{
 				if(tmp->hnd.mode0)
 					usr_HND_SET_STATUS(&tmp->hnd, FLG_SIGNALED);
@@ -190,7 +199,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 				{
 					desktop->parent->focus->nextObj = win;								//adds the new item to the Z list
 					win->parent = desktop->parent;
-					GQueue.push(GMessage(WM_INIT, 0, 0L, win));							//send WM_INIT to the new window
+					GQueue.push(GMessage(WM_INIT, 0, (long long)drv_info->lcd, win));							//send WM_INIT to the new window
 					win->hnd.mode1 = GUI_HND_ATTACH;
 					hnd_ret = RES_SIG_OK;										//signals the window thread
 				}
@@ -216,7 +225,8 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
         	GQueue.push(GMessage(WM_KEY, key_hnd.src.as_int, 0L, desktop->parent->focus));
             key_hnd.tsk_start_read(&key_hnd.src.as_int, 1);
         }
-		if (GQueue.empty())														//if the queue is empty sends WM_IDLE to everyone
+
+        if (GQueue.empty())														//if the queue is empty sends WM_IDLE to everyone
 		{
 			for (tmp = desktop; tmp; tmp = (GWindow*)tmp->nextObj)
 				GQueue.push(GMessage(WM_IDLE, 0, 0L, tmp));
@@ -224,27 +234,32 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 		while (GQueue.pop(msg))													//processes all messages in the queue
 		{
 #if GUI_DEBUG
-			if(msg.code != WM_IDLE)
+			t0 = CURRENT_TIME;
+			TRACELN1("\e[4;1;32m");
+			TRACE("%X[%d] ( %s 0x%X/%d\e[m", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param, msg.param);
+			if(WM_DRAW)
 			{
-				TRACELN("%X[%d] ( %s %X ", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param);
-				if(WM_DRAW)
-				{
-					if(msg.lparam)
-						RECT_T(msg.lparam).dump();
-					else
-						msg.dst->rect.dump();
-				}
+				if(msg.lparam)
+					RECT_T(msg.lparam).dump();
 				else
-				{
-					TRACE("%ld ", msg.lparam);
-				}
-				TRACE1(")");
+					msg.dst->rect.dump();
 			}
+			else
+			{
+				TRACE("%ld ", msg.lparam);
+			}
+
+			TRACE1("\e[4;1;32m)\e[m");
 #endif
+			if(msg.code == WM_DELETED)
+				continue;
 			if (msg.dst)
 				msg.dst->message(msg);
 			else
 				desktop->parent->message(msg);    // lcd message
+#if GUI_DEBUG
+			TRACE("\e[4;1;32m %d ms\e[m", ms_since(t0));
+#endif
 		}
 	}
 }
