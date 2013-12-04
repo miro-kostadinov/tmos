@@ -81,8 +81,37 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 				{
 					// Commands like ACMD51 (read SCR), CMD6 (SWITCH func) ->R1 + read
 					hw_base->SDIO_DLEN = hnd->len;
-					hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_8b | SDIO_DCTRL_DTDIR
-							| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+					switch(hnd->len)
+					{
+					case 8:
+						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_8b | SDIO_DCTRL_DTDIR
+								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+						break;
+					case 16:
+						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_16b | SDIO_DCTRL_DTDIR
+								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+						break;
+					case 32:
+						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_32b | SDIO_DCTRL_DTDIR
+								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+						break;
+					case 64:
+						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_64b | SDIO_DCTRL_DTDIR
+								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+						break;
+					case 128:
+						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_128b | SDIO_DCTRL_DTDIR
+								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+						break;
+					case 256:
+						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_256b | SDIO_DCTRL_DTDIR
+								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+						break;
+					default: //512
+						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_512b | SDIO_DCTRL_DTDIR
+								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+						break;
+					}
 					drv_data->sdio_op = SDIO_OP_READ | SDIO_OP_R1;
 				} else
 				{
