@@ -41,6 +41,11 @@ struct GEdit:GText
 		 text_size (0), cursor_on(false), pos (txt.length()), last_key (0),
 		 times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(NULL)
 	{;}
+	GEdit ()
+		:GText (),
+		 text_size (0), cursor_on(false), pos (0), last_key (0),
+		 times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(NULL)
+	{;}
 	virtual ~GEdit()
 	{
 		if(edit_menu)
