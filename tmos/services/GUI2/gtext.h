@@ -26,7 +26,13 @@ struct GText: GObject
 	GText (GId id_t, const RECT_T& rect_t, CSTRING txt_t, const char* caption_t=NULL,
 			GFlags flags_t = GO_FLG_DEFAULT, unsigned short align_t = SS_DEFAULT, const RENDER_MODE* font_t = &FNT5x7)
 		:GObject (id_t, rect_t, flags_t), txt (txt_t), align(align_t), text_font (font_t),
-		 vscroll(NULL), hscroll(NULL), caption(caption_t) {};
+		 vscroll(NULL), hscroll(NULL), caption(caption_t)
+	{;}
+
+	GText () : GObject(),txt (), align(0), text_font (0),
+			 vscroll(NULL), hscroll(NULL), caption(NULL)
+	{;}
+
 	~GText()
 	{
 		if(vscroll)
