@@ -189,7 +189,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 			{
 				button_rect.x0 += bdistance;
 				button_rect.x1 = button_rect.x0 + (strlen(MB_IDS[i]) * font->hspacing) + distance;
-				addChild(new GButton(ID_MB -(i+1), button_rect, ret_codes[i],
+				addChild(new GButton(ret_codes[i], button_rect, ret_codes[i],
 						MB_IDS[i], GO_FLG_DEFAULT|GO_FLG_BORDER | ((bnum)?GO_FLG_SELECTED:0 )));
 				bnum = 0;
 				button_rect.x0 += button_rect.width();
@@ -245,6 +245,12 @@ unsigned int GMsgBox::process_command (GMessage& msg)
 
 	switch(msg.param)
 	{
+	case ID_MB-1:
+		if(type &(MBF_LAST_BTN-1))
+			break;
+		notify_message(WM_CLOSE, GO_IDOK, this);								//closes the window
+		return 1;
+
 	case GO_IDYES:
 		notify_message(WM_CLOSE, GO_IDYES, this);								//closes the window
 		return 1;
@@ -279,6 +285,7 @@ unsigned int GMsgBox::process_key (GMessage& msg)
 int MessageBox(const char* Text, const char* Caption, unsigned int Style)
 {
 	GMsgBox box;
+	box.displays = 1;
 	box.type = Style;
 	box.body =  Text;
 	box.title = Caption;
