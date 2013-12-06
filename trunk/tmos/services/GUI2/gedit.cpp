@@ -190,8 +190,11 @@ void GEdit::pos_change(int val, bool modified_text)
 	if(val < 0&& pos)
 		--pos;
 
-	SetTimer(EDIT_TIMER_BLINK, EDIT_BLINK_TIME);
-	cursor_on = true;
+	if(!(align & ES_HIDE_CURSOR))
+	{
+		SetTimer(EDIT_TIMER_BLINK, EDIT_BLINK_TIME);
+		cursor_on = true;
+	}
 
 	if(!set_cursor_on_char())								//moves the cursor and the position in the string
 		show_cursor();
@@ -214,16 +217,29 @@ unsigned int GEdit::process_default (GMessage& msg)
 			pos_change(+1);
 			break;
 		case EDIT_TIMER_BLINK:
-			SetTimer(EDIT_TIMER_BLINK, EDIT_BLINK_TIME);
-			cursor_on = (cursor_on)?false:true;
+			if(!(align & ES_HIDE_CURSOR))
+			{
+				SetTimer(EDIT_TIMER_BLINK, EDIT_BLINK_TIME);
+				cursor_on = (cursor_on)?false:true;
+			}
+			else
+			{
+				KillTimer(EDIT_TIMER_BLINK);
+				cursor_on = false;
+			}
 			show_cursor();
 			break;
 		}
 		break;
 
 	case WM_SETFOCUS:
-		cursor_on = true;
-		SetTimer(EDIT_TIMER_BLINK, EDIT_BLINK_TIME);
+		if(!(align & ES_HIDE_CURSOR))
+		{
+			cursor_on = true;
+			SetTimer(EDIT_TIMER_BLINK, EDIT_BLINK_TIME);
+		}
+		else
+			cursor_on = false;
 		break;
 	case WM_KILLFOCUS:
 		cursor_on = false;
