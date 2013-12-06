@@ -197,6 +197,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 				}
 				if(win->hnd.mode1 == GUI_HND_OPEN)
 				{
+					win->nextObj =desktop->parent->focus->nextObj;
 					desktop->parent->focus->nextObj = win;								//adds the new item to the Z list
 					win->parent = desktop->parent;
 					GQueue.push(GMessage(WM_INIT, 0, (long long)drv_info->lcd, win));							//send WM_INIT to the new window
