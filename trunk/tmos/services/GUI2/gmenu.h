@@ -11,13 +11,19 @@
 #include <gobject.h>
 #include <gscroll.h>
 
-
-typedef struct
+struct MENUTEMPLATE
 {
 	int 		parent;
 	int 		item;
 	const char*	item_name;
-} MENUTEMPLATE;
+};
+
+struct menu_template_t
+{
+	int 		parent;
+	int 		item;
+	CSTRING		item_name;
+};
 
 
 struct GEdit;
@@ -28,9 +34,9 @@ struct GMenu: GObject
 	friend GEdit;
 	friend GListBox;
 
-	MENUTEMPLATE*	base;
-	MENUTEMPLATE*	menu;
-	MENUTEMPLATE*	item;
+	menu_template_t*	base;
+	menu_template_t*	menu;
+	menu_template_t*	item;
 	const char*		title;
 	int 			size;
 	GScroll* 		scroll;
@@ -55,18 +61,22 @@ struct GMenu: GObject
 		}
 		if(base)
 		{
+			while(size--)
+			{
+				base[size].item_name.free();
+			}
 			delete base;
 			base = NULL;
 		}
 	}
-	bool AppendMenu(int parent_id, int menu_id, const char* menu_name);
+	bool AppendMenu(int parent_id, int menu_id, const CSTRING& menu_name);
 	bool LoadMenu(const MENUTEMPLATE* pat);
 
-	MENUTEMPLATE* GetItem(int parent_id, int menu_id);
-	MENUTEMPLATE* FindItem(int item_id);
-	MENUTEMPLATE* GetMenu(int parent_id, MENUTEMPLATE* start = NULL);
+	menu_template_t* GetItem(int parent_id, int menu_id);
+	menu_template_t* FindItem(int item_id);
+	menu_template_t* GetMenu(int parent_id, menu_template_t* start = NULL);
 	int GetMenuSize(int menu_id);
-	bool SetReplaceItem(int item_id, const char* item_name);
+	bool SetReplaceItem(int item_id, const CSTRING& item_name);
 	bool Select(int item_id);
 
 protected:
@@ -76,8 +86,8 @@ protected:
 private:
 	bool process_selected();
 	bool set_scroll(void);
-	bool add_item(int parent_id, int item_id, const char* name);
-	int get_item_pos(MENUTEMPLATE* ptr);
+	bool add_item(int parent_id, int item_id, const CSTRING& name);
+	int get_item_pos(menu_template_t* ptr);
 
 };
 
