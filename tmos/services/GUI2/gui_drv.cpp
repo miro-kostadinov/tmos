@@ -207,7 +207,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			}
 			else
 			{
-				if(win->hnd.cmd & FLAG_READ && win->hnd.mode1 != GUI_HND_OPEN)
+				if((win->hnd.cmd & FLAG_READ) && win->hnd.mode1 != GUI_HND_OPEN)
 				{
 					if(!win->Queue.empty())
 						hnd_ret = RES_SIG_OK;
