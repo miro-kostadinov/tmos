@@ -111,35 +111,31 @@ void GEdit::draw_this(LCD_MODULE* lcd)
 	GClientLcd dc(this);
 	if(dc.CreateLcd(scroll_rect, lcd))
 	{
-		const char * ptr;
+		CSTRING password(txt);
+
 		lcd->pos_x = dc.client_rect.x0;
 		lcd->pos_y = dc.client_rect.y0;
 
 		if(align & ES_PASSWORD)
 		{
-			ptr = txt.c_str();
-			if(ptr)
+			if(!password.empty())
 			{
-				CSTRING password(ptr);
-				char ch = txt[pos];
-				for(unsigned i=0; i < txt.length(); i++)
+				char ch = password[pos];
+
+				password.reserve(password.length());
+				for(unsigned int i=password.length(); i-- ; )
 					password[i] = '*';
 				if(IsActiveTimer(EDIT_TIMER_INPUT))
 					password[pos] = ch;
-				ptr = password.c_str();
 			}
 		}
-		else
-		{
-			ptr = txt.c_str();
-		}
 		if(align & ES_MULTILINE)
-			dc.draw_text(lcd, ptr);
+			dc.draw_text(lcd, password.c_str());
 		else
 		{
 			if(text_size.width > client_rect.width())
 				lcd->allign = (align & ~TA_HORIZONTAL)|TA_LEFT;
-			dc.draw_text_line(lcd, ptr, txt.length());
+			dc.draw_text_line(lcd, password.c_str(), txt.length());
 		}
 		dc.RelaseLcd();
 	}
@@ -474,6 +470,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 			 }
 
 		}
+		break;
 	}
 	return 0;
 }
