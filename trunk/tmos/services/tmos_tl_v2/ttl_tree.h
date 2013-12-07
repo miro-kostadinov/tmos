@@ -45,7 +45,6 @@
 #include <ttl_move.h>
 
 #include <ttl_string.h>
-typedef ttl::basic_string<char> string;
 
 //#define assert(x) ASSERT(x)
 
@@ -1172,7 +1171,7 @@ template<class T>
 template<class Tr>
 typename tree<T>::pre_order_iterator tree<T>::set_head(const Tr& x)
 {
-	if(head->next_sibling != feet);
+	if(head->next_sibling != feet)
 		clear();
 	return insert(iterator(feet), x);
 }
