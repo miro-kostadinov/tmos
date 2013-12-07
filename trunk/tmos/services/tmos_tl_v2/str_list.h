@@ -161,7 +161,14 @@ public:
 	static char dummy_char; /**< dummy char returned as reference for out of bounds	*/
 
 	//Constructors
-	CSTRING(const CSTRING& cstr);
+	CSTRING(const CSTRING& cstr);		// copy constructor
+	CSTRING(CSTRING&& cstr)				// move constructor
+	{
+		if(RAM_ADR(storage.adr = cstr.storage.adr))
+		{
+			cstr.storage.adr = NULL;
+		}
+	}
 	CSTRING(const char *str);
 	CSTRING(const char *str, unsigned int len);
 	CSTRING(unsigned int size);
