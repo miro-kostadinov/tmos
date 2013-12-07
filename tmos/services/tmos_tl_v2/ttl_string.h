@@ -599,7 +599,7 @@ public:
     }
 
     bool empty() const noexcept
-    { return m_data? m_data[0]: 0; }
+    { return m_data? !m_data[0]: 1; }
 
   	//-------------------------- element access ------------------------------//
     reference operator[](size_type pos)				    { return at(pos); }
@@ -2036,6 +2036,7 @@ template<typename CharT>
 
 } // namespace ttl
 
+typedef ttl::basic_string<char> string;
 
 
 #endif /* TTL_STRING_H_ */
