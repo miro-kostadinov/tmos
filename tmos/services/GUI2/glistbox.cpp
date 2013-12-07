@@ -43,7 +43,7 @@ bool GListBox::select(int num)
 {
 	if(list)
 	{
-		MENUTEMPLATE* ptr = list->FindItem(num);
+		menu_template_t* ptr = list->FindItem(num);
 		if(ptr)
 		{
 			list->item = ptr;
@@ -96,17 +96,20 @@ unsigned int GListBox::initialize (GMessage& msg)
 
 	if(list)
 	{
-		MENUTEMPLATE* ptr = list->base;
+		menu_template_t* ptr = list->base;
 		int sx =0, len;
 		int sy=0;
 
-		while(ptr && ptr->item_name)
+		if(ptr)
 		{
-			len = strlen(ptr->item_name);
-			if(len > sx)
-				sx = len;
-			++sy;
-			++ptr;
+			while(!ptr->item_name.empty())
+			{
+				len = ptr->item_name.length();
+				if(len > sx)
+					sx = len;
+				++sy;
+				++ptr;
+			}
 		}
 		sx *= text_font->hspacing;
 		sx += 2*get_border_size().x + 3;
@@ -214,8 +217,9 @@ unsigned int GListBox::process_key (GMessage& msg)
 		break;
 
 	default:
-		if(list && list->flags & GO_FLG_SHOW)
+		if(list && (list->flags & GO_FLG_SHOW))
 			return list->process_key(msg);
+		break;
 	}
 	return 0;
 }

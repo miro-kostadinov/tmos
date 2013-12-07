@@ -10,12 +10,12 @@
 #include <gmenu.h>
 
 
-MENUTEMPLATE* GMenu::GetItem(int parent_id, int item_id)
+menu_template_t* GMenu::GetItem(int parent_id, int item_id)
 {
-	MENUTEMPLATE* tmp = base;
+	menu_template_t* tmp = base;
 	if(tmp)
 	{
-		while(tmp->item_name)
+		while(!tmp->item_name.empty())
 		{
 			if(tmp->parent == parent_id && tmp->item == item_id )
 				return tmp;
@@ -25,12 +25,12 @@ MENUTEMPLATE* GMenu::GetItem(int parent_id, int item_id)
 	return NULL;
 }
 
-MENUTEMPLATE* GMenu::FindItem(int item_id)
+menu_template_t* GMenu::FindItem(int item_id)
 {
-	MENUTEMPLATE* tmp = base;
+	menu_template_t* tmp = base;
 	if(tmp)
 	{
-		while(tmp->item_name)
+		while(!tmp->item_name.empty())
 		{
 			if(tmp->item == item_id)
 				return tmp;
@@ -40,14 +40,14 @@ MENUTEMPLATE* GMenu::FindItem(int item_id)
 	return NULL;
 }
 
-MENUTEMPLATE* GMenu::GetMenu(int parent_id, MENUTEMPLATE* start)
+menu_template_t* GMenu::GetMenu(int parent_id, menu_template_t* start)
 {
-	MENUTEMPLATE* tmp = start;
+	menu_template_t* tmp = start;
 	if(!start)
 		tmp = base;
 	if(tmp)
 	{
-		while(tmp->item_name)
+		while(!tmp->item_name.empty())
 		{
 			if(tmp->parent == parent_id)
 				return tmp;
@@ -59,11 +59,11 @@ MENUTEMPLATE* GMenu::GetMenu(int parent_id, MENUTEMPLATE* start)
 
 int GMenu::GetMenuSize(int menu_id)
 {
-	MENUTEMPLATE* tmp = base;
+	menu_template_t* tmp = base;
 	int res = 0;
 	if(tmp)
 	{
-		while(tmp->item_name)
+		while(!tmp->item_name.empty())
 		{
 			if(tmp->parent == menu_id)
 				++res;
@@ -73,24 +73,38 @@ int GMenu::GetMenuSize(int menu_id)
 	return res;
 }
 
-bool GMenu::add_item(int parent_id, int item_id, const char* name)
+bool GMenu::add_item(int parent_id, int item_id, const CSTRING& name)
 {
-	base = (MENUTEMPLATE *)tsk_realloc(base, (size +2)*sizeof(MENUTEMPLATE));
-	if(!base)
+	menu_template_t * new_base;
+
+	new_base = (menu_template_t *)tsk_malloc_clear((size +2)*sizeof(menu_template_t));
+	if(!new_base)
 		return false;
+	if(base)
+	{
+		for(int i=0; i<size; i++)
+		{
+			new_base[i].parent = base[i].parent;
+			new_base[i].item = base[i].item;
+			new_base[i].item_name = base[i].item_name;
+			base[i].item_name.free();
+		}
+		tsk_free(base);
+	}
+	base = new_base;
 	base[size].parent = parent_id;
 	base[size].item = item_id;
 	base[size].item_name = name;
 
-	memclr(&base[++size], sizeof(MENUTEMPLATE));
+	size++;
 	item = menu = base;
 	return true;
 }
 
-int GMenu::get_item_pos(MENUTEMPLATE* ptr)
+int GMenu::get_item_pos(menu_template_t* ptr)
 {
 	int res=0;
-	MENUTEMPLATE*  start = GetMenu(ptr->parent);
+	menu_template_t*  start = GetMenu(ptr->parent);
 	while(start)
 	{
 		if(ptr->item == start->item)
@@ -101,9 +115,9 @@ int GMenu::get_item_pos(MENUTEMPLATE* ptr)
 	return res;
 }
 
-bool GMenu::SetReplaceItem(int item_id, const char* item_name)
+bool GMenu::SetReplaceItem(int item_id, const CSTRING& item_name)
 {
-	MENUTEMPLATE* ptr;
+	menu_template_t* ptr;
 	ptr = GetItem(0,item_id);
 	if(ptr)
 	{
@@ -115,7 +129,7 @@ bool GMenu::SetReplaceItem(int item_id, const char* item_name)
 
 bool GMenu::Select(int item_id)
 {
-	MENUTEMPLATE* ptr = FindItem(item_id);
+	menu_template_t* ptr = FindItem(item_id);
 	if(ptr)
 	{
 		item = ptr;
@@ -126,7 +140,7 @@ bool GMenu::Select(int item_id)
 	return false;
 }
 
-bool GMenu::AppendMenu( int parent_id, int item_id, const char* item_name)
+bool GMenu::AppendMenu( int parent_id, int item_id, const CSTRING& item_name)
 {
 	if(!parent_id)
 	{
@@ -156,13 +170,14 @@ bool GMenu::AppendMenu( int parent_id, int item_id, const char* item_name)
 
 bool GMenu::LoadMenu(const MENUTEMPLATE* pat)
 {
-	if(pat)
+	menu_template_t* p= (menu_template_t*)pat;
+	if(p)
 	{
-		while(pat->item_name && pat->item)
+		while(!p->item_name.empty() && p->item)
 		{
-			if( ! AppendMenu(pat->parent, pat->item, pat->item_name) )
+			if( ! AppendMenu(p->parent, p->item, p->item_name) )
 				return false;
-			pat++;
+			p++;
 		}
 	}
 	return true;
@@ -201,7 +216,7 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 	int rows;
 	int row_height;
 	CSTRING str;
-	MENUTEMPLATE* tmp;
+	menu_template_t* tmp;
 
 	lcd->color = PIX_WHITE;
 
@@ -302,7 +317,7 @@ bool GMenu::process_selected()
 {
 	if(item)
 	{
-		MENUTEMPLATE* next_menu = GetMenu(item->item);
+		menu_template_t* next_menu = GetMenu(item->item);
 		if( !next_menu )
 		{
 			send_message(WM_DRAW, client_rect.as_int, 0L, this);
@@ -323,7 +338,7 @@ bool GMenu::process_selected()
 
 unsigned int GMenu::process_key (GMessage& msg)
 {
-	MENUTEMPLATE* tmp;
+	menu_template_t* tmp;
 	switch (msg.param)
 	{
 	case KEY_RIGHT:
@@ -351,23 +366,23 @@ unsigned int GMenu::process_key (GMessage& msg)
 		return 1;
 
 	case KEY_UP:
-		if(menu && item && item != menu)
+		if(menu && item && (item != menu))
 		{
-			tmp = menu;
-			MENUTEMPLATE* last;
-			while(tmp)
-			{
+			menu_template_t* last;
 
-				if(tmp == item)
-				{
-					item =last;
-					if(scroll)
-						scroll->SetScrollPos(GO_FLG_VSCROLL, get_item_pos(last));
-					send_message(WM_DRAW, client_rect.as_int, 0L, this);
-					return 1;
-				}
+			tmp = menu;
+			do
+			{
 				last = tmp;
 				tmp = GetMenu(item->parent, tmp +1);
+			} while(tmp && (tmp != item));
+			if(tmp)
+			{
+				item =last;
+				if(scroll)
+					scroll->SetScrollPos(GO_FLG_VSCROLL, get_item_pos(last));
+				send_message(WM_DRAW, client_rect.as_int, 0L, this);
+				return 1;
 			}
 		}
 		return 1;
@@ -395,7 +410,7 @@ unsigned int GMenu::process_key (GMessage& msg)
 				tmp = menu;
 				while(tmp)
 				{
-					hot_pos = strchr(tmp->item_name, '&');
+					hot_pos = strchr(tmp->item_name.c_str(), '&');
 					if(hot_pos && hot_pos[1] == ch)
 					{
 						item = tmp;
