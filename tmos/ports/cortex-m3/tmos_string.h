@@ -52,6 +52,7 @@ int toupper(int c);
 #define IS_PUNC(c) 		(G_char_2_type_[(unsigned)c] & FLAG_IS_PUNC)
 #define IS_DIGIT(c) 	(G_char_2_type_[(unsigned)c] & FLAG_IS_NUMBER)
 #define IS_XDIGIT(c) 	(G_char_2_type_[(unsigned)c] & FLAG_IS_HEX)
+#define IS_SPACE(c) 	(G_char_2_type_[(unsigned)c] & FLAG_IS_SPACE)
 
 #define XDIGIT_TO_NUM(h) ((h) < 'A' ? (h) - '0' : (h) + 10 - ((h)<'a' ? 'A' : 'a'))
 #define X2DIGITS_TO_NUM(h1, h2) ((XDIGIT_TO_NUM (h1) << 4) + XDIGIT_TO_NUM (h2))
