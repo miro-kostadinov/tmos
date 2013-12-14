@@ -19,7 +19,7 @@
 #define RAM_SIZE 			(96*1024) 	 //!< 96K RAM size
 #define SRAM1_SIZE 			(80*1024) 	 //!< 80K SRAM1 size
 #define SRAM2_SIZE 			(16*1024) 	 //!< 16K SRAM2 size
-#define FLASH_SIZE 			(256*1024) 	 //!< 256K FLASH size
+#define FLASH_SIZE 			((*(unsigned short*)0x1FFF7A22) *1024) 	 //!< FLASH size see Device Electronic signature
 
 #define FLASH_BASE			(0x08000000) //!< FLASH base address in the alias region
 #define SRAM_BASE           (0x20000000) //!< SRAM base address in the alias region

@@ -50,11 +50,15 @@ typedef struct
 /** @} */
 
 /** @defgroup FLASH_KEYR:	(flash Offset: 0x04) FPEC key register			  */
-#define FLASH_KEYR_FKEYR           0xFFFFFFFF //!<  FPEC Key
+#define FLASH_KEYR_KEY	           0xFFFFFFFF //!< FPEC Key
+#define FLASH_KEYR_KEY_1		   0x45670123 //!<  key 1
+#define FLASH_KEYR_KEY_2           0xCDEF89AB //!<  key 2
 /** @} */
 
 /** @defgroup FLASH_OPTKEYR:(flash Offset: 0x08) Flash OPTKEY register		  */
-#define FLASH_OPTKEYR_OPTKEYR      0xFFFFFFFF //!<  Option Byte Key
+#define FLASH_OPTKEYR_KEY	       0xFFFFFFFF //!< Option Byte Key
+#define FLASH_OPTKEYR_KEY_1        0x08192A3B //!<  key 1
+#define FLASH_OPTKEYR_KEY_2		   0x4C5D6E7F //!<  key 2
 /** @} */
 
 /** @defgroup FLASH_SR:		(flash Offset: 0x0C) Flash status register		  */
@@ -65,6 +69,10 @@ typedef struct
 #define FLASH_SR_PGPERR            0x00000040 //!< Programming parallelism error
 #define FLASH_SR_PGSERR            0x00000080 //!< Programming sequence error
 #define FLASH_SR_BSY               0x00010000 //!< Busy
+
+#define FLASH_SR_ERRORS (FLASH_SR_OPERR | FLASH_SR_WRPERR | FLASH_SR_PGAERR | \
+				FLASH_SR_PGPERR | FLASH_SR_PGSERR )
+
 /** @} */
 
 /** @defgroup FLASH_CR:		(flash Offset: 0x10) Flash control register		  */
@@ -130,6 +138,16 @@ typedef struct
 /** @} */ // @defgroup FLASH_regs_define
 
 
+uint32_t flash_unlock();
+void flash_lock();
+uint32_t flash_erase_page(uint32_t address);
+uint32_t flash_erase_all();
+uint32_t flash_write_byte(uint32_t address, uint32_t value);
+uint32_t flash_write_hword(uint32_t address, uint32_t value);
+uint32_t flash_write_word(uint32_t address, uint32_t value);
+uint32_t flash_write(uint32_t address, const void* data, uint32_t len);
+uint32_t flash_ob_read();
+uint32_t flash_ob_write(uint32_t value);
 
 
 
