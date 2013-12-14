@@ -74,6 +74,7 @@ void rtc_exit_init_mode(RTC_TypeDef* rtc)
     rtc->RTC_WPR = 0xFF;
 }
 
+#if USE_TIME
 static uint32_t rtc_bcd2byte(uint32_t val)
 {
 	return (val & 0xF) + ((val >> 4)*10);
@@ -128,6 +129,7 @@ bool rtc_set_time(RTC_TypeDef* rtc, const time_t* time)
 	}
 	return false;
 }
+#endif
 
 bool rtc_set_wut(RTC_TypeDef* rtc, uint32_t period)
 {

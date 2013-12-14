@@ -21,8 +21,10 @@ local_h_src-y 	+= tim_drv.h sdio_drv.h
 
 #conditional drivers
 ifeq "$(CFG_SERIES)" "stm32f2"
-local_cpp_src-y	+= rtc2_drv.cpp adc2_drv.cpp
-local_h_src-y 	+= rtc2_drv.h adc2_drv.h
+local_cpp_src-y	+= adc2_drv.cpp
+local_h_src-y 	+= adc2_drv.h
+local_cpp_src-$(USE_TIME)	+= rtc2_drv.cpp 
+local_h_src-$(USE_TIME) 	+= rtc2_drv.h 
 endif
 
 #updating global variables
