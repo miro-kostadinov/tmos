@@ -8,10 +8,12 @@
 #ifndef RTC_F2_H_
 #define RTC_F2_H_
 
-
+#include <brd_cfg.h>
 #include <mcu_inc.h>
 #include <tmos_types.h>
+#if USE_TIME
 #include <tmos_time.h>
+#endif
 
 /*******************************************************************************
  *  Real-Time Clock
@@ -205,8 +207,10 @@ typedef struct
 bool rtc_wait_sync(RTC_TypeDef* rtc);
 bool rtc_enter_init_mode(RTC_TypeDef* rtc);
 void rtc_exit_init_mode(RTC_TypeDef* rtc);
+#if USE_TIME
 void rtc_get_time(RTC_TypeDef* rtc, time_t* time);
 bool rtc_set_time(RTC_TypeDef* rtc, const time_t* time);
+#endif
 bool rtc_set_wut(RTC_TypeDef* rtc, uint32_t period);
 
 #endif /* RTC_F2_H_ */
