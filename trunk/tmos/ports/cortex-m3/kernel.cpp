@@ -52,11 +52,11 @@ extern "C" unsigned int exception_crc(const unsigned int* record)
 
 extern char end;
 
-void process_exception()
+static void process_exception()
 {
     unsigned status = SCB->CFSR;
 
-#if (TRACE_IS != TRACE_DISABLED) || defined(USE_EXCEPTION_RECORD)
+#if (TRACE_IS != TRACE_DISABLED) || USE_EXCEPTION_RECORD
     unsigned int mem_adr = SCB->MMFAR;
     unsigned int bus_adr = SCB->BFAR;
 
@@ -213,8 +213,9 @@ extern "C" void sys_kernel_init( void)
 
     // Application level init
     app_init();
-
+#if USE_STATIC_CONSTRUCTORS
     sys_call_static_ctors();
+#endif
 }
 
 //*----------------------------------------------------------------------------

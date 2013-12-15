@@ -97,7 +97,6 @@ FUNC(	sys_reset_handler	)
 			    /* Set the vector table pointer to the beginning of SRAM. */
 			    ldr     	r0, = NVIC_VTABLE
 			    ldr     	r1, = VECTOR_TABLE
-			    //adr			r1, VECTOR_TABLE
 			    str     	r1, [r0]
 
 			    /* Disable STKALIGN */
@@ -132,9 +131,6 @@ FUNC(	sys_reset_handler	)
 				wfe
 		        b			9b
 
-
-p_main_task:
-				.word 		main_task  //Pointer for PEEDI thread suppport
 ENDF(	sys_reset_handler	)
 
 //*----------------------------------------------------------------------------
@@ -220,7 +216,7 @@ FUNC_SECT(	sys_svc_handler, .SWIHandler	)
            		mrsne       r0, PSP              	// Process Stack was used
 
 				ldr 		r3,[r0, #tsk_sp_pc] 	// Get Task PC
-				ldrB 		r1,[r3, #-2] 			// Get parameter at stacked PC – 2
+				ldrB 		r1,[r3, #-2] 			// Get parameter at stacked PC ï¿½ 2
 
 				adr			r2, mos_switab
 				ldr			r12, [r2, r1, lsl #2]
