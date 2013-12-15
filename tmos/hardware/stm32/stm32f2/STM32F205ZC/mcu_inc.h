@@ -21,14 +21,14 @@
 #define SRAM2_SIZE 			(16*1024) 	 //!< 16K SRAM2 size
 #define FLASH_SIZE 			((*(unsigned short*)0x1FFF7A22) *1024) 	 //!< FLASH size see Device Electronic signature
 
-#define FLASH_BASE			(0x08000000) //!< FLASH base address in the alias region
-#define SRAM_BASE           (0x20000000) //!< SRAM base address in the alias region
-#define PERIPH_BASE         (0x40000000) //!< Peripheral base address in the alias region
+#define FLASH_BASE			(0x08000000u) //!< FLASH base address in the alias region
+#define SRAM_BASE           (0x20000000u) //!< SRAM base address in the alias region
+#define PERIPH_BASE         (0x40000000u) //!< Peripheral base address in the alias region
 
-#define SRAM_BB_BASE        (0x22000000) //!< SRAM base address in the bit-band region
-#define PERIPH_BB_BASE      (0x42000000) //!< Peripheral base address in the bit-band region
+#define SRAM_BB_BASE        (0x22000000u) //!< SRAM base address in the bit-band region
+#define PERIPH_BB_BASE      (0x42000000u) //!< Peripheral base address in the bit-band region
 
-#define FSMC_R_BASE         (0xA0000000) //!< FSMC registers base address
+#define FSMC_R_BASE         (0xA0000000u) //!< FSMC registers base address
 
 #define FLASH_PAGE_SIZE		0x4000		 //!< 4*16K sectors, 1*64K, 1(-7)*128K
 
