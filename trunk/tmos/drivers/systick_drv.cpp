@@ -37,9 +37,18 @@ void SYSTICK_DCR(SYSTICK_INFO drv_info, unsigned int reason, void* param)
 		unsigned int ticks;
 		SysTick->CTRL = NVIC_ST_CTRL_CLK_SRC;
 		ticks = ( GET_SYSTICK_CLOCK /1000 )*drv_info->OS_QUANTUM_PERIOD - 1;
-		SysTick->SysTick_Config(ticks);
-		NVIC->NVIC_SetPriority (SysTick_IRQn, 0);  /* SYSTICK MUST HAVE THE HIGHEST PRIORITY !!!! */
-		NVIC->NVIC_SetPriority (PendSV_IRQn, -1);
+
+		// set reload register
+		SysTick->LOAD  = ticks - 1;
+		// Load the SysTick Counter Value
+		SysTick->VAL   = 0;
+		// Enable SysTick IRQ and SysTick Timer
+		SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk |
+						SysTick_CTRL_ENABLE_Msk;
+
+		// SYSTICK MUST HAVE THE HIGHEST PRIORITY (0) !!!!
+	    SCB->SHP[((uint32_t)(SysTick_IRQn) & 0xF)-4] = 0;
+	    SCB->SHP[((uint32_t)(PendSV_IRQn) & 0xF)-4] = -1;
 		break;
 	}
 }
