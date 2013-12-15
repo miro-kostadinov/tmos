@@ -109,9 +109,7 @@ void EXTI_DCR(EXTI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 							info = (const EXTI_DRIVER_INFO*)adr;
 							if(info->info.isr == (DRV_ISR)EXTI_ISR)
 							{
-								NVIC->NVIC_SetPriority(info->info.drv_index, info->info.isr_priority);
-								NVIC->NVIC_EnableIRQ(info->info.drv_index);
-
+		        				drv_enable_isr(&drv_info->info);
 
 							    /* Clear Rising Falling edge configuration */
 								info->hw_base->EXTI_RTSR &= ~lines;

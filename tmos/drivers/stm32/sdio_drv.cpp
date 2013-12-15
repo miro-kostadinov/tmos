@@ -28,8 +28,7 @@ static void ConfigureSDIO(SDIO_INFO drv_info)
 			| SDIO_STA_CCRCFAIL ;
 	hw_base->SDIO_DTIMER = 0xFFFFFFFF;
 
-	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
-	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+	drv_enable_isr(&drv_info->info);
 }
 
 #define IS_SD_HIGH_CAPACITY(x) 1// should return 1 for SDHC and SDXC cards

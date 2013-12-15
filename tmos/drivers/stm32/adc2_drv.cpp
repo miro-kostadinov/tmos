@@ -101,8 +101,7 @@ void ADC_DCR(const ADC_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
         		{
         			if(!drv_data->all_cnt)
         			{
-            			NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
-            			NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+        				drv_enable_isr(&drv_info->info);
         			}
 
         			if(!drv_data->adc_cnt[mode->adc_num]++)
