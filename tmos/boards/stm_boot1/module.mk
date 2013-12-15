@@ -47,7 +47,7 @@ USE_TMOS_TL_V2	?=n
 USE_CSTRING		?=n
 
 # tmos stdlib -> sys_malloc() sys_realloc() svc_free()
-USE_TMOS_STDLIB	?=y
+USE_TMOS_STDLIB	?=n
 
 # class CTime
 USE_TIME		?=n
