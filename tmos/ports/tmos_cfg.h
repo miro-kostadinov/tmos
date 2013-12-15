@@ -15,6 +15,9 @@
 
 #include <brd_cfg.h>
 
+#ifndef USE_STATIC_CONSTRUCTORS
+#define USE_STATIC_CONSTRUCTORS 1  //enabled by default
+#endif
 
 #endif /* TMOS_CFG_H_ */
 /** @} ingroup ports */
