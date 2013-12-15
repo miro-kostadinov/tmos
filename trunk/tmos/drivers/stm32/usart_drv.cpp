@@ -39,9 +39,7 @@ void ConfigureUsart(USART_DRIVER_INFO * drv_info, USART_DRIVER_DATA * drv_data,
 
 	USARTx->USART_BRR = USART_BRR_DIV_Mantissa_Set(integerdivider) | fractionaldivider;
 
-	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
-	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
-
+	drv_enable_isr(&drv_info->info);
 
 	memcpy(&drv_data->mode, mode, sizeof(USART_DRIVER_MODE));
 }

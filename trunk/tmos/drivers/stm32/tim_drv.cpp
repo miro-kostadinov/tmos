@@ -97,8 +97,7 @@ void TIM_DCR(TIM_DRV_INF drv_info, unsigned int reason, HANDLE hnd)
 					RCCPeripheralReset(drv_info->info.peripheral_indx);
 					ConfigureTimer(drv_info, (TIMER_CONTROL_MODE*)timer_mode);
 				}
-				NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
-				NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+				drv_enable_isr(&drv_info->info);
 				drv_data->cnt++;
 				hnd->mode0 = timer_mode->ch_indx;
 				hnd->mode1 = timer_mode->tim_indx;

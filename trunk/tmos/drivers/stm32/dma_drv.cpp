@@ -47,8 +47,7 @@ void DMA_DCR(DMA_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
         		if(!drv_info->ch_data->cnt++)
         		{
         			// enable channel IRQ
-        			NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
-        			NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+    				drv_enable_isr(&drv_info->info);
         		}
 
 				hnd->res = RES_OK;

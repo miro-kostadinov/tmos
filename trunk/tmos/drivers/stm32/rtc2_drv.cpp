@@ -115,8 +115,7 @@ static void RTC_CONFIG(RTC_DRIVER_INFO* drv_info)
 	// Enable periodic auto wake-up
 	exti_enable_irq(EXTI, EXTI_Line22, PD_INT_RE);
 
-	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
-	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+	drv_enable_isr(&drv_info->info);
 
 	rtc_set_wut(rtc, 0); // 1s
 }

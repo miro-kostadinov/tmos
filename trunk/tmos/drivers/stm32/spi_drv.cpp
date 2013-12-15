@@ -21,9 +21,7 @@ static void SPI_ENABLE(SPI_DRIVER_INFO* drv_info)
 
 	pSPI = drv_info->hw_base;
     pSPI->SPI_CR2 = 0; //Reset value (interrupts disabled)
-	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
-	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
-
+	drv_enable_isr(&drv_info->info);
 }
 
 // Start a new transaction
