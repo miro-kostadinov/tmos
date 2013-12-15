@@ -24,19 +24,15 @@
 #define usr_send_signal_swi			2
 #define usr_task_schedule_swi		3
 #define tsk_sleep_swi				4
-#define tsk_sleep_until_swi			5
-#define tsk_try_signal_swi			6
-#define tsk_get_signal_swi			7
-#define tsk_wait_signal_swi			8
-#define tsk_resume_wait_signal_swi	9
-#define usr_drv_hcontrol_swi		10
-#define usr_drv_icontrol_swi		11
-#define tsk_start_handle_swi		12
-#define usr_HND_SET_STATUS_swi		13
-#define tsk_start_and_wait_swi		14
-#define malloc_swi					15
-#define free_swi					16
-#define realloc_swi					17
+#define tsk_try_signal_swi			5
+#define tsk_get_signal_swi			6
+#define tsk_wait_signal_swi			7
+#define tsk_resume_wait_signal_swi	8
+#define usr_drv_hcontrol_swi		9
+#define usr_drv_icontrol_swi		10
+#define tsk_start_handle_swi		11
+#define usr_HND_SET_STATUS_swi		12
+#define tsk_start_and_wait_swi		13
 
 #ifndef __ASSEMBLY__
 

@@ -19,7 +19,7 @@
 
 
 #define USE_TMOS_STRING		1
-#define USE_TMOS_STDLIB		1
+#define USE_TMOS_STDLIB		0
 #define USE_TIME			0
 #define USE_TMOS_STDIO		1
 #define USE_CRC32			1
@@ -32,12 +32,12 @@
 #define USE_AES_TMOS		1
 #define	USE_GPIO_EXPANDER 	0
 
-#define USE_EXCEPTION_RECORD 1
-#define USE_MEMORY_TRACKING	1
-
+#define USE_EXCEPTION_RECORD 		0
+#define USE_MEMORY_TRACKING			0
+#define USE_STATIC_CONSTRUCTORS		0
 
 
 #define USE_ADC_DMA_DRIVER 0		//Enable ADC DMA
-
+#define USE_SDIO_DMA_DRIVER 0
 
 #endif /* BRD_CFG_H_ */
