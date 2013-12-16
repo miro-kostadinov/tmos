@@ -748,7 +748,8 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 void usb_drv_reset(USB_DRV_INFO drv_info)
 {
     TRACELN1_USB("USBD_Init");
-	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
+    //set priority
+    NVIC->IP[drv_info->info.drv_index] = drv_info->info.isr_priority;
 	if(drv_info->info.peripheral_indx != ID_NO_PERIPH)
 	{
     	Task* task;
@@ -1044,7 +1045,7 @@ void usb_hal_device_start(USB_DRV_INFO drv_info)
 	// enable global ints
 	otg->core_regs.GAHBCFG |= OTG_GAHBCFG_GINTMSK;
 
-	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+	drv_enable_isr(&drv_info->info);
 }
 
 
