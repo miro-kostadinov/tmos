@@ -50,7 +50,9 @@ extern "C" unsigned int exception_crc(const unsigned int* record)
 //*			Helper functions
 //*----------------------------------------------------------------------------
 
+#if USE_TMOS_STDLIB
 extern char end;
+#endif
 
 static void process_exception()
 {
