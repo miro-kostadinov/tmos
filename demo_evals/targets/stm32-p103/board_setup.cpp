@@ -65,7 +65,7 @@ static void SetSysClockTo72(void)
 		StartUpCounter++;
 	} while ((HSEStatus == 0) && (StartUpCounter != HSE_STARTUP_TIMEOUT));
 
-	if ( !(RCC->RCC_CR & RCC_CR_HSERDY))
+	if ( RCC->RCC_CR & RCC_CR_HSERDY)
 	{
 		HSEStatus =  0x01;
 	}
@@ -175,7 +175,7 @@ extern "C" void LowLevelInit( void )
 {
 	  /* Reset the RCC clock configuration to the default reset state(for debug purpose) */
 	  /* Set HSION bit */
-	  RCC->RCC_CR |= 0x00000001;
+	  RCC->RCC_CR |= RCC_CR_HSION;
 
 	  /* Reset SW, HPRE, PPRE1, PPRE2, ADCPRE and MCO bits */
 	#ifndef STM32F10X_CL
