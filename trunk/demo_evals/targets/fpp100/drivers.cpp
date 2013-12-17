@@ -526,12 +526,6 @@ const GUI_DRIVER_INFO gui_driver =
 };
 
 
-extern signed char const DRV_RESET_FIRST_TABLE[] =
-{
-	SysTick_IRQn,
-	INALID_DRV_INDX
-};
-
 //=================== DRV_TABLE ==========================================
 // All drivers in the system must be listed in this table
 // To open a driver, only the driver index is required (defined in drivers.h)

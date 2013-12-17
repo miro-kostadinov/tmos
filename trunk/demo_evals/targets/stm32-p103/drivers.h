@@ -18,6 +18,8 @@ extern "C" char __BUILD_VERSION;
 #define LOCK_DEVICE 0
 #define RELEASE 0
 
+#define RF_TEST 1
+
 //----- Driver Priorities ----------------//
 #define DRV_PRIORITY_KERNEL		0x01	// OS-aware ISRs  must have lower priority (higher number)
 #define DRV_PRIORITY_UART0		0x02
@@ -32,6 +34,7 @@ extern "C" char __BUILD_VERSION;
 #define DRV_PRIORITY_EXTI10		0x03
 #define DRV_PRIORITY_SPI0		0x03
 #define DRV_PRIORITY_USB		0x03
+#define DRV_PRIORITY_TIMER		0x03
 #define DRV_PRIORITY_WDT		0x04
 
 
@@ -111,7 +114,7 @@ extern const USART_DRIVER_MODE uart_default_mode;
 #define PIN_PC5			(PD_PC5  | PD_IN)										//!<
 #define PIN_SD_WP		(PD_PC6  | PD_IN)										//!< SD card write protect
 #define PIN_SD_CP		(PD_PC7  | PD_IN)						 				//!< SD card detect
-#define PIN_PC8			(PD_PC8  | PD_IN)                                       //!<
+#define PIN_PC8			(PD_PC8  | PD_OUT | PD_ACTIVE_HIGH)                                       //!<
 #define PIN_PC9			(PD_PC9  | PD_IN)                                       //!<
 #define PIN_CAN_CNTRL	(PD_PC10 | PD_IN)                                       //!<
 #define PIN_USB_PUP		(PD_PC11 | PD_OUT | PD_ACTIVE_LOW)                      //!< USB pullup disable
@@ -123,12 +126,11 @@ extern const USART_DRIVER_MODE uart_default_mode;
 // Port D
 #define PIN_OSC_IN		(PD_PD0 | PD_AF)										//!< 8MHz Osc
 #define PIN_OSC_OUT		(PD_PD1 | PD_AF)										//!< 8MHz Osc
-#define PIN_PD2 		(PD_PD2 | PD_IN)										//!<
+#define PIN_PD2 		(PD_PD2 | PD_IN | PD_INT_BE)							//!<
 
 
 #define PIN_BUTTON PIN_WAKE_UP
 
-extern   signed char const DRV_RESET_FIRST_TABLE[];
 extern "C" char* const DRV_TABLE[INALID_DRV_INDX+1];
 
 #endif

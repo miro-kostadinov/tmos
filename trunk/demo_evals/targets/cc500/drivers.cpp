@@ -455,7 +455,7 @@ const USB_DRIVER_INFO usb_driver =
 {
 	{
 		DRIVER_INFO_STUB,
-		(DRV_ISR)USB_B_ISR,
+		(DRV_ISR)USB_ISR,
 		(DRV_DCR)USB_DCR,
 		(DRV_DSR)USB_DSR,
 		USB0_IRQn,
@@ -487,14 +487,6 @@ const WDT_DRIVER_INFO wdt_driver =
 		50						//sleep
 };
 
-
-extern signed char const DRV_RESET_FIRST_TABLE[] =
-{
-	SysTick_IRQn,
-	GPIOPortA_IRQn, GPIOPortB_IRQn, GPIOPortC_IRQn, GPIOPortD_IRQn, GPIOPortE_IRQn,
-	GPIOPortF_IRQn, GPIOPortG_IRQn, GPIOPortH_IRQn,
-	GPIOPortJ_IRQn, INALID_DRV_INDX
-};
 
 //=================== DRV_TABLE ==========================================
 // All drivers in the system must be listed in this table
