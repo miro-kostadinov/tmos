@@ -111,28 +111,9 @@ extern "C" void FaultHandler( void )
 }
 
 /**
- *  First reset Table with drivers that must be initialized first
- *
- *  The table can be declared in the application, that's why we use it here as
- *  extern linker symbol. The table must be terminated with INALID_DRV_INDX
- */
-extern signed char const DRV_RESET_FIRST_TABLE[];
-
-/**
  *  DRV_TABLE - extern linker symbol
  */
 extern char* const DRV_TABLE[];
-
-static bool is_first_reset(int index)
-{
-	for(int i=0; DRV_RESET_FIRST_TABLE[i] < INALID_DRV_INDX; i++ )
-	{
-		if(index == DRV_RESET_FIRST_TABLE[i])
-			return (true);
-	}
-
-	return (false);
-}
 
 WEAK_C void app_init(void)
 {
@@ -185,32 +166,22 @@ extern "C" void sys_kernel_init( void)
 
     // initialize main task
     usr_task_init_static(&main_task_desc, false);
-    main_task.tlist = &main_task;
+    PMAIN_TASK->tlist = PMAIN_TASK;
 
     //extra initialization needed for main_task
-    main_task.time = 0;								// current time is 000000000
-    main_task.state = TSKSTATE_READY;				// leave it suspend ???
-#ifdef USE_MEMORY_TRACKING
-    main_task.aloc_mem = 0;
-    main_task.aloc_ptrs =0;
+    PMAIN_TASK->time = 0;								// current time is 000000000
+    PMAIN_TASK->state = TSKSTATE_READY;				// leave it suspend ???
+#if USE_MEMORY_TRACKING
+    PMAIN_TASK->aloc_mem = 0;
+    PMAIN_TASK->aloc_ptrs =0;
 #endif
 
-    // Reset the drivers in DRV_RESET_FIRST_TABLE
-    for (i = 0; (ptr =DRV_TABLE[DRV_RESET_FIRST_TABLE[i]]) ; i++)
-    {
-    	drv_info = (DRIVER_INFO)(void*)(ptr-1);
-        drv_info->dcr(drv_info, DCR_RESET, NULL);
-    }
-
-    // Reset the remaining drivers
+    // Reset the drivers i
     for (i = SysTick_IRQn; i < INALID_DRV_INDX; i++)
     {
-    	if(!is_first_reset(i))
-    	{
-    		ptr =DRV_TABLE[i];
-        	drv_info = (DRIVER_INFO)(void*)(ptr-1);
-            drv_info->dcr(drv_info, DCR_RESET, NULL);
-    	}
+		ptr = DRV_TABLE[i];
+		drv_info = (DRIVER_INFO) (void*) (ptr - 1);
+		drv_info->dcr(drv_info, DCR_RESET, NULL);
     }
 
     // Application level init
