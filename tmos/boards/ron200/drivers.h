@@ -28,6 +28,5 @@
 #define KEY_COUNT		3
 
 
-extern   signed char const DRV_RESET_FIRST_TABLE[];
 extern 	 char* const DRV_TABLE[INALID_DRV_INDX+1];
 #endif
