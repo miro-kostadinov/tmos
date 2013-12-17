@@ -236,8 +236,6 @@ extern const SPI_DRIVER_MODE lcd2_mode_stru;
 
 
 
-
-extern   signed char const DRV_RESET_FIRST_TABLE[];
 extern "C" char* const DRV_TABLE[INALID_DRV_INDX+1];
 
 
