@@ -46,7 +46,7 @@ const unsigned char key_positions [] =
 		ROW4, 01, 01+16,	// OK
 };
 
-extern unsigned int volatile btns_pressed;
+unsigned int volatile btns_pressed;
 
 static void DrawKeyD(LCD_MODULE* lcd)
 {
@@ -71,6 +71,8 @@ RES_CODE keytest_cb(WINDOW obj, unsigned int param, unsigned int msg)
 	unsigned int pressed;
 
 	pressed = ~*obj->dst.as_intptr;
+	if(msg == WM_INIT)
+		btns_pressed = 0;
     if(msg == WM_DRAW)
     {
     	LCD_MODULE* lcd = (LCD_MODULE*)param;
@@ -108,6 +110,10 @@ RES_CODE keytest_cb(WINDOW obj, unsigned int param, unsigned int msg)
     if(msg == WM_KEY)
     {
 
+    	if(param & KEY_UP_CODE)
+    		btns_pressed &=~ (1<<(param&0x3F));
+    	else
+    		btns_pressed |= (1<<(param&0x3F));
         if((param & 0xE0) == 0)
 		{
         	if(!*obj->dst.as_intptr)
