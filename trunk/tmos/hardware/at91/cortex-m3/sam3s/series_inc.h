@@ -31,12 +31,11 @@
  * @{
  */
 
-#define __CM3_CMSIS_VERSION_MAIN  (0x01)  //!< [31:16] CMSIS HAL main version
-#define __CM3_CMSIS_VERSION_SUB   (0x30)  //!< [15:0]  CMSIS HAL sub version
 #define __CORTEX_M                (0x03)  //!< Cortex core
 
 #define __MPU_PRESENT  		1 //!< SAM3S provides a MPU
 #define __NVIC_PRIO_BITS    4 //!< SAM3S uses 4 Bits for the Priority Levels
+#define NVIC_PIORITY(priority) ((priority) << (8 - __NVIC_PRIO_BITS))
 /**	 @} end of addtogroup CMSIS_CM3_core_definitions	*/
 
 /** The IAP function entry address for SAM3S*/

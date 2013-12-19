@@ -32,15 +32,13 @@
     - Cortex-M core peripheral base address
 	@{
  */
-#define __CM3_CMSIS_VERSION_MAIN  (0x01)                                                       /*!< [31:16] CMSIS HAL main version */
-#define __CM3_CMSIS_VERSION_SUB   (0x40)                                                       /*!< [15:0]  CMSIS HAL sub version  */
-#define __CM3_CMSIS_VERSION       ((__CM3_CMSIS_VERSION_MAIN << 16) | __CM3_CMSIS_VERSION_SUB) /*!< CMSIS HAL version number       */
 
 #define __CORTEX_M                (0x03)                                                       /*!< Cortex core                    */
 
 #ifndef __NVIC_PRIO_BITS
   #define __NVIC_PRIO_BITS    3               /*!< standard definition for NVIC Priority Bits */
 #endif
+#define NVIC_PIORITY(priority) ((priority) << (8 - __NVIC_PRIO_BITS))
 
 /**	 @} end of addtogroup CMSIS_CM3_core_definitions	*/
 

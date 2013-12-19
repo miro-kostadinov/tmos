@@ -38,7 +38,6 @@
 //
 //*****************************************************************************
 #define FLASH_BASE              0x00000000  //!< FLASH memory
-#define SRAM_BASE               0x20000000  //!< SRAM memory
 #define WATCHDOG0_BASE          0x40000000  //!< Watchdog0
 #define WATCHDOG1_BASE          0x40001000  //!< Watchdog1
 #define GPIO_PORTA_BASE         0x40004000  //!< GPIO Port A
@@ -91,11 +90,9 @@
 #define SYSCTL_BASE             0x400FE000  //!< System Control
 #define UDMA_BASE               0x400FF000  //!< uDMA Controller
 /* Cortex-M3 core
-#define ITM_BASE                0xE0000000  //!< Instrumentation Trace Macrocell
 #define DWT_BASE                0xE0001000  //!< Data Watchpoint and Trace
 #define FPB_BASE                0xE0002000  //!< FLASH Patch and Breakpoint
 #define NVIC_BASE               0xE000E000  //!< Nested Vectored Interrupt Ctrl
-#define TPIU_BASE               0xE0040000  //!< Trace Port Interface Unit
 */
 //*****************************************************************************
 //

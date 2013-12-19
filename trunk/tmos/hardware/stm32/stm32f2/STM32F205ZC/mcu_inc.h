@@ -16,14 +16,14 @@
 #ifndef MCU_INC_H_
 #define MCU_INC_H_
 
+#include <core_map.h>
+
 #define RAM_SIZE 			(96*1024) 	 //!< 96K RAM size
 #define SRAM1_SIZE 			(80*1024) 	 //!< 80K SRAM1 size
 #define SRAM2_SIZE 			(16*1024) 	 //!< 16K SRAM2 size
 #define FLASH_SIZE 			((*(unsigned short*)0x1FFF7A22) *1024) 	 //!< FLASH size see Device Electronic signature
 
 #define FLASH_BASE			(0x08000000u) //!< FLASH base address in the alias region
-#define SRAM_BASE           (0x20000000u) //!< SRAM base address in the alias region
-#define PERIPH_BASE         (0x40000000u) //!< Peripheral base address in the alias region
 
 #define SRAM_BB_BASE        (0x22000000u) //!< SRAM base address in the bit-band region
 #define PERIPH_BB_BASE      (0x42000000u) //!< Peripheral base address in the bit-band region
@@ -34,10 +34,10 @@
 
 
 /*!< Peripheral memory map */
-#define APB1PERIPH_BASE       PERIPH_BASE
-#define APB2PERIPH_BASE       (PERIPH_BASE + 0x00010000)
-#define AHB1PERIPH_BASE       (PERIPH_BASE + 0x00020000)
-#define AHB2PERIPH_BASE       (PERIPH_BASE + 0x10000000)
+#define APB1PERIPH_BASE       BASE_PERIPHERAL
+#define APB2PERIPH_BASE       (BASE_PERIPHERAL + 0x00010000)
+#define AHB1PERIPH_BASE       (BASE_PERIPHERAL + 0x00020000)
+#define AHB2PERIPH_BASE       (BASE_PERIPHERAL + 0x10000000)
 
 /*!< APB1 peripherals */
 #define TIM2_BASE             (APB1PERIPH_BASE + 0x0000)
@@ -138,6 +138,6 @@
 #define DBGMCU_BASE           ((uint32_t )0xE0042000)
 
 /** Bit-banding registers */
-#define PWR_BB_BASE           (PERIPH_BB_BASE + (PWR_BASE - PERIPH_BASE)*32 )
+#define PWR_BB_BASE           (PERIPH_BB_BASE + (PWR_BASE - BASE_PERIPHERAL)*32 )
 
 #endif /* MCU_INC_H_ */

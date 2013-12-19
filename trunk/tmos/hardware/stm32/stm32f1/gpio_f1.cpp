@@ -12,7 +12,6 @@
 
 #include <tmos.h>
 #include <fam_cpp.h>
-#include <cmsis_cpp.h>
 
 /**
  * Configure pin(s) according to the pin description

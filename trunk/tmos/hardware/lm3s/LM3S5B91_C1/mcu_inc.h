@@ -8,6 +8,7 @@
 #ifndef MCU_INC_H_
 #define MCU_INC_H_
 
+#include <core_map.h>
 
 #define TARGET_IS_TEMPEST_RC1	1		// Tempest rev C1
 

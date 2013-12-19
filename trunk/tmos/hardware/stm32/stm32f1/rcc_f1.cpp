@@ -7,7 +7,6 @@
 
 #include <tmos.h>
 #include <fam_cpp.h>
-#include <cmsis_cpp.h>
 
 
 
