@@ -247,13 +247,20 @@ void usb_thread()
 {
 	char buf[8];
 	CHandle usb_hnd;
-	RES_CODE res;
+	RES_CODE res=RES_FATAL;
 
 	usb_hnd.tsk_open(USB_TEST_DRIVER, USB_DRV_MODE(USB_CDC_IN_EPT, USB_CDC_OUT_EPT));
-	usb_hnd.tsk_command(USB_CMD_DEVICE_CONFIG, NULL);
 
 	while(1)
 	{
+		while(res == RES_FATAL)
+		{
+			tsk_sleep(1000);
+			TRACELN1("main conect");
+			res = usb_hnd.tsk_command(USB_CMD_DEVICE_CONFIG, NULL);
+//			res = usb_hnd.tsk_command(USB_CMD_OTG_CONFIG, NULL);
+		}
+
 		res = usb_hnd.tsk_read(buf, (unsigned int)sizeof(buf));
 		TRACELN("usb tsk rcv %x", res);
 		if(res <= RES_OK)
@@ -304,6 +311,7 @@ static unsigned int get_clocks_per200ms(void)
 }
 
 void test();
+void start_rftest();
 
 int main(void)
 {
@@ -329,6 +337,10 @@ int main(void)
 #if TEST_MEM2MEM_DMA
     usr_task_init_static(&mem_dma_task_desc, true);
 #endif
+#ifdef RF_TEST
+    start_rftest();
+#endif
+
     //clocks in 250mS
     clock_freq = system_clock_frequency >> 2;
 

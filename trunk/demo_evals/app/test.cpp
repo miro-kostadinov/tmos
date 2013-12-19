@@ -20,7 +20,7 @@
 #if USE_TMOS_TL_V1
 #include <tmos.h>
 
-#include <vector>
+//#include <vector>
 
 
 struct my_stru
@@ -44,14 +44,14 @@ struct my_stru
 };
 
 //#include <ext/new_allocator.h>
-void std::__throw_bad_alloc()
-{
-	TRACELN1("BAD ALLOC!\r\n");
-	while(1)
-	{
-
-	}
-}
+//void std::__throw_bad_alloc()
+//{
+//	TRACELN1("BAD ALLOC!\r\n");
+//	while(1)
+//	{
+//
+//	}
+//}
 
 void test()
 {
@@ -63,7 +63,7 @@ void test()
 //		TRACELN("x=%u", x);
 //	}
 
-	std::vector<my_stru> myvector2(5);
+//	std::vector<my_stru> myvector2(5);
 
 
 

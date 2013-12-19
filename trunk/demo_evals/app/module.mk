@@ -12,7 +12,7 @@ local_as_src-y	:=
 local_c_src-y 	:=
 local_cpp_src-y	:=
 
-local_cpp_src-y				+= main.cpp test.cpp
+local_cpp_src-y				+= main.cpp test.cpp rftest.cpp
 
 
 #updating global variables
@@ -23,7 +23,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 
 #add current directory to include path
 inc_dirs += $(subdirectory)
-inc_dirs += /usr/include /usr/include/i386-linux-gnu
+
 #submodules
 local_modules-y :=
 
