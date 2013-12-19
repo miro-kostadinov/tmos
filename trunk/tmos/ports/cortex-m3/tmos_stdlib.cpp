@@ -9,7 +9,6 @@
 #include "tmos_stdlib.h"
 #include "tmos_string.h"
 #include <trace.h>
-#include <cmsis_cpp.h>
 
 /*-----------------------------------------------------------
  * 			Debug Dinamic Memory

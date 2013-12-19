@@ -6,7 +6,6 @@
  */
 
 #include <tmos.h>
-#include <cmsis_cpp.h>
 
 void TRACE_BUF(const void* buf, unsigned int len)
 {
@@ -127,7 +126,7 @@ void TRACE_TEXT(const void* buf, unsigned int len, unsigned int color)
 void drv_enable_isr(DRIVER_INFO drv_info)
 {
 	//set priority
-    NVIC->IP[drv_info->drv_index] = drv_info->isr_priority;
+    NVIC->NVIC_IPR[drv_info->drv_index] = drv_info->isr_priority;
     //enable
-    NVIC->ISER[drv_info->drv_index >> 5] = 1 << (drv_info->drv_index & 0x1F);
+    NVIC->NVIC_ISER[drv_info->drv_index >> 5] = 1 << (drv_info->drv_index & 0x1F);
 }

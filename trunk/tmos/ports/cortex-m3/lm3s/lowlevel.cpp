@@ -9,7 +9,6 @@
 #include <tmos.h>
 #include <sysctl_lm3s.h>
 #include <memmap_inc.h>
-#include <cmsis_cpp.h>
 
 /**
  *  Low Level init for LM3S
@@ -37,7 +36,8 @@ WEAK_C void LowLevelReset( void)
  */
 WEAK_C void LowLevelReboot( void)
 {
-	SCB->SysCtlReset();
+    SCB->SCB_AIRCR = SCB_AIRCR_VECTKEY_VAL| SCB_AIRCR_SYSRESETREQ;
+    while(1);
 }
 
 /**

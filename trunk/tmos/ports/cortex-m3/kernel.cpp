@@ -21,7 +21,6 @@
 
 
 #include <tmos.h>
-#include <cmsis_cpp.h>
 
 extern TASK_STRU main_task;
 extern TASK_DESCRIPTION main_task_desc;
@@ -56,11 +55,11 @@ extern char end;
 
 static void process_exception()
 {
-    unsigned status = SCB->CFSR;
+    unsigned status = SCB->SCB_CFSR;
 
 #if (TRACE_IS != TRACE_DISABLED) || USE_EXCEPTION_RECORD
-    unsigned int mem_adr = SCB->MMFAR;
-    unsigned int bus_adr = SCB->BFAR;
+    unsigned int mem_adr = SCB->SCB_MMFAR;
+    unsigned int bus_adr = SCB->SCB_BFAR;
 
     TRACELN1("\r\nException ");
     if(status&0xFF)
@@ -71,7 +70,7 @@ static void process_exception()
     	TRACELN("USAGE: %4.4x",(status&0xFFFF0000)>>16);
 #endif
 
-    SCB->CFSR = status;
+    SCB->SCB_CFSR = status;
 
 #if USE_EXCEPTION_RECORD
     exception_record.restart_cause = __get_IPSR();
@@ -79,8 +78,8 @@ static void process_exception()
     exception_record.MMFAR = mem_adr;
     exception_record.BFAR = bus_adr;
     exception_record.cur_task = (unsigned int)CURRENT_TASK;
-    if (((unsigned int) CURRENT_TASK > SRAM_BASE)
-			&& ((unsigned int) CURRENT_TASK < (SRAM_BASE + RAM_SIZE)))
+    if (((unsigned int) CURRENT_TASK > BASE_SRAM)
+			&& ((unsigned int) CURRENT_TASK < (BASE_SRAM + RAM_SIZE)))
     {
     	exception_record.task_name = CURRENT_TASK->name[0]
 				+ (CURRENT_TASK->name[1] << 8) + (CURRENT_TASK->name[2] << 16)
@@ -103,7 +102,7 @@ extern "C" void FaultHandler( void )
     if(restart_on_exception)
     {
     	// stop systick
-		SysTick->CTRL = 0;
+    	SYST->SYST_CSR = 0;
 		LowLevelReboot();
     }
 
@@ -140,28 +139,30 @@ extern "C" void sys_kernel_init( void)
 
 #if TRACE_IS > TRACE_DISABLED
     //--------------- Start trace -----------------------------//
-    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    CDBG->CDBG_DEMCR |= CDBG_DEMCR_TRCENA;
 
     //TPIU
-    *(volatile unsigned int*)(TPIU_BASE +0x304) = 0x00;	//Formatter and Flush Control Register
-    *(volatile unsigned int*)(TPIU_BASE +0x0F0) = 0x01;	//Selected Pin Protocol Register
-    *(volatile unsigned int*)(TPIU_BASE +0x304) = 0x00;	//Formatter and Flush Control Register
-    *(volatile unsigned int*)(TPIU_BASE +0x004) = 0x08;	//Current Sync Port Size Register
-    *(volatile unsigned int*)(TPIU_BASE +0x010) = 0x04;	//Async Clock Prescaler Register
+    TPIU->TPIU_FFCR = 0x00;							//Formatter and Flush Control Register
+    TPIU->TPIU_SPPR = TPIU_SPPR_ASYNC_MANCHESTER;	//Selected Pin Protocol Register
+    TPIU->TPIU_FFCR = 0x00;							//Formatter and Flush Control Register
+    TPIU->TPIU_CSPSR = TPIU_CSPSR_WORD;				//Current Sync Port Size Register
+    TPIU->TPIU_ACPR = 0x04;							//Async Clock Prescaler Register
 
     //ITM
 
-    ITM->LAR = 0xC5ACCE55;						//Lock Access Register
-    ITM->TCR |= 0x10009 | ITM_TCR_ITMENA_Msk;	//Trace Control Register = trace ID = 1, ITM and DTW enabled
-    ITM->TER |= 0xFFFFFFFF ;					//Trace Enable = all stimulus ports
-    ITM->TPR = 0x0;								//Trace Privilege = all
+    //Lock Access Register
+    ITM->ITM_LAR = ITM_LAR_KEY;
+    //Trace Control Register = trace ID = 1, ITM and DTW enabled
+    ITM->ITM_TCR |= 0x10000 | ITM_TCR_DWTENA | ITM_TCR_ITMENA;
+    ITM->ITM_TER |= 0xFFFFFFFF ;					//Trace Enable = all stimulus ports
+    ITM->ITM_TPR = 0x0;								//Trace Privilege = all
 
 	TRACELN1("===== " __DATE__ " === " __TIME__ " =====    "); //few more spaces (a clock change follows)
 #endif
 
 	//------------- initialize dynamic memory  ---------------//
 #if USE_TMOS_STDLIB
-	svc_pool_init(&end, (void*)(SRAM_BASE + RAM_SIZE));
+	svc_pool_init(&end, (void*)(BASE_SRAM + RAM_SIZE));
 #endif
 
     // initialize main task

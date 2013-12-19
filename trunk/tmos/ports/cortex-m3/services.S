@@ -22,7 +22,7 @@
 //========================================================================
 #include "port_asm.h"
 #include "port_inc.h"
-#include "cmsis_inc.h"
+#include "core_map.h"
 #include "swi_tab.h"
 
 
@@ -68,8 +68,8 @@
 .endm
 
 .macro		m_PENDSV		ra, rb
-                ldr			\ra, = NVIC_INT_CTRL
-                movs		\rb, #NVIC_INT_CTRL_PEND_SV
+                ldr			\ra, = REG_SCB_ICSR
+                movs		\rb, #SCB_ICSR_PENDSVSET
                 str			\rb, [\ra]
 .endm
 
@@ -474,7 +474,7 @@ ENDF(	sys_isr_contol		)
 FUNC(	usr_trace_str		)
 .weak usr_trace_str
 
-				movs			r1, #ITM_BASE
+				movs			r1, #BASE_ITM
 1:
 				ldrb			r2, [r0], #1
 				cbz				r2, 4f
@@ -497,7 +497,7 @@ ENDF(	usr_trace_str		)
 FUNC(	usr_trace_char		)
 .weak usr_trace_char
 
-				movs			r1, #ITM_BASE + (TRACE_PORT * 4)
+				movs			r1, #BASE_ITM + (TRACE_PORT * 4)
 				cbz				r0, 2f
 1:
 				ldrexb			r3, [r1]

@@ -11,7 +11,7 @@
 #ifndef TMOS_H
 #error "use tmos.h"
 #endif
-#include <cmsis_cpp.h>
+#include <core_instr.h>
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 HANDLE

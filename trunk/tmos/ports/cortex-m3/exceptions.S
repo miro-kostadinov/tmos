@@ -21,7 +21,7 @@
 
 #include "port_asm.h"
 #include "port_inc.h"
-#include "cmsis_inc.h"
+#include "core_map.h"
 
 
 .section .ExceptionVectors,"ax"
@@ -56,8 +56,6 @@ ENTRY(	VECTOR_TABLE	)
 
 END(	VECTOR_TABLE	)
 
-
-#define NVIC_CFG_CTRL_STKALIGN  0x00000200
 
 //*----------------------------------------------------------------------------
 //*			RESET handler
@@ -95,14 +93,14 @@ FUNC(	sys_reset_handler	)
 	// Core intit
 
 			    /* Set the vector table pointer to the beginning of SRAM. */
-			    ldr     	r0, = NVIC_VTABLE
+			    ldr     	r0, = REG_SCB_VTOR
 			    ldr     	r1, = VECTOR_TABLE
 			    str     	r1, [r0]
 
 			    /* Disable STKALIGN */
-			    ldr			r0, =NVIC_CFG_CTRL
+			    ldr			r0, =REG_SCB_CCR
 			    ldr			r1, [r0]
-			    bic			r1, #NVIC_CFG_CTRL_STKALIGN
+			    bic			r1, #SCB_CCR_STKALIGN
 			    str			r1, [r0]
 
 			    /* Switch to process stack */
