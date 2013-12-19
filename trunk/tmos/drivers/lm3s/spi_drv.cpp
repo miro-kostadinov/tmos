@@ -49,8 +49,7 @@ static void SPI_ENABLE(SPI_DRIVER_INFO* drv_info)
     pSPI->CR1 = SSI_CR1_EOT;
 	pSPI->IM = 0;// SSI_RXTO + SSI_RXOR + SSI_TXFF + SSI_RXFF;
 	pSPI->CPSR  =2;
-	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
-	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+	drv_enable_isr(&drv_info->info);
 
 	//
 	// Configure the SSI0CLK and SSIOTX pins for SSI operation.

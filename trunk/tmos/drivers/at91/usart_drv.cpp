@@ -90,7 +90,7 @@ void USART_CFG(USART_INFO drv_info, DRV_UART_MODE pMode)
     pUsart->US_CR = US_CR_TXEN | US_CR_RXEN | US_CR_STTTO;
 
     pUsart->US_IER = US_IER_ENDRX | US_IER_TIMEOUT;
-   	drv_isr_enable(&drv_info->info);
+   	drv_enable_isr(&drv_info->info);
     PIO_CfgPeriph(&drv_info->pins);
 }
 

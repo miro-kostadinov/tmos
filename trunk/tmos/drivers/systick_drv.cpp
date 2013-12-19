@@ -10,7 +10,6 @@
 
 #include <tmos.h>
 #include <systick_drv.h>
-#include <cmsis_cpp.h>
 #include <hardware_cpp.h>
 
  /**
@@ -35,20 +34,19 @@ void SYSTICK_DCR(SYSTICK_INFO drv_info, unsigned int reason, void* param)
 	{
 	case DCR_RESET:
 		unsigned int ticks;
-		SysTick->CTRL = NVIC_ST_CTRL_CLK_SRC;
+		SYST->SYST_CSR = SYST_CSR_CLKSOURCE;
 		ticks = ( GET_SYSTICK_CLOCK /1000 )*drv_info->OS_QUANTUM_PERIOD - 1;
 
 		// set reload register
-		SysTick->LOAD  = ticks - 1;
+		SYST->SYST_RVR  = ticks - 1;
 		// Load the SysTick Counter Value
-		SysTick->VAL   = 0;
+		SYST->SYST_CVR   = 0;
 		// Enable SysTick IRQ and SysTick Timer
-		SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk |
-						SysTick_CTRL_ENABLE_Msk;
+		SYST->SYST_CSR = SYST_CSR_CLKSOURCE | SYST_CSR_TICKINT | SYST_CSR_ENABLE;
 
 		// SYSTICK MUST HAVE THE HIGHEST PRIORITY (0) !!!!
-	    SCB->SHP[((uint32_t)(SysTick_IRQn) & 0xF)-4] = 0;
-	    SCB->SHP[((uint32_t)(PendSV_IRQn) & 0xF)-4] = -1;
+	    SCB->SCB_SHPR[((uint32_t)(SysTick_IRQn) & 0xF)-4] = 0;
+	    SCB->SCB_SHPR[((uint32_t)(PendSV_IRQn) & 0xF)-4] = -1;
 		break;
 	}
 }

@@ -6,7 +6,6 @@
  */
 
 #include <tmos.h>
-#include <cmsis_cpp.h>
 #include <tim_drv.h>
 
 static void ConfigureTimer(TIM_DRV_INF drv_info, const TIMER_CONTROL_MODE *mode)
@@ -113,7 +112,7 @@ void TIM_DCR(TIM_DRV_INF drv_info, unsigned int reason, HANDLE hnd)
 				drv_data->cnt--;
 			if(!drv_data->cnt)
 			{
-				NVIC->NVIC_DisableIRQ(drv_info->info.drv_index);
+				NVIC_DisableIRQ(drv_info->info.drv_index);
 				RCCPeripheralReset(drv_info->info.peripheral_indx);
 				RCCPeripheralDisable(drv_info->info.peripheral_indx);
 			}

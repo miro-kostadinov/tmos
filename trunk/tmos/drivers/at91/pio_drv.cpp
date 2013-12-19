@@ -299,7 +299,7 @@ void PIO_DCR(PIO_INFO drv_info, unsigned int reason, HANDLE param)
 
 
                 drv_pmc_enable(&drv_info->info);
-               	drv_isr_enable(&drv_info->info);
+               	drv_enable_isr(&drv_info->info);
 
             }
 		  	break;

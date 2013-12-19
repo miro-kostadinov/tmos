@@ -6,7 +6,6 @@
  */
 
 #include <tmos.h>
-#include <cmsis_cpp.h>
 #include <adc2_drv.h>
 
 bool ADC_START_HND(const ADC_DRIVER_INFO* drv_info, HANDLE hnd)
@@ -180,7 +179,7 @@ void ADC_DCR(const ADC_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
     			}
         		if(!drv_data->all_cnt)
         		{
-        			NVIC->NVIC_DisableIRQ(drv_info->info.drv_index);
+        			NVIC_DisableIRQ(drv_info->info.drv_index);
         		}
         	}
         	break;

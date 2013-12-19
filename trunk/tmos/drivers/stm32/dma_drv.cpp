@@ -6,7 +6,6 @@
  */
 
 #include <tmos.h>
-#include <cmsis_cpp.h>
 #include <dma_drv.h>
 
 
@@ -59,7 +58,7 @@ void DMA_DCR(DMA_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 
 		case DCR_CLOSE:
 			if(!--drv_info->ch_data->cnt)
-    			NVIC->NVIC_DisableIRQ(drv_info->info.drv_index);
+    			NVIC_DisableIRQ(drv_info->info.drv_index);
 
 			if(!--drv_info->drv_data->cnt)
 				RCCPeripheralDisable(drv_info->info.peripheral_indx);

@@ -6,7 +6,6 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <tmos.h>
-#include <cmsis_cpp.h>
 #include <hardware_cpp.h>
 
 

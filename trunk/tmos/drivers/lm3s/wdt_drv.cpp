@@ -10,7 +10,6 @@
 
 #include <tmos.h>
 #include "wdt_drv.h"
-#include <cmsis_cpp.h>
 #include <sysctl_lm3s.h>
 
 void wdt_feet(WDT_INFO drv_info)
@@ -138,8 +137,7 @@ void WDT_DCR(WDT_INFO drv_info, unsigned int reason, HANDLE hnd)
 
 
 		//Enable the ISR
-		NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
-		NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+		drv_enable_isr(&drv_info->info);
 
 	}
 }
