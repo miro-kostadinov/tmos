@@ -15,7 +15,6 @@
 #include <usb_api.h>
 #include <usb_requests.h>
 #include <usb_svc.h>
-#include <cmsis_cpp.h>
 #if USB_ENABLE_HOST
 #include <usb_host.h>
 #include <tmos_atomic.h>

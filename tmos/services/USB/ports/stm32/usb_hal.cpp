@@ -7,7 +7,6 @@
 
 #include <tmos.h>
 #include <usb_hal.h>
-#include <cmsis_cpp.h>
 
 //-------------------  local static functions --------------------------------//
 
@@ -749,7 +748,7 @@ void usb_drv_reset(USB_DRV_INFO drv_info)
 {
     TRACELN1_USB("USBD_Init");
     //set priority
-    NVIC->IP[drv_info->info.drv_index] = drv_info->info.isr_priority;
+    NVIC->NVIC_IPR[drv_info->info.drv_index] = drv_info->info.isr_priority;
 	if(drv_info->info.peripheral_indx != ID_NO_PERIPH)
 	{
     	Task* task;
@@ -1764,7 +1763,8 @@ void USB_HS_WKUP_ISR(USB_DRV_INFO drv_info)
 	cfg = drv_info->cfg->stm32_otg;
 	if(cfg & CFG_STM32_OTG_LOW_POWER)
 	{
-		*(uint32_t *)NVIC_SYS_CTRL &= ~(NVIC_SYS_CTRL_SLEEPDEEP | NVIC_SYS_CTRL_SLEEPEXIT);
+		SCB->SCB_SCR &= ~(SCB_SCR_SLEEPDEEP | SCB_SCR_SLEEPONEXIT);
+
 		stm_otg_ungate_clock(drv_info->hw_base, cfg);
 	}
 	EXTI->EXTI_PR = EXTI_PR_PR20;

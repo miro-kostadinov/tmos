@@ -7,7 +7,6 @@
 
 #include <tmos.h>
 #include <tmos_time.h>
-#include <cmsis_cpp.h>
 
 const char day_name[8][4] = {"???", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 const uint8_t month_lengths[] = {0,	  31,   28,    31,    30,    31,    30,    31,     31,   30,     31,   30,   31 };

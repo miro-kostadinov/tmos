@@ -9,7 +9,6 @@
 
 
 #include <tmos.h>
-#include <cmsis_cpp.h>
 #include <pmc_drv.h>
 #include <usb_drv.h>
 #include <usb_hal.h>
@@ -270,7 +269,7 @@ void usb_drv_reset(USB_DRV_INFO drv_info)
 
    	drv_isr_disable(&drv_info->info);
     TRACELN1_USB("USBD_Init");
-	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
+	NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
 
 	// create usb helper thread
 	task = usr_task_create_dynamic("USBH", (TASK_FUNCTION)usbdrv_thread,
@@ -538,7 +537,7 @@ void usb_hal_device_start(USB_DRV_INFO drv_info)
 	// Reset endpoint structures
 	at91_reset_endpoints(drv_info);
 
-	drv_isr_enable(&drv_info->info);
+	drv_enable_isr(&drv_info->info);
 
 	at91_pullup_enable(drv_info);
 }
