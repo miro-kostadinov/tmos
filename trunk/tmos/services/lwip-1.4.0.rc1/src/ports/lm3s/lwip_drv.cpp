@@ -474,7 +474,7 @@ static void low_level_init(struct netif *netif)
 
 	/* Enable the Ethernet Interrupt handler. */
 //	IntEnable( INT_ETH);
-	NVIC->NVIC_EnableIRQ(Ethernet_IRQn); //THIS IS BAD!
+	NVIC_EnableIRQ(Ethernet_IRQn); //THIS IS BAD!
 
 	/* Enable Ethernet TX and RX Packet Interrupts. */
 	EthernetIntEnable(mac, ETH_INT_RX | ETH_INT_TX);
@@ -1212,8 +1212,7 @@ void LWIP_DCR(LWIP_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
     {
         case DCR_RESET:
         	drv_info->drv_data->lwip_netif.state = drv_info->hw_base;
-        	NVIC->NVIC_SetPriority(drv_info->info.drv_index,
-				drv_info->info.isr_priority);
+        	NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
 //        	SysCtlPeripheralDisable(drv_info->info.peripheral_indx);
            	usr_task_init_static(&lwipdrv_task_desc, true);
            	lwipdrv_task.sp->r0.as_voidptr = drv_info;

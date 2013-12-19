@@ -213,7 +213,7 @@ void EM6125::redraw_screen(WINDOW desktop)
 	draw_hline(0, cpu_usage, 78);
 #if USE_MEMORY_TRACKING
 	unsigned int mem_use;
-	mem_use = (SRAM_BASE + RAM_SIZE - (unsigned int)&end)>>2;
+	mem_use = (BASE_SRAM + RAM_SIZE - (unsigned int)&end)>>2;
 	mem_use = (PMAIN_TASK->aloc_mem * (size_x-1))/mem_use;
 	invert_hline(size_x-1-mem_use, size_x-1, 78);
 #endif

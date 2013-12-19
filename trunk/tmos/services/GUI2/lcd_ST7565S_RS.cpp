@@ -9,7 +9,6 @@
 #include <tmos.h>
 #include <lcd_ST7565S_RS.h>
 #include <lcd_ST7565S_cmd.h>
-#include <cmsis_cpp.h>
 
 #define A0_PIN_INDX	2
 #define CS_PIN_INDX	3

@@ -12,7 +12,6 @@
 #include <usb_hal.h>
 #include <gpio_drv.h>
 #include <usb_drv.h>
-#include <cmsis_cpp.h>
 #include <tmos_atomic.h>
 
 
@@ -392,7 +391,7 @@ void usb_host_resume(USB_DRV_INFO drv_info)
 void usb_drv_reset(USB_DRV_INFO drv_info)
 {
     TRACELN1_USB("USBD_Init");
-	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
+	NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
 
 	drv_info->drv_data->helper_task = usr_task_create_dynamic("USBH",
 			(TASK_FUNCTION) usbdrv_thread, 60, 400 + TRACE_SIZE);
@@ -741,7 +740,7 @@ static void usb_hal_start(USB_DRV_INFO drv_info, unsigned int ie)
 	hw_base->USBTXIE = USB_USBTXIE_EP0;
 	hw_base->USBRXIE = 0;
 
-	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+	drv_enable_isr(&drv_info->info);
 }
 
 /** Configure as device
