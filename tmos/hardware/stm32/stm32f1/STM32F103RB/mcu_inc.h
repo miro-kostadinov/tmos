@@ -16,14 +16,14 @@
 #ifndef MCU_INC_H_
 #define MCU_INC_H_
 
+#include <core_map.h>
+
 #define STM32F10X_MD			//!< STM32F103RB is medium density line
 
 
 #define RAM_SIZE 			(20*1024) 	 //!< 20K RAM size
 
 #define FLASH_BASE			(0x08000000) //!< FLASH base address in the alias region
-#define SRAM_BASE           (0x20000000) //!< SRAM base address in the alias region
-#define PERIPH_BASE         (0x40000000) //!< Peripheral base address in the alias region
 
 #define SRAM_BB_BASE        (0x22000000) //!< SRAM base address in the bit-band region
 #define PERIPH_BB_BASE      (0x42000000) //!< Peripheral base address in the bit-band region
@@ -31,9 +31,9 @@
 #define FSMC_R_BASE         (0xA0000000) //!< FSMC registers base address
 
 /*!< Peripheral memory map */
-#define APB1PERIPH_BASE     PERIPH_BASE
-#define APB2PERIPH_BASE     (PERIPH_BASE + 0x10000)
-#define AHBPERIPH_BASE      (PERIPH_BASE + 0x20000)
+#define APB1PERIPH_BASE     BASE_PERIPHERAL
+#define APB2PERIPH_BASE     (BASE_PERIPHERAL + 0x10000)
+#define AHBPERIPH_BASE      (BASE_PERIPHERAL + 0x20000)
 
 #define TIM2_BASE           (APB1PERIPH_BASE + 0x0000)
 #define TIM3_BASE           (APB1PERIPH_BASE + 0x0400)
@@ -85,7 +85,7 @@
 #define TIM10_BASE          (APB2PERIPH_BASE + 0x5000)
 #define TIM11_BASE          (APB2PERIPH_BASE + 0x5400)
 
-#define SDIO_BASE           (PERIPH_BASE + 0x18000)
+#define SDIO_BASE           (BASE_PERIPHERAL + 0x18000)
 
 #define DMA1_BASE           (AHBPERIPH_BASE + 0x0000)
 #define DMA1_Channel1_BASE  (AHBPERIPH_BASE + 0x0008)
@@ -122,6 +122,6 @@
 #define DBGMCU_BASE         (0xE0042000) /*!< Debug MCU registers base address */
 
 /** Bit-banding registers */
-#define PWR_BB_BASE           (PERIPH_BB_BASE + (PWR_BASE - PERIPH_BASE)*32 )
+#define PWR_BB_BASE           (PERIPH_BB_BASE + (PWR_BASE - BASE_PERIPHERAL)*32 )
 
 #endif /* MCU_INC_H_ */

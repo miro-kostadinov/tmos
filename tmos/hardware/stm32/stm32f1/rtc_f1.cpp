@@ -8,7 +8,6 @@
 
 #include <tmos.h>
 #include <fam_cpp.h>
-#include <cmsis_cpp.h>
 
 bool rtc_enter_init_mode(RTC_TypeDef* rtc)
 {

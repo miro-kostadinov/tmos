@@ -13,8 +13,6 @@
 #ifndef FAM_CPP_H_
 #define FAM_CPP_H_
 
-#include <cmsis_cpp.h>
-
 #include "sysctl_lm3s.h"
 #include "uart_lm3s.h"
 #include "gpio_lm3s.h"

@@ -190,7 +190,7 @@ void PIO_Free(PIN_DESC cfg)
 		port_base->GPIOIM &= ~pin_pattern;
 		if(!port_base->GPIOIM)
 		{
-			NVIC->NVIC_DisableIRQ(GPIO_IRQ_INDX[port_num]);
+			NVIC_DisableIRQ(GPIO_IRQ_INDX[port_num]);
 		}
 	}
 }

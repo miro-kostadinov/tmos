@@ -9,6 +9,8 @@
 #define MCU_INC_H_
 
 
+#include <core_map.h>
+
 #define TARGET_IS_TEMPEST_RC3	1		// Tempest rev C3
 
 #define RAM_SIZE 			0x18000

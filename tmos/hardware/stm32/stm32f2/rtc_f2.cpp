@@ -8,7 +8,6 @@
 
 #include <tmos.h>
 #include <fam_cpp.h>
-#include <cmsis_cpp.h>
 
 #define SYNCHRO_TIMEOUT     0x00008000
 #define INITMODE_TIMEOUT	0x00010000

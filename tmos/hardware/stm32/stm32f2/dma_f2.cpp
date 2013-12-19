@@ -79,7 +79,7 @@ void stm32_dma_start(DMA_TypeDef* dmac, uint32_t indx, HANDLE hnd)
 
 	ch->DMA_SxNDTR = hnd->len;
 
-	if( (hnd->src.as_int >> 28) == (PERIPH_BASE >> 28))
+	if( (hnd->src.as_int >> 28) == (BASE_PERIPHERAL >> 28))
 	{
 		//reading from "peripheral" (peripheral to memory)
 		ch->DMA_SxPAR = hnd->src.as_int;

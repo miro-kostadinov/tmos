@@ -16,9 +16,10 @@
 #ifndef MCU_INC_H_
 #define MCU_INC_H_
 
+#include <core_map.h>
+
 #define sam3s4		//!< Device group (used to select flash size etc)
 
 #define RAM_SIZE (48*1024) 		//!< 48K RAM size
-#define SRAM_BASE 0x20000000	//!< RAM base address
 
 #endif /* MCU_INC_H_ */

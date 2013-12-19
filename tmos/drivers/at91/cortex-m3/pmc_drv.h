@@ -44,7 +44,6 @@ void PMC_ISR(PMC_INFO drv_info );
 
 void sys_SetNewClock(PMC_INFO drv_info, unsigned int new_clk);
 
-void drv_isr_enable(DRIVER_INFO drv_info);
 void drv_isr_disable(DRIVER_INFO drv_info);
 
 void drv_pmc_enable(DRIVER_INFO drv_info);

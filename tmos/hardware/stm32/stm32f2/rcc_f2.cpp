@@ -8,9 +8,37 @@
 
 #include <tmos.h>
 #include <fam_cpp.h>
-#include <cmsis_cpp.h>
 
 
+void drv_peripheral_reset(uint32_t periph_id)
+{
+	__IO uint32_t* reg;
+	uint32_t bitmask;
+
+    if(periph_id < ID_NO_PERIPH)
+    {
+    	bitmask = 1<<(periph_id&0x1f);
+    	periph_id >>=5;
+
+		/* RCCPeripheralReset */
+		reg = &RCC->RCC_AHB1RSTR;
+
+		// Put the peripheral into the reset state.
+		reg[periph_id] |= bitmask;
+
+		// Delay for a little bit.
+		for(volatile int ulDelay = 0; ulDelay < 16; ulDelay++)
+		{
+		}
+
+		// Take the peripheral out of the reset state.
+		bitmask = ~bitmask;
+		reg[periph_id] &= bitmask;
+
+		// Disable this peripheral clock.
+		reg[periph_id + 8] &= bitmask;
+   }
+}
 
 void RCCPeripheralReset(unsigned int periph_id)
 {
