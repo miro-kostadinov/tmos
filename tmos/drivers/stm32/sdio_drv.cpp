@@ -264,7 +264,7 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 				drv_data->rx_dma_hnd.close();
 				drv_data->tx_dma_hnd.close();
 #endif
-				NVIC->NVIC_DisableIRQ(drv_info->info.drv_index);
+				NVIC_DisableIRQ(drv_info->info.drv_index);
 				RCCPeripheralReset(drv_info->info.peripheral_indx);
 				RCCPeripheralDisable(drv_info->info.peripheral_indx);
 				if(drv_info->sdio_pwr_en)

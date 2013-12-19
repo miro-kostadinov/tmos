@@ -6,7 +6,6 @@
  */
 
 #include <tmos.h>
-#include <cmsis_cpp.h>
 #include <exti_drv.h>
 
 extern 	 char* const DRV_TABLE[INALID_DRV_INDX+1];
@@ -109,7 +108,7 @@ void EXTI_DCR(EXTI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 							info = (const EXTI_DRIVER_INFO*)adr;
 							if(info->info.isr == (DRV_ISR)EXTI_ISR)
 							{
-		        				drv_enable_isr(&drv_info->info);
+		        				drv_enable_isr(&info->info);
 
 							    /* Clear Rising Falling edge configuration */
 								info->hw_base->EXTI_RTSR &= ~lines;
@@ -151,7 +150,7 @@ void EXTI_DCR(EXTI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 			break;
 
 		case DCR_RESET:
-			NVIC->NVIC_DisableIRQ(drv_info->info.drv_index);
+			NVIC_DisableIRQ(drv_info->info.drv_index);
 			RCCPeripheralReset(drv_info->info.peripheral_indx);
 			RCCPeripheralDisable(drv_info->info.peripheral_indx); // turn off
 			break;

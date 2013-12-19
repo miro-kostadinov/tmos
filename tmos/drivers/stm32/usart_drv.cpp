@@ -6,7 +6,6 @@
  */
 
 #include <tmos.h>
-#include <cmsis_cpp.h>
 #include <usart_drv.h>
 
 void ConfigureUsart(USART_DRIVER_INFO * drv_info, USART_DRIVER_DATA * drv_data,
@@ -226,7 +225,7 @@ void USART_DCR(USART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 			if(!drv_data->cnt)
 			{
 				//Disable ?
-				NVIC->NVIC_DisableIRQ(drv_info->info.drv_index);
+				NVIC_DisableIRQ(drv_info->info.drv_index);
 				//	Uart->UARTDisable();
 				//	STOP_RX(Uart);
 				STOP_TX(drv_info->hw_base);

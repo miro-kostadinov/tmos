@@ -7,7 +7,6 @@
 
 
 #include <tmos.h>
-#include <cmsis_cpp.h>
 #include <rtc2_drv.h>
 
 /**

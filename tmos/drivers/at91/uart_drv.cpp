@@ -79,7 +79,7 @@ void UART_CFG(UART_INFO drv_info, DRV_UART_MODE pMode)
     pUart->UART_MR = pMode->mode;
 
     pUart->UART_IER = UART_IER_ENDRX ;
-   	drv_isr_enable(&drv_info->info);
+   	drv_enable_isr(&drv_info->info);
     PIO_CfgPeriph(&drv_info->pins);
 }
 

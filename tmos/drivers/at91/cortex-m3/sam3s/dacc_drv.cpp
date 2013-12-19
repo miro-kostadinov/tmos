@@ -47,7 +47,7 @@ static void DACC_on(DACC_INFO drv_info, DRV_DACC_MODE pMode)
 //	pDacc->DACC_PTCR = DACC_PTCR_TXTEN;
 //
 //	pDacc->DACC_IER = DACC_IER_ENDTX;
-   	drv_isr_enable(&drv_info->info);
+   	drv_enable_isr(&drv_info->info);
 }
 
 /** Start transmit hnd

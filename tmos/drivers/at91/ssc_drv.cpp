@@ -59,7 +59,7 @@ static void SSC_ENABLE(SSC_INFO drv_info, const SSC_MODE_STRU* mode)
 	pSSC->SSC_CR = SSC_CR_TXEN | SSC_CR_RXEN;
 
 	//* Enable interrupts
-	drv_isr_enable(&drv_info->info);
+	drv_enable_isr(&drv_info->info);
 }
 
 /** SSC Driver DCR routine  **/

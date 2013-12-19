@@ -41,7 +41,7 @@ static void ADC_on(ADC_INFO drv_info)
 	pADC->ADC_MR = drv_info->CFG_ADC_MR;
 
 	pADC->ADC_IER = ADC_IER_DRDY;
-   	drv_isr_enable(&drv_info->info);
+   	drv_enable_isr(&drv_info->info);
 }
 
 /**

@@ -28,8 +28,7 @@ void ConfigureUart(UART_DRIVER_INFO * drv_info, UART_DRIVER_DATA * drv_data, UAR
 	Uart->UARTConfigSetExpClk(SYSCTL->SysCtlClockGet(), uart_mode->baudrate, uart_mode->mode); // enable uart
 	Uart->UARTEnable();
 
-	NVIC->NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority   );
-	NVIC->NVIC_EnableIRQ(drv_info->info.drv_index);
+	drv_enable_isr(&drv_info->info);
 
 	SYSCTL->SysCtlPeripheralDeepSleepEnable(drv_info->info.peripheral_indx);
     SYSCTL->SysCtlPeripheralSleepEnable(drv_info->info.peripheral_indx);
@@ -228,7 +227,7 @@ static void dcr_cancel_handle(UART_DRIVER_INFO* drv_info,
 		}
 		if(!drv_data->cnt)
 		{
-				NVIC->NVIC_DisableIRQ(drv_info->info.drv_index);
+				NVIC_DisableIRQ(drv_info->info.drv_index);
 				Uart->UARTDisable();
 				STOP_RX(Uart);
 				STOP_TX(Uart);

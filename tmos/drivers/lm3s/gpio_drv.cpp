@@ -70,8 +70,7 @@ void dcr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, unsigned int reason, HANDLE hn
 					info = (const GPIO_DRIVER_INFO*)adr;
 					if(info->info.isr == (DRV_ISR)isr_GPIO_driver)
 					{
-						NVIC->NVIC_SetPriority(info->info.drv_index, info->info.isr_priority);
-						NVIC->NVIC_EnableIRQ(info->info.drv_index);
+						drv_enable_isr(&info->info);
 						info->hw_base->GPIOIM |= PD_PINS_Get(*pin);
 					}
 				}
@@ -101,7 +100,7 @@ void dcr_GPIO_driver(GPIO_DRIVER_INFO * drv_info, unsigned int reason, HANDLE hn
 			#ifdef USE_AHB_PERIPHERAL
 				SYSCTL->GPIOHBCTL |= (1 << drv_info->port_num);
 			#endif
-			NVIC->NVIC_DisableIRQ(drv_info->info.drv_index);
+			NVIC_DisableIRQ(drv_info->info.drv_index);
 			SysCtlPeripheralReset(drv_info->info.peripheral_indx);
 			SysCtlPeripheralDisable(drv_info->info.peripheral_indx); // turn off
 			break;
