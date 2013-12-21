@@ -27,6 +27,7 @@
 #include "rtc_f2.h"
 #include "adc_f2.h"
 #include "tim_f2.h"
+#include "crc_f2.h"
 
 #endif /* SERIES_CPP_H_ */
 /** @} ingroup hardware_stm32f2 */
