@@ -14,6 +14,7 @@ local_cpp_src-y	:=
 local_h_src-y 	:=
 
 local_as_src-$(USE_CRC16)		+= crc16.S
+local_as_src-$(USE_CRC32)		+= crc32.S
 
 local_c_src-$(USE_CRC32)		+= crc32.c
 
