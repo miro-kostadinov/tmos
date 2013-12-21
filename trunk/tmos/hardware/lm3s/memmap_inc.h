@@ -37,7 +37,7 @@
 // peripherals.
 //
 //*****************************************************************************
-#define FLASH_BASE              0x00000000  //!< FLASH memory
+#define BASE_FLASH              0x00000000  //!< FLASH memory
 #define WATCHDOG0_BASE          0x40000000  //!< Watchdog0
 #define WATCHDOG1_BASE          0x40001000  //!< Watchdog1
 #define GPIO_PORTA_BASE         0x40004000  //!< GPIO Port A

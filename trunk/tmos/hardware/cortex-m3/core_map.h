@@ -43,7 +43,9 @@
 ///------------ Address spaces ----------------------------------------------///
 #define BASE_CODE		0x00000000 //!< Code space
 #define BASE_SRAM		0x20000000 //!< SRAM space
+#define BASE_SRAM_BB	0x22000000 //!< SRAM bit band alias space
 #define BASE_PERIPHERAL	0x40000000 //!< Peripheral space
+#define BASE_PERIPH_BB  0x42000000 //!< Peripheral bit band alias space
 #define BASE_EXT_RAM	0x60000000 //!< External RAM space
 #define BASE_EXT_DEVICE	0xA0000000 //!< External device space
 #define BASE_INT_PER	0xE0000000 //!< Internal Peripheral bus space

@@ -22,66 +22,71 @@
  * \addtogroup STM32_base Peripheral Base Address Definitions
  * @{
  */
-#define RCC			CAST(RCC_TypeDef	, RCC_BASE)  	//!< (RCC) Base Address
-#define FLASH       CAST(FLASH_TypeDef	, FLASH_R_BASE)	//!< Flash registers base address
-#define DBGMCU      CAST(DBGMCU_TypeDef , DBGMCU_BASE)	//!< Debug MCU registers base address
-#define EXTI        CAST(EXTI_TypeDef	, EXTI_BASE)	//!< External Interrupt/Event Controller (EXTI)
-#define SYSCFG      CAST(SYSCFG_TypeDef , SYSCFG_BASE)	//!< System configuration controller
-#define GPIOA       CAST(GPIO_TypeDef   , GPIOA_BASE)	//!< GPIO A
-#define GPIOB       CAST(GPIO_TypeDef   , GPIOB_BASE)   //!< GPIO B
-#define GPIOC       CAST(GPIO_TypeDef   , GPIOC_BASE)   //!< GPIO C
-#define GPIOD       CAST(GPIO_TypeDef   , GPIOD_BASE)   //!< GPIO D
-#define GPIOE       CAST(GPIO_TypeDef   , GPIOE_BASE)   //!< GPIO E
-#define GPIOF       CAST(GPIO_TypeDef   , GPIOF_BASE)   //!< GPIO F
-#define GPIOG       CAST(GPIO_TypeDef   , GPIOG_BASE)   //!< GPIO G
-#define GPIOH       CAST(GPIO_TypeDef   , GPIOH_BASE)   //!< GPIO H
-#define GPIOI       CAST(GPIO_TypeDef   , GPIOI_BASE)   //!< GPIO I
-#define DMA1        CAST(DMA_TypeDef 	, DMA1_BASE)    //!< DMA 1
-#define DMA2        CAST(DMA_TypeDef 	, DMA2_BASE)    //!< DMA 2
-#define USART1      CAST(USART_TypeDef  , USART1_BASE)	//!< USART1
-#define USART2      CAST(USART_TypeDef  , USART2_BASE)	//!< USART2
-#define USART3      CAST(USART_TypeDef  , USART3_BASE)	//!< USART3
-#define UART4       CAST(USART_TypeDef  , UART4_BASE) 	//!< UART4
-#define UART5       CAST(USART_TypeDef  , UART5_BASE) 	//!< UART5
-#define USART6      CAST(USART_TypeDef  , USART6_BASE)	//!< USART6
-#define SPI1        CAST(SPI_TypeDef 	, SPI1_BASE)	//!< SPI 1
-#define SPI2        CAST(SPI_TypeDef 	, SPI2_BASE)	//!< SPI 2
-#define SPI3        CAST(SPI_TypeDef 	, SPI3_BASE)	//!< SPI 3
-#define OTG_HS		CAST(USB_TypeDef 	, 0x40040000)	//!< OTG HS
-#define OTG_FS		CAST(USB_TypeDef 	, 0x50000000)	//!< OTG FS
-#define RTC			CAST(RTC_TypeDef 	, RTC_BASE)		//!< RTC
-#define PWR			CAST(PWR_TypeDef 	, PWR_BASE)		//!< Power control
-#define ADC         CAST(ADCS_TypeDef 	, ADC1_BASE)	//!< ADC common
-#define ADC1        CAST(ADC_TypeDef 	, ADC1_BASE)	//!< ADC1
-#define ADC2        CAST(ADC_TypeDef 	, ADC2_BASE)	//!< ADC2
-#define ADC3        CAST(ADC_TypeDef 	, ADC3_BASE)	//!< ADC3
-#define TIM1        CAST(TIM_TypeDef    , TIM1_BASE)    //!< TIM1
-#define TIM2        CAST(TIM_TypeDef    , TIM2_BASE)    //!< TIM2
-#define TIM3        CAST(TIM_TypeDef    , TIM3_BASE)    //!< TIM3
-#define TIM4        CAST(TIM_TypeDef    , TIM4_BASE)    //!< TIM4
-#define TIM5        CAST(TIM_TypeDef    , TIM5_BASE)    //!< TIM5
-#define TIM6        CAST(TIM_TypeDef    , TIM6_BASE)    //!< TIM6
-#define TIM7        CAST(TIM_TypeDef    , TIM7_BASE)    //!< TIM7
-#define TIM8        CAST(TIM_TypeDef    , TIM8_BASE)    //!< TIM8
-#define TIM9        CAST(TIM_TypeDef    , TIM9_BASE)    //!< TIM9
-#define TIM11       CAST(TIM_TypeDef    , TIM11_BASE)   //!< TIM11
-#define TIM10       CAST(TIM_TypeDef    , TIM10_BASE)   //!< TIM10
-#define TIM12       CAST(TIM_TypeDef    , TIM12_BASE)   //!< TIM12
-#define TIM13       CAST(TIM_TypeDef    , TIM13_BASE)   //!< TIM13
-#define TIM14       CAST(TIM_TypeDef    , TIM14_BASE)   //!< TIM14
-#define SDIO        CAST(SDIO_TypeDef	, SDIO_BASE)	//!< SDIO
+#define RCC			CAST(RCC_TypeDef	, BASE_RCC)  	//!< (RCC) Base Address
+#define FLASH       CAST(FLASH_TypeDef	, BASE_FLASH_R)	//!< Flash registers base address
+#define DBGMCU      CAST(DBGMCU_TypeDef , BASE_DBGMCU)	//!< Debug MCU registers base address
+#define EXTI        CAST(EXTI_TypeDef	, BASE_EXTI)	//!< External Interrupt/Event Controller (EXTI)
+#define SYSCFG      CAST(SYSCFG_TypeDef , BASE_SYSCFG)	//!< System configuration controller
+#define GPIOA       CAST(GPIO_TypeDef   , BASE_GPIOA)	//!< GPIO A
+#define GPIOB       CAST(GPIO_TypeDef   , BASE_GPIOB)   //!< GPIO B
+#define GPIOC       CAST(GPIO_TypeDef   , BASE_GPIOC)   //!< GPIO C
+#define GPIOD       CAST(GPIO_TypeDef   , BASE_GPIOD)   //!< GPIO D
+#define GPIOE       CAST(GPIO_TypeDef   , BASE_GPIOE)   //!< GPIO E
+#define GPIOF       CAST(GPIO_TypeDef   , BASE_GPIOF)   //!< GPIO F
+#define GPIOG       CAST(GPIO_TypeDef   , BASE_GPIOG)   //!< GPIO G
+#define GPIOH       CAST(GPIO_TypeDef   , BASE_GPIOH)   //!< GPIO H
+#define GPIOI       CAST(GPIO_TypeDef   , BASE_GPIOI)   //!< GPIO I
+#define DMA1        CAST(DMA_TypeDef 	, BASE_DMA1)    //!< DMA 1
+#define DMA2        CAST(DMA_TypeDef 	, BASE_DMA2)    //!< DMA 2
+#define USART1      CAST(USART_TypeDef  , BASE_USART1)	//!< USART1
+#define USART2      CAST(USART_TypeDef  , BASE_USART2)	//!< USART2
+#define USART3      CAST(USART_TypeDef  , BASE_USART3)	//!< USART3
+#define UART4       CAST(USART_TypeDef  , BASE_UART4) 	//!< UART4
+#define UART5       CAST(USART_TypeDef  , BASE_UART5) 	//!< UART5
+#define USART6      CAST(USART_TypeDef  , BASE_USART6)	//!< USART6
+#define SPI1        CAST(SPI_TypeDef 	, BASE_SPI1)	//!< SPI 1
+#define SPI2        CAST(SPI_TypeDef 	, BASE_SPI2)	//!< SPI 2
+#define SPI3        CAST(SPI_TypeDef 	, BASE_SPI3)	//!< SPI 3
+#define OTG_HS		CAST(USB_TypeDef 	, BASE_OTG_HS)	//!< OTG HS
+#define OTG_FS		CAST(USB_TypeDef 	, BASE_OTG_FS)	//!< OTG FS
+#define RTC			CAST(RTC_TypeDef 	, BASE_RTC)		//!< RTC
+#define PWR			CAST(PWR_TypeDef 	, BASE_PWR)		//!< Power control
+#define ADC         CAST(ADCS_TypeDef 	, BASE_ADC1)	//!< ADC common
+#define ADC1        CAST(ADC_TypeDef 	, BASE_ADC1)	//!< ADC1
+#define ADC2        CAST(ADC_TypeDef 	, BASE_ADC2)	//!< ADC2
+#define ADC3        CAST(ADC_TypeDef 	, BASE_ADC3)	//!< ADC3
+#define TIM1        CAST(TIM_TypeDef    , BASE_TIM1)    //!< TIM1
+#define TIM2        CAST(TIM_TypeDef    , BASE_TIM2)    //!< TIM2
+#define TIM3        CAST(TIM_TypeDef    , BASE_TIM3)    //!< TIM3
+#define TIM4        CAST(TIM_TypeDef    , BASE_TIM4)    //!< TIM4
+#define TIM5        CAST(TIM_TypeDef    , BASE_TIM5)    //!< TIM5
+#define TIM6        CAST(TIM_TypeDef    , BASE_TIM6)    //!< TIM6
+#define TIM7        CAST(TIM_TypeDef    , BASE_TIM7)    //!< TIM7
+#define TIM8        CAST(TIM_TypeDef    , BASE_TIM8)    //!< TIM8
+#define TIM9        CAST(TIM_TypeDef    , BASE_TIM9)    //!< TIM9
+#define TIM11       CAST(TIM_TypeDef    , BASE_TIM11)   //!< TIM11
+#define TIM10       CAST(TIM_TypeDef    , BASE_TIM10)   //!< TIM10
+#define TIM12       CAST(TIM_TypeDef    , BASE_TIM12)   //!< TIM12
+#define TIM13       CAST(TIM_TypeDef    , BASE_TIM13)   //!< TIM13
+#define TIM14       CAST(TIM_TypeDef    , BASE_TIM14)   //!< TIM14
+#define SDIO        CAST(SDIO_TypeDef	, BASE_SDIO)	//!< SDIO
+#define CRC         CAST(CRC_TypeDef	, BASE_CRC)		//!< CRC
 /** @} */
+
+/* CRC registers */
+#define REG_CRC_DR		REG_ACCESS(__IO uint32_t, BASE_CRC+0x00) //!< CRC Data register
+#define REG_CRC_CR	    REG_ACCESS(__IO uint32_t, BASE_CRC+0x08) //!< CRC Control register
 
 /**
  * @ingroup	 STM32F205ZC
  * \addtogroup STM32_base Bit-banding Peripheral aliases
  * @{
  */
-#define PWR_BB		CAST(PWR_BB_TypeDef , PWR_BB_BASE)	//!< Power control
+#define PWR_BB		CAST(PWR_BB_TypeDef , BASE_PWR_BB)	//!< Power control
 /** @} */
 
 /* ************************************************************************** */
-/*   PERIPHERAL ID DEFINITIONS FOR SAM3S */
+/*   PERIPHERAL ID DEFINITIONS FOR STM32F2x */
 /* ************************************************************************** */
 /**
  * @ingroup	 STM32F205ZC
