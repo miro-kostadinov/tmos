@@ -212,7 +212,7 @@ typedef struct
 /** @} */ // @defgroup SYSCFG_pins_define
 
 /// Calculate port address for a given pin definition
-#define PORT_ADDRESS(num) ((GPIO_TypeDef*)(GPIOA_BASE + ((num)*0x400)))
+#define PORT_ADDRESS(num) ((GPIO_TypeDef*)(BASE_GPIOA + ((num)*0x400)))
 
 
 void PIO_Cfg(PIN_DESC cfg);
