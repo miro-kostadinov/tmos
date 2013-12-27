@@ -19,6 +19,9 @@ FUNC(   stm_crc32_le     )
 
                 subs            r1, #16
                 blo             2f
+
+                lsls            r3, r0, #30
+                bne             2f
 1: // do 16
                 ldmia           r0!, {r3-r6}
                 rbit            r3, r3
