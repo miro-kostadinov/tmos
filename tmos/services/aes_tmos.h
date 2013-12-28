@@ -38,6 +38,7 @@
 #define AES_CONTEXT_RT			16
 #define AES_CONTEXT_KEY			20
 
+#include <tmos_types.h>
 
 #ifndef __ASSEMBLY__
 
@@ -47,12 +48,12 @@
 
 typedef struct
 {
-	uint32_t  rounds;                    	// must be first element
-	uint8_t*  Sb;							// Forward SBox table
-	uint32_t* FT;							// Forward Table
-	uint8_t*  RSb;							// Reverse SBox table
-	uint32_t* RT;							// Reverse Table
-	uint32_t  expanded_key[68];				// key after processing for rounds
+	uint32_t  		rounds;                	// must be first element (updated from aes_tmos_en_key())
+	const uint8_t*  Sb;						// Forward SBox table
+	const uint32_t* FT;						// Forward Table
+	const uint8_t*  RSb;					// Reverse SBox table
+	const uint32_t* RT;						// Reverse Table
+	uint32_t  		expanded_key[68];		// key after processing for rounds
 											// ENC_KSIZE*4+36=68
 } aes_context;
 
