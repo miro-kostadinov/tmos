@@ -57,8 +57,8 @@ typedef struct
 											// ENC_KSIZE*4+36=68
 } aes_context;
 
-void aes_tmos_en_key(const aes_context* ctxt, unsigned char* input, unsigned key_size);
-void aes_tmos_de_key(const aes_context* ctxt, unsigned char* input, unsigned key_size);
+void aes_tmos_en_key(const aes_context* ctxt, const unsigned char* input, unsigned key_size);
+void aes_tmos_de_key(const aes_context* ctxt, const unsigned char* input, unsigned key_size);
 
 void aes_tmos_en_ecb(const aes_context* ctxt, const unsigned char* input,
 		unsigned char* output, unsigned blocks);
