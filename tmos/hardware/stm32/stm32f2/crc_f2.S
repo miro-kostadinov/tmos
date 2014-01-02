@@ -10,6 +10,10 @@
 #include "crc_f2.h"
 #include "mcu_cpp.h"
 
+#ifndef USE_CRC32
+#define USE_CRC32 0
+#endif
+
 // unsigned int stm_crc32_le(const void* buf, unsigned int len)
 FUNC(   stm_crc32_le     )
                 push            {r4, r5, r6, lr}
@@ -48,7 +52,12 @@ FUNC(   stm_crc32_le     )
                 rbit            r3, r3
                 adds            r1, #3
                 bmi             6f
+#if USE_CRC32
+				.extern crc32_4_le_table
+                ldr             r2, =crc32_4_le_table
+#else
                 adr             r2, crc32_4_le_table
+#endif
 5: // do 1
                 ldrb            r4, [r0], #1
                 eors            r3, r4
@@ -64,12 +73,15 @@ FUNC(   stm_crc32_le     )
 6:
                 mvns            r0, r3
                 pop             {r4, r5, r6, pc}
+
+#if !USE_CRC32
 __ALIGN_LONG;
 crc32_4_le_table:
     .word 0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac
     .word 0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c
     .word 0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c
     .word 0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c
+#endif
 
 ENDF(   stm_crc32_le     )
 

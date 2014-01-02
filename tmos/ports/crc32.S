@@ -119,6 +119,7 @@ FUNC(   crc32_4_le     )
                 mvns            r0, r3
                 bx              lr
 __ALIGN_LONG;
+				.global crc32_4_le_table
 crc32_4_le_table:
     .word 0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac
     .word 0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c
