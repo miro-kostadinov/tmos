@@ -93,15 +93,14 @@ FUNC(	sys_reset_handler	)
 	// Core intit
 
 			    /* Set the vector table pointer to the beginning of SRAM. */
-			    ldr     	r0, = REG_SCB_VTOR
+			    ldr     	r0, = BASE_SCB
 			    ldr     	r1, = VECTOR_TABLE
-			    str     	r1, [r0]
+			    str     	r1, [r0, # REG_SCB_VTOR - BASE_SCB]
 
 			    /* Disable STKALIGN */
-			    ldr			r0, =REG_SCB_CCR
-			    ldr			r1, [r0]
+			    ldr			r1, [r0, # REG_SCB_CCR - BASE_SCB]
 			    bic			r1, #SCB_CCR_STKALIGN
-			    str			r1, [r0]
+			    str			r1, [r0, # REG_SCB_CCR - BASE_SCB]
 
 			    /* Switch to process stack */
 				movs		r1, #2
