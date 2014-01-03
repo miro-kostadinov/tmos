@@ -228,29 +228,22 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 
 		case DCR_OPEN:
 		{
-			SDIO_DRIVER_MODE *mode = (SDIO_DRIVER_MODE *)(hnd->mode.as_voidptr);
-			if(mode)
+			if(!drv_data->cnt)
 			{
-				if(drv_data->cnt)
-				{
-				}
-				else
-				{
-					ConfigureSDIO(drv_info);
+				ConfigureSDIO(drv_info);
 #if USE_SDIO_DMA_DRIVER
-        			if(!drv_data->rx_dma_hnd.drv_open(
-        					drv_info->rx_dma_mode.dma_index,
-        					&drv_info->rx_dma_mode))
-        				break;
-        			if(!drv_data->tx_dma_hnd.drv_open(
-        					drv_info->tx_dma_mode.dma_index,
-        					&drv_info->tx_dma_mode))
-        				break;
+				if(!drv_data->rx_dma_hnd.drv_open(
+						drv_info->rx_dma_mode.dma_index,
+						&drv_info->rx_dma_mode))
+					break;
+				if(!drv_data->tx_dma_hnd.drv_open(
+						drv_info->tx_dma_mode.dma_index,
+						&drv_info->tx_dma_mode))
+					break;
 #endif
-				}
-				drv_data->cnt++;
-				hnd->res = RES_OK;
 			}
+			drv_data->cnt++;
+			hnd->res = RES_OK;
 			break;
 		}
 
