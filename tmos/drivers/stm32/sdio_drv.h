@@ -25,7 +25,6 @@
 /** SDIO Driver Mode structure **/
 struct SDIO_DRIVER_MODE
 {
-	uint8_t cr1;			//!< control register 1 (TIM_CR1)
 };
 
 /** SDIO Driver Data structure **/
