@@ -369,6 +369,10 @@ void SDIO_ISR(SDIO_INFO drv_info)
 			if(status & SDIO_STA_DONE_TR)
 			{
 				// done...
+				if( (drv_data->sdio_op & SDIO_OP_READ) && (status & SDIO_STA_RX_FLAGS))
+				{
+					SDIO_CMD_HND(drv_info, hnd, drv_data);
+				}
 				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 				drv_data->pending = NULL;
 			} else
@@ -451,6 +455,13 @@ void SDIO_ISR(SDIO_INFO drv_info)
 					break;
 				}
 			}
+		}
+	} else
+	{
+		if( status & SDIO_STA_RX_FLAGS )
+		{
+			// no handle?
+			TRACELN("SD dump %08X", hw_base->SDIO_FIFO);
 		}
 	}
 }
