@@ -24,8 +24,24 @@ static void ConfigureSDIO(SDIO_INFO drv_info)
 			SDIO_CLKCR_CLKDIV_Set(48000/400 -2);
 	hw_base->SDIO_POWER = SDIO_POWER_PWRCTRL_on;
 
+#if USE_SDIO_DMA_DRIVER
+	unsigned int tx_flags, rx_flags;
+
+	if(drv_info->rx_dma_mode.dma_index < INALID_DRV_INDX)
+		rx_flags = 0;
+	else
+		rx_flags = SDIO_STA_RX_FLAGS;
+
+	if(drv_info->tx_dma_mode.dma_index < INALID_DRV_INDX)
+		tx_flags = 0;
+	else
+		tx_flags = SDIO_STA_TX_FLAGS;
 	hw_base->SDIO_MASK = SDIO_STA_DONE_FLAGS | SDIO_STA_ERROR_FLAGS
-			| SDIO_STA_CCRCFAIL ;
+			| SDIO_STA_CCRCFAIL | rx_flags | tx_flags;
+#else
+	hw_base->SDIO_MASK = SDIO_STA_DONE_FLAGS | SDIO_STA_ERROR_FLAGS
+			| SDIO_STA_CCRCFAIL | SDIO_STA_RX_FLAGS | SDIO_STA_TX_FLAGS;
+#endif
 	hw_base->SDIO_DTIMER = 0xFFFFFFFF;
 
 	drv_enable_isr(&drv_info->info);
