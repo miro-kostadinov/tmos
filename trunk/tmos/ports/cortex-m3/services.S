@@ -475,6 +475,8 @@ FUNC(	usr_trace_str		)
 .weak usr_trace_str
 
 				movs			r1, #BASE_ITM
+                ldr             r3, [r1, # REG_ITM_TER - BASE_ITM]
+                cbz             r3, 4f
 1:
 				ldrb			r2, [r0], #1
 				cbz				r2, 4f
@@ -499,6 +501,8 @@ FUNC(	usr_trace_char		)
 
 				movs			r1, #BASE_ITM + (TRACE_PORT * 4)
 				cbz				r0, 2f
+                ldr             r3, [r1, # REG_ITM_TER - BASE_ITM]
+                cbz             r3, 2f
 1:
 				ldrexb			r3, [r1]
 				cmp 			r3, #0

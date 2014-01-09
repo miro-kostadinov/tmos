@@ -117,5 +117,16 @@
 #define REG_SCB_MMFR 	REG_ACCESS(__I  uint32_t, BASE_SCB+0x50) //!< Memory Model Feature Register
 #define REG_SCB_ISARx 	REG_ACCESS(__I  uint32_t, BASE_SCB+0x60) //!< ISA Feature Register
 
+/* Instrumentation Trace Macrocell (ITM) 0xE0000000 */
+#define REG_ITM_PORT 	REG_ACCESS(__O  ureg_t	, BASE_ITM+0x000) //!< ITM Stimulus Port Registers
+#define REG_ITM_TER 	REG_ACCESS(__IO uint32_t, BASE_ITM+0xE00) //!< ITM Trace Enable Register
+#define REG_ITM_TPR 	REG_ACCESS(__IO uint32_t, BASE_ITM+0xE40) //!< ITM Trace Privilege Register
+#define REG_ITM_TCR 	REG_ACCESS(__IO uint32_t, BASE_ITM+0xE80) //!< ITM Trace Control Register
+#define REG_ITM_IWR 	REG_ACCESS(__IO uint32_t, BASE_ITM+0xEF8) //!< ITM Integration Write Register
+#define REG_ITM_IRR 	REG_ACCESS(__IO uint32_t, BASE_ITM+0xEFC) //!< ITM Integration Read Register
+#define REG_ITM_IMCR	REG_ACCESS(__IO uint32_t, BASE_ITM+0xF00) //!< ITM Integration Mode Control Register
+#define REG_ITM_LAR 	REG_ACCESS(__IO uint32_t, BASE_ITM+0xFB0) //!< ITM Lock Access Register
+#define REG_ITM_LSR 	REG_ACCESS(__IO uint32_t, BASE_ITM+0xFB4) //!< ITM Lock Status Register
+
 
 #endif /* CORE_MAP_H_ */
