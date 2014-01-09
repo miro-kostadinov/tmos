@@ -29,7 +29,7 @@
 #define TRACE_DBGU				3 //enable trace over DBGU uart
 
 //select one from the above
-#define TRACE_IS				TRACE_DISABLED
+#define TRACE_IS				TRACE_PEEDI
 
 //--- stack size required to use trace with parameters
 #define TRACE_SIZE		128

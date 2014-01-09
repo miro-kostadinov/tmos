@@ -11,38 +11,38 @@
 #include <tmos_types.h>
 
 /*******************************************************************************
- *  Instrumentation Trace Macrocell (ITM)
+ *  Instrumentation Trace Macrocell (ITM) 	base 0xE0000000
  ******************************************************************************/
 #ifndef __ASSEMBLY__
 struct ITM_Type
 {
-  __O  ureg_t	ITM_PORT [32];  //!< (ITM Offset: 0x000) ITM Stimulus Port Registers    */
+  __O  ureg_t	ITM_PORT [32];  //!< (ITM Offset: 0x000) ITM Stimulus Port Registers
 	   uint32_t reserved0[864]; //!< (ITM Offset: 0x080)
-  __IO uint32_t ITM_TER;        //!< (ITM Offset: 0xE00) ITM Trace Enable Register      */
+  __IO uint32_t ITM_TER;        //!< (ITM Offset: 0xE00) ITM Trace Enable Register
 	   uint32_t reserved1[15];	//!< (ITM Offset: 0xE04)
-  __IO uint32_t ITM_TPR;        //!< (ITM Offset: 0xE40) ITM Trace Privilege Register   */
+  __IO uint32_t ITM_TPR;        //!< (ITM Offset: 0xE40) ITM Trace Privilege Register
 	   uint32_t reserved2[15];	//!< (ITM Offset: 0xE44)
-  __IO uint32_t ITM_TCR;        //!< (ITM Offset: 0xE80) ITM Trace Control Register     */
+  __IO uint32_t ITM_TCR;        //!< (ITM Offset: 0xE80) ITM Trace Control Register
 	   uint32_t reserved3[29];	//!< (ITM Offset: 0xE84)
-  __IO uint32_t ITM_IWR;        //!< (ITM Offset: 0xEF8) ITM Integration Write Register */
-  __IO uint32_t ITM_IRR;        //!< (ITM Offset: 0xEFC) ITM Integration Read Register  */
-  __IO uint32_t ITM_IMCR;       //!< (ITM Offset: 0xF00) ITM Integration Mode Control Register */
+  __IO uint32_t ITM_IWR;        //!< (ITM Offset: 0xEF8) ITM Integration Write Register
+  __IO uint32_t ITM_IRR;        //!< (ITM Offset: 0xEFC) ITM Integration Read Register
+  __IO uint32_t ITM_IMCR;       //!< (ITM Offset: 0xF00) ITM Integration Mode Control Register
 	   uint32_t reserved4[43];	//!< (ITM Offset: 0xF04)
-  __IO uint32_t ITM_LAR;        //!< (ITM Offset: 0xFB0) ITM Lock Access Register              */
-  __IO uint32_t ITM_LSR;        //!< (ITM Offset: 0xFB4) ITM Lock Status Register              */
+  __IO uint32_t ITM_LAR;        //!< (ITM Offset: 0xFB0) ITM Lock Access Register
+  __IO uint32_t ITM_LSR;        //!< (ITM Offset: 0xFB4) ITM Lock Status Register
 	   uint32_t reserved5[6];	//!< (ITM Offset: 0xFB8)
-  __I  uint32_t ITM_PID4;       //!< (ITM Offset: 0xFD0) ITM Peripheral Identification Register #4 */
-  __I  uint32_t ITM_PID5;       //!< (ITM Offset: 0xFD4) ITM Peripheral Identification Register #5 */
-  __I  uint32_t ITM_PID6;       //!< (ITM Offset: 0xFD8) ITM Peripheral Identification Register #6 */
-  __I  uint32_t ITM_PID7;       //!< (ITM Offset: 0xFDC) ITM Peripheral Identification Register #7 */
-  __I  uint32_t ITM_PID0;       //!< (ITM Offset: 0xFE0) ITM Peripheral Identification Register #0 */
-  __I  uint32_t ITM_PID1;       //!< (ITM Offset: 0xFE4) ITM Peripheral Identification Register #1 */
-  __I  uint32_t ITM_PID2;       //!< (ITM Offset: 0xFE8) ITM Peripheral Identification Register #2 */
-  __I  uint32_t ITM_PID3;       //!< (ITM Offset: 0xFEC) ITM Peripheral Identification Register #3 */
-  __I  uint32_t ITM_CID0;       //!< (ITM Offset: 0xFF0) ITM Component  Identification Register #0 */
-  __I  uint32_t ITM_CID1;       //!< (ITM Offset: 0xFF4) ITM Component  Identification Register #1 */
-  __I  uint32_t ITM_CID2;       //!< (ITM Offset: 0xFF8) ITM Component  Identification Register #2 */
-  __I  uint32_t ITM_CID3;       //!< (ITM Offset: 0xFFC) ITM Component  Identification Register #3 */
+  __I  uint32_t ITM_PID4;       //!< (ITM Offset: 0xFD0) ITM Peripheral Identification Register #4
+  __I  uint32_t ITM_PID5;       //!< (ITM Offset: 0xFD4) ITM Peripheral Identification Register #5
+  __I  uint32_t ITM_PID6;       //!< (ITM Offset: 0xFD8) ITM Peripheral Identification Register #6
+  __I  uint32_t ITM_PID7;       //!< (ITM Offset: 0xFDC) ITM Peripheral Identification Register #7
+  __I  uint32_t ITM_PID0;       //!< (ITM Offset: 0xFE0) ITM Peripheral Identification Register #0
+  __I  uint32_t ITM_PID1;       //!< (ITM Offset: 0xFE4) ITM Peripheral Identification Register #1
+  __I  uint32_t ITM_PID2;       //!< (ITM Offset: 0xFE8) ITM Peripheral Identification Register #2
+  __I  uint32_t ITM_PID3;       //!< (ITM Offset: 0xFEC) ITM Peripheral Identification Register #3
+  __I  uint32_t ITM_CID0;       //!< (ITM Offset: 0xFF0) ITM Component  Identification Register #0
+  __I  uint32_t ITM_CID1;       //!< (ITM Offset: 0xFF4) ITM Component  Identification Register #1
+  __I  uint32_t ITM_CID2;       //!< (ITM Offset: 0xFF8) ITM Component  Identification Register #2
+  __I  uint32_t ITM_CID3;       //!< (ITM Offset: 0xFFC) ITM Component  Identification Register #3
 };
 #endif /* __ASSEMBLY__ */
 

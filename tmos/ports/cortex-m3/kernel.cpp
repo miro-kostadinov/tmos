@@ -138,6 +138,7 @@ extern "C" void sys_kernel_init( void)
     int i;
 
 #if TRACE_IS > TRACE_DISABLED
+/*
     //--------------- Start trace -----------------------------//
     CDBG->CDBG_DEMCR |= CDBG_DEMCR_TRCENA;
 
@@ -153,9 +154,10 @@ extern "C" void sys_kernel_init( void)
     //Lock Access Register
     ITM->ITM_LAR = ITM_LAR_KEY;
     //Trace Control Register = trace ID = 1, ITM and DTW enabled
-    ITM->ITM_TCR |= 0x10000 | ITM_TCR_DWTENA | ITM_TCR_ITMENA;
-    ITM->ITM_TER |= 0xFFFFFFFF ;					//Trace Enable = all stimulus ports
+    ITM->ITM_TCR = 0x10000 | ITM_TCR_DWTENA | ITM_TCR_ITMENA;
+    ITM->ITM_TER = 0xFFFFFFFF ;						//Trace Enable = all stimulus ports
     ITM->ITM_TPR = 0x0;								//Trace Privilege = all
+*/
 
 	TRACELN1("===== " __DATE__ " === " __TIME__ " =====    "); //few more spaces (a clock change follows)
 #endif
