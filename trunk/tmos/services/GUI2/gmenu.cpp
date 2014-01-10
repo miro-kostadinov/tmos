@@ -73,6 +73,56 @@ int GMenu::GetMenuSize(int menu_id)
 	return res;
 }
 
+void GMenu::adjust_item_names()
+{
+	menu_template_t* tmp = menu;
+	while(tmp)
+	{
+		if(tmp && client_rect.width() && !tmp->item_name.empty())
+		{
+			CSTRING name = tmp->item_name;
+			unsigned int pos = remove_amp(name);
+			char* ptr = strchr(name.c_str(), '\t');
+			if(ptr)
+			{
+				CSTRING l_str, r_str;
+				int max_chars = (client_rect.width() - (text_font->hdistance << 1)) / text_font->hspacing;
+				int l_size = ptr - name.c_str()+1;
+				l_str.assign(name.c_str(), l_size);
+
+				while(*ptr && IS_SPACE(*ptr))
+					ptr++;
+				r_str = ptr;
+				int r_size = r_str.length();
+
+				if(l_size + r_size >= max_chars)
+				{
+					if(r_size < max_chars)
+					{
+						l_size = max_chars - r_size;
+						l_str.erase(l_size, -1u);
+					}
+					else
+					{
+						l_str.clear();
+					}
+				}
+				max_chars -= l_size + r_size;
+				while(max_chars)
+				{
+					l_str +=' ';
+					max_chars--;
+				}
+				l_str += r_str;
+				if(pos)
+					l_str.insert('&', pos-1);
+				tmp->item_name = l_str;
+			}
+		}
+		tmp = GetMenu(tmp->parent, tmp+1);
+	}
+}
+
 bool GMenu::add_item(int parent_id, int item_id, const CSTRING& name)
 {
 	menu_template_t * new_base;
@@ -451,5 +501,6 @@ bool GMenu::set_scroll(void)
 		else
 			res = scroll->ShowScroll(GO_FLG_VSCROLL, false);
 	}
+	adjust_item_names();
 	return res;
 }
