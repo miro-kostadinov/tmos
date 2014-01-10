@@ -88,6 +88,7 @@ private:
 	bool set_scroll(void);
 	bool add_item(int parent_id, int item_id, const CSTRING& name);
 	int get_item_pos(menu_template_t* ptr);
+	void adjust_item_names();
 
 };
 
