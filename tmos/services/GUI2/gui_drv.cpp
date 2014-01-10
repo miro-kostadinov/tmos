@@ -238,7 +238,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			t0 = CURRENT_TIME;
 			TRACELN1("\e[4;1;32m");
 			TRACE("%X[%d] ( %s 0x%X/%d\e[m", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param, msg.param);
-			if(WM_DRAW)
+			if(msg.code == WM_DRAW)
 			{
 				if(msg.lparam)
 					RECT_T(msg.lparam).dump();
@@ -247,7 +247,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			}
 			else
 			{
-				TRACE("%ld ", msg.lparam);
+				TRACE("%lX ", msg.lparam);
 			}
 
 			TRACE1("\e[4;1;32m)\e[m");
