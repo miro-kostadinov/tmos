@@ -139,7 +139,6 @@ void key_drv_thread()
         // scan keyboard every 5ms while some key is pressed
         do
         {
-            tsk_sleep(KEY_POLLING_TIME-4);
             something_pressed = 0;
 #if KEY_FIX_COUNT
         	keyrd_hnd.tsk_read(new_keys, sizeof(new_keys));
@@ -156,6 +155,7 @@ void key_drv_thread()
            		PIO_Deassert(KEY_DRV_PINS[drv_ndx]);
             }
 #endif
+            tsk_sleep(KEY_POLLING_TIME-4);
         } while(something_pressed);
 
 		//wait for any key...
