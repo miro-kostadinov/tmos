@@ -20,7 +20,7 @@ unsigned int GContainer::initialize (GMessage& msg)								//sets the client rec
 	{
 		tmp->initialize(msg);
 	}
-	if((flags & GO_FLG_SELECTED) && parent)
+	if((flags & GO_FLG_SELECTED) && is_available() && parent)
 		parent->focus = this;
 	return 0;
 }
