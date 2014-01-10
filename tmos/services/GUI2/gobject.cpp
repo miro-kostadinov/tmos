@@ -462,7 +462,7 @@ unsigned int GObject::initialize(GMessage& msg)
 	if(flags & GO_FLG_BORDER)
 		allocate_border();
 
-	if((flags & GO_FLG_SELECTED) && parent)
+	if((flags & GO_FLG_SELECTED) && is_available() && parent)
 		get_focus();
 	return 1;
 }
