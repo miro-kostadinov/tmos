@@ -28,7 +28,7 @@
 #define GO_OBJ_FRAME_HEIGHT	3
 #endif
 
-#define GUI_DEBUG			1
+#define GUI_DEBUG			0
 // object messages
 enum WM_MESSAGE:unsigned int
 {
