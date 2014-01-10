@@ -101,7 +101,8 @@ ENDF(   tmos_sprintf        )
 
 FUNC(   tmos_vsprintf        )               // r0  r1  r2  r3  r4  r5  r6  r7  r12
         sub         sp, #VSPRINTF_BUF_SIZE
-        push        {r0, r4, r5, r6, r7}     // dst fmt arg ___ ___ ___ ___ ___ ___
+        push        {r0, r4, r5, r6, r7, r8} // dst fmt arg ___ ___ ___ ___ ___ ___
+        and			r8, r2, #4
         mov         r12, r2                  // dst fmt ___ ___ ___ ___ ___ ___ arg*
         ldrb        r3, [r1], #1             // dst fmt ___  c  ___ ___ ___ ___ arg*
         cmp         r3, #0
@@ -113,7 +114,8 @@ _copy_format_char:                           // dst fmt ___  c  ___ ___ ___ ___ 
         strb        r3, [r0], #1
 _loop:                                       // dst fmt ___ ___ ___ ___ ___ ___ arg*
         ldrb        r3, [r1], #1
-        cbz         r3, _end_loop
+        cmp			r3, #0
+        beq         _end_loop
         cmp         r3, #'%'
         bne         _copy_format_char
 
@@ -159,9 +161,14 @@ _check_type:
 
 #if USE_TMOS_LLONG
         cmp         r3, #'l'
-        ITT         EQ
-        addeq       r7, #PF_LONG
-        ldrbeq      r3, [r1], #1
+        bne			_skip_long
+        eor			r3, r12, r8
+        lsrs		r3, #3
+        IT			cc
+        ldrcc       r5, [r12], #4 // for stack alignment
+        adds        r7, #PF_LONG
+        ldrb	    r3, [r1], #1
+_skip_long:
 #endif
 
         str         r6, [sp, #20]
@@ -184,7 +191,7 @@ _unk_format:
         movs        r3, #0
 _end_loop:
         strb        r3, [r0]
-        pop         {r1, r4, r5, r6, r7}
+        pop         {r1, r4, r5, r6, r7, r8}
         add         sp, #VSPRINTF_BUF_SIZE
         subs        r0, r0, r1
         bx          lr
@@ -468,8 +475,9 @@ ENDF(   tmos_vsprintf        )
 FUNC(   tmos_vprintf_len        )   // r0  r1  r2  r3  r4  r5  r6  r7  r12
                                     // fmt arg
 
-        push        {r4, r5, r6, r7}
+        push        {r4, r5, r6, r7, r8}
         mov         r2, r0          // fmt arg fmt
+        and			r8, r1, #4
         movs        r0, #0          // res arg fmt
 
 _vpl_loop:
@@ -520,10 +528,15 @@ _vpl_check_type:
         movs        r5, #11
 #if USE_TMOS_LLONG
         cmp         r3, #'l'
-        ITTT        EQ
-        addeq       r1, #4
-        addeq       r5, #10
-        ldrbeq      r3, [r1], #1
+        bne			_vpl_skip_long
+        eor			r3, r1, r8
+        lsrs		r3, #3
+        IT			cc
+        addcc       r1, #4 // for stack alignment
+        add       	r1, #4
+        add       	r5, #10
+		add			r2, #1
+_vpl_skip_long:
 #endif
         cmp         r5, r6
         bhs         _vpl_add_len
@@ -533,7 +546,7 @@ _vpl_check_type:
 _vpl_unk_format:
         adds        r0, #1
 _vpl__end_loop:
-        pop         {r4, r5, r6, r7}
+        pop         {r4, r5, r6, r7, r8}
         bx          lr
 
 
