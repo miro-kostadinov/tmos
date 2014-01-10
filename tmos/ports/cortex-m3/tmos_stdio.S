@@ -171,8 +171,8 @@ _check_type:
 _skip_long:
 #endif
 
-        str         r6, [sp, #20]
-        add         r6, sp, #20              // dst fmt 10   c  wdt arg buf flg arg*   pre
+        str         r6, [sp, #24]
+        add         r6, sp, #24              // dst fmt 10   c  wdt arg buf flg arg*   pre
         cmp         r3, #'d'
         IT          NE
         cmpne       r3, #'i'
@@ -248,7 +248,7 @@ _get_param_precision:                        // dst fmt 10  '*' wdt ___ pre flg 
 _print_c:                                    // dst fmt 10  'c' wdt arg pre flg arg*
         cbz         r5, _prints_left_pad
         uxtb        r3, r5
-        add         r5, sp, #20
+        add         r5, sp, #24
         str         r3, [r5]
 
 _print_s:                                    // dst fmt 10  's' wdt arg pre flg arg*
@@ -406,7 +406,7 @@ _print_u:                                    // dst fmt 10  ___ wdt arg buf flg 
         cmp         r5, #0
         bne         _print_u                 // r0  r1  r2  r3  r4  r5  r6  r7  r12
 _print_numeric:                              // dst fmt ___ ___ wdt ___ buf flg arg*   pre
-        add         r5, sp, #20
+        add         r5, sp, #24
         ldrb        r2, [r5]                 // dst fmt pre ___ wdt ___ buf flg arg*
         subs        r5, r6, r5               // dst fmt pre ___ wdt len buf flg arg*
         cmp         r2, r5
