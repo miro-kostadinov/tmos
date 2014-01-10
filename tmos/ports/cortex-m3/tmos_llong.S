@@ -183,6 +183,8 @@ __tmos_ldivmod_helper:
                 bl              tmos__udivmoddi4
                 negs            r0, r0
                 sbc             r1, r1, r1, lsl #1
+                negs            r2, r2
+                sbc             r3, r3, r3, lsl #1
                 pop             {pc}
 
 //ENDF(   __tmos_ldivmod_helper     )
