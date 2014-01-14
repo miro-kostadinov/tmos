@@ -8,6 +8,10 @@
 #include <tmos.h>
 #include <sdio_drv.h>
 
+#ifndef DEBUG_SDIO_DRV
+#define DEBUG_SDIO_DRV 0
+#endif
+
 static void ConfigureSDIO(SDIO_INFO drv_info)
 {
 	SDIO_TypeDef* hw_base = drv_info->hw_base;
@@ -56,7 +60,9 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 
 	if( (hnd->cmd & FLAG_READ) && hnd->len)
 	{
+#if DEBUG_SDIO_DRV
 		TRACE("[r %u]", hnd->len);
+#endif
 		//read block or multiple block command
 		hw_base->SDIO_DLEN = hnd->len;
 		hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_512b | SDIO_DCTRL_DTDIR
@@ -73,7 +79,9 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 	{
 		if( (hnd->cmd & FLAG_WRITE) && hnd->len)
 		{
+#if DEBUG_SDIO_DRV
 			TRACE("[w %u]", hnd->len);
+#endif
 			//write block or multiple block command
 			uint32_t adr = hnd->dst.as_int;
 			if(!(IS_SD_HIGH_CAPACITY(drv_data->card_type )))
@@ -91,7 +99,9 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 
 				cmd = hnd->src.as_intptr[0];
 				cmd_indx = cmd & 0x3F;
+#if DEBUG_SDIO_DRV
 				TRACE("[c %u]", cmd_indx);
+#endif
 				if( (hnd->len > 4) && !(cmd & SDIO_CMD_WAITRESP_no1) )
 				{
 					// Commands like ACMD51 (read SCR), CMD6 (SWITCH func) ->R1 + read
@@ -349,7 +359,9 @@ void SDIO_ISR(SDIO_INFO drv_info)
 	status = hw_base->SDIO_STA;
 	status &= hw_base->SDIO_MASK;
 	hw_base->SDIO_ICR = status;
+#if DEBUG_SDIO_DRV
 	TRACE("{i %x}", status);
+#endif
 	if((hnd = drv_data->pending))
 	{
 		if( (status & SDIO_STA_CCRCFAIL) && (drv_data->sdio_op & SDIO_OP_R3))
