@@ -176,6 +176,45 @@ bool GMenu::SetReplaceItem(int item_id, const CSTRING& item_name)
 	}
 	return	AppendMenu(0, item_id, item_name);
 }
+bool GMenu::RemoveItem(int item_id)
+{
+	menu_template_t * new_base;
+	menu_template_t* ptr;
+
+	ptr = FindItem(item_id);
+	if(!ptr || !base)
+		return true;
+	if(GetMenu(ptr->item))
+		RemoveItem(ptr->item);
+	int pos = ptr - base;
+
+	new_base = (menu_template_t *)tsk_malloc_clear((size +2)*sizeof(menu_template_t));
+	if(!new_base)
+		return false;
+
+	for(int i=0; IsEmpty(base + i); i++)
+	{
+		if(i==pos)
+		{
+			if(menu == base+i || item == base+i)
+				item=menu=new_base;
+			base[i].item_name.free();
+			continue;
+		}
+		new_base[i].parent = base[i].parent;
+		new_base[i].item = base[i].item;
+		new_base[i].item_name = base[i].item_name;
+		if(menu == base+i)
+			menu = new_base +i;
+		if(item == base+i)
+			item = new_base +i;
+	}
+	tsk_free(base);
+	base = new_base;
+	size = GetMenuSize(item->parent);
+	set_scroll();
+	return true;
+}
 
 bool GMenu::Select(int item_id)
 {

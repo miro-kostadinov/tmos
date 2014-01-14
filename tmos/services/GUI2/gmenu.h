@@ -61,14 +61,37 @@ struct GMenu: GObject
 		}
 		if(base)
 		{
-			while(size--)
+			size =0;
+			while(	IsEmpty(base + size) )
 			{
-				base[size].item_name.free();
+				base[size++].item_name.free();
 			}
 			delete base;
 			base = NULL;
 		}
 	}
+
+	void free()
+	{
+		if(scroll)
+		{
+			delete scroll;
+			scroll = NULL;
+		}
+		if(base)
+		{
+			size =0;
+			while(	IsEmpty(base + size) )
+			{
+				base[size++].item_name.free();
+			}
+			delete base;
+			base = NULL;
+		}
+		item = menu = NULL;
+		size=0;
+	}
+
 	bool AppendMenu(int parent_id, int menu_id, const CSTRING& menu_name);
 	bool LoadMenu(const MENUTEMPLATE* pat);
 
@@ -78,6 +101,7 @@ struct GMenu: GObject
 	int GetMenuSize(int menu_id);
 	bool SetReplaceItem(int item_id, const CSTRING& item_name);
 	bool Select(int item_id);
+	bool RemoveItem(int item_id);
 
 protected:
 	virtual void draw_this (LCD_MODULE* lcd);
@@ -89,7 +113,10 @@ private:
 	bool add_item(int parent_id, int item_id, const CSTRING& name);
 	int get_item_pos(menu_template_t* ptr);
 	void adjust_item_names();
-
+	bool IsEmpty(menu_template_t* ptr)
+	{
+		return (!ptr->item && !ptr->parent && ptr->item_name.empty());
+	}
 };
 
 unsigned int remove_amp(CSTRING& str);
