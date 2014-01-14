@@ -439,7 +439,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 		process_alpha_key(msg.param, table[CHAR_TABLE_INDEX_DP].bg_vals);
 		return 1;
 
-	case KEY_00:
+	case KEY_0:
 		if(shift != KT_DIGIT)
 		{
 			process_alpha_key(msg.param, table[CHAR_TABLE_INDEX_00].bg_vals);
