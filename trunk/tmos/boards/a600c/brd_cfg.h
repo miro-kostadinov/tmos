@@ -15,6 +15,7 @@
 #define KEY_REPEAT_CODE		0x80
 #define KEY_UP_CODE			0x40
 #define KEY_PRESREP_MASK	0x7F
+#define KEY_STATE_MASK		(KEY_REPEAT_CODE|KEY_UP_CODE)
 
 #define KEY_ON				0x00         //KEY_ON
 #define KEY_D_PLUS			0x01         //KEY_AMT
