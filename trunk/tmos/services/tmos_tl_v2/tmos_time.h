@@ -34,8 +34,16 @@ struct time_t
 	};
 
 	bool is_valid() const;
+	bool is_DST(unsigned int change_hour);
+
 	uint32_t get_week_day() const;
+
+	int sscanf(const char* buf, const char* format, ... );
+	unsigned int set_from_xml_datetime(const char* str);
+	void set_from_YYMMDDHHMMSSZZ(const char* val);
+
 	void sprintf(CSTRING& str, const char* format) const;
+	CSTRING xml_date_time(void) const;
 
 	time_t& operator= (const time_t& T);
 	time_t& operator= (unsigned int seconds);
