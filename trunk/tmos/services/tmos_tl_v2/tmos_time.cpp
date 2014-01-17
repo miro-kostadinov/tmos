@@ -398,14 +398,6 @@ CSTRING time_t::xml_date_time(void) const
 	return DateTime;
 }
 
-time_t& time_t::operator= (const time_t& T)
-{
-	__disable_irq();
-	time64 = T.time64;
-	__enable_irq();
-	return *this;
-}
-
 time_t& time_t::operator= (unsigned int seconds)
 {
 	unsigned int delta;
@@ -463,6 +455,15 @@ time_t& time_t::operator= (unsigned int seconds)
 	subsec = 0;
 
 	return *this;
+}
+
+uint64_t time_t::get_atomic()
+{
+	uint64_t time;
+	__disable_irq();
+	time = time64;
+	__enable_irq();
+	return time;
 }
 
 time_t::operator unsigned int() const

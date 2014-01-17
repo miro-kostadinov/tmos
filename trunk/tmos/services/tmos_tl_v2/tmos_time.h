@@ -45,37 +45,49 @@ struct time_t
 	void sprintf(CSTRING& str, const char* format) const;
 	CSTRING xml_date_time(void) const;
 
-	time_t& operator= (const time_t& T);
+	inline time_t& operator= (const time_t& T)
+	{
+		time64 = T.time64;
+		return *this;
+	}
+	inline time_t& operator= (uint64_t time)
+	{
+		time64 = time;
+		return *this;
+	}
+
 	time_t& operator= (unsigned int seconds);
+
+	uint64_t get_atomic();
 
 	operator unsigned int() const;
 
-	bool operator< (const time_t& T) const
+	inline bool operator< (const time_t& T) const
 	{
 		return (time64 < T.time64);
 	}
 
-	bool operator> (const time_t& T) const
+	inline bool operator> (const time_t& T) const
 	{
 		return (time64 > T.time64);
 	}
 
-	bool operator<= (const time_t& T) const
+	inline bool operator<= (const time_t& T) const
 	{
 		return (time64 <= T.time64);
 	}
 
-	bool operator>= (const time_t& T) const
+	inline bool operator>= (const time_t& T) const
 	{
 		return (time64 >= T.time64);
 	}
 
-	bool operator== (const time_t& T) const
+	inline bool operator== (const time_t& T) const
 	{
 		return (time64 == T.time64);
 	}
 
-	bool operator!= (const time_t& T) const
+	inline bool operator!= (const time_t& T) const
 	{
 		return (time64 != T.time64);
 	}
