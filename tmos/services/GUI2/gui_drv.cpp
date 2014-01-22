@@ -227,7 +227,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
             key_hnd.tsk_start_read(&key_hnd.src.as_int, 1);
         }
 
-        if (GQueue.empty())														//if the queue is empty sends WM_IDLE to everyone
+        if (GQueue.empty()&& !res )														//if the queue is empty sends WM_IDLE to everyone
 		{
 			for (tmp = desktop; tmp; tmp = (GWindow*)tmp->nextObj)
 				GQueue.push(GMessage(WM_IDLE, 0, 0L, tmp));
