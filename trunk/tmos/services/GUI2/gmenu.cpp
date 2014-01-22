@@ -104,6 +104,8 @@ void GMenu::adjust_item_names()
 					}
 					else
 					{
+						r_size = max_chars;
+						l_size =0;
 						l_str.clear();
 					}
 				}
