@@ -194,7 +194,7 @@ bool GMenu::RemoveItem(int item_id)
 	if(!new_base)
 		return false;
 
-	for(int i=0; IsEmpty(base + i); i++)
+	for(int i=0; !IsEmpty(base + i); i++)
 	{
 		if(i==pos)
 		{
