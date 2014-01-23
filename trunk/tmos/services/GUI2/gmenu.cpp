@@ -390,7 +390,7 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 				if(tmp==item && (flags & GO_FLG_SELECTED))
 				{
 					for (int i = lcd->pos_y - row_height; i < lcd->pos_y; i++)
-						invert_hline (client_rect.x0, client_rect.x1-1, i);
+						invert_hline (client_rect.x0, client_rect.x1, i);
 				}
 				if(rows)
 				{
