@@ -247,7 +247,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			}
 			else
 			{
-				TRACE("%lX ", msg.lparam);
+				TRACE(" %lX ", msg.lparam);
 			}
 
 			TRACE1("\e[4;1;32m)\e[m");
