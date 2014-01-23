@@ -107,16 +107,17 @@ protected:
 	virtual void draw_this (LCD_MODULE* lcd);
 	virtual unsigned int process_key (GMessage& msg);
 	virtual unsigned int initialize (GMessage& msg);
+
+	bool IsEmpty(menu_template_t* ptr)
+	{
+		return (!ptr->item && !ptr->parent && ptr->item_name.empty());
+	}
 private:
 	bool process_selected();
 	bool set_scroll(void);
 	bool add_item(int parent_id, int item_id, const CSTRING& name);
 	int get_item_pos(menu_template_t* ptr);
 	void adjust_item_names();
-	bool IsEmpty(menu_template_t* ptr)
-	{
-		return (!ptr->item && !ptr->parent && ptr->item_name.empty());
-	}
 };
 
 unsigned int remove_amp(CSTRING& str);
