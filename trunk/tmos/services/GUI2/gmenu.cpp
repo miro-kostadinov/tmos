@@ -361,7 +361,7 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 		if(sy >= rows/2)
 		{
 			sy -= rows/2;
-			if(sy + rows >= size)
+			if(sy + rows >= size && size > rows )
 			{
 				sy = size - rows;
 			}
