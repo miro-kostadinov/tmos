@@ -65,6 +65,15 @@ public:
 		}
 		return (false);
 	}
+
+	/** top element in the queue **/
+	T top()
+	{
+		if(in != out)
+			return (items[out]);
+
+		return (NULL);
+	}
 };
 
 /** fixed size message queue
