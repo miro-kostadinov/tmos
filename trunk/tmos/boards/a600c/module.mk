@@ -10,7 +10,7 @@ OUT_NAME	?= a600c
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].
-OPT			?= -Os
+OPT			?= -O0
 
 # Build library/binary/hex. can be [y, n]
 BUILD_LIB	?= y
