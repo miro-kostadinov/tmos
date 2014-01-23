@@ -208,7 +208,7 @@ struct RECT_T
 #if GUI_DEBUG
 	void dump()
 	{
-		TRACE("[%d, %d, %d, %d]", x0, x1, y0, y1);
+		TRACE("[x(%d, %d), y(%d, %d)]", x0, x1, y0, y1);
 	}
 #else
 	void dump() {};
