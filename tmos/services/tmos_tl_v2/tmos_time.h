@@ -14,6 +14,14 @@
 
 #include <tmos.h>
 
+#define CTIME_IS_VALID			16
+
+#define CTIME_INVALID_YEAR	 	0
+#define CTIME_INVALID_MONTH  	5
+#define CTIME_INVALID_DAY	 	8
+#define CTIME_INVALID_TIME		10
+#define CTIME_INVALID_HOUR		11
+#define CTIME_INVALID_MINUTE	14
 
 struct time_t
 {
@@ -40,6 +48,7 @@ struct time_t
 
 	int sscanf(const char* buf, const char* format, ... );
 	unsigned int set_from_xml_datetime(const char* str);
+	unsigned int set_from_xml_date(const char* str);
 	void set_from_YYMMDDHHMMSSZZ(const char* val);
 
 	void sprintf(CSTRING& str, const char* format) const;

@@ -307,6 +307,73 @@ unsigned int time_t::set_from_xml_datetime(const char* str)
 	return 0;
 }
 
+unsigned int time_t::set_from_xml_date(const char* str)
+{
+	//YYYY-MM-DDThh:mm:ss
+	bool res=true;
+	unsigned int pos=0;
+
+	year = read2XX(str, pos, res);
+	mon = read2XX(str, pos, res);
+	year = year*100 +mon;
+	if(str[pos++] != '-')
+		return CTIME_INVALID_YEAR;
+
+	mon = read2XX(str, pos, res);
+	if(str[pos++] != '-')
+		return CTIME_INVALID_MONTH;
+
+	mday = read2XX(str, pos, res);
+	if(str[pos])
+	{
+		if(str[pos++] != 'T')
+			return CTIME_INVALID_HOUR;
+
+		hour = read2XX(str, pos, res);
+		if(str[pos] != '.' && str[pos] != ':')
+			return CTIME_INVALID_MINUTE;
+
+		minute = read2XX(str, ++pos, res);
+		if(str[pos] != '.' && str[pos] != ':')
+			return 0;
+
+		second = read2XX(str, ++pos, res);
+	}else
+	{
+		hour =0;
+		minute =0;
+		second = 0;
+	}
+
+	//skip any fractional part
+	if(str[pos]=='.')
+	{
+		while(IS_DIGIT(str[++pos]))
+			;
+	}
+
+	//skip time zone
+	if(str[pos]=='Z')
+	{
+		pos++;
+	} else
+	{
+		if((str[pos]=='+') || (str[pos]=='-'))
+		{
+			pos++;
+			read2XX(str, pos, res);
+			if(str[pos] != '.' && str[pos] != ':')
+				res=false;
+			pos++;
+			read2XX(str, pos, res);
+		}
+	}
+
+	if(res && is_valid())
+		return pos;
+	return 0;
+}
+
 static int read(const char* &val)
 {
 	int res = 0;
