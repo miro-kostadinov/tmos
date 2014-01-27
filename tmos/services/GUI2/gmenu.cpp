@@ -188,32 +188,70 @@ bool GMenu::RemoveItem(int item_id)
 		return true;
 	if(GetMenu(ptr->item))
 		RemoveItem(ptr->item);
-	int pos = ptr - base;
+//	int pos = ptr - base;
 
 	new_base = (menu_template_t *)tsk_malloc_clear((size +2)*sizeof(menu_template_t));
 	if(!new_base)
 		return false;
 
-	for(int i=0; !IsEmpty(base + i); i++)
+	if(item == ptr)
 	{
-		if(i==pos)
+		menu_template_t* tmp;
+		// remove selected
+		tmp = GetMenu(item->parent, ptr+1);
+		if(tmp)
 		{
-			if(menu == base+i || item == base+i)
-				item=menu=new_base;
+			item = tmp; // select next
+			menu = GetMenu(item->parent);
+		}
+		else
+		{
+			if(menu && item && (item != menu))
+			{
+				menu_template_t* last;
+				tmp =menu;
+				do
+				{
+					last = tmp;
+					tmp = GetMenu(item->parent, tmp +1);
+				} while(tmp && (tmp != item));
+				if(tmp)
+					item =last;
+				else
+					item = menu = base;
+			}
+			else
+				item = menu = base;
+		}
+	}
+
+	for(int i=0, j=0; !IsEmpty(base + i); i++)
+	{
+		if(base +i == ptr)
+		{
 			base[i].item_name.free();
 			continue;
 		}
-		new_base[i].parent = base[i].parent;
-		new_base[i].item = base[i].item;
-		new_base[i].item_name = base[i].item_name;
-		if(menu == base+i)
-			menu = new_base +i;
+//		if(i==pos)
+//		{
+//			if(menu == base+i || item == base+i)
+//				item=menu=new_base;
+//			base[i].item_name.free();
+//			continue;
+//		}
+		new_base[j].parent = base[i].parent;
+		new_base[j].item = base[i].item;
+		new_base[j].item_name = base[i].item_name;
+		base[i].item_name.free();
+
 		if(item == base+i)
-			item = new_base +i;
+			item = new_base +j;
+		j++;
 	}
 	tsk_free(base);
 	base = new_base;
 	size = GetMenuSize(item->parent);
+	menu = GetMenu(item->parent);
 	set_scroll();
 	return true;
 }
