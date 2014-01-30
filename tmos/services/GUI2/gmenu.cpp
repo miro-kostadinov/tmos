@@ -15,7 +15,7 @@ menu_template_t* GMenu::GetItem(int parent_id, int item_id)
 	menu_template_t* tmp = base;
 	if(tmp)
 	{
-		while(!tmp->item_name.empty())
+		while(!IsEmpty(tmp))
 		{
 			if(tmp->parent == parent_id && tmp->item == item_id )
 				return tmp;
@@ -30,7 +30,7 @@ menu_template_t* GMenu::FindItem(int item_id)
 	menu_template_t* tmp = base;
 	if(tmp)
 	{
-		while(!tmp->item_name.empty())
+		while(!IsEmpty(tmp))
 		{
 			if(tmp->item == item_id)
 				return tmp;
@@ -47,7 +47,7 @@ menu_template_t* GMenu::GetMenu(int parent_id, menu_template_t* start)
 		tmp = base;
 	if(tmp)
 	{
-		while(!tmp->item_name.empty())
+		while(!IsEmpty(tmp))
 		{
 			if(tmp->parent == parent_id)
 				return tmp;
@@ -63,7 +63,7 @@ int GMenu::GetMenuSize(int menu_id)
 	int res = 0;
 	if(tmp)
 	{
-		while(!tmp->item_name.empty())
+		while(!IsEmpty(tmp))
 		{
 			if(tmp->parent == menu_id)
 				++res;
@@ -78,7 +78,7 @@ void GMenu::adjust_item_names()
 	menu_template_t* tmp = menu;
 	while(tmp)
 	{
-		if(tmp && client_rect.width() && !tmp->item_name.empty())
+		if(tmp && client_rect.width() && !IsEmpty(tmp))
 		{
 			CSTRING name = tmp->item_name;
 			unsigned int pos = remove_amp(name);
@@ -302,7 +302,8 @@ bool GMenu::LoadMenu(const MENUTEMPLATE* pat)
 	menu_template_t* p= (menu_template_t*)pat;
 	if(p)
 	{
-		while(!p->item_name.empty() && p->item)
+//		while(!p->item_name.empty() && p->item)
+		while(!IsEmpty(p))
 		{
 			if( ! AppendMenu(p->parent, p->item, p->item_name) )
 				return false;
