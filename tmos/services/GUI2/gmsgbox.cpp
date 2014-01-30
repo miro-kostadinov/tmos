@@ -280,6 +280,14 @@ unsigned int GMsgBox::process_key (GMessage& msg)
 		}
 
 	}
+	if (msg.param == KEY_CANCEL)
+	{
+		if((type&(MBF_LAST_BTN-1)) == MBF_OK)
+		{
+			notify_message(WM_CLOSE, GO_IDCANCEL, this);
+			return 1;
+		}
+	}
 	return 0;
 }
 int MessageBox(const char* Text, const char* Caption, unsigned int Style)
