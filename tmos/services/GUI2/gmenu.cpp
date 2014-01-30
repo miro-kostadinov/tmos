@@ -392,14 +392,14 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 
 		row_height = text_font->vspacing + text_font->vdistance;
 		rows = menu_height / row_height;
-		if( !(rows & 1) && rows > 2 )
+		if( !(rows & 1) && rows > size )
 			rows--;
 
 		sy = get_item_pos(item);
 		if(sy >= rows/2)
 		{
 			sy -= rows/2;
-			if(sy + rows >= size && size > rows )
+			if(sy + rows >= size && size >= rows )
 			{
 				sy = size - rows;
 			}
@@ -561,7 +561,7 @@ bool GMenu::set_scroll(void)
 				((title)?(text_font->vspacing+2*text_font->vdistance):0)) /
 				(text_font->vspacing + text_font->vdistance);
 
-	if( !(rows & 1) && rows > 2 )
+	if( !(rows & 1) && rows > size )
 		rows--;
 
 	if(rows < size && !scroll)
