@@ -644,7 +644,7 @@ const RENDER_MODE FNT7x9 = {
 	{
 		{
 		7,						// width;
-		8,						// height;
+		9,						// height;
 
 		9,						// h spacing;
 		11						// v spacing;
@@ -653,7 +653,7 @@ const RENDER_MODE FNT7x9 = {
 	{
 		{
 		2,						// h distance;
-		3						// v distance;
+		2						// v distance;
 		}
 	}
 };
