@@ -133,7 +133,7 @@ define cc
 				tbreak  * ((int*)$_start)
 				c
 			else
-				echo PROBLEM> Invalid flash content!
+				echo PROBLEM> Invalid flash content! \n
 			end
 	
 		else
@@ -152,7 +152,7 @@ define cc
 					c
 				end
 			else
-				echo PROBLEM> Invalid flash content!
+				echo PROBLEM> Invalid flash content! \n
 			end
 		end
 	
@@ -203,7 +203,7 @@ end
 # string display command
 define str
 	if( $arg0.ptr == 0 )
-		echo Undefined	
+		echo Undefined	\n
 	else
 		printf"len:%d\n", $arg0.ptr.len
 		Printf"adr:%x\n", &$arg0.ptr.len
