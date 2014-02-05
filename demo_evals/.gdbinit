@@ -16,6 +16,65 @@ end
 # define user command: disable all interrupts and load program
 #-------------------------------------------------------------
 
+#-------------------------------------------------------------------------------
+# mem_info 
+#-------------------------------------------------------------------------------
+define mem_info
+	set $_ptr = &end
+	set $_used = 0
+	set $_usedspace = 0
+	set $_free = 0
+	set $_freespace = 0
+	
+	echo ---------- Memory info -------------------- \n
+	printf"\r\n %08X %04X %04X  %04X ", $_ptr, ((unsigned short*)$_ptr)[0], ((unsigned short*)$_ptr)[1]>>1, ((unsigned short*)$_ptr)[2]
+	
+	while ((unsigned short*)$_ptr)[0]
+		set $_ptr = &((unsigned short*)$_ptr)[((unsigned short*)$_ptr)[0]<<1]
+		set $_p0 = ((unsigned short*)$_ptr)[0]
+		set $_p1 = ((unsigned short*)$_ptr)[1]
+		set $_p2 = ((unsigned short*)$_ptr)[2]
+		set $_p3 = ((unsigned short*)$_ptr)[3]
+		
+		printf"\n %08X %04X %04X ", $_ptr, $_p0, $_p1>>1
+		if !($_p1 & 1)
+			printf"              "
+			set $_used =  $_used +1
+			set $_usedspace =  $_usedspace + ($_p0<<2)
+		else
+			set $_free =  $_free +1
+			set $_freespace =  $_freespace + ($_p0<<2)
+		end
+		printf" %04X %04X", $_p2, $_p3
+		if $_p0 && $_p0 != ( ((unsigned short*)$_ptr)[($_p0<<1)+1] >> 1)
+			echo \n !!!!!! ************* 
+		end
+	end
+	echo \n ---------- check empty holes -------------------- 
+	set $_ptr = &end
+	while ((unsigned short*)$_ptr)[0]
+		set $_ptr = &((unsigned short*)$_ptr)[((signed short*)$_ptr)[2]<<1]
+		
+		set $_p0 = ((unsigned short*)$_ptr)[0]
+		set $_p1 = ((unsigned short*)$_ptr)[1]
+		set $_p2 = ((signed short*)$_ptr)[2]
+		set $_p3 = ((signed short*)$_ptr)[3]
+		
+		printf"\n %08X %04X %04X %04X %04X", $_ptr, $_p0, $_p1>>1, $_p2, $_p3
+		if $_p0 && !($_p1 & 1)
+			echo \n used !!!!!! *************
+			break 
+		end
+		if $_p0 && $_p2 !=  (((signed short*)$_ptr)[($_p2<<1)+3] )
+			echo \n !!!!!! ************* 
+		end
+		
+	end
+
+	echo \n ---------- Memory info -------------------- 
+	printf"\n used %d bytes in %d ptrs", $_usedspace, $_used
+	printf"\n free %d bytes in %d holes", $_freespace, $_free
+end
 
 #-----------------------
 # app PEEDI reset
@@ -30,6 +89,7 @@ define cc
 		# NVIC_APINT = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ | NVIC_APINT_VECT_CLR_ACT | NVIC_APINT_VECT_RESET
 		# ... System reset request | Clear active NMI/fault info | System reset
 		#mon m w 0xE000ED0C 0x05FA0007	
+		mon set CONTROL 0
 		mon m w 0xE000ED0C 0x05FA0003	
 		mon set xPSR 0x01000000
 		#mon res	
