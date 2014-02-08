@@ -23,6 +23,8 @@
 #ifndef CPU_ASM_H_
 #define CPU_ASM_H_
 
+#include "port_inc.h"
+
 #ifdef __ASSEMBLER__
 #ifndef __ASSEMBLY__
 #define __ASSEMBLY__ __ASSEMBLER__
@@ -36,9 +38,10 @@
 // 		 Global CPU registers
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#if USE_TASK_REGISTERS
 #define REG_MTASK		r10
 #define REG_CTASK		r11
-
+#endif
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 Assembler functions

@@ -7,7 +7,6 @@
 
 
 #include "port_asm.h"
-#include "port_inc.h"
 
 // unsigned int CalculateCRC32Slow(unsigned int crc, const void * buf,
 //        unsigned int len);

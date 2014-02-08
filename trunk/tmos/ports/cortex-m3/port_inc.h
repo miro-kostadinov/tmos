@@ -39,28 +39,37 @@
 #define tsk_r8			0x14
 #define tsk_r9			0x18
 
-#define tsk_aloc_sig	(0x1C + 0x00)
-#define tsk_state		(0x1C + 0x02)
-#define tsk_pty			(0x1C + 0x03)
-#define tsk_signal		0x20
-#define tsk_renext		0x24
-#define tsk_reprev		0x28
-#define tsk_time		0x2C
-#define tsk_tnext		0x30
-#define tsk_tprev		0x34
-#define tsk_tlist		0x38
-#define tsk_name		0x3c
-#define tsk_res			0x44
-#ifdef USE_MEMORY_TRACKING
-#define tsk_aloc_mem	0x48
-#define tsk_aloc_ptrs	0x4C
-# if TASK_HISTORY_LOG
-#  define tsk_lastt		0x50
-# endif
+#if USE_TASK_REGISTERS
+#define _tsk_o1_		0x1C
 #else
-# if TASK_HISTORY_LOG
-#  define tsk_lastt		0x48
-# endif
+#define tsk_r10			0x1C
+#define tsk_r11			0x20
+#define _tsk_o1_		0x24
+#endif
+
+#define tsk_aloc_sig	(_tsk_o1_ + 0x00)
+#define tsk_state		(_tsk_o1_ + 0x02)
+#define tsk_pty			(_tsk_o1_ + 0x03)
+#define tsk_signal		(_tsk_o1_ + 0x04)
+#define tsk_renext		(_tsk_o1_ + 0x08)
+#define tsk_reprev		(_tsk_o1_ + 0x0C)
+#define tsk_time		(_tsk_o1_ + 0x10)
+#define tsk_tnext		(_tsk_o1_ + 0x14)
+#define tsk_tprev		(_tsk_o1_ + 0x18)
+#define tsk_tlist		(_tsk_o1_ + 0x1C)
+#define tsk_name		(_tsk_o1_ + 0x20)
+#define tsk_res			(_tsk_o1_ + 0x24)
+
+#if TASK_HISTORY_LOG || !USE_TASK_REGISTERS
+#define tsk_int_task	(_tsk_o1_ + 0x28)
+#define _tsk_o2_		(_tsk_o1_ + 0x2C)
+#else
+#define _tsk_o2_		(_tsk_o1_ + 0x28)
+#endif
+
+#ifdef USE_MEMORY_TRACKING
+#define tsk_aloc_mem	(_tsk_o2_ + 0x00)
+#define tsk_aloc_ptrs	(_tsk_o2_ + 0x04)
 #endif
 
 //	offsets in stacked context structure

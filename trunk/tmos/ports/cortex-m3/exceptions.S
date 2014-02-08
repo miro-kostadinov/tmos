@@ -20,7 +20,6 @@
 //==========================================================================
 
 #include "port_asm.h"
-#include "port_inc.h"
 #include "core_map.h"
 
 
@@ -110,8 +109,10 @@ FUNC(	sys_reset_handler	)
 				ldr			r0, =main_task_desc
 		        ldmia   	r0!, {r4-r6}			//r4=main_task, r5=main_task_stack, r6=main()
 
+#if USE_TASK_REGISTERS
 				mov			REG_MTASK, r4
                 mov			REG_CTASK, r4
+#endif
                 adds		r5, #0x20
                 mov			sp, r5
 
@@ -242,6 +243,7 @@ ENDF(	sys_debug_handler	)
 //*			PendSV handler
 //*----------------------------------------------------------------------------
 FUNC(	sys_pendsv_handler	)
+#if USE_TASK_REGISTERS
 				mrs 		r3, PSP 						// Recover PSP into R12
 				stmia 		REG_CTASK, {r3-r9}				// Push non-stack registers
 #if TASK_HISTORY_LOG
@@ -249,12 +251,29 @@ FUNC(	sys_pendsv_handler	)
 #endif
 				ldr			REG_CTASK, [REG_MTASK, #tsk_renext]
 #if TASK_HISTORY_LOG
-				str         r4, [REG_CTASK, #tsk_lastt]
+				str         r4, [REG_CTASK, #tsk_int_task]
 #endif
 				ldmia		REG_CTASK, {r3-r9}				// Restore non-stacked registers
 				msr 		PSP, r3 						// Set PSP to R12
 				bx 			lr 								// Return back to Thread
 
+
+#else
+
+
+				mrs 		r3, PSP 						// Recover PSP into R12
+				ldr			r1, =main_task
+				ldr			r2, [r1, #tsk_int_task]			// r2=old task
+				stmia 		r2, {r3-r11}					// Push non-stack registers
+				ldr			r0, [r1, #tsk_renext]			// r0=new task
+				ldmia		r0, {r3-r11}					// Restore non-stacked registers
+#if TASK_HISTORY_LOG
+				ldr			r2, [r0, #tsk_int_task]
+#endif
+				ldr			r0, [r1, #tsk_int_task]
+				msr 		PSP, r3 						// Set PSP to R12
+				bx 			lr 								// Return back to Thread
+#endif
 ENDF(	sys_pendsv_handler	)
 
 //*----------------------------------------------------------------------------

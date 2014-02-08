@@ -6,7 +6,6 @@
  */
 
 #include "port_asm.h"
-#include "port_inc.h"
 #include "crc_f2.h"
 #include "mcu_cpp.h"
 

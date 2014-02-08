@@ -21,7 +21,6 @@
 //
 //========================================================================
 #include "port_asm.h"
-#include "port_inc.h"
 #include "core_map.h"
 #include "swi_tab.h"
 
@@ -113,6 +112,9 @@ FUNC(	svc_send_signal		)
                 str				r3, [r2, #tsk_sp_r0]
                 bics			r1, r3
                 str				r1, [r0, #tsk_signal]
+#if !USE_TASK_REGISTERS
+				ldr				r1, =main_task
+#endif
                 b				svc_task_sch
 
 ENDF(	svc_send_signal		)
@@ -121,15 +123,24 @@ ENDF(	svc_send_signal		)
 //------------------------------------------------------------------------------
 //void task_schedule(Task *task)
 FUNC(	svc_task_schedule	)
+#if USE_TASK_REGISTERS
                 ldr             r2, [REG_MTASK, #tsk_tlist]
                 str             r2, [r0, #tsk_tlist]
                 str             r0, [REG_MTASK, #tsk_tlist]
+#else
+				ldr				r1, =main_task
+                ldr             r2, [r1, #tsk_tlist]
+                str             r2, [r0, #tsk_tlist]
+                str             r0, [r1, #tsk_tlist]
+#endif
 svc_task_sch:
 				m_RERemove		r0, r2, r3			//?
 				m_TRemove		r0, r2, r3
 				m_TCleanup		r0
 
+#if USE_TASK_REGISTERS
 				mov				r1, REG_MTASK
+#endif
 				m_REInsert		r1, r0,	  r2, r3, r12
                 movs			r1, #TSKSTATE_READY
                 strb			r1, [r0, #tsk_state]
@@ -145,7 +156,14 @@ ENDF(	svc_task_schedule	)
 //void sleep_until( unsigned int time )
 FUNC(	sys_sleep_until )
 
-				ldr				r3, [REG_MTASK, #tsk_time]			//cur time
+#if USE_TASK_REGISTERS
+				mov				r1, REG_CTASK
+				mov				r2, REG_MTASK
+#else
+				ldr				r2, =main_task
+                ldr             r1, [r2, #tsk_int_task]
+#endif
+				ldr				r3, [r2, #tsk_time]			//cur time
 				cmp				r0, r3
 				bhi				TaskDelay
 				bx				lr
@@ -157,12 +175,21 @@ ENDF(	sys_sleep_until )
 //void sleep_rel( unsigned int time )
 FUNC(	sys_sleep_rel	)
 
+#if USE_TASK_REGISTERS
 				mov				r1, REG_CTASK
+#else
+				ldr				r2, =main_task
+                ldr             r1, [r2, #tsk_int_task]
+#endif
 				ldr				r3, [r1, #tsk_time]					//task time
 				add				r0, r0, r3
 				str				r0, [r1, #tsk_time]
 
+#if USE_TASK_REGISTERS
 				ldr				r3, [REG_MTASK, #tsk_time]			//cur time
+#else
+				ldr				r3, [r2, #tsk_time]			//cur time
+#endif
 
 				subs			r0, r0, r3
 				lsls			r0, r0, #1
@@ -179,8 +206,13 @@ FUNC(	sys_sleep		)
 
 				cmp				r0, #0
 				ble				_sys_return							//0 < time <0x80000000
+#if USE_TASK_REGISTERS
 				mov				r1, REG_CTASK
 				mov				r2, REG_MTASK
+#else
+				ldr				r2, =main_task
+                ldr             r1, [r2, #tsk_int_task]
+#endif
 				ldr				r3, [r2, #tsk_time]					//cur time
 				add				r0, r0, r3
 TaskDelay:
@@ -203,7 +235,11 @@ ENDF(	sys_sleep		)
 //void IncrementTicks(void);
 FUNC(	isr_ClockDriver		)
 
+#if USE_TASK_REGISTERS
 				mov				r1, REG_MTASK
+#else
+				ldr				r1, =main_task
+#endif
 				ldr				r2, [r1, #tsk_time]					//cur time
                 adds			r2, #1
 				bmi				overlap_time
@@ -239,7 +275,11 @@ overlap_loop:
 overlap_time:
                 lsls			r2, r2, #1
                 bcs				overlap_loop
+#if USE_TASK_REGISTERS
 				mov				r1, REG_MTASK
+#else
+				ldr				r1, =main_task
+#endif
 				b				overlap_done
 
 
@@ -254,7 +294,12 @@ ENDF(	isr_ClockDriver		)
 //unsigned int test_signal(unsigned int signal);
 FUNC(	sys_test_signal		)
 
+#if USE_TASK_REGISTERS
 				mov				r3, REG_CTASK
+#else
+				ldr				r2, =main_task
+                ldr             r3, [r2, #tsk_int_task]
+#endif
 				ldr				r1, [r3, #tsk_signal]
 				ands			r0, r1
 				mrs 			r2, PSP					// Get Task SP
@@ -282,7 +327,12 @@ ENDF(	sys_drv_service_wait  )
 //unsigned int get_signal(unsigned int signal);
 FUNC(	sys_get_signal		)
 
+#if USE_TASK_REGISTERS
 				mov				r3, REG_CTASK
+#else
+				ldr				r2, =main_task
+                ldr             r3, [r2, #tsk_int_task]
+#endif
 				mrs 			r2, PSP					// Get Task SP
                 str				r0, [r2, #tsk_sp_r1]
 				ldr				r1, [r3, #tsk_signal]
@@ -306,13 +356,22 @@ ENDF(	sys_get_signal		)
 // void task_suspend(Task *task)
 FUNC(	svc_task_suspend	)
 
+#if USE_TASK_REGISTERS
                 mov             r1, REG_MTASK
+#else
+				ldr				r1, =main_task
+				mov				r3, r1
+#endif
 s_susp_tlist:
                 ldr             r2, [r1, #tsk_tlist]
                 cmp             r0, r2
                 beq             s_susp_lfound
                 mov             r1, r2
+#if USE_TASK_REGISTERS
                 cmp             r1, REG_MTASK
+#else
+                cmp             r1, r3
+#endif
                 bne             s_susp_tlist
                 beq             s_susp_nfound
 s_susp_lfound:
@@ -338,8 +397,15 @@ ENDF(	svc_task_suspend	)
 //unsigned int resume_wait_signal(unsigned int signal);
 FUNC(	sys_resume_wait_signal	)
 
+#if USE_TASK_REGISTERS
 				ldr				r2, [REG_MTASK, #tsk_time]			// t2=cur time
-				ldr				r1, [REG_CTASK, #tsk_time]					// t1 + Delay
+				ldr				r1, [REG_CTASK, #tsk_time]			// t1 + Delay
+#else
+				ldr				r2, =main_task
+                ldr             r3, [r2, #tsk_int_task]
+				ldr				r2, [r2, #tsk_time]					// t2=cur time
+				ldr				r1, [r3, #tsk_time]					// t1 + Delay
+#endif
 				subs			r1, r1, r2							// Delay + t1 - t2
 				lsls			r1, r1, #1
                 bmi				sys_test_signal
@@ -356,12 +422,18 @@ FUNC(	sys_wait_signal		)
 				cmp				r1, #0
 				ble				sys_test_signal						//0 < time <0x80000000
 
-				ldr				r12, [REG_MTASK, #tsk_time]			//cur time
+#if USE_TASK_REGISTERS
+				ldr				r2, [REG_MTASK, #tsk_time]			//cur time
 				mov				r3, REG_CTASK
 //				cmp				r3, REG_MTASK
 //              beq				sys_test_signal
-				add				r12, r1
-				str				r12, [r3, #tsk_time]
+#else
+				ldr				r2, =main_task
+                ldr             r3, [r2, #tsk_int_task]
+				ldr				r2, [r2, #tsk_time]			//cur time
+#endif
+				adds			r2, r1
+				str				r2, [r3, #tsk_time]
 
 				ldr				r1, [r3, #tsk_signal]
 				mrs 			r2, PSP					// Get Task SP
@@ -370,7 +442,11 @@ FUNC(	sys_wait_signal		)
 				ands			r0, r1
                 bne				_return_signal
                 str				r0, [r2, #tsk_sp_r0]
+#if USE_TASK_REGISTERS
 				mov				r2, REG_MTASK
+#else
+				ldr				r2, =main_task
+#endif
 
                 movs			r0, #TSKSTATE_SIGNAL
                 strb			r0, [r3, #tsk_state]

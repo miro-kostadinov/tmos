@@ -84,7 +84,10 @@ typedef struct TASK_STRU_t
 	word_reg 		r7;		/**< r7			*/
 	word_reg 		r8;		/**< r8			*/
 	word_reg 		r9;		/**< r9			*/
-
+#if !USE_TASK_REGISTERS
+	word_reg 		r10;	/**< r10		*/
+	word_reg 		r11;	/**< r11		*/
+#endif
     unsigned short	aloc_sig;	/**< allocated signals			*/
     unsigned char	state;		/**< task state					*/
     unsigned char	priority;	/**< task priority				*/
@@ -97,6 +100,9 @@ typedef struct TASK_STRU_t
     Task			*tlist;		/**< all tasks list(todo)		*/
 	char			name[8];	/**< task name					*/
 	RES_CODE		res;		/**< task status doc!			*/
+#if TASK_HISTORY_LOG || !USE_TASK_REGISTERS
+    volatile Task	*int_task;	/**< interrupted task (current for main_task)*/
+#endif
 #ifdef USE_MEMORY_TRACKING
 	int				aloc_mem;	/**< allocated memory words (main_task) */
 	int				aloc_ptrs;	/**< allocated memory pointers	*/
@@ -117,7 +123,7 @@ typedef struct
 #ifdef __cplusplus
 
 #define TASK_DECLARE_STATIC(task_name, aname, func, priority, stacksz) 	\
-  	 TASK_STRU task_name __attribute__ ((section (".task."#task_name".tcb")));					\
+	extern "C" TASK_STRU task_name __attribute__ ((section (".task."#task_name".tcb")));					\
      unsigned task_name##_stack[stacksz+8] __attribute__ ((section (".task."#task_name".tstack"))); \
      extern "C" const TASK_DESCRIPTION task_name##_desc __attribute__ ((section (".rominitsec"))) = 							\
 	 {&task_name, &task_name##_stack[stacksz-1], func, priority, aname};
@@ -131,8 +137,14 @@ typedef struct
 
 
 
+#if USE_TASK_REGISTERS
 register TASK_STRU *PMAIN_TASK asm("r10");
 register TASK_STRU *CURRENT_TASK asm("r11");
+#else
+extern TASK_STRU main_task;
+#define PMAIN_TASK 		(&main_task)
+#define CURRENT_TASK 	((TASK_STRU *)main_task.int_task)
+#endif
 
 #ifdef __cplusplus
 }
