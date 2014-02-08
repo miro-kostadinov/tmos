@@ -15,6 +15,10 @@
 
 #include <brd_cfg.h>
 
+#ifndef USE_TASK_REGISTERS
+#define USE_TASK_REGISTERS 1
+#endif
+
 #ifndef USE_STATIC_CONSTRUCTORS
 #define USE_STATIC_CONSTRUCTORS 1  //enabled by default
 #endif
