@@ -58,13 +58,13 @@
 #define tsk_tprev		(_tsk_o1_ + 0x18)
 #define tsk_tlist		(_tsk_o1_ + 0x1C)
 #define tsk_name		(_tsk_o1_ + 0x20)
-#define tsk_res			(_tsk_o1_ + 0x24)
+#define tsk_res			(_tsk_o1_ + 0x28)
 
 #if TASK_HISTORY_LOG || !USE_TASK_REGISTERS
-#define tsk_int_task	(_tsk_o1_ + 0x28)
-#define _tsk_o2_		(_tsk_o1_ + 0x2C)
+#define tsk_int_task	(_tsk_o1_ + 0x2C)
+#define _tsk_o2_		(_tsk_o1_ + 0x30)
 #else
-#define _tsk_o2_		(_tsk_o1_ + 0x28)
+#define _tsk_o2_		(_tsk_o1_ + 0x2C)
 #endif
 
 #ifdef USE_MEMORY_TRACKING
