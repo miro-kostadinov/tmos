@@ -423,17 +423,17 @@ FUNC(	sys_wait_signal		)
 				ble				sys_test_signal						//0 < time <0x80000000
 
 #if USE_TASK_REGISTERS
-				ldr				r2, [REG_MTASK, #tsk_time]			//cur time
+				ldr				r12, [REG_MTASK, #tsk_time]			//cur time
 				mov				r3, REG_CTASK
 //				cmp				r3, REG_MTASK
 //              beq				sys_test_signal
 #else
 				ldr				r2, =main_task
                 ldr             r3, [r2, #tsk_int_task]
-				ldr				r2, [r2, #tsk_time]			//cur time
+				ldr				r12, [r2, #tsk_time]			//cur time
 #endif
-				adds			r2, r1
-				str				r2, [r3, #tsk_time]
+				adds			r12, r1
+				str				r12, [r3, #tsk_time]
 
 				ldr				r1, [r3, #tsk_signal]
 				mrs 			r2, PSP					// Get Task SP
