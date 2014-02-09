@@ -112,6 +112,8 @@ FUNC(	sys_reset_handler	)
 #if USE_TASK_REGISTERS
 				mov			REG_MTASK, r4
                 mov			REG_CTASK, r4
+#else
+                str         r4, [r4, #tsk_int_task]
 #endif
                 adds		r5, #0x20
                 mov			sp, r5
@@ -268,9 +270,9 @@ FUNC(	sys_pendsv_handler	)
 				ldr			r0, [r1, #tsk_renext]			// r0=new task
 				ldmia		r0, {r3-r11}					// Restore non-stacked registers
 #if TASK_HISTORY_LOG
-				ldr			r2, [r0, #tsk_int_task]
+				str			r2, [r0, #tsk_int_task]
 #endif
-				ldr			r0, [r1, #tsk_int_task]
+				str			r0, [r1, #tsk_int_task]
 				msr 		PSP, r3 						// Set PSP to R12
 				bx 			lr 								// Return back to Thread
 #endif
