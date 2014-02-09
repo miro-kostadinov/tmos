@@ -38,7 +38,7 @@ WEAK_C void init_main_menu(void)
 
 }
 
-extern TASK_STRU gui_task;
+//extern TASK_STRU gui_task;
 
 __attribute__ ((weak)) void splash_screen(LCD_MODULE* lcd)
 {

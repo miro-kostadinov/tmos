@@ -27,7 +27,7 @@ WEAK_C void init_main_menu(void)
 
 }
 
-extern TASK_STRU gui_task;
+//extern TASK_STRU gui_task;
 
 WEAK_C RES_CODE splashdlg_cb(WINDOW obj, LCD_MODULE* lcd, unsigned int msg)
 {

@@ -172,12 +172,17 @@ sma_search_loop:
 				subs			bptr, best, #2
 				strh			bsize, [bptr, asize, lsl #2]	// n -> s<
 #ifdef USE_MEMORY_TRACKING
-				ldr				bsize, [REG_MTASK, #tsk_aloc_mem]
+#if USE_TASK_REGISTERS
+                mov             bptr, REG_MTASK
+#else
+                ldr             bptr, =main_task
+#endif
+				ldr				bsize, [bptr, #tsk_aloc_mem]
 				adds			bsize, asize
-				str				bsize, [REG_MTASK, #tsk_aloc_mem]
-				ldr				bsize, [REG_MTASK, #tsk_aloc_ptrs]
+				str				bsize, [bptr, #tsk_aloc_mem]
+				ldr				bsize, [bptr, #tsk_aloc_ptrs]
 				adds			bsize, #1
-				str				bsize, [REG_MTASK, #tsk_aloc_ptrs]
+				str				bsize, [bptr, #tsk_aloc_ptrs]
 #endif
 sma_exit:		bx				lr
 
@@ -198,13 +203,19 @@ sma_match:		//match (pf, asize=bsize)
 				movs			best, bptr
 7:
 #ifdef USE_MEMORY_TRACKING
-				ldr				bsize, [REG_MTASK, #tsk_aloc_mem]
+                //r0 = best [r1=bptr r2=asize r3=bsize]
+#if USE_TASK_REGISTERS
+                mov             bptr, REG_MTASK
+#else
+                ldr             bptr, =main_task
+#endif
+				ldr				bsize, [bptr, #tsk_aloc_mem]
 				ldrh			asize, [best]
 				adds			bsize, asize
-				str				bsize, [REG_MTASK, #tsk_aloc_mem]
-				ldr				bsize, [REG_MTASK, #tsk_aloc_ptrs]
+				str				bsize, [bptr, #tsk_aloc_mem]
+				ldr				bsize, [bptr, #tsk_aloc_ptrs]
 				adds			bsize, #1
-				str				bsize, [REG_MTASK, #tsk_aloc_ptrs]
+				str				bsize, [bptr, #tsk_aloc_ptrs]
 #endif
 				ldrh			bsize, [best, #2]!
 				subs			bsize, #1
@@ -245,12 +256,17 @@ FUNC(	svc_pool_free		)
 //check next
 				ldrh			r12, [r0, #-4]!			//r12=cs
 #ifdef USE_MEMORY_TRACKING
-				ldr				r3, [REG_MTASK, #tsk_aloc_mem]
+#if USE_TASK_REGISTERS
+                mov             r2, REG_MTASK
+#else
+                ldr             r2, =main_task
+#endif
+				ldr				r3, [r2, #tsk_aloc_mem]
 				subs			r3, r12
-				str				r3, [REG_MTASK, #tsk_aloc_mem]
-				ldr				r3, [REG_MTASK, #tsk_aloc_ptrs]
+				str				r3, [r2, #tsk_aloc_mem]
+				ldr				r3, [r2, #tsk_aloc_ptrs]
 				subs			r3, #1
-				str				r3, [REG_MTASK, #tsk_aloc_ptrs]
+				str				r3, [r2, #tsk_aloc_ptrs]
 #endif
 				ldr				r3, [r0, r12, lsl #2]
 				lsls			r3, r3, #16				//r3 = fs<<16
@@ -388,9 +404,19 @@ FUNC(	svc_realloc		)
 				add				r2, r2, r5, lsr #16	//r2=cs+fs
 				strh			r2, [r0]			//	r0->next = cs+fs
 #ifdef USE_MEMORY_TRACKING
-				ldr				r1, [REG_MTASK, #tsk_aloc_mem]
-				add				r1, r1, r5, lsr #16
-				str				r1, [REG_MTASK, #tsk_aloc_mem]
+                // r0, r2, r3, r4, r5 [r1]
+#if USE_TASK_REGISTERS
+                ldr             r1, [REG_MTASK, #tsk_aloc_mem]
+                add             r1, r1, r5, lsr #16
+                str             r1, [REG_MTASK, #tsk_aloc_mem]
+#else
+                push            {r2}
+                ldr             r2, =main_task
+                ldr             r1, [r2, #tsk_aloc_mem]
+                add             r1, r1, r5, lsr #16
+                str             r1, [r2, #tsk_aloc_mem]
+                pop             {r2}
+#endif
 #endif
 
 				add				r5, r0, r2, lsl #2	// r5 = nn
@@ -422,9 +448,17 @@ smf_check_split:	//	r0, r1=newsize_b, r2=oldsize_w, r3=newsize_w
 //    +----+----+----+----+              +------+-----+----+----+
 
 #ifdef USE_MEMORY_TRACKING
+                //r0, r1, [r2, r4]
+#if USE_TASK_REGISTERS
 				ldr				r4, [REG_MTASK, #tsk_aloc_mem]
 				subs			r4, r1
 				str				r4, [REG_MTASK, #tsk_aloc_mem]
+#else
+                ldr             r2, =main_task
+                ldr             r4, [r2, #tsk_aloc_mem]
+                subs            r4, r1
+                str             r4, [r2, #tsk_aloc_mem]
+#endif
 #endif
 				strh			r3, [r0]				//c->size = newsize
 				adds			r0, r0, r3, lsl #2		//r0=s

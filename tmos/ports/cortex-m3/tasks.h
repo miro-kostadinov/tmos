@@ -123,7 +123,7 @@ typedef struct
 #ifdef __cplusplus
 
 #define TASK_DECLARE_STATIC(task_name, aname, func, priority, stacksz) 	\
-	extern "C" TASK_STRU task_name __attribute__ ((section (".task."#task_name".tcb")));					\
+	TASK_STRU task_name __attribute__ ((section (".task."#task_name".tcb")));					\
      unsigned task_name##_stack[stacksz+8] __attribute__ ((section (".task."#task_name".tstack"))); \
      extern "C" const TASK_DESCRIPTION task_name##_desc __attribute__ ((section (".rominitsec"))) = 							\
 	 {&task_name, &task_name##_stack[stacksz-1], func, priority, aname};
