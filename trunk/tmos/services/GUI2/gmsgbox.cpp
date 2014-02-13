@@ -300,11 +300,11 @@ int MessageBox(const char* Text, const char* Caption, unsigned int Style)
 	return box.DoModal();
 }
 
-int NumEditBox(CSTRING& value, const char* Caption)
+int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style)
 {
 	GMsgBox box;
 	box.type = 	MBF_EDIT|MBF_CLR|
-				MBF_INPUT_TYPE(KT_DIGIT)|MBF_EDIT_FLAGS(ES_PASSWORD|ES_CENTER|ES_HIDE_CURSOR);
+				MBF_INPUT_TYPE(KT_DIGIT)|Style;
 	box.body =  value;
 	box.title = Caption;
 
