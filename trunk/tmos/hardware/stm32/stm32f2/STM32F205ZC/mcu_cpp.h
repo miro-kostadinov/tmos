@@ -73,6 +73,31 @@
 #define CRC         CAST(CRC_TypeDef	, BASE_CRC)		//!< CRC
 /** @} */
 
+/* RCC registers */
+#define REG_RCC_CR				REG_ACCESS(__IO uint32_t, BASE_RCC+0x00)	//!< Clock control register
+#define REG_RCC_PLLCFGR			REG_ACCESS(__IO uint32_t, BASE_RCC+0x04)	//!< RCC PLL configuration register
+#define REG_RCC_CFGR			REG_ACCESS(__IO uint32_t, BASE_RCC+0x08)	//!< Clock configuration register
+#define REG_RCC_CIR				REG_ACCESS(__IO uint32_t, BASE_RCC+0x0C)	//!< Clock interrupt register
+#define REG_RCC_AHB1RSTR		REG_ACCESS(__IO uint32_t, BASE_RCC+0x10)	//!< AHB1 peripheral reset register
+#define REG_RCC_AHB2RSTR		REG_ACCESS(__IO uint32_t, BASE_RCC+0x14)	//!< AHB2 peripheral reset register
+#define REG_RCC_AHB3RSTR		REG_ACCESS(__IO uint32_t, BASE_RCC+0x18)	//!< AHB3 peripheral reset register
+#define REG_RCC_APB1RSTR		REG_ACCESS(__IO uint32_t, BASE_RCC+0x20)	//!< APB1 peripheral reset register
+#define REG_RCC_APB2RSTR		REG_ACCESS(__IO uint32_t, BASE_RCC+0x24)	//!< APB2 peripheral reset register
+#define REG_RCC_AHB1ENR       	REG_ACCESS(__IO uint32_t, BASE_RCC+0x30)  	//!< RCC AHB1 peripheral clock register
+#define REG_RCC_AHB2ENR       	REG_ACCESS(__IO uint32_t, BASE_RCC+0x34)  	//!< RCC AHB2 peripheral clock register
+#define REG_RCC_AHB3ENR      	REG_ACCESS(__IO uint32_t, BASE_RCC+0x38) 	//!< RCC AHB3 peripheral clock register
+#define REG_RCC_APB1ENR			REG_ACCESS(__IO uint32_t, BASE_RCC+0x40)	//!< APB1 peripheral clock enable register
+#define REG_RCC_APB2ENR			REG_ACCESS(__IO uint32_t, BASE_RCC+0x44)	//!< APB2 peripheral clock enable register
+#define REG_RCC_AHB1LPENR    	REG_ACCESS(__IO uint32_t, BASE_RCC+0x50) 	//!< RCC AHB1 peripheral clock enable in low power mode register
+#define REG_RCC_AHB2LPENR     	REG_ACCESS(__IO uint32_t, BASE_RCC+0x54)  	//!< RCC AHB2 peripheral clock enable in low power mode register
+#define REG_RCC_AHB3LPENR    	REG_ACCESS(__IO uint32_t, BASE_RCC+0x58) 	//!< RCC AHB3 peripheral clock enable in low power mode register
+#define REG_RCC_APB1LPENR   	REG_ACCESS(__IO uint32_t, BASE_RCC+0x60)	//!< RCC APB1 peripheral clock enable in low power mode register
+#define REG_RCC_APB2LPENR   	REG_ACCESS(__IO uint32_t, BASE_RCC+0x64)	//!< RCC APB2 peripheral clock enable in low power mode register
+#define REG_RCC_BDCR			REG_ACCESS(__IO uint32_t, BASE_RCC+0x70)	//!< Backup domain control register
+#define REG_RCC_CSR				REG_ACCESS(__IO uint32_t, BASE_RCC+0x74)	//!< Control/status register
+#define REG_RCC_SSCGR       	REG_ACCESS(__IO uint32_t, BASE_RCC+0x80)	//!< RCC spread spectrum clock generation register
+#define REG_RCC_PLLI2SCFGR  	REG_ACCESS(__IO uint32_t, BASE_RCC+0x84)	//!< RCC PLLI2S configuration register
+
 /* CRC registers */
 #define REG_CRC_DR		REG_ACCESS(__IO uint32_t, BASE_CRC+0x00) //!< CRC Data register
 #define REG_CRC_CR	    REG_ACCESS(__IO uint32_t, BASE_CRC+0x08) //!< CRC Control register
