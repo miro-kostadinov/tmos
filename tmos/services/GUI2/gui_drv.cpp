@@ -25,7 +25,7 @@
 //*----------------------------------------------------------------------------
 
 
-WEAK_C GWindow* gui_test_main ()
+WEAK_C GWindow* gui_desktop ()
 {
 	GWindow* win;
 	win = new GWindow(1, RECT_T (0, 0, 132, 64), 0x3, GO_FLG_DEFAULT|GO_FLG_SELECTED);
@@ -90,6 +90,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     CHandle gui_hnd;
     GMessage msg;
     unsigned int idle_time = CURRENT_TIME;
+
 #if GUI_DEBUG
     unsigned int t0;
 #endif
@@ -102,7 +103,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     	tsk_sleep(10);
 
     // start desktop
-	while( !(desktop = gui_test_main()) )
+	while( !(desktop = gui_desktop()) )
 	{
 		tsk_sleep(10);
 	}
@@ -255,9 +256,11 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			if(msg.code == WM_DELETED)
 				continue;
 			if (msg.dst)
-				msg.dst->message(msg);
+				res = msg.dst->message(msg);
 			else
-				desktop->parent->message(msg);    // lcd message
+				res = desktop->parent->message(msg);    // lcd message
+			if(!res && msg.code == WM_KEY)   // send message to desktop
+				desktop->message(msg);
 #if GUI_DEBUG
 			TRACE("\e[4;1;32m %d ms\e[m", ms_since(t0));
 #endif
