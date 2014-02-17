@@ -478,8 +478,8 @@ unsigned int GMenu::process_key (GMessage& msg)
 			menu = tmp;
 			item = tmp;
 			size = GetMenuSize(item->parent);
-			if(set_scroll())
-				send_message(WM_DRAW, 0, 0L, this);
+			set_scroll();
+			send_message(WM_DRAW, 0, 0L, this);
 		}
 		return 1;
 
@@ -488,9 +488,10 @@ unsigned int GMenu::process_key (GMessage& msg)
 		if( tmp )
 		{
 			item = tmp;
+			tmp = menu;
 			menu = GetMenu(item->parent);
 			size = GetMenuSize(item->parent);
-			if(set_scroll())
+			if(set_scroll() || (tmp != menu))
 				send_message(WM_DRAW, 0, 0L, this);
 		}
 		return 1;
