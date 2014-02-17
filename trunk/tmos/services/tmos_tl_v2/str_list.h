@@ -207,6 +207,7 @@ public:
 	CSTRING& append(const char* s, unsigned int l);
 	CSTRING& append(char ch);
 	CSTRING& insert(char ch, unsigned int index = 0);
+	CSTRING& insert(const char* s, unsigned int index = 0);
 	/**
 	 * Append CSTRING operator
 	 * @param s
