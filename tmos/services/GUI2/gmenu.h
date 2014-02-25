@@ -62,7 +62,7 @@ struct GMenu: GObject
 		if(base)
 		{
 			size =0;
-			while(	IsEmpty(base + size) )
+			while( !IsEmpty(base + size) )
 			{
 				base[size++].item_name.free();
 			}
@@ -81,7 +81,7 @@ struct GMenu: GObject
 		if(base)
 		{
 			size =0;
-			while(	IsEmpty(base + size) )
+			while(	!IsEmpty(base + size) )
 			{
 				base[size++].item_name.free();
 			}
