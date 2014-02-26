@@ -163,6 +163,7 @@ struct CHandle {
 	{
 		return (tsk_write(str.c_str(), str.length()));
 	}
+	RES_CODE tsk_read(CSTRING& str, unsigned int size);
 #endif
 	RES_CODE tsk_write_locked(const void * buf, unsigned int l);
 	RES_CODE tsk_write_locked(const void * buf, unsigned int ln,

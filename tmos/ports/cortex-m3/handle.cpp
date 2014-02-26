@@ -475,6 +475,23 @@ RES_CODE CHandle::tsk_write(const void * buf, unsigned int l, unsigned int time)
     return (res);
 }
 
+#if USE_CSTRING
+RES_CODE CHandle::tsk_read(CSTRING& str, unsigned int size)
+{
+	char * buf;
+
+	if(str.reserve(size) >= size)
+	{
+		buf = (char*)str.c_str();
+		res = tsk_read(buf, size);
+		buf[size-len] = 0;
+		str.m_set_size(strlen(buf));
+	} else
+		res = RES_OUT_OF_MEMORY;
+	return res;
+}
+#endif
+
 /**
  * Blocking locked write
  * @param buf
