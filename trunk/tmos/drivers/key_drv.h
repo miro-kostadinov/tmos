@@ -3,7 +3,7 @@
 
 //#include <drivers.h>
 
-#define DRV_KEYBUF_SIZE	7
+#define DRV_KEYBUF_SIZE	0x1F
 
 struct KEY_DRIVER_DATA
 {
