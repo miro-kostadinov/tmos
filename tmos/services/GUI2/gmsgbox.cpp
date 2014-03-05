@@ -273,7 +273,7 @@ unsigned int GMsgBox::process_key (GMessage& msg)
 
 	if (msg.param == KEY_OK)
 	{
-		if (!(type & (MBF_LAST_BTN-1)))
+		if (!(type & (MBF_LAST_BTN-1)) || (type & ((MBF_LAST_BTN-1))) == MBF_OK )
 		{
 			notify_message(WM_CLOSE, GO_IDOK, this);
 			return 1;
