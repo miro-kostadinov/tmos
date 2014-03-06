@@ -270,6 +270,7 @@ void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 				txt.insert(toupper(key_val[times_pressed]), pos);								//inserts the new character from the key array into the string
 			else
 				txt.insert(key_val[times_pressed], pos);								//inserts the new character from the key array into the string
+			text_change();															//redraws the whole text
 		}
 		else
 		{
@@ -279,7 +280,7 @@ void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 			txt.insert(key_val[0], pos);								//inserts the new character from the key array into the string
 			pos_change(+1);
 		}
-		text_change();															//redraws the whole text
+//		text_change();															//redraws the whole text
 	}
 	else
 	{
@@ -468,11 +469,33 @@ unsigned int GEdit::process_key (GMessage& msg)
 					 return 1;
 				 }
 			 }
+			 else
+			 {
+				 return process_char(msg.param);
+			 }
 
 		}
 		break;
 	}
 	return 0;
+}
+
+bool GEdit::process_char(unsigned int ch)
+{
+	if(txt.length() < max_len && ch > 0x100)
+	{
+		ch &= 0xFF;
+		if(IS_ALPHANUM(ch) || IS_PUNC(ch) || ch == ' ')
+		{
+			StopTimer(EDIT_TIMER_INPUT);
+			last_key = 0;
+			times_pressed = 0;
+			txt.insert(ch, pos);								//inserts the new character from the key array into the string
+			pos_change(+1);
+			return true;
+		}
+	}
+	return false;
 }
 
 bool GEdit::set_cursor_on_char(void)
