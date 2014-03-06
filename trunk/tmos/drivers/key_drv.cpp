@@ -202,7 +202,11 @@ void KEY_DCR(KEY_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 					if( (reason = (unsigned int)drv_data->waiting) )
 					{
 						// send the code to the waiting
+#if KEY_REPEAT_CODE > 0xFF
+						*hnd->dst.as_shortptr++ = (unsigned int)param;
+#else
 						*hnd->dst.as_byteptr++ = (unsigned int)param;
+#endif
                         if(!--hnd->len)
                         {
 							drv_data->waiting = hnd->next;
@@ -241,9 +245,13 @@ void KEY_DSR(KEY_DRIVER_INFO* drv_info, HANDLE hnd)
 				return ;
 			} else
 			{
+#if KEY_REPEAT_CODE > 0xFF
+				*hnd->dst.as_shortptr++ = drv_data->key_buf[drv_data->key_out];
+#else
 				*hnd->dst.as_byteptr++ = drv_data->key_buf[drv_data->key_out];
-				drv_data->key_out = (drv_data->key_out+1)& DRV_KEYBUF_SIZE;
+#endif
 				hnd->len --;
+				drv_data->key_out = (drv_data->key_out+1)& DRV_KEYBUF_SIZE;
 			}
 		}
 		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
