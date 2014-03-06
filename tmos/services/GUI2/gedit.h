@@ -61,6 +61,7 @@ struct GEdit:GText
 	virtual void draw_this (LCD_MODULE* lcd);
 protected:
 	void process_alpha_key(char pressed_key, const char* key_val);
+	bool process_char(unsigned int ch);
 	bool set_cursor_on_char (void);
 	bool set_cursor_y_char (void);
 	bool set_cursor_x_char (void);
