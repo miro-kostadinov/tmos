@@ -83,7 +83,7 @@ unsigned int ms_since(unsigned int time);
 
 void gui_thread(GUI_DRIVER_INFO* drv_info)
 {
-    unsigned int res;
+    unsigned int res, sig;
     GWindow* desktop;		//main_dlg;
     GWindow* tmp;
     CHandle key_hnd;
@@ -154,6 +154,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	{
 		;
 	}
+	sig = 0;
 	for (;;)
 	{
 		res = tsk_wait_signal(-1u, 100 - (CURRENT_TIME %100));
@@ -162,21 +163,24 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
         	if( IDLE_PERIOD > ms_since(idle_time))
         			continue;
         }
+        sig |= res & 0xFF;
+
         idle_time = CURRENT_TIME;
 
-		if(res & SIG_GUI_TASK)
+		if(sig & SIG_GUI_TASK)
 		{
 			for (tmp = (GWindow*)desktop->nextObj; tmp; tmp = (GWindow*)tmp->nextObj)
 			{
 				if(tmp->hnd.mode0)
 					usr_HND_SET_STATUS(&tmp->hnd, FLG_SIGNALED);
 			}
-			res &=~SIG_GUI_TASK;
-			if(!res)
+			sig &=~SIG_GUI_TASK;
+			if(!sig)
 				continue;
 		}
-		if(res & gui_hnd.signal)												//checks for new items
+		if(sig & gui_hnd.signal)												//checks for new items
         {
+			sig &= ~gui_hnd.signal;
 			drv_info->lcd[0]->backlight_signal();
         	gui_hnd.res &= ~FLG_SIGNALED;
 
@@ -191,9 +195,9 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 					if(msg.code == WN_DESTROY)
 					{
 						win->hnd.mode1 = GUI_HND_DETACH;
-						hnd_ret = RES_IDLE;
+//						hnd_ret = RES_IDLE;
 					}
-					else
+//					else
 						hnd_ret = RES_SIG_OK;
 				}
 				if(win->hnd.mode1 == GUI_HND_OPEN)
@@ -220,15 +224,20 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 				usr_HND_SET_STATUS(&win->hnd, hnd_ret);
 			gui_hnd.tsk_start_read(NULL, 0);
         }
-        if(res &  key_hnd.signal)												//checks for pressed buttons
+
+        if(sig &  key_hnd.signal)												//checks for pressed buttons
         {
 			drv_info->lcd[0]->backlight_signal();
-        	key_hnd.res &= ~FLG_SIGNALED;
-        	GQueue.push(GMessage(WM_KEY, key_hnd.src.as_int, 0L, desktop->parent->focus));
-            key_hnd.tsk_start_read(&key_hnd.src.as_int, 1);
+			if(desktop->parent->focus && (desktop->parent->focus->flags & GO_FLG_ENABLED))
+			{
+				key_hnd.res &= ~FLG_SIGNALED;
+				GQueue.push(GMessage(WM_KEY, key_hnd.src.as_int, 0L, desktop->parent->focus));
+				key_hnd.tsk_start_read(&key_hnd.src.as_int, 1);
+				sig &= ~key_hnd.signal;
+			}
         }
 
-        if (GQueue.empty()&& !res )														//if the queue is empty sends WM_IDLE to everyone
+        if (GQueue.empty()&& !sig )														//if the queue is empty sends WM_IDLE to everyone
 		{
 			for (tmp = desktop; tmp; tmp = (GWindow*)tmp->nextObj)
 				GQueue.push(GMessage(WM_IDLE, 0, 0L, tmp));
