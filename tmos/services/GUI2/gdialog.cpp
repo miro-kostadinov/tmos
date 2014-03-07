@@ -62,6 +62,10 @@ unsigned int GDialog::process_default (GMessage& msg)
 		notify_message(WM_CHANGE, obj->id, obj);
 		return 1;
 	}
+	case WM_SETFOCUS:
+		set_flag(GO_FLG_ENABLED);
+		return get_focus(false);
+
 	default:
 		return 0;
 	}
