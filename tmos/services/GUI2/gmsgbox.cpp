@@ -324,8 +324,6 @@ int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style)
 				if(box.DefWinProc(msg))
 					return msg.param;
 			}
-			else
-				tsk_sleep(10);
 		}
 	}
 	return 0;
