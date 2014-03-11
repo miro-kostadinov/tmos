@@ -54,13 +54,17 @@ unsigned int GDialog::process_default (GMessage& msg)
 	{
 	case WM_CHANGE:
 	{
-		GObject* obj = (GObject*)msg.param;
-		if (obj->flags & GO_FLG_CHECKED)
-			obj->clr_flag (GO_FLG_CHECKED);
-		else
-			obj->set_flag (GO_FLG_CHECKED);
-		notify_message(WM_CHANGE, obj->id, obj);
-		return 1;
+		if(msg.param)
+		{
+			GObject* obj = (GObject*)msg.param;
+			if (obj->flags & GO_FLG_CHECKED)
+				obj->clr_flag (GO_FLG_CHECKED);
+			else
+				obj->set_flag (GO_FLG_CHECKED);
+			notify_message(WM_CHANGE, obj->id, obj);
+			return 1;
+		}
+		break;
 	}
 	case WM_SETFOCUS:
 		set_flag(GO_FLG_ENABLED);
