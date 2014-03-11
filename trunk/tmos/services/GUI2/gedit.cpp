@@ -58,12 +58,12 @@ const key_to_char_ref table[] =
 
 const MENUTEMPLATE keyboard_menu[] =
 {
-	{ 0, KT_BG_CAPS, "&1.¿¡¬"},
-	{ 0, KT_BG, "&2.‡·‚"},
-	{ 0, KT_EN_CAPS, "&3.ABC"},
-	{ 0, KT_EN, "&4.abc"},
-	{ 0, KT_DIGIT, "&5.123"},
-	{ 0, 0, NULL}
+	{ 0, KT_BG_CAPS, 0, "&1.¿¡¬"},
+	{ 0, KT_BG, 0, "&2.‡·‚"},
+	{ 0, KT_EN_CAPS, 0, "&3.ABC"},
+	{ 0, KT_EN, 0, "&4.abc"},
+	{ 0, KT_DIGIT, 0, "&5.123"},
+	{ 0, 0, 0, NULL}
 };
 
 unsigned int GEdit::initialize (GMessage& msg)
