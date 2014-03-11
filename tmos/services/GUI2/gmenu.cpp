@@ -125,7 +125,7 @@ void GMenu::adjust_item_names()
 	}
 }
 
-bool GMenu::add_item(int parent_id, int item_id, const CSTRING& name)
+bool GMenu::add_item(int parent_id, int item_id, const CSTRING& name, short unsigned int flg)
 {
 	menu_template_t * new_base;
 
@@ -139,6 +139,7 @@ bool GMenu::add_item(int parent_id, int item_id, const CSTRING& name)
 			new_base[i].parent = base[i].parent;
 			new_base[i].item = base[i].item;
 			new_base[i].item_name = base[i].item_name;
+			new_base[i].flags = base[i].flags;
 			base[i].item_name.free();
 		}
 		tsk_free(base);
@@ -147,6 +148,7 @@ bool GMenu::add_item(int parent_id, int item_id, const CSTRING& name)
 	base[size].parent = parent_id;
 	base[size].item = item_id;
 	base[size].item_name = name;
+	base[size].flags = flg;
 
 	size++;
 	item = menu = base;
@@ -167,16 +169,17 @@ int GMenu::get_item_pos(menu_template_t* ptr)
 	return res;
 }
 
-bool GMenu::SetReplaceItem(int item_id, const CSTRING& item_name)
+bool GMenu::SetReplaceItem(int item_id, const CSTRING& item_name, short unsigned int flg)
 {
 	menu_template_t* ptr;
 	ptr = GetItem(0,item_id);
 	if(ptr)
 	{
 		ptr->item_name = item_name;
+		ptr->flags = flg;
 		return true;
 	}
-	return	AppendMenu(0, item_id, item_name);
+	return	AppendMenu(0, item_id, item_name, flg);
 }
 bool GMenu::RemoveItem(int item_id)
 {
@@ -269,20 +272,20 @@ bool GMenu::Select(int item_id)
 	return false;
 }
 
-bool GMenu::AppendMenu( int parent_id, int item_id, const CSTRING& item_name)
+bool GMenu::AppendMenu( int parent_id, int item_id, const CSTRING& item_name, short unsigned int flg)
 {
 	if(!parent_id)
 	{
 		if(!base)
 		{
-			if(!add_item(parent_id, item_id, item_name))
+			if(!add_item(parent_id, item_id, item_name, flg))
 				return false;
 		}
 		else
 		{
 			if(GetItem(0, item_id))
 				return false;
-			if(!add_item(parent_id, item_id, item_name))
+			if(!add_item(parent_id, item_id, item_name, flg))
 				return false;
 		}
 		return true;
@@ -291,7 +294,7 @@ bool GMenu::AppendMenu( int parent_id, int item_id, const CSTRING& item_name)
 	{
 		if(!menu ||GetItem(parent_id, item_id))
 			return false;
-		if(add_item(parent_id, item_id, item_name))
+		if(add_item(parent_id, item_id, item_name, flg))
 			return true;
 	}
 	return false;
@@ -423,7 +426,19 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 				str = tmp->item_name;
 				rows = remove_amp(str);
 				if(str.length())
+				{
+					if(tmp->flags & GMENU_FLG_CHECK_ITEM)
+					{
+						if (tmp->flags & GO_FLG_CHECKED)
+							lcd->draw_icon(GICON_CHECKED_SQUARE);
+						else
+							lcd->draw_icon(GICON_SQUARE);
+						lcd->pos_x = /*(client_rect.y1 - client_rect.y0) +*/
+								client_rect.x0 + ((lcd->font->hspacing * 4)/3);
+					}
 					draw_text_line(lcd, str.c_str(), str.length());
+					lcd->pos_x = client_rect.x0;
+				}
 				else
 					lcd->pos_y += text_font->vspacing;
 				if(tmp==item && (flags & GO_FLG_SELECTED))
@@ -451,6 +466,10 @@ bool GMenu::process_selected()
 		if( !next_menu )
 		{
 			send_message(WM_DRAW, client_rect.as_int, 0L, this);
+			if(item->flags & GMENU_FLG_CHECK_ITEM)
+			{
+				item->flags ^= GO_FLG_CHECKED;
+			}
 			send_message (WM_COMMAND, item->item, 0L, parent);
 		}
 		else

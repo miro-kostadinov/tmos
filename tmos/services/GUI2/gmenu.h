@@ -11,17 +11,21 @@
 #include <gobject.h>
 #include <gscroll.h>
 
+#define GMENU_FLG_CHECK_ITEM		0x0100
+
 struct MENUTEMPLATE
 {
 	int 		parent;
-	int 		item;
+	short unsigned int	item;
+	short unsigned int	flags;
 	const char*	item_name;
 };
 
 struct menu_template_t
 {
 	int 		parent;
-	int 		item;
+	short unsigned int 	item;
+	short unsigned int	flags;
 	CSTRING		item_name;
 };
 
@@ -92,14 +96,14 @@ struct GMenu: GObject
 		size=0;
 	}
 
-	bool AppendMenu(int parent_id, int menu_id, const CSTRING& menu_name);
+	bool AppendMenu(int parent_id, int menu_id, const CSTRING& menu_name, short unsigned int flg =0);
 	bool LoadMenu(const MENUTEMPLATE* pat);
 
 	menu_template_t* GetItem(int parent_id, int menu_id);
 	menu_template_t* FindItem(int item_id);
 	menu_template_t* GetMenu(int parent_id, menu_template_t* start = NULL);
 	int GetMenuSize(int menu_id);
-	bool SetReplaceItem(int item_id, const CSTRING& item_name);
+	bool SetReplaceItem(int item_id, const CSTRING& item_name, short unsigned int flg =0);
 	bool Select(int item_id);
 	bool RemoveItem(int item_id);
 
@@ -115,7 +119,7 @@ protected:
 private:
 	bool process_selected();
 	bool set_scroll(void);
-	bool add_item(int parent_id, int item_id, const CSTRING& name);
+	bool add_item(int parent_id, int item_id, const CSTRING& name, short unsigned int flg =0);
 	int get_item_pos(menu_template_t* ptr);
 	void adjust_item_names();
 };

@@ -132,6 +132,17 @@ extern unsigned int current_laguage;
 
 extern "C" char TranslateKey( unsigned int key_code);
 
+// icon index
+#define GICON_CIRCLE			0
+#define GICON_CHECKED_CIRCLE	1
+#define GICON_SQUARE			2
+#define GICON_CHECKED_SQUARE	3
+#define GICON_SQUARE_SQUARE		4
+#define GICON_UP				5
+#define GICON_DOWN				6
+#define GICON_LEFT				7
+#define GICON_RIGHT				8
+
 
 struct POINT_T
 {

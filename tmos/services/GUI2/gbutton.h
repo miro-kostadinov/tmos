@@ -14,6 +14,7 @@
 #define GB_TYPE_RADIO		1
 #define GB_TYPE_CHECK		2
 
+/*
 #define GICON_CIRCLE			0
 #define GICON_CHECKED_CIRCLE	1
 #define GICON_SQUARE			2
@@ -24,6 +25,7 @@
 #define GICON_LEFT				7
 #define GICON_RIGHT				8
 
+*/
 struct GButton: GObject
 {
 	CSTRING label;
