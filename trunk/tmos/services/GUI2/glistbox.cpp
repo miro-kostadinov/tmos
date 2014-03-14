@@ -102,7 +102,7 @@ unsigned int GListBox::initialize (GMessage& msg)
 
 		if(ptr)
 		{
-			while(!ptr->item_name.empty())
+			while(!ptr->item_name.empty() || ptr->item || ptr->parent)
 			{
 				len = ptr->item_name.length();
 				if(len > sx)
