@@ -99,7 +99,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 		message_rect.y0 += title_rect.height();
 		message_rect.y1 -= button_rect.height();
 
-		int width;
+		int width=0;
 		int dec = message_rect.width();
 		text_metrics_t new_size;
 		text_metrics_t msg_size = get_text_metrics(body.c_str(), dec, font);
@@ -113,7 +113,8 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 			dec -= 2*bs.x;
 		do
 		{
-			width = dec;
+			if(width < dec)
+				width = dec;
 			dec -= font->hspacing;
 		}while( msg_size.height  == get_text_metrics(body.c_str(), dec, font).height);
 
@@ -121,7 +122,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 			width = title_rect.width();
 		if(button_rect.width() + bnum * bs.x > width)
 			width = button_rect.width() + bnum * bs.x ;
-		if(client_rect.width() > width)
+		if(client_rect.width() > width + font->hspacing)
 		{
 			rect.x1 -= client_rect.width() - width;
 			continue;
@@ -146,14 +147,14 @@ unsigned int GMsgBox::initialize (GMessage& msg)
     	edit_box = new GEdit(ID_MB-1, message_rect, body, NULL,
     			((bnum)?0:GO_FLG_SELECTED)|
 				GO_FLG_BORDER|GO_FLG_VSCROLL|GO_FLG_TRANSPARENT|GO_FLG_DEFAULT,
-				ES_DEFAULT,
+				 GET_MBF_EDIT_FLAGS(type),
 				font);
     	if(edit_box)
     	{
 			if(addChild(edit_box))
 			{
 				edit_box->shift = GET_MBF_INPUT_TYPE(type);
-				edit_box->align = GET_MBF_EDIT_FLAGS(type);
+//				edit_box->align = GET_MBF_EDIT_FLAGS(type);
 			}
 			else
 			{
