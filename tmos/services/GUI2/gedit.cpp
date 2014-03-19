@@ -307,6 +307,9 @@ void GEdit::show_cursor()
 
 unsigned int GEdit::process_key (GMessage& msg)
 {
+	if(msg.param & KEY_UP_CODE)
+		return 0;
+
 	if(edit_menu)
 	{
 		switch(msg.param)
