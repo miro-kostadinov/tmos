@@ -106,7 +106,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 
 		if(msg_size.height + font->vspacing < message_rect.height())
 		{
-			rect.y1 -= message_rect.height() - (msg_size.height + font->hspacing);
+			rect.y1 -= message_rect.height() - (msg_size.height + font->vspacing);
 			continue;
 		}
 		if(type & MBF_EDIT)
