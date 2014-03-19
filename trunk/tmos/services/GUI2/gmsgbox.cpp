@@ -329,3 +329,32 @@ int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style)
 	return 0;
 
 }
+
+int EditBox(CSTRING& value, const char* Caption, unsigned int Style)
+{
+	GMsgBox box;
+	GMessage msg;
+
+	box.type = 	Style;
+	box.body =  value;
+	box.title = Caption;
+
+	if(box.Create())
+	{
+		while(1)
+		{
+			if(box.GetMessage(msg))
+			{
+				if(msg.code == WM_CLOSE && (msg.param == GO_IDOK || msg.param == GO_IDYES))
+				{
+					if(box.edit_box)
+						value = box.edit_box->txt;
+				}
+				if(box.DefWinProc(msg))
+					return msg.param;
+			}
+		}
+	}
+
+	return 0;
+}

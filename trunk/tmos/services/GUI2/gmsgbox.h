@@ -73,7 +73,10 @@ int MessageBox(const char* Text, const char* Caption = NULL, unsigned int Style=
 
 #define NEB_PASSWORD (MBF_EDIT_FLAGS(ES_PASSWORD|ES_CENTER|ES_HIDE_CURSOR))
 #define NEB_DIGIT 	 (MBF_EDIT_FLAGS(ES_CENTER|ES_HIDE_CURSOR))
+#define EB_STYLE_TEXT (MBF_EDIT | MBF_INPUT_TYPE(KT_EN)| MBF_EDIT_FLAGS(ES_LEFT) )
 
 int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style=NEB_PASSWORD);
+
+int EditBox(CSTRING& value, const char* Caption, unsigned int Style = EB_STYLE_TEXT);
 
 #endif /* GMSGBOX_H_ */
