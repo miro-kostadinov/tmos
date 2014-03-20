@@ -101,6 +101,8 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 
 		int width=0;
 		int dec = message_rect.width();
+		if(type & MBF_EDIT)
+			dec -= 2*bs.x;
 		text_metrics_t new_size;
 		text_metrics_t msg_size = get_text_metrics(body.c_str(), dec, font);
 
@@ -109,20 +111,23 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 			rect.y1 -= message_rect.height() - (msg_size.height + font->vspacing);
 			continue;
 		}
-		if(type & MBF_EDIT)
-			dec -= 2*bs.x;
-		do
-		{
-			if(width < dec)
-				width = dec;
-			dec -= font->hspacing;
-		}while( msg_size.height  == get_text_metrics(body.c_str(), dec, font).height);
+		if(dec > msg_size.width + 3*font->hdistance)
+			message_rect.x1 -= dec - msg_size.width - 3*font->hdistance;
+		width = message_rect.width();
+//		if(type & MBF_EDIT)
+//			dec -= 2*bs.x;
+//		do
+//		{
+//			if(width < dec)
+//				width = dec;
+//			dec -= font->hspacing;
+//		}while( msg_size.height  == get_text_metrics(body.c_str(), dec, font).height);
 
 		if( title_rect.width() > width)
 			width = title_rect.width();
 		if(button_rect.width() + bnum * bs.x > width)
 			width = button_rect.width() + bnum * bs.x ;
-		if(client_rect.width() > width + font->hspacing)
+		if(client_rect.width() > width)// + font->hspacing)
 		{
 			rect.x1 -= client_rect.width() - width;
 			continue;
@@ -140,6 +145,8 @@ unsigned int GMsgBox::initialize (GMessage& msg)
     rect.Offset(x_offset, y_offset);
     client_rect.Offset(x_offset, y_offset);
     button_rect.Offset(x_offset, y_offset);
+    if(message_rect.width() < client_rect.width())
+    	x_offset += (client_rect.width() - message_rect.width())/2;
     message_rect.Offset(x_offset, y_offset);
 
     if(type & MBF_EDIT)
