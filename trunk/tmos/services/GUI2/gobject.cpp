@@ -769,7 +769,7 @@ text_metrics_t get_text_metrics(const char* text, short int x_size, const RENDER
     		len = tmp_len = 0;
     	}
     }
-    if (len)
+    if (len > 1)
     {
 		size.height++;
 		if(size.width < (len -1))
