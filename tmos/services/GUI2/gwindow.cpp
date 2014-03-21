@@ -55,7 +55,7 @@ void GWindow::notify_message(WM_MESSAGE code, unsigned int param, GObject* dst)
 	TRACE("%X[%d] ( %s %X )\e[m", dst, (dst)?dst->id:-1, szlist_at(wm_dbg_str, code), param);
 #endif
 	Queue.push(msg);
-	if((hnd.res & FLG_BUSY) && (hnd.cmd & FLAG_READ))
+	if(hnd.res == (FLG_BUSY | FLG_OK))
 		usr_HND_SET_STATUS(&hnd, RES_SIG_OK);										//signals the window thread
 }
 
@@ -89,25 +89,24 @@ bool GWindow::GetMessage(GMessage& msg, uint32_t tout)
 {
 	unsigned int sig;
 
-	if(hnd.res & FLG_SIGNALED)
-	{
-		tsk_try_signal(hnd.signal);
-		hnd.res &=~FLG_SIGNALED;
-	}
-	if( Queue.pop(msg) )
-	{
-#if GUI_DEBUG
-		TRACELN1("\e[4;1;36m");
-		TRACE("%s <<", CURRENT_TASK->name);
-		TRACE("%X[%d] ( %s %X )\e[m ", msg.dst, (msg.dst)?msg.dst->id:-1, szlist_at(wm_dbg_str, msg.code), msg.param);
-#endif
-		return true;
-	}
-
 	if(hnd.res < RES_CLOSED)
 	{
 		if(!(hnd.res & FLG_BUSY))
 		{
+			if(hnd.res & FLG_SIGNALED)
+			{
+				tsk_try_signal(hnd.signal);
+				hnd.res &=~FLG_SIGNALED;
+			}
+			if( Queue.pop(msg) )
+			{
+		#if GUI_DEBUG
+				TRACELN1("\e[4;1;36m");
+				TRACE("%s <<", CURRENT_TASK->name);
+				TRACE("%X[%d] ( %s %X )\e[m ", msg.dst, (msg.dst)?msg.dst->id:-1, szlist_at(wm_dbg_str, msg.code), msg.param);
+		#endif
+				return true;
+			}
 			hnd.tsk_start_read(NULL, 0);
 		}
 		if(tout)
@@ -226,7 +225,7 @@ bool GWindow::Destroy()
 
 	while(hnd.res < RES_CLOSED)
 	{
-		if(GetMessage(msg, 1))
+		if(GetMessage(msg, 10))
 		{
 			if(msg.code == WM_QUIT)
 			{
