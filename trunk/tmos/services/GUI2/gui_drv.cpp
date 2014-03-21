@@ -217,7 +217,10 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 					if(!win->Queue.empty())
 						hnd_ret = RES_SIG_OK;
 					else
+					{
 						hnd_ret = RES_IDLE;
+						win->hnd.res = FLG_BUSY | FLG_OK;
+					}
 				}
 			}
 			if(hnd_ret & FLG_SIGNALED)
