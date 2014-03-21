@@ -167,17 +167,6 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 
         idle_time = CURRENT_TIME;
 
-		if(sig & SIG_GUI_TASK)
-		{
-			for (tmp = (GWindow*)desktop->nextObj; tmp; tmp = (GWindow*)tmp->nextObj)
-			{
-				if(tmp->hnd.mode0)
-					usr_HND_SET_STATUS(&tmp->hnd, FLG_SIGNALED);
-			}
-			sig &=~SIG_GUI_TASK;
-			if(!sig)
-				continue;
-		}
 		if(sig & gui_hnd.signal)												//checks for new items
         {
 			sig &= ~gui_hnd.signal;
@@ -227,6 +216,18 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 				usr_HND_SET_STATUS(&win->hnd, hnd_ret);
 			gui_hnd.tsk_start_read(NULL, 0);
         }
+
+		if(sig & SIG_GUI_TASK)
+		{
+			for (tmp = (GWindow*)desktop->nextObj; tmp; tmp = (GWindow*)tmp->nextObj)
+			{
+				if(tmp->hnd.mode0 && tmp->hnd.res == (FLG_BUSY | FLG_OK) )
+					usr_HND_SET_STATUS(&tmp->hnd, FLG_SIGNALED);
+			}
+			sig &=~SIG_GUI_TASK;
+			if(!sig)
+				continue;
+		}
 
         if(sig &  key_hnd.signal)												//checks for pressed buttons
         {
