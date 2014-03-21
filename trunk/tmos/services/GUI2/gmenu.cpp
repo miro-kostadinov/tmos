@@ -97,10 +97,10 @@ void GMenu::adjust_item_names()
 
 				if(l_size + r_size >= max_chars)
 				{
-					if(r_size < max_chars)
+					if((r_size+1) < max_chars)
 					{
 						l_size = max_chars - r_size;
-						l_str.erase(l_size, -1u);
+						l_str.erase(l_size-1, l_str.length()-l_size);
 					}
 					else
 					{
