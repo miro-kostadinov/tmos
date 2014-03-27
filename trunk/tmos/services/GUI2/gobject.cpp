@@ -519,7 +519,8 @@ bool GObject::set_flag(GFlags val)
 		{
 			allocate_border();
 		}
-		send_message(WM_DRAW, 0, 0L, this);
+		if(val & ~GO_FLG_ENABLED)
+			send_message(WM_DRAW, 0, 0L, this);
 		return true;
 	}
 	return false;
@@ -534,7 +535,8 @@ bool GObject::clr_flag(GFlags val)
 		{
 			client_rect = rect;
 		}
-		send_message(WM_DRAW, 0, 0L, this);
+		if(val & ~GO_FLG_ENABLED)
+			send_message(WM_DRAW, 0, 0L, this);
 		return true;
 	}
 	return false;
