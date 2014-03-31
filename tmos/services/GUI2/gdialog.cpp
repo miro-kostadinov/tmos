@@ -67,7 +67,6 @@ unsigned int GDialog::process_default (GMessage& msg)
 		break;
 	}
 	case WM_SETFOCUS:
-		set_flag(GO_FLG_ENABLED);
 		return get_focus(false);
 
 	default:
