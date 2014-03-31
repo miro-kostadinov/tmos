@@ -100,8 +100,8 @@ unsigned int GEdit::initialize (GMessage& msg)
 
 void GEdit::draw_this(LCD_MODULE* lcd)
 {
-	if(flags & GO_FLG_BORDER)
-		draw_border(rect);
+//	if(flags & GO_FLG_BORDER)
+//		draw_border(rect);
 
 	lcd->set_font(text_font);
 	lcd->color = PIX_WHITE;
@@ -158,6 +158,8 @@ void GEdit::draw_this(LCD_MODULE* lcd)
 			}
 		}
 	}
+	if(flags & GO_FLG_BORDER)
+		draw_border(rect);
 }
 
 void GEdit::text_change()
