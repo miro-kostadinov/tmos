@@ -103,7 +103,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 		int dec = message_rect.width();
 		if(type & MBF_EDIT)
 			dec -= 2*bs.x;
-		text_metrics_t new_size;
+
 		text_metrics_t msg_size = get_text_metrics(body.c_str(), dec, font);
 
 		if(msg_size.height + font->vspacing < message_rect.height())
@@ -113,21 +113,13 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 		}
 		if(dec > msg_size.width + 3*font->hdistance)
 			message_rect.x1 -= dec - msg_size.width - 3*font->hdistance;
-		width = message_rect.width();
-//		if(type & MBF_EDIT)
-//			dec -= 2*bs.x;
-//		do
-//		{
-//			if(width < dec)
-//				width = dec;
-//			dec -= font->hspacing;
-//		}while( msg_size.height  == get_text_metrics(body.c_str(), dec, font).height);
 
+		width = message_rect.width();
 		if( title_rect.width() > width)
 			width = title_rect.width();
 		if(button_rect.width() + bnum * bs.x > width)
 			width = button_rect.width() + bnum * bs.x ;
-		if(client_rect.width() > width)// + font->hspacing)
+		if(client_rect.width() > width)
 		{
 			rect.x1 -= client_rect.width() - width;
 			continue;
@@ -161,7 +153,6 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 			if(addChild(edit_box))
 			{
 				edit_box->shift = GET_MBF_INPUT_TYPE(type);
-//				edit_box->align = GET_MBF_EDIT_FLAGS(type);
 			}
 			else
 			{
