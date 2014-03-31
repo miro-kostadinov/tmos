@@ -238,6 +238,37 @@ bool GContainer::close (GObject* toClose)
 	return false;
 }
 
+bool GContainer::set_flag(GFlags val)
+{
+	if((flags & val) != val )
+	{
+		flags |= val;
+		if(val & GO_FLG_BORDER)
+		{
+			allocate_border();
+		}
+		if(val & ~(GO_FLG_SELECTED|GO_FLG_ENABLED))
+			send_message(WM_DRAW, 0, 0L, this);
+		return true;
+	}
+	return false;
+}
+
+bool GContainer::clr_flag(GFlags val)
+{
+	if(flags & val)
+	{
+		flags &= ~val;
+		if(val & GO_FLG_BORDER)
+		{
+			client_rect = rect;
+		}
+		if(val & ~(GO_FLG_SELECTED|GO_FLG_ENABLED))
+			send_message(WM_DRAW, 0, 0L, this);
+		return true;
+	}
+	return false;
+}
 
 bool GContainer::get_focus(bool notify_msg)
 {

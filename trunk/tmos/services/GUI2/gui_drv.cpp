@@ -232,7 +232,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
         if(sig &  key_hnd.signal)												//checks for pressed buttons
         {
 			drv_info->lcd[0]->backlight_signal();
-			if(desktop->parent->focus && (desktop->parent->focus->flags & GO_FLG_ENABLED))
+			if(desktop->parent->focus && (desktop->parent->focus->flags & GO_FLG_SELECTED))
 			{
 				key_hnd.res &= ~FLG_SIGNALED;
 				GQueue.push(GMessage(WM_KEY, key_hnd.src.as_int, 0L, desktop->parent->focus));
@@ -268,10 +268,11 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 #endif
 			if(msg.code == WM_DELETED)
 				continue;
-			if (msg.dst)
-				res = msg.dst->message(msg);
-			else
-				res = desktop->parent->message(msg);    // lcd message
+
+			if (msg.dst == NULL)
+				msg.dst = desktop->parent;	// lcd message
+			res = msg.dst->message(msg);
+
 			if(!res && msg.code == WM_KEY)   // send message to desktop
 				desktop->message(msg);
 #if GUI_DEBUG

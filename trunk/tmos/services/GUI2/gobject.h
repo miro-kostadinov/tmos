@@ -117,8 +117,8 @@ struct GObject{
 		{return 0;}
 	virtual unsigned int process_destroy(GMessage& msg); 						//The WM_DESTROY message is sent when a window is being destroyed.
 
-	bool set_flag(GFlags val);
-	bool clr_flag(GFlags val);
+	virtual bool set_flag(GFlags val);
+	virtual bool clr_flag(GFlags val);
 
 	virtual GObject* get_object(GId xid);
 

@@ -36,6 +36,8 @@ protected:
 	virtual bool get_focus (bool notify_msg = true);
 	virtual bool is_available();
 
+	virtual bool set_flag(GFlags val);
+	virtual bool clr_flag(GFlags val);
 	// container specific
 	bool focus_on_previous();
 	bool focus_on_next();
