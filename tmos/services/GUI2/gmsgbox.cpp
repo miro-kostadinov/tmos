@@ -80,7 +80,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 		if(type & mask)
 			bnum++;
 
-	if(body.empty())
+	if(body.empty() && !init_size.as_int )
 	{
 		for(int i=0; i < lcd->chars_per_row/2; i++)
 			body += '.';
@@ -88,6 +88,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 	}
 
 	POINT_T bs = get_border_size();
+	text_metrics_t msg_size;
 	while(1)
 	{
 		allocate_border();
@@ -104,7 +105,10 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 		if(type & MBF_EDIT)
 			dec -= 2*bs.x;
 
-		text_metrics_t msg_size = get_text_metrics(body.c_str(), dec, font);
+		if(init_size.as_int)
+			msg_size.as_int = init_size.as_int;
+		else
+			msg_size = get_text_metrics(body.c_str(), dec, font);
 
 		if(msg_size.height + font->vspacing < message_rect.height())
 		{
@@ -299,13 +303,14 @@ int MessageBox(const char* Text, const char* Caption, unsigned int Style)
 	return box.DoModal();
 }
 
-int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style)
+int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style, text_metrics_t size)
 {
 	GMsgBox box;
 	box.type = 	MBF_EDIT|MBF_CLR|
 				MBF_INPUT_TYPE(KT_DIGIT)|Style;
 	box.body =  value;
 	box.title = Caption;
+	box.init_size = size;
 
 	GMessage msg;
 
@@ -329,7 +334,7 @@ int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style)
 
 }
 
-int EditBox(CSTRING& value, const char* Caption, unsigned int Style)
+int EditBox(CSTRING& value, const char* Caption, unsigned int Style, text_metrics_t size)
 {
 	GMsgBox box;
 	GMessage msg;
@@ -337,6 +342,7 @@ int EditBox(CSTRING& value, const char* Caption, unsigned int Style)
 	box.type = 	Style;
 	box.body =  value;
 	box.title = Caption;
+	box.init_size = size;
 
 	if(box.Create())
 	{

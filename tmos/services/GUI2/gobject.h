@@ -43,7 +43,8 @@ struct text_metrics_t
 		int as_int;
 	};
 	text_metrics_t(): as_int(0) {}
-	text_metrics_t(int val): as_int(0) {}
+	text_metrics_t(int val): as_int(val) {}
+	text_metrics_t(int sx, int sy): width(sx), height(sy) {}
 };
 
 struct GObject{

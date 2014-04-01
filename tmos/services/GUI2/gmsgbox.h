@@ -55,6 +55,7 @@ struct GMsgBox : GDialog
 	CSTRING body;
 	const RENDER_MODE* font;
 	unsigned int type;
+	text_metrics_t init_size;
 	GEdit* edit_box;
 	GMsgBox() : title(NULL), body(), font(&FNT5x7), type(MB_OK), edit_box(NULL)
 	 {};
@@ -75,8 +76,8 @@ int MessageBox(const char* Text, const char* Caption = NULL, unsigned int Style=
 #define NEB_DIGIT 	 (MBF_EDIT_FLAGS(ES_CENTER|ES_HIDE_CURSOR))
 #define EB_STYLE_TEXT (MBF_EDIT | MBF_INPUT_TYPE(KT_EN)| MBF_EDIT_FLAGS(ES_LEFT|ES_MULTILINE|ES_AUTO_SCROLL) )
 
-int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style=NEB_PASSWORD);
+int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style=NEB_PASSWORD, text_metrics_t size = 0);
 
-int EditBox(CSTRING& value, const char* Caption, unsigned int Style = EB_STYLE_TEXT);
+int EditBox(CSTRING& value, const char* Caption, unsigned int Style = EB_STYLE_TEXT, text_metrics_t size = 0);
 
 #endif /* GMSGBOX_H_ */
