@@ -198,6 +198,7 @@ unsigned int GWindow::DoModal()
 				if(DefWinProc(msg))
 					return msg.param;
 			}
+			tsk_sleep(10);
 		}
 	}
 	return 0;
