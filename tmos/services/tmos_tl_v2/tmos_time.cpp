@@ -48,7 +48,7 @@ bool time_t::is_valid() const
 				days += is_leap_year(year);
 			if(mday >= 1 && mday <= days )
 			{
-				if(hour <= 23 && minute <= 59)
+				if(hour <= 23 && minute <= 59 && second < 60)
 					return true;
 			}
 		}
