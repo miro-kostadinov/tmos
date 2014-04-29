@@ -240,9 +240,10 @@ int time_t::sscanf(const char* buf, const char* format, ... )
 
 static unsigned int read2XX(const char* str, unsigned int& pos, bool&res)
 {
-	if(!IS_DIGIT(str[pos]) || !IS_DIGIT(str[pos+1]))
+	if(!str[pos] || !IS_DIGIT(str[pos]) || !IS_DIGIT(str[pos+1]) || !res )
 	{
 		res = false;
+		return 0;
 	}
 
 	unsigned value = (str[pos++]-'0')*10;
