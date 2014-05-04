@@ -13,6 +13,10 @@ void stm32_dma_start(DMA_TypeDef* dmac, uint32_t indx, HANDLE hnd)
 {
 }
 
+void stm32_dma_stop(DMA_TypeDef* dmac, uint32_t indx)
+{
+
+}
 void stm32_dma_ch_cfg(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode)
 {
 

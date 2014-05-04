@@ -112,6 +112,14 @@ void stm32_dma_start(DMA_TypeDef* dmac, uint32_t indx, HANDLE hnd)
 	ch->DMA_SxCR |= DMA_SxCR_EN ;
 }
 
+void stm32_dma_stop(DMA_TypeDef* dmac, uint32_t indx)
+{
+	DMA_Stream_TypeDef* ch;
+
+	ch = &dmac->DMA_Chx[indx];
+	ch->DMA_SxCR &= ~DMA_SxCR_EN;
+}
+
 void stm32_dma_ch_cfg(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode)
 {
 	DMA_Stream_TypeDef* ch;
