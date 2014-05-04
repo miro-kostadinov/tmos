@@ -305,10 +305,21 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 			break;
 
 		case DCR_CANCEL:
-		{
-			hnd->svc_list_cancel(drv_data->waiting);
+			if(hnd->res == RES_BUSY)
+			{
+				if(!hnd->svc_list_cancel(drv_data->waiting))
+					if(hnd->svc_list_cancel(drv_data->pending))
+					{
+#if USE_SDIO_DMA_DRIVER
+						drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
+						drv_data->tx_dma_hnd.hcontrol(DCR_CANCEL);
+#endif
+#if DEBUG_SDIO_DRV
+						TRACELN1("SDIO cancel!");
+#endif
+					}
+			}
 			break;
-		}
 
 	}
 }
@@ -376,6 +387,11 @@ void SDIO_ISR(SDIO_INFO drv_info)
 			hnd->error = status;
 			usr_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 			drv_data->pending = NULL;
+#if USE_SDIO_DMA_DRIVER
+			drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
+			drv_data->tx_dma_hnd.hcontrol(DCR_CANCEL);
+#endif
+
 		} else
 		{
 			if(status & SDIO_STA_DONE_TR)
