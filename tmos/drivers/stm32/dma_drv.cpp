@@ -54,6 +54,21 @@ void DMA_DCR(DMA_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
         	break;
 
 		case DCR_CANCEL:
+			if(hnd->res == RES_BUSY)
+			{
+				DMA_CHANNEL_DATA* ch_data;
+
+				ch_data = drv_info->ch_data;
+				if(hnd == ch_data->pending)
+				{
+					ch_data->pending = NULL;
+					ch_data->last_mode = NULL;
+					stm32_dma_stop(drv_info->hw_base, drv_info->ch_indx);
+					svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
+				} else
+					hnd->svc_list_cancel(ch_data->waiting);
+			}
+
 			break;
 
 		case DCR_CLOSE:
