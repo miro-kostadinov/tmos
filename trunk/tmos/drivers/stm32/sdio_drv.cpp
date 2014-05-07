@@ -51,6 +51,22 @@ static void ConfigureSDIO(SDIO_INFO drv_info)
 	drv_enable_isr(&drv_info->info);
 }
 
+static void sdio_stop_transfer(SDIO_DRIVER_DATA *drv_data, SDIO_TypeDef* hw_base)
+{
+	// stop DMA
+#if USE_SDIO_DMA_DRIVER
+	drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
+	drv_data->tx_dma_hnd.hcontrol(DCR_CANCEL);
+#endif
+
+	// stop data state machine
+	hw_base->SDIO_DLEN = 0;
+	hw_base->SDIO_DCTRL &= ~(SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN);
+#if DEBUG_SDIO_DRV
+	TRACELN("!SD stop %x", hw_base->SDIO_STA);
+#endif
+}
+
 #define IS_SD_HIGH_CAPACITY(x) 1// should return 1 for SDHC and SDXC cards
 
 static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA *drv_data)
@@ -387,11 +403,7 @@ void SDIO_ISR(SDIO_INFO drv_info)
 			hnd->error = status;
 			usr_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 			drv_data->pending = NULL;
-#if USE_SDIO_DMA_DRIVER
-			drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
-			drv_data->tx_dma_hnd.hcontrol(DCR_CANCEL);
-#endif
-
+			sdio_stop_transfer(drv_data, hw_base);
 		} else
 		{
 			if(status & SDIO_STA_DONE_TR)
@@ -489,8 +501,11 @@ void SDIO_ISR(SDIO_INFO drv_info)
 		if( status & SDIO_STA_RX_FLAGS )
 		{
 			// no handle?
+#if DEBUG_SDIO_DRV
 			TRACELN("SD dump %08X", hw_base->SDIO_FIFO);
+#endif
 		}
+		sdio_stop_transfer(drv_data, hw_base);
 	}
 }
 
