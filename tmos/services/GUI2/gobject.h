@@ -54,10 +54,12 @@ struct GObject{
 	GObject* nextObj;
 	GId id;
 	GFlags flags;
+	uint8_t ref_cnt;
 
 	GObject (): parent(NULL), nextObj(NULL), id(0), flags(0) {};
 	GObject (GId id_t, const RECT_T& rect_t, GFlags flags_t = GO_FLG_DEFAULT)
-		:rect(rect_t), parent(NULL), nextObj(NULL), id(id_t), flags(flags_t) {};
+		:rect(rect_t), parent(NULL), nextObj(NULL), id(id_t), flags(flags_t),
+		 ref_cnt(0) {};
 
 	virtual ~GObject();
 

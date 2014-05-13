@@ -178,7 +178,7 @@ unsigned int GListBox::initialize (GMessage& msg)
 				flags |= GO_FLG_SHOW|GO_FLG_SELECTED;
 			}
 			list->text_font = text_font;
-			parent->addChild(list);
+			parent->addChildRef(list);
 		}
 		txt = list->item->item_name;
 	}

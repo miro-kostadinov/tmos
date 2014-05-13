@@ -24,6 +24,7 @@ struct GContainer:GObject {
 
 	virtual GObject* addChild (GObject* child);
 	virtual GObject* get_object(GId xid);
+	GObject* addChildRef(GObject* child);
 
 protected:
 	virtual unsigned int initialize (GMessage& msg);
@@ -44,7 +45,7 @@ protected:
 	GObject* first_available();
 	GObject* last_available();
 	bool close (GObject* toClose);
-	bool close ();
+	virtual bool close ();
 
 private:
 	bool set_focus_first();

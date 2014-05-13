@@ -9,13 +9,15 @@
 
 GObject* GRadio::addChild (GObject* child)
 {
-	GContainer::addChild(child);
-	if(child->flags & GO_FLG_CHECKED)											//checks if the newly added child is configured as CHECKED
+	if(GContainer::addChild(child))
 	{
-		if(checked)
-			child->flags &= ~GO_FLG_CHECKED;									//if there is already a checked item, exits
-		else
-			checked = child;													//else sets the new item as checked
+		if(child->flags & GO_FLG_CHECKED)											//checks if the newly added child is configured as CHECKED
+		{
+			if(checked)
+				child->flags &= ~GO_FLG_CHECKED;									//if there is already a checked item, exits
+			else
+				checked = child;													//else sets the new item as checked
+		}
 	}
 	return child;
 }
