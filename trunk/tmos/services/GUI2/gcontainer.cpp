@@ -50,17 +50,28 @@ unsigned int GContainer::process_command(GMessage& msg)
 
 GObject* GContainer::addChild (GObject* child)
 {
-	GObject* tmp = children;
-	if (tmp)
+	if(child)
 	{
-		while (tmp->nextObj)
-			tmp = tmp->nextObj;
-		tmp->nextObj = child;
+		GObject* tmp = children;
+		if (tmp)
+		{
+			while (tmp->nextObj)
+				tmp = tmp->nextObj;
+			tmp->nextObj = child;
+		}
+		else
+			children = child;
+		child->parent = this;
+		child->ref_cnt++;
 	}
-	else
-		children = child;
-	child->parent = this;
 	return child;
+}
+
+GObject* GContainer::addChildRef(GObject* child)
+{
+	if(child)
+		child->ref_cnt++;
+	return addChild (child);
 }
 
 GObject* GContainer::get_object(GId xid)
@@ -198,21 +209,39 @@ GObject* GContainer::last_available()
 
 bool GContainer::close()
 {
-	if(GObject::close())
+	GObject* child = children;
+	GObject* next;
+	while(child)
 	{
-		GObject* tmp = children;
-		while(tmp)
-		{
-			tmp->close();
-			tmp = tmp->nextObj;
-		}
-		return true;
+		next = child->nextObj;
+		child->close();
+		child = next;
 	}
-	return false;
+
+	return GObject::close();
 }
 
 bool GContainer::close (GObject* toClose)
 {
+	GObject** pchild = &children;
+	GObject* child;
+
+	while((child = *pchild))
+	{
+		if(child == toClose)
+		{
+			*pchild =  child->nextObj;
+			if (toClose == focus)
+				set_focus_last();
+			if(!--child->ref_cnt)
+				delete child;
+			return true;
+		}
+		pchild =  &child->nextObj;
+	}
+	return false;
+
+/*
 	GObject* tmp = children;
 	if(tmp)
 	{
@@ -236,6 +265,7 @@ bool GContainer::close (GObject* toClose)
 		}
 	}
 	return false;
+*/
 }
 
 bool GContainer::set_flag(GFlags val)
