@@ -169,12 +169,12 @@ typedef struct
 #define SDIO_RESP1_CURRENT_STATE 		0x00001E00 //!< The state of the card when receiving the command. If the command execution causes a state change, it will be visible to the host in the response to the next command.
 #define SDIO_RESP1_STATE_IDLE	 		0x00000000 //!< The card state is idle
 #define SDIO_RESP1_STATE_READY          0x00000200 //!< The card state is ready
-#define SDIO_RESP1_STATE_IDENT          0x00000300 //!< The card state is ident
-#define SDIO_RESP1_STATE_STBY           0x00000400 //!< The card state is stby
-#define SDIO_RESP1_STATE_TRAN           0x00000500 //!< The card state is tran
-#define SDIO_RESP1_STATE_DATA           0x00000600 //!< The card state is data
-#define SDIO_RESP1_STATE_RCV            0x00000700 //!< The card state is rcv
-#define SDIO_RESP1_STATE_PRG            0x00000800 //!< The card state is prg
+#define SDIO_RESP1_STATE_IDENT          0x00000400 //!< The card state is ident
+#define SDIO_RESP1_STATE_STBY           0x00000600 //!< The card state is stby
+#define SDIO_RESP1_STATE_TRAN           0x00000800 //!< The card state is tran
+#define SDIO_RESP1_STATE_DATA           0x00000A00 //!< The card state is data
+#define SDIO_RESP1_STATE_RCV            0x00000C00 //!< The card state is rcv
+#define SDIO_RESP1_STATE_PRG            0x00000E00 //!< The card state is prg
 #define SDIO_RESP1_STATE_DIS            0x00001000 //!< The card state is dis
 
 #define SDIO_RESP1_READY_FOR_DATA 		0x00000100 //!< Corresponds to buffer empty on the bus
