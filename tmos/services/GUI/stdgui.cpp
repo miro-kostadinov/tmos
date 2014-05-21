@@ -208,17 +208,20 @@ RES_CODE menu_cb(MENU_WINDOW menu_hnd, unsigned int param, unsigned int msg)
 
 #if MENU_INDEX == ENABLE_INDEX
         	default:
-                param = key_codes[param];
-                if( (param >= '1') && (param <= '9'))
-                {
-                	param -='1';
-                	if( menu_hnd->menu->count > param )
-                	{
-                		set_index(param);
-                		menu_hnd->pos= param;
-                		return RES_SIG_OK;
-                	}
-                }
+        		if( param < strlen((const char*)key_codes) )
+        		{
+					param = key_codes[param];
+					if( (param >= '1') && (param <= '9'))
+					{
+						param -='1';
+						if( menu_hnd->menu->count > param )
+						{
+							set_index(param);
+							menu_hnd->pos= param;
+							return RES_SIG_OK;
+						}
+					}
+        		}
                 break;
 #endif
          }
