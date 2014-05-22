@@ -4,6 +4,8 @@
 
 GTimer* GTimer::base_timer = NULL;
 
+void* GObject::lastAllocated = NULL;
+
 GObject::~GObject()
 {
 }
