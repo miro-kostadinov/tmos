@@ -19,5 +19,6 @@ void LCD_MULT::invalidate (GObject* object, RECT_T area)
 			rect = lcd[i]->rect;
 			lcd[i]->invalidate(object, area);
 		}
+		parent = NULL;
 	}
 }
