@@ -138,7 +138,7 @@ struct GObject
 	void draw_text_line(LCD_MODULE* lcd, const char* txt, unsigned int len);
 	void draw_line(int x1, int y1, int x2, int y2);
 	virtual bool close();
-
+	bool remove();
 	// Redraw methods
 	virtual bool get_focus(bool notify_msg = true);	//sets the parent focus on this
 	virtual void draw(LCD_MODULE* lcd, RECT_T area);
