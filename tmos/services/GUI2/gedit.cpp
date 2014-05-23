@@ -332,7 +332,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 		case KEY_ESC:
 		case KEY_SHIFT:
 		case KEY_CANCEL:
-			edit_menu->close();
+			edit_menu->remove(); //close();
 			send_message(WM_DRAW, 0, edit_menu->rect.as_int, parent);
 			delete edit_menu;
 			edit_menu = NULL;
