@@ -11,9 +11,8 @@
 
 GListBox::~GListBox()
 {
-	if(list)
+	if(list && list->parent == NULL)
 	{
-		list->close();
 		delete list;
 		list = NULL;
 	}
