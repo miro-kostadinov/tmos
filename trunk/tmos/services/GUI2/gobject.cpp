@@ -551,6 +551,28 @@ bool GObject::close()
 	return false;
 }
 
+bool GObject::remove()
+{
+	KillObjectTimers();
+	GQueue.del_msg_for(this);
+	if (parent && parent->close(this))
+	{
+		GObject** pchild = &parent->children;
+		GObject* child;
+
+		while((child = *pchild))
+		{
+			if(child == this)
+			{
+				*pchild =  child->nextObj;
+				return true;
+			}
+			pchild =  &child->nextObj;
+		}
+	}
+	return false;
+}
+
 GObject* GObject::get_object(GId xid)
 {
 	if(id == xid)
