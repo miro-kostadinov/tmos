@@ -87,7 +87,7 @@ void GWindow::PostMessage(WM_MESSAGE code, unsigned int param, GObject* dst)
 
 bool GWindow::GetMessage(GMessage& msg, uint32_t tout)
 {
-	unsigned int sig;
+	unsigned int sig, old_sig;
 
 	if(hnd.res < RES_CLOSED)
 	{
@@ -109,6 +109,7 @@ bool GWindow::GetMessage(GMessage& msg, uint32_t tout)
 			}
 			hnd.tsk_start_read(NULL, 0);
 		}
+		old_sig = CURRENT_TASK->signals;
 		if(tout)
 		{
 			sig = tsk_wait_signal(-1u, tout);
@@ -117,6 +118,15 @@ bool GWindow::GetMessage(GMessage& msg, uint32_t tout)
 
 		if( sig & ~hnd.signal)
 		{
+			if(!(sig & hnd.signal))
+			{
+				if(old_sig == sig)
+				{
+					// no new signals, so force wait!
+					old_sig = tsk_wait_signal(-1u, tout?tout:10);
+					sig |= old_sig;
+				}
+			}
 			tsk_send_signal(CURRENT_TASK, sig&~hnd.signal);
 			sig &= hnd.signal;
 		}
