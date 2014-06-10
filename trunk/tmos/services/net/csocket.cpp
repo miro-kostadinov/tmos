@@ -8,7 +8,7 @@
 #include <tmos.h>
 #include "csocket.h"
 
-NET_CODE CSocket::open(const sock_mode* smode)
+NET_CODE CSocket::open(const sock_mode_t* smode)
 {
 	if(!this)
 		return NET_ERR_OUT_OF_MEMORY;
