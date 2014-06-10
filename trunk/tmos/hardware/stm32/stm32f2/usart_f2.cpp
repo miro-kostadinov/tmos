@@ -21,7 +21,7 @@ unsigned int get_usart_source_clk(unsigned int periph_id)
 
 	RCC_GetClocksFreq (&clocks);
 
-	if (periph_id == ID_PERIPH_USART1)
+	if (periph_id == ID_PERIPH_USART1 || periph_id == ID_PERIPH_USART6)
 	{
 		return clocks.PCLK2_Frequency;
 	}
