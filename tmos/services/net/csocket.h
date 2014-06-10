@@ -33,45 +33,13 @@
 #define IP_SOCKET_TCP			0
 #define IP_SOCKET_UDP			1
 
-struct sock_mode
+struct sock_mode_t
 {
-	sock_mode(DRIVER_INDEX drv): driver(drv), interface(0) {};
-	sock_mode(DRIVER_INDEX drv, unsigned char inf):
-		driver(drv), interface(inf) {};
-	DRIVER_INDEX	driver;
-	unsigned char interface;
-};
+	DRIVER_INDEX	driver;			//!< driver to be used for this socket
+	unsigned char 	interface;		//!< driver interface index (e.g. apn index)
+	unsigned short 	port;			//!< optional port (e.g. for UDP)
+	unsigned char	sock_type;		//!< IP_SOCKET_TCP or IP_SOCKET_UDP
 
-struct sock_IP_mode: public sock_mode
-{
-	sock_IP_mode(DRIVER_INDEX drv)
-	: sock_mode(drv), sock_type(IP_SOCKET_TCP), port(0) {}
-	sock_IP_mode(DRIVER_INDEX drv, unsigned int s_type, unsigned int s_port)
-	: sock_mode(drv), sock_type(s_type), port(s_port) {}
-	sock_IP_mode(DRIVER_INDEX drv, unsigned char inf, unsigned int s_type, unsigned int s_port)
-	: sock_mode(drv, inf), sock_type(s_type), port(s_port) {}
-	unsigned char sock_type;
-	unsigned int port;
-};
-
-struct apn_stru
-{
-	apn_stru(){};
-	apn_stru(const char * apn_name, const char * apn_user, const char * apn_pass):
-		name(apn_name), user(apn_user), pass(apn_pass) {}
-	CSTRING name;
-	CSTRING user;
-	CSTRING pass;
-};
-
-struct sock_gprs_mode: public sock_IP_mode
-{
-	sock_gprs_mode(DRIVER_INDEX drv):sock_IP_mode(drv), apn(NULL) {}
-	sock_gprs_mode(DRIVER_INDEX drv, unsigned int s_type, unsigned int s_port, const apn_stru * s_apn)
-	:sock_IP_mode(drv, s_type, s_port), apn(s_apn) {}
-	sock_gprs_mode(DRIVER_INDEX drv, unsigned char inf, unsigned int s_type, unsigned int s_port, const apn_stru * s_apn)
-	:sock_IP_mode(drv, inf, s_type, s_port), apn(s_apn) {}
-	const apn_stru* apn;
 };
 
 /**
@@ -92,7 +60,7 @@ struct CSocket: public CHandle
 		{};
 	~CSocket() { close(); };
 
-	NET_CODE open(const sock_mode* smode);
+	NET_CODE open(const sock_mode_t* smode);
 	RES_CODE bind(unsigned int ip_adr, unsigned int port);
 	RES_CODE bind(const char* url);
 	RES_CODE listen(int backlog);
