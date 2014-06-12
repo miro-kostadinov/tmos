@@ -13,9 +13,8 @@ NET_CODE CSocket::open(const sock_mode_t* smode)
 	if(!this)
 		return NET_ERR_OUT_OF_MEMORY;
 
-	error = NET_ERR_HANDLE_OPEN;
-
-	if(tsk_open(smode->driver, smode))
+	tsk_open(smode->driver, smode);
+	if(RES_OK == res)
 	{
 		set_res_cmd(SOCK_CMD_OPEN);
 		tsk_start_and_wait();
@@ -27,6 +26,8 @@ NET_CODE CSocket::open(const sock_mode_t* smode)
 			CHandle::close();
 		}
 	}
+	else
+		error = NET_ERR_HANDLE_OPEN;
 	return error;
 }
 
