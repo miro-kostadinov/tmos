@@ -32,6 +32,11 @@
 #define URL_FLAG_SCHEME_INVALID				0x80
 #define URL_FLAG_SCHEME_MASK				0xF8
 
+// Support for "~route/url"
+#ifndef URL_CUSTOM_ROUTING
+#define URL_CUSTOM_ROUTING	0
+#endif
+
 class CURL
 {
 	const char * url_get_userinfo (const char *url);
