@@ -565,8 +565,24 @@ const char* CURL::url_get_userinfo (const char *url)
 NET_CODE CURL::url_parse(const char* url)
 {
 	CSTRING s;
+	char* surl;
+
 	if(!url || !url[0])
 		return NET_ERR_URL_INVALID;
+
+	host.clear();
+#ifdef URL_CUSTOM_ROUTING
+	if(url[0] == '/' && url[1] == '~')
+	{
+		surl = strchr(url+2, '/');
+		if(surl++)
+		{
+			host.assign(url, surl-url);
+			url = surl;
+		}
+	}
+#endif
+
 	//parse the scheme
 	url = url_scheme(url, &url_flags);
 	if((url_flags & URL_FLAG_SCHEME_MASK) > URL_FLAG_SCHEME_HTTP)
@@ -583,12 +599,11 @@ NET_CODE CURL::url_parse(const char* url)
 			port = 21;
 	}
 
-	host.clear();
 	path.clear();
 	//re-encode
 	s = reencode_escapes(url_get_userinfo(url));
 
-	char* surl = (char*)s.c_str();
+	surl = (char*)s.c_str();
 	fragment = url_parse_fragment(surl);
 	query = url_parse_query(surl);
 	params = url_parse_parameters(surl);
@@ -603,7 +618,7 @@ NET_CODE CURL::url_parse(const char* url)
 		return NET_ERR_URL_INVALID;
 
 		/* Continue parsing after the closing ']'. */
-		host = CSTRING(s->buf, surl - s->buf + 1);
+		host += CSTRING(s->buf, surl - s->buf + 1);
 		surl++;
 
 		/* The closing bracket must be followed by a separator or by the null char.  */
@@ -626,7 +641,7 @@ NET_CODE CURL::url_parse(const char* url)
 		{
 			*surl++ = 0;
 			if(s[0])
-				host = s.c_str();
+				host += s.c_str();
 
 			/* Allow empty port, as per rfc2396. */
 			port = 0;
@@ -666,10 +681,10 @@ NET_CODE CURL::url_parse(const char* url)
 					if(surl[1])
 						path = surl+1;
 					if(s[0])
-						host = s.c_str();
+						host += s.c_str();
 				} else
 				{
-					host = s.c_str();
+					host += s.c_str();
 				}
 			}
 	}
@@ -726,7 +741,26 @@ NET_CODE CURL::url_resolve(const CURL & old_link)
 	//        b) If the embedded URL starts with a scheme name, it is
 	//           interpreted as an absolute URL and we are done.
 	if(url_flags & URL_FLAG_SCHEME_MASK)
+	{
+#ifdef URL_CUSTOM_ROUTING
+		if(old_link.host.start_with("/~"))
+		{
+			const char* ptr;
+			CSTRING s(old_link.host);
+
+			ptr = s.c_str();
+			ptr = strchr(ptr +2, '/');
+			if(ptr)
+			{
+				s.erase(ptr - s.c_str()+1, -1u);
+			} else
+				s += '/';
+			s += host;
+			host = s;
+		}
+#endif
 		return NET_OK;
+	}
 	else
 	{
 	//        c) Otherwise, the embedded URL inherits the scheme of
