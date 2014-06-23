@@ -193,6 +193,7 @@ struct GObject
 	virtual GObject* get_object(GId xid);
 
 	virtual bool is_available();
+	virtual void move(int x, int y);
 private:
 	// Timer methods
 	GTimer* FindTimer(GId event);

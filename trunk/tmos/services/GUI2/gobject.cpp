@@ -592,6 +592,12 @@ bool GObject::is_available()
 	return false;
 }
 
+void GObject::move(int x, int y)
+{
+	rect.Offset(x, y);
+	client_rect.Offset(x, y);
+}
+
 //GObject* GObject::next_available()
 //{
 //	GObject* tmp = nextObj;

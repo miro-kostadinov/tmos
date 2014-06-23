@@ -53,6 +53,7 @@ struct GText: GObject
 
 	text_metrics_t SetTextAlign(unsigned int new_align );
 	void alloc_scrollbars( void );
+	virtual void move(int x, int y);
 protected:
 	void draw_caption(LCD_MODULE* lcd);
 };
