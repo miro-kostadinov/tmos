@@ -767,7 +767,10 @@ text_metrics_t get_text_metrics(const char* text, short int x_size, const RENDER
 	const char* ptr = text;
 
 	if(!text)
+	{
+    	size.height = font->vspacing;
 		return size;
+	}
 	if(x_size == -1)
 		x_size = 0x7FFF;
 	int max_chars = (x_size - (font->hdistance << 1)) / font->hspacing;
