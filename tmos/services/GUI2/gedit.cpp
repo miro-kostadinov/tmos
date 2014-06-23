@@ -162,6 +162,12 @@ void GEdit::draw_this(LCD_MODULE* lcd)
 		draw_border(rect);
 }
 
+void GEdit::move(int x, int y)
+{
+	GText::move(x, y);
+	cursor.Offset(x, y);
+}
+
 void GEdit::text_change()
 {
 	text_size = SetTextAlign(align);		//redraws the whole text

@@ -59,6 +59,8 @@ struct GEdit:GText
 	virtual unsigned int process_default(GMessage& msg);
 
 	virtual void draw_this (LCD_MODULE* lcd);
+	virtual void move(int x, int y);
+
 protected:
 	void process_alpha_key(char pressed_key, const char* key_val);
 	bool process_char(unsigned int ch);

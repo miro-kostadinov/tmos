@@ -161,6 +161,12 @@ unsigned int GText::process_key (GMessage& msg)
 	return 0;
 }
 
+void GText::move(int x, int y)
+{
+	GObject::move(x, y);
+	scroll_rect.Offset(x, y);
+}
+
 void GText::draw_caption(LCD_MODULE* lcd)
 {
 	if(caption && *caption)
