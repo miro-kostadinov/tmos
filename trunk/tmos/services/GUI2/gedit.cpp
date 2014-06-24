@@ -77,9 +77,12 @@ unsigned int GEdit::initialize (GMessage& msg)
 	txt.erase(max_len, -1u);
 	if(!(align & ES_AUTO_SCROLL))
 	{
-		if(txt.length() > max_chars -1)
+		if(!max_chars || txt.length() > max_chars -1)
 		{
-			txt.erase(max_chars -1, -1u);
+			if(max_chars)
+				txt.erase(max_chars -1, -1u);
+			else
+				txt.clear();
 			text_size = SetTextAlign(align);
 		}
 	}
@@ -683,7 +686,7 @@ bool GEdit::set_cursor_x_char(void)
 		offset=client_rect.x0 - rect.x0;
 		scroll_rect.x0  -= offset;
 		cursor.x0 -= offset;
-		while(index > max_chars)
+		while(max_chars && index > max_chars)
 		{
 			x += max_chars;
 			index -= max_chars;
