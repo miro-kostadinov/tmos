@@ -306,6 +306,7 @@ int MessageBox(const char* Text, const char* Caption, unsigned int Style)
 int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style, text_metrics_t size)
 {
 	GMsgBox box;
+	box.displays = 1;
 	box.type = 	MBF_EDIT|MBF_CLR|
 				MBF_INPUT_TYPE(KT_DIGIT)|Style;
 	box.body =  value;
@@ -339,6 +340,7 @@ int EditBox(CSTRING& value, const char* Caption, unsigned int Style, text_metric
 	GMsgBox box;
 	GMessage msg;
 
+	box.displays = 1;
 	box.type = 	Style;
 	box.body =  value;
 	box.title = Caption;
