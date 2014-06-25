@@ -290,6 +290,11 @@ void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 			times_pressed = 0;
 			txt.insert(key_val[0], pos);								//inserts the new character from the key array into the string
 			pos_change(+1);
+			if((align & ES_AUTO_SCROLL))
+			{
+				if((int)pos > client_rect.width() / text_font->hspacing)
+					text_change();
+			}
 		}
 //		text_change();															//redraws the whole text
 	}
