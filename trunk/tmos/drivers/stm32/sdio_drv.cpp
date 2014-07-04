@@ -55,8 +55,10 @@ static void sdio_stop_transfer(SDIO_DRIVER_DATA *drv_data, SDIO_TypeDef* hw_base
 {
 	// stop DMA
 #if USE_SDIO_DMA_DRIVER
-	drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
-	drv_data->tx_dma_hnd.hcontrol(DCR_CANCEL);
+	if(drv_data->rx_dma_hnd.res & FLG_BUSY)
+		drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
+	if(drv_data->tx_dma_hnd.res & FLG_BUSY)
+		drv_data->tx_dma_hnd.hcontrol(DCR_CANCEL);
 #endif
 
 	// stop data state machine
@@ -73,6 +75,12 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 {
 	SDIO_TypeDef* hw_base = drv_info->hw_base;
 	RES_CODE res = RES_IDLE;
+
+#if USE_SDIO_DMA_DRIVER
+	//stop RX DMA
+	if(drv_data->rx_dma_hnd.res & FLG_BUSY)
+		drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
+#endif
 
 	if( (hnd->cmd & FLAG_READ) && hnd->len)
 	{
@@ -173,6 +181,17 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 
 		}
 	}
+#if USE_SDIO_DMA_DRIVER
+
+	if(drv_info->rx_dma_mode.dma_index >= INALID_DRV_INDX)
+		hw_base->SDIO_MASK |= SDIO_STA_RX_FLAGS;
+
+	if(drv_info->tx_dma_mode.dma_index >= INALID_DRV_INDX)
+		hw_base->SDIO_MASK |= SDIO_STA_TX_FLAGS;
+#else
+	hw_base->SDIO_MASK |= SDIO_STA_TR_FLAGS;
+#endif
+
 	return res;
 }
 
@@ -327,8 +346,10 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 					if(hnd->svc_list_cancel(drv_data->pending))
 					{
 #if USE_SDIO_DMA_DRIVER
-						drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
-						drv_data->tx_dma_hnd.hcontrol(DCR_CANCEL);
+						if(drv_data->rx_dma_hnd.res & FLG_BUSY)
+							drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
+						if(drv_data->tx_dma_hnd.res & FLG_BUSY)
+							drv_data->tx_dma_hnd.hcontrol(DCR_CANCEL);
 #endif
 #if DEBUG_SDIO_DRV
 						TRACELN1("SDIO cancel!");
@@ -498,14 +519,18 @@ void SDIO_ISR(SDIO_INFO drv_info)
 		}
 	} else
 	{
-		if( status & SDIO_STA_RX_FLAGS )
+//		if( status & SDIO_STA_RX_FLAGS )
+//		{
+//			// no handle?
+//#if DEBUG_SDIO_DRV
+//			TRACELN("SD dump %08X", hw_base->SDIO_FIFO);
+//#endif
+//		}
+//		sdio_stop_transfer(drv_data, hw_base);
+		if(status & SDIO_STA_TR_FLAGS)
 		{
-			// no handle?
-#if DEBUG_SDIO_DRV
-			TRACELN("SD dump %08X", hw_base->SDIO_FIFO);
-#endif
+			hw_base->SDIO_MASK &= ~SDIO_STA_TR_FLAGS;
 		}
-		sdio_stop_transfer(drv_data, hw_base);
 	}
 }
 
