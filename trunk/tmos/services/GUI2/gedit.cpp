@@ -194,7 +194,7 @@ void GEdit::pos_change(int val, bool modified_text)
 		if(pos > max_len)
 			pos = max_len;
 	}
-	if(val < 0&& pos)
+	if(val < 0 && pos)
 		--pos;
 
 	if(!(align & ES_HIDE_CURSOR))
@@ -289,12 +289,12 @@ void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 			last_key = 0;
 			times_pressed = 0;
 			txt.insert(key_val[0], pos);								//inserts the new character from the key array into the string
-			pos_change(+1);
 			if((align & ES_AUTO_SCROLL))
 			{
-				if((int)pos > client_rect.width() / text_font->hspacing)
+				if((int)pos >= client_rect.width() / text_font->hspacing)
 					text_change();
 			}
+			pos_change(+1);
 		}
 //		text_change();															//redraws the whole text
 	}
@@ -343,20 +343,25 @@ unsigned int GEdit::process_key (GMessage& msg)
 				if(edit_menu->item)
 					shift = (key_mode)edit_menu->item->item;
 			}
+			break;
+
 		case KEY_ESC:
 		case KEY_SHIFT:
 		case KEY_CANCEL:
-			edit_menu->remove(); //close();
-			send_message(WM_DRAW, 0, edit_menu->rect.as_int, parent);
-			delete edit_menu;
-			edit_menu = NULL;
-			return 1;
+			break;
+
 		default:
 			if(edit_menu->process_key(msg))
 				return 1;
 			return 0;
 		}
+		edit_menu->remove(); //close();
+		send_message(WM_DRAW, 0, edit_menu->rect.as_int, parent);
+		delete edit_menu;
+		edit_menu = NULL;
+		return 1;
 	}
+
 	switch (msg.param)
 	{
 	case KEY_LEFT|KEY_REPEAT_CODE:
@@ -373,38 +378,6 @@ unsigned int GEdit::process_key (GMessage& msg)
 			pos_change(+1, false);
 		}
 		return 1;
-/*
-	case KEY_1:
-		process_alpha_key(msg.param, key1_vals);								//puts a character in the string based
-		return 1;																//on the key pressed
-	case KEY_2:																	//the shift status
-		process_alpha_key(msg.param, shift? key2_shift_vals : key2_vals);		//and the count of the key presses
-		return 1;
-	case KEY_3:
-		process_alpha_key(msg.param, shift? key3_shift_vals : key3_vals);
-		return 1;
-	case KEY_4:
-		process_alpha_key(msg.param, shift? key4_shift_vals : key4_vals);
-		return 1;
-	case KEY_5:
-		process_alpha_key(msg.param, shift? key5_shift_vals : key5_vals);
-		return 1;
-	case KEY_6:
-		process_alpha_key(msg.param, shift? key6_shift_vals : key6_vals);
-		return 1;
-	case KEY_7:
-		process_alpha_key(msg.param, shift? key7_shift_vals : key7_vals);
-		return 1;
-	case KEY_8:
-		process_alpha_key(msg.param, shift? key8_shift_vals : key8_vals);
-		return 1;
-	case KEY_9:
-		process_alpha_key(msg.param, shift? key9_shift_vals : key9_vals);
-		return 1;
-	case KEY_0:
-		process_alpha_key(msg.param, key0_vals);
-		return 1;
-*/
 	case KEY_SHIFT:
 		//changes the shift status
 		if(!edit_menu)
