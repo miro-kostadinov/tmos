@@ -291,12 +291,11 @@ void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 			txt.insert(key_val[0], pos);								//inserts the new character from the key array into the string
 			if((align & ES_AUTO_SCROLL))
 			{
-				if((int)pos >= client_rect.width() / text_font->hspacing)
+				if((int)txt.length() >= client_rect.width() / text_font->hspacing)
 					text_change();
 			}
 			pos_change(+1);
 		}
-//		text_change();															//redraws the whole text
 	}
 	else
 	{
@@ -701,9 +700,9 @@ bool GEdit::set_cursor_x_char(void)
 						scroll_rect.x0 += offset + cursor.x0 -x;
 				}
 			}
-			if(hscroll)
-				hscroll->SetScrollPos(GO_FLG_HSCROLL, x/text_font->hspacing, true);
 		}
+		if(hscroll)
+			hscroll->SetScrollPos(GO_FLG_HSCROLL, x/text_font->hspacing, true);
 
 		offset  = client_rect.x0 - rect.x0;
 		scroll_rect.x0  += offset;
