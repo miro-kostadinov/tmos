@@ -416,8 +416,9 @@ unsigned int GEdit::process_key (GMessage& msg)
 		{
 			txt.erase(pos-1, 1);												//erases the previous symbol
 			pos_change(-1);
-			text_change();
-		}
+		} else
+			txt.erase(0, 1);												//erases the previous symbol
+		text_change();
 		return 1;
 
 	case KEY_OK:
