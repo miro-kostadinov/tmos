@@ -17,10 +17,8 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 		{
 			if(!(object->flags&GO_FLG_HSCROLL))
 			{
-				object->client_rect.y1 -= GO_SCROLL_WIDTH+1;
 				object->flags |= GO_FLG_HSCROLL;
 				res = true;
-				//res = (res || object->set_flag(GO_FLG_HSCROLL));
 			}
 		}
 		else
@@ -28,9 +26,7 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 			if(object->flags&GO_FLG_HSCROLL)
 			{
 				object->flags &= ~GO_FLG_HSCROLL;
-				object->client_rect.y1 += GO_SCROLL_WIDTH+1;
 				res = true;
-				//res = ( res || object->clr_flag(GO_FLG_HSCROLL));
 			}
 		}
 	}
@@ -68,8 +64,9 @@ void GScroll::draw_scroll(LCD_MODULE* lcd)
 
 		if(object->flags & GO_FLG_HSCROLL)
 		{
-			rect.y0 = rect.y1 +1;
-			rect.y1 = rect.y0 + (GO_SCROLL_WIDTH -1);
+			if(object->flags & GO_FLG_BORDER)
+				rect.y1 = object->rect.y1;
+			rect.y0 = rect.y1 - (GO_SCROLL_WIDTH -1);
 			if(ratio)
 			{
 				lcd->draw_border(rect);
