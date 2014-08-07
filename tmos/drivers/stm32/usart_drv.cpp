@@ -98,18 +98,19 @@ static inline void RESUME_RX(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data)
 	// get free space
 	if (drv_data->rx_wrptr < drv_data->rx_ptr)
 	{
-		free_space = drv_data->rx_ptr - drv_data->rx_wrptr;
+		free_space = (drv_data->rx_ptr - drv_data->rx_wrptr)-1;
 		drv_data->rx_remaining = free_space;
 	}
 	else
 	{
-		free_space = &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE] - drv_data->rx_wrptr;
+		free_space = &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE-1] - drv_data->rx_wrptr;
+		if( drv_data->rx_buf != drv_data->rx_ptr)
+			free_space ++;
 		drv_data->rx_remaining = free_space;
-		free_space += drv_data->rx_ptr - drv_data->rx_buf;
 	}
 
 	// enable or disable the receiver...
-	if(free_space <= 1)
+	if(free_space == 0)
 	{
 		disable_usart_drv_ints(uart, USART_STATUS_RXNEIE | USART_STATUS_IDLEIE);
 	}
@@ -400,13 +401,29 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 		*drv_data->rx_wrptr = get_usart_rdr(uart);
 //		TRACE_BUF(drv_data->rx_wrptr, 1, TC_TXT_CYAN);
 		drv_data->rx_wrptr++;
-		if(!--drv_data->rx_remaining )
+		if(drv_data->rx_remaining)
 		{
-	    	if( (hnd=drv_data->hnd_rcv) )
-				STOP_RX_HND(uart, drv_data, hnd, RES_SIG_OK);
-	      	else
-	      		RESUME_RX(uart,drv_data);
+			if(!--drv_data->rx_remaining )
+			{
+				if(uart == USART1)
+					TRACELN1("^i");
+				if( (hnd=drv_data->hnd_rcv) )
+					STOP_RX_HND(uart, drv_data, hnd, RES_SIG_OK);
+				else
+					RESUME_RX(uart,drv_data);
 
+			}
+		}
+		else
+		{
+			if (drv_data->rx_wrptr == &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
+				drv_data->rx_wrptr = drv_data->rx_buf;
+			if(drv_data->rx_wrptr == drv_data->rx_ptr)
+			{
+				if(++drv_data->rx_ptr >= &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
+					drv_data->rx_ptr = drv_data->rx_buf;
+				drv_data->rx_remaining = 1;
+			}
 		}
 	} else
 	{
