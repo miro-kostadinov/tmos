@@ -414,10 +414,9 @@ unsigned int GEdit::process_key (GMessage& msg)
 	case KEY_CANCEL:
 		if (pos)
 		{
-			txt.erase(pos-1, 1);												//erases the previous symbol
 			pos_change(-1);
-		} else
-			txt.erase(0, 1);												//erases the previous symbol
+		} 
+		txt.erase(pos, 1);												//erases the previous symbol
 		text_change();
 		return 1;
 
