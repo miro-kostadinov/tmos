@@ -56,6 +56,7 @@ extern char end;
 static void process_exception()
 {
     unsigned status = SCB->SCB_CFSR;
+	TASK_STACKED_CTX_STRU* msp;
 
 #if (TRACE_IS != TRACE_DISABLED) || USE_EXCEPTION_RECORD
     unsigned int mem_adr = SCB->SCB_MMFAR;
@@ -75,8 +76,18 @@ static void process_exception()
 #if USE_EXCEPTION_RECORD
     exception_record.restart_cause = __get_IPSR();
     exception_record.CFSR = status;
-    exception_record.MMFAR = mem_adr;
-    exception_record.BFAR = bus_adr;
+	msp = (TASK_STACKED_CTX_STRU*)__get_PSP();
+	if ((uint32_t)msp < BASE_SRAM || (uint32_t)msp >= (BASE_SRAM + RAM_SIZE) || ((uint32_t)msp & 3))
+		msp = NULL;
+	if( (status & SCB_CFSR_MMFSR_MMARVALID) || !msp)
+		exception_record.MMFAR = mem_adr;
+	else
+		exception_record.MMFAR = msp->pc.as_int;
+
+	if( (status & SCB_CFSR_BFSR_BFARVALID) || !msp)
+	    exception_record.BFAR = bus_adr;
+	else
+		exception_record.BFAR = msp->lr.as_int;
     exception_record.cur_task = (unsigned int)CURRENT_TASK;
     if (((unsigned int) CURRENT_TASK > BASE_SRAM)
 			&& ((unsigned int) CURRENT_TASK < (BASE_SRAM + RAM_SIZE)))
