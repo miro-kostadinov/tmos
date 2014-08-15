@@ -42,6 +42,6 @@ WEAK_C unsigned int LowLevelResetCause(void)
 	unsigned int res;
 
 	res = RCC->RCC_CSR;
-	RCC->RCC_CSR = res;
+	RCC->RCC_CSR = RCC_CSR_RMVF;
 	return (res);
 }
