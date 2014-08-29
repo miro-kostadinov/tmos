@@ -56,7 +56,9 @@ extern char end;
 static void process_exception()
 {
     unsigned status = SCB->SCB_CFSR;
+#if USE_EXCEPTION_RECORD
 	TASK_STACKED_CTX_STRU* msp;
+#endif
 
 #if (TRACE_IS != TRACE_DISABLED) || USE_EXCEPTION_RECORD
     unsigned int mem_adr = SCB->SCB_MMFAR;
