@@ -392,6 +392,34 @@ void  GObject::draw_line(int x1, int y1, int x2, int y2)
 	}
 }
 
+void GObject::draw_circle(int x0, int y0, int radius)
+{
+	int x = radius, y = 0;
+	int radiusError = 1 - x;
+
+	while (x >= y)
+	{
+		draw_point(x + x0, y + y0);
+		draw_point(y + x0, x + y0);
+		draw_point(-x + x0, y + y0);
+		draw_point(-y + x0, x + y0);
+		draw_point(-x + x0, -y + y0);
+		draw_point(-y + x0, -x + y0);
+		draw_point(x + x0, -y + y0);
+		draw_point(y + x0, -x + y0);
+		y++;
+		if (radiusError < 0)
+		{
+			radiusError += 2 * y + 1;
+		}
+		else
+		{
+			x--;
+			radiusError += 2 * (y - x + 1);
+		}
+	}
+}
+
 void GObject::draw_hline ( int x0, int x1, int y)
 {
 	if (cut_hline (x0, x1, y))

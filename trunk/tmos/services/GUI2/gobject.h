@@ -137,6 +137,7 @@ struct GObject
 	int draw_text(LCD_MODULE* lcd, const char* txt);
 	void draw_text_line(LCD_MODULE* lcd, const char* txt, unsigned int len);
 	void draw_line(int x1, int y1, int x2, int y2);
+	void draw_circle(int x0, int y0, int r);
 	virtual bool close();
 	bool remove();
 	// Redraw methods
