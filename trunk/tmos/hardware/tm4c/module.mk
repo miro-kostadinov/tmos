@@ -13,9 +13,9 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+=  sysctl_tm4c.cpp
+local_cpp_src-y	+=  sysctl_tm4c.cpp gpio_tm4c.cpp
 
-local_h_src-y 	+=  fam_cpp.h fam_inc.h sysctl_tm4c.h
+local_h_src-y 	+=  fam_cpp.h fam_inc.h sysctl_tm4c.h gpio_tm4c.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

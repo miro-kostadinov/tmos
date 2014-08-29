@@ -14,8 +14,8 @@
 #define FAM_CPP_H_
 
 #include "sysctl_tm4c.h"
+#include "gpio_tm4c.h"
 //#include "uart_lm3s.h"
-//#include "gpio_lm3s.h"
 //#include "udma_lm3s.h"
 //#include "ssi_lm3s.h"
 //#include "adc_lm3s.h"
