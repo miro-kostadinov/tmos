@@ -292,6 +292,11 @@ struct SYSCTL_TypeDef
 /** @} */
 
 /** @defgroup SYSCTL_MOSCCTL:	(sysctl:0x07C) Main Oscillator Control          */
+#define SYSCTL_MOSCCTL_OSCRNG			0x00000010 		//!< Oscillator Range
+#define SYSCTL_MOSCCTL_PWRDN			0x00000008 		//!< Power Down
+#define SYSCTL_MOSCCTL_NOXTAL			0x00000004 		//!< No MOSC/Crystal Connected
+#define SYSCTL_MOSCCTL_MOSCIM			0x00000002 		//!< MOSC Failure Action
+#define SYSCTL_MOSCCTL_CVAL				0x00000001 		//!< Clock Validation for MOSC
 /** @} */
 
 /** @defgroup SYSCTL_RSCLKCFG: 	(sysctl:0x0B0) Run and Sleep Mode Configuration Register */
@@ -309,9 +314,51 @@ struct SYSCTL_TypeDef
 #define SYSCTL_RSCLKCFG_OSCSRC_RTCOSC	0x00400000 		//!<  Hibernation Module RTC Oscillator (RTCOSC)
 #define SYSCTL_RSCLKCFG_OSYSDIV			0x000FFC00 		//!< Oscillator System Clock Divisor
 #define SYSCTL_RSCLKCFG_PSYSDIV			0x000003FF 		//!< PLL System Clock Divisor
+#define SYSCTL_RSCLKCFG_PSYSDIV_Set(x)	(x) 			//!<  set macro
 /** @} */
 
 /** @defgroup SYSCTL_MEMTIM0:	(sysctl:0x0C0) Memory Timing Parameter Register 0 for Main Flash and  EEPROM */
+#define SYSCTL_MEMTIM0_EBCHT			0x03C00000 		//!< EEPROM Clock High Time
+#define SYSCTL_MEMTIM0_EBCHT_0_5		0x00000000 		//!<  1/2 system clock period
+#define SYSCTL_MEMTIM0_EBCHT_1_0		0x00400000 		//!<  1 system clock period
+#define SYSCTL_MEMTIM0_EBCHT_1_5		0x00800000 		//!<  1.5 system clock periods
+#define SYSCTL_MEMTIM0_EBCHT_2_0		0x00C00000 		//!<  2 system clock periods
+#define SYSCTL_MEMTIM0_EBCHT_2_5		0x01000000 		//!<  2.5 system clock periods
+#define SYSCTL_MEMTIM0_EBCHT_3_0		0x01400000 		//!<  3 system clock periods
+#define SYSCTL_MEMTIM0_EBCHT_3_5		0x01800000 		//!<  3.5 system clock periods
+#define SYSCTL_MEMTIM0_EBCHT_4_0		0x01C00000 		//!<  4 system clock periods
+#define SYSCTL_MEMTIM0_EBCHT_4_5		0x02000000 		//!<  4.5 system clock periods
+#define SYSCTL_MEMTIM0_EBCE				0x00200000 		//!< EEPROM Bank Clock Edge
+#define SYSCTL_MEMTIM0_MB1      		0x00100010  	//!< Must be one
+#define SYSCTL_MEMTIM0_EWS				0x000F0000 		//!< EEPROM Wait States
+#define SYSCTL_MEMTIM0_EWS_0			0x00000000 		//!<  0 wait states
+#define SYSCTL_MEMTIM0_EWS_1			0x00010000 		//!<  1 wait states
+#define SYSCTL_MEMTIM0_EWS_2			0x00020000 		//!<  2 wait states
+#define SYSCTL_MEMTIM0_EWS_3			0x00030000 		//!<  3 wait states
+#define SYSCTL_MEMTIM0_EWS_4			0x00040000 		//!<  4 wait states
+#define SYSCTL_MEMTIM0_EWS_5			0x00050000 		//!<  5 wait states
+#define SYSCTL_MEMTIM0_EWS_6			0x00060000 		//!<  6 wait states
+#define SYSCTL_MEMTIM0_EWS_7			0x00070000 		//!<  7 wait states
+#define SYSCTL_MEMTIM0_FBCHT			0x000003C0 		//!< Flash Bank Clock High Time
+#define SYSCTL_MEMTIM0_FBCHT_0_5		0x00000000 		//!<  1/2 system clock period
+#define SYSCTL_MEMTIM0_FBCHT_1_0		0x00000040 		//!<  1 system clock period
+#define SYSCTL_MEMTIM0_FBCHT_1_5		0x00000080 		//!<  1.5 system clock periods
+#define SYSCTL_MEMTIM0_FBCHT_2_0		0x000000C0 		//!<  2 system clock periods
+#define SYSCTL_MEMTIM0_FBCHT_2_5		0x00000100 		//!<  2.5 system clock periods
+#define SYSCTL_MEMTIM0_FBCHT_3_0		0x00000140 		//!<  3 system clock periods
+#define SYSCTL_MEMTIM0_FBCHT_3_5		0x00000180 		//!<  3.5 system clock periods
+#define SYSCTL_MEMTIM0_FBCHT_4_0		0x000001C0 		//!<  4 system clock periods
+#define SYSCTL_MEMTIM0_FBCHT_4_5		0x00000200 		//!<  4.5 system clock periods
+#define SYSCTL_MEMTIM0_FBCE				0x00000020 		//!< EEPROM Bank Clock Edge
+#define SYSCTL_MEMTIM0_FWS				0x0000000F 		//!< Flash Wait State
+#define SYSCTL_MEMTIM0_FWS_0			0x00000000 		//!<  0 wait states
+#define SYSCTL_MEMTIM0_FWS_1			0x00000001 		//!<  1 wait states
+#define SYSCTL_MEMTIM0_FWS_2			0x00000002 		//!<  2 wait states
+#define SYSCTL_MEMTIM0_FWS_3			0x00000003 		//!<  3 wait states
+#define SYSCTL_MEMTIM0_FWS_4			0x00000004 		//!<  4 wait states
+#define SYSCTL_MEMTIM0_FWS_5			0x00000005 		//!<  5 wait states
+#define SYSCTL_MEMTIM0_FWS_6			0x00000006 		//!<  6 wait states
+#define SYSCTL_MEMTIM0_FWS_7			0x00000007 		//!<  7 wait states
 /** @} */
 
 /** @defgroup SYSCTL_DSMEMTIM0:	(sysctl:0x0C8) Deep Sleep Mode Memory Timing Register 0 for Main Flash and EEPROM */
@@ -336,12 +383,22 @@ struct SYSCTL_TypeDef
 /** @} */
 
 /** @defgroup SYSCTL_PLLFREQ0:	(sysctl:0x160) PLL Frequency 0					*/
+#define SYSCTL_PLLFREQ0_PLLPWR			0x00800000 		//!< PLL Power
+#define SYSCTL_PLLFREQ0_MFRAC			0x000FFC00 		//!< PLL M Fractional Value
+#define SYSCTL_PLLFREQ0_MFRAC_Set(x)	((x)<<10)		//!<  set macro
+#define SYSCTL_PLLFREQ0_MINT			0x000003FF 		//!< PLL M Integer Value
+#define SYSCTL_PLLFREQ0_MINT_Set(x)		(x) 			//!<  set macro
 /** @} */
 
 /** @defgroup SYSCTL_PLLFREQ1:	(sysctl:0x164) PLL Frequency 1                  */
+#define SYSCTL_PLLFREQ1_Q				0x00001F00 		//!< PLL Q Value
+#define SYSCTL_PLLFREQ1_Q_Set(x)		((x)<<8) 		//!<  set macro
+#define SYSCTL_PLLFREQ1_N				0x0000001F 		//!< PLL N Value
+#define SYSCTL_PLLFREQ1_N_Set(x)		((x)-1)	 		//!<  set macro
 /** @} */
 
 /** @defgroup SYSCTL_PLLSTAT:	(sysctl:0x168) PLL Status                       */
+#define SYSCTL_PLLSTAT_LOCK				0x00000001 		//!< PLL Lock
 /** @} */
 
 /** @defgroup SYSCTL_SLPPWRCFG:	(sysctl:0x188) Sleep Power Configuration        */
@@ -810,7 +867,15 @@ struct SYSCTL_TypeDef
 /** @} */ // @defgroup SYSCTL_regs_define
 
 
-void SysCtlClockSet(unsigned int config);
-unsigned int SysCtlClockGet();
+struct TM4C_CLOCK_CFG
+{
+	uint32_t CFG_clk_freq;
+	uint32_t CFG_xtal_freq;
+	uint32_t CFG_RSCLKCFG;
+	uint32_t CFG_PLLFREQ0;
+	uint32_t CFG_PLLFREQ1;
+};
+
+void SysCtlClockSet(const TM4C_CLOCK_CFG* cfg);
 
 #endif /* SYSCTL_TM4C_H_ */

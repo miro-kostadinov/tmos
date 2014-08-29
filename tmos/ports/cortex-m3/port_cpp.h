@@ -129,7 +129,7 @@ struct DRIVER_INFO_Type {
 
 	DRIVER_INDEX drv_index; /**< driver index in DRV_TABLE */
 	unsigned char isr_priority; /**< driver ISR priority */
-	unsigned char peripheral_indx; /**< peripheral index  */
+	unsigned short peripheral_indx; /**< peripheral index  */
 };
 
 /**

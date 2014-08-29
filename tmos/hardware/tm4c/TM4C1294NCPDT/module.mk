@@ -14,7 +14,7 @@ local_c_src-y 	:=
 
 local_cpp_src-y	:=   
 
-local_h_src-y 	:= mcu_inc.h
+local_h_src-y 	:= mcu_inc.h mcu_cpp.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

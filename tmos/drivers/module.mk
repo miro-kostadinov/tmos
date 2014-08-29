@@ -17,6 +17,10 @@ ifeq ($(CFG_CORE), cortex-m3)
 local_cpp_src-y	+= systick_drv.cpp
 local_h_src-y 	+= systick_drv.h
 endif
+ifeq ($(CFG_CORE), cortex-m4)
+local_cpp_src-y	+= systick_drv.cpp
+local_h_src-y 	+= systick_drv.h
+endif
 
 USE_GUIX := $(call use_if_or,$(USE_GUI)$(USE_GUI2))
 
