@@ -456,6 +456,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 					 return 1;
 				 case KT_DIGIT:
 					 ch += '0';
+					 last_key =0;
 					 process_alpha_key(msg.param, (const char *)&ch);
 					 return 1;
 				 }
