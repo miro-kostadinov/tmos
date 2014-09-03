@@ -78,22 +78,44 @@ void SysCtlClockSet(const TM4C_CLOCK_CFG* cfg)
 {
 	uint32_t reg;
 
-	if( (cfg->CFG_RSCLKCFG & SYSCTL_RSCLKCFG_OSCSRC) == SYSCTL_RSCLKCFG_OSCSRC_MOSC)
+
+	do
 	{
-		// Clear MOSC power down, high oscillator range setting, and no crystal
-		// present setting.
-		reg = SYSCTL->SYSCTL_MOSCCTL & ~(SYSCTL_MOSCCTL_OSCRNG | SYSCTL_MOSCCTL_PWRDN
-						| SYSCTL_MOSCCTL_NOXTAL);
+		//clear failures
+		SYSCTL->SYSCTL_MISC = SYSCTL_MISC_MOFMIS;
 
-		// Increase the drive strength for MOSC of 10 MHz and above.
-		if (cfg->CFG_xtal_freq >= 10000000)
+		if( (cfg->CFG_RSCLKCFG & SYSCTL_RSCLKCFG_OSCSRC) == SYSCTL_RSCLKCFG_OSCSRC_MOSC)
 		{
-			reg |= SYSCTL_MOSCCTL_OSCRNG;
+			// Clear MOSC power down, high oscillator range setting, and no crystal
+			// present setting.
+			reg = SYSCTL->SYSCTL_MOSCCTL & ~(SYSCTL_MOSCCTL_OSCRNG | SYSCTL_MOSCCTL_PWRDN
+							| SYSCTL_MOSCCTL_NOXTAL);
+
+			// Increase the drive strength for MOSC of 10 MHz and above.
+			if (cfg->CFG_xtal_freq >= 10000000)
+			{
+				reg |= SYSCTL_MOSCCTL_OSCRNG;
+			}
+
+			if( (reg ^ SYSCTL->SYSCTL_MOSCCTL) &
+					(SYSCTL_MOSCCTL_OSCRNG| SYSCTL_MOSCCTL_PWRDN | SYSCTL_MOSCCTL_NOXTAL))
+			{
+				//clear status
+				SYSCTL->SYSCTL_MISC = SYSCTL_MISC_MOSCPUPMIS;
+
+				// apply new settings
+				SYSCTL->SYSCTL_MOSCCTL = reg;
+
+				//wait
+				for(int retry=0; retry < 1000; retry++)
+				{
+					if(SYSCTL->SYSCTL_RIS & (SYSCTL_RIS_MOFRIS | SYSCTL_RIS_MOSCPUPRIS))
+						break;
+				}
+			}
+
 		}
-
-		SYSCTL->SYSCTL_MOSCCTL = reg;
-
-	}
+	} while(SYSCTL->SYSCTL_RIS & SYSCTL_RIS_MOFRIS);
 
 	if(cfg->CFG_RSCLKCFG & SYSCTL_RSCLKCFG_USEPLL)
 	{
@@ -117,7 +139,8 @@ void SysCtlClockSet(const TM4C_CLOCK_CFG* cfg)
 				|| SYSCTL->SYSCTL_PLLFREQ0	!= cfg->CFG_PLLFREQ0)
 		{
 			// Set the oscillator source.
-			SYSCTL->SYSCTL_RSCLKCFG = cfg->CFG_RSCLKCFG & ~SYSCTL_RSCLKCFG_OSCSRC;
+			SYSCTL->SYSCTL_RSCLKCFG |= cfg->CFG_RSCLKCFG & (SYSCTL_RSCLKCFG_OSCSRC |
+					SYSCTL_RSCLKCFG_PLLSRC | SYSCTL_RSCLKCFG_PSYSDIV | SYSCTL_RSCLKCFG_OSYSDIV);
 
 			//
 			// Set the M, N and Q values provided from the table and preserve
@@ -126,9 +149,10 @@ void SysCtlClockSet(const TM4C_CLOCK_CFG* cfg)
 			SYSCTL->SYSCTL_PLLFREQ1 = cfg->CFG_PLLFREQ1;
 			reg = SYSCTL->SYSCTL_PLLFREQ0 & SYSCTL_PLLFREQ0_PLLPWR;
 			SYSCTL->SYSCTL_PLLFREQ0 = reg | (cfg->CFG_PLLFREQ0 & ~SYSCTL_PLLFREQ0_PLLPWR);
-			// Trigger the PLL to lock to the new frequency.
-			SYSCTL->SYSCTL_RSCLKCFG |= SYSCTL_RSCLKCFG_NEWFREQ;
-		}
+
+			reg = 1;
+		} else
+			reg = 0;
 
 		// Set the Flash and EEPROM timing values.
 		SYSCTL->SYSCTL_MEMTIM0 = SysCtlMemTimingGet(cfg->CFG_clk_freq);
@@ -138,6 +162,13 @@ void SysCtlClockSet(const TM4C_CLOCK_CFG* cfg)
 		{
 			// Power up the PLL.
 			SYSCTL->SYSCTL_PLLFREQ0 |= SYSCTL_PLLFREQ0_PLLPWR;
+		} else
+		{
+			if(reg)
+			{
+				// Trigger the PLL to lock to the new frequency.
+				SYSCTL->SYSCTL_RSCLKCFG |= SYSCTL_RSCLKCFG_NEWFREQ;
+			}
 		}
 
 		// Wait until the PLL has locked.

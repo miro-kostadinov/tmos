@@ -274,12 +274,20 @@ struct SYSCTL_TypeDef
 /** @} */
 
 /** @defgroup SYSCTL_RIS: 		(sysctl:0x050) Raw Interrupt Status             */
+#define SYSCTL_RIS_MOSCPUPRIS			0x00000100 		//!< MOSC Power Up Raw Interrupt Status
+#define SYSCTL_RIS_PLLLRIS				0x00000040 		//!< PLL Lock Raw Interrupt Status
+#define SYSCTL_RIS_MOFRIS				0x00000008 		//!< Main Oscillator Failure Raw Interrupt Status
+#define SYSCTL_RIS_BORRIS				0x00000002 		//!< Brown-Out Reset Raw Interrupt Status
 /** @} */
 
 /** @defgroup SYSCTL_IMC: 		(sysctl:0x054) Interrupt Mask Control           */
 /** @} */
 
 /** @defgroup SYSCTL_MISC:		(sysctl:0x058) Masked Interrupt Status and Clear*/
+#define SYSCTL_MISC_MOSCPUPMIS			0x00000100 		//!< MOSC Power Up Masked Interrupt Status
+#define SYSCTL_MISC_PLLLMIS				0x00000040 		//!< PLL Lock Masked Interrupt Status
+#define SYSCTL_MISC_MOFMIS				0x00000008 		//!< Main Oscillator Failure Masked Interrupt Status
+#define SYSCTL_MISC_BORMIS				0x00000002 		//!< BOR Masked Interrupt Status
 /** @} */
 
 /** @defgroup SYSCTL_RESC:		(sysctl:0x05C) Reset Cause                      */
