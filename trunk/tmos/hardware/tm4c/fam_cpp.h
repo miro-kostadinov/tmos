@@ -13,11 +13,11 @@
 #ifndef FAM_CPP_H_
 #define FAM_CPP_H_
 
-#include "sysctl_tm4c.h"
-#include "gpio_tm4c.h"
+#include <sysctl_tm4c.h>
+#include <gpio_tm4c.h>
+#include <qssi_tm4c.h>
 //#include "uart_lm3s.h"
 //#include "udma_lm3s.h"
-//#include "ssi_lm3s.h"
 //#include "adc_lm3s.h"
 //#include "types_lm3s.h"
 //#include "timer_lm3s.h"

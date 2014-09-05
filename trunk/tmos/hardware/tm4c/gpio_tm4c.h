@@ -145,6 +145,10 @@ typedef unsigned int PIN_DESC;
 #define PD_MUX_9			(9 << PD_MUX_Pos)		//!< mux configuration 9
 #define PD_MUX_10			(10 << PD_MUX_Pos)		//!< mux configuration 10
 #define PD_MUX_11			(11 << PD_MUX_Pos)		//!< mux configuration 11
+#define PD_MUX_12			(12 << PD_MUX_Pos)		//!< mux configuration 12
+#define PD_MUX_13			(13 << PD_MUX_Pos)		//!< mux configuration 13
+#define PD_MUX_14			(14 << PD_MUX_Pos)		//!< mux configuration 14
+#define PD_MUX_15			(15 << PD_MUX_Pos)		//!< mux configuration 15
 
 /// Pin definition bits 11:8 = pin mode
 #define PD_MODE_Pos 		8						//!< mode bits position

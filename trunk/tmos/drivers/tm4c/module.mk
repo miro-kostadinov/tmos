@@ -13,9 +13,9 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= 
+local_cpp_src-y	+= spi_drv.cpp
 
-local_h_src-y 	+= 
+local_h_src-y 	+= spi_drv.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
