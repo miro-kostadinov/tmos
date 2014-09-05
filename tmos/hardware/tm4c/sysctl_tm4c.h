@@ -885,5 +885,8 @@ struct TM4C_CLOCK_CFG
 };
 
 void SysCtlClockSet(const TM4C_CLOCK_CFG* cfg);
+void SysCtlPeripheralReset(uint32_t ulPeripheral);
+void SysCtlPeripheralEnable(uint32_t ulPeripheral);
+void SysCtlPeripheralDisable(uint32_t ulPeripheral);
 
 #endif /* SYSCTL_TM4C_H_ */
