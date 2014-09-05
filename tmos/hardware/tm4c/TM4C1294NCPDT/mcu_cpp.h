@@ -24,10 +24,10 @@
 #define GPIOB    	CAST(GPIO_TypeDef	, BASE_GPIOB)       //!< 0x40005000 GPIO Port B
 #define GPIOC    	CAST(GPIO_TypeDef	, BASE_GPIOC)       //!< 0x40006000 GPIO Port C
 #define GPIOD    	CAST(GPIO_TypeDef	, BASE_GPIOD)       //!< 0x40007000 GPIO Port D
-#define SSI0     	CAST(SSI_TypeDef	, BASE_SSI0)        //!< 0x40008000 SSI0
-#define SSI1     	CAST(SSI_TypeDef	, BASE_SSI1)        //!< 0x40009000 SSI1
-#define SSI2     	CAST(SSI_TypeDef	, BASE_SSI2)        //!< 0x4000A000 SSI2
-#define SSI3     	CAST(SSI_TypeDef	, BASE_SSI3)        //!< 0x4000B000 SSI3
+#define SSI0     	CAST(QSSI_TypeDef	, BASE_SSI0)        //!< 0x40008000 SSI0
+#define SSI1     	CAST(QSSI_TypeDef	, BASE_SSI1)        //!< 0x40009000 SSI1
+#define SSI2     	CAST(QSSI_TypeDef	, BASE_SSI2)        //!< 0x4000A000 SSI2
+#define SSI3     	CAST(QSSI_TypeDef	, BASE_SSI3)        //!< 0x4000B000 SSI3
 #define UART0    	CAST(UART_TypeDef	, BASE_UART0)       //!< 0x4000C000 UART0
 #define UART1    	CAST(UART_TypeDef	, BASE_UART1)       //!< 0x4000D000 UART1
 #define UART2    	CAST(UART_TypeDef	, BASE_UART2)       //!< 0x4000E000 UART2
