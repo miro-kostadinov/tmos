@@ -209,6 +209,49 @@ void SysCtlClockSet(const TM4C_CLOCK_CFG* cfg)
 	}
 
 }
+
+void SysCtlPeripheralReset(uint32_t ulPeripheral)
+{
+	__IO uint32_t* reg;
+
+    reg = &SYSCTL->SYSCTL_SRWD;
+    reg += ulPeripheral>>8;
+    ulPeripheral = 1 << (ulPeripheral & 0xFF);
+
+
+    // Put the peripheral into the reset state.
+    reg[0] |= ulPeripheral;
+
+    // Delay for a little bit.
+    for(int tout = 0; tout < 16; tout++)
+    {
+    	__NOP();
+    }
+
+    // Take the peripheral out of the reset state.
+    reg[0] &= ~ulPeripheral;
+}
+
+void SysCtlPeripheralEnable(uint32_t ulPeripheral)
+{
+	__IO uint32_t* reg;
+
+    reg = &SYSCTL->SYSCTL_RCGCWD;
+
+    // Enable this peripheral.
+    reg[ulPeripheral>>8] |= (1<<(ulPeripheral&0xff));
+}
+
+void SysCtlPeripheralDisable(uint32_t ulPeripheral)
+{
+	__IO uint32_t* reg;
+
+    reg = &SYSCTL->SYSCTL_RCGCWD;
+
+    // Disable this peripheral.
+    reg[ulPeripheral>>8] &= ~(1<<(ulPeripheral&0xff));
+}
+
 #endif
 
 
