@@ -1,22 +1,19 @@
 ################################################################################
 #
-#	Make include for hardware/cortex-m0
+#	Make include for ports/cortex-m0/stm32
 #	
 #   Platform: MPOS rev.3.0	
-#
 #
 ################################################################################
 
 # local sources
-local_as_src-y	:=  
-local_c_src-y 	:= 
-local_cpp_src-y	:=
+local_as_src-y	:=
+local_c_src-y 	:=
+local_cpp_src-y	:=   
 local_h_src-y 	:=
 
-local_cpp_src-y	+= 
-
-local_h_src-y 	+= core_map.h cdbg_cm0.h mpu_cm0.h nvic_cm0.h scb_cm0.h systick_cm0.h
-
+local_cpp_src-y	+= lowlevel.cpp
+   
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
 c_sources  	+= $(call changepath,$(local_c_src-y))
@@ -24,7 +21,7 @@ cpp_sources += $(call changepath,$(local_cpp_src-y))
 h_sources  	+= $(call changepath,$(local_h_src-y))
 
 #add current directory to include path
-inc_dirs += $(subdirectory) 
+#inc_dirs += $(subdirectory) 
 
 #submodules
 local_modules-y :=

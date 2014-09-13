@@ -1,21 +1,31 @@
 ################################################################################
 #
-#	Make include for hardware/cortex-m0
+#	Make include for cortex-m0
 #	
 #   Platform: MPOS rev.3.0	
 #
-#
+#	core/family/mcu
 ################################################################################
 
 # local sources
-local_as_src-y	:=  
-local_c_src-y 	:= 
+local_as_src-y	:=
+local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= 
+local_as_src-y	+= exceptions.S services.S 
+local_as_src-$(USE_TMOS_STRING)	+= tmos_string.S 
+local_as_src-$(USE_TMOS_STDLIB)	+= tmos_stdlib.S 
+local_as_src-$(USE_TMOS_STDIO)	+= tmos_stdio.S 
+local_as_src-$(USE_TMOS_LLONG)	+= tmos_llong.S 
 
-local_h_src-y 	+= core_map.h cdbg_cm0.h mpu_cm0.h nvic_cm0.h scb_cm0.h systick_cm0.h
+local_cpp_src-y	+= kernel.cpp handle.cpp services.cpp  
+local_cpp_src-$(USE_TMOS_STDLIB)+= tmos_stdlib.cpp
+
+local_h_src-y 	+= port_cpp.h port_inc.h tmos_string.h tmos_stdlib.h tasks.h 
+local_h_src-y 	+= services.h tmos_swi.h handle.h tmos_stdio.h port_asm.h
+local_h_src-y	+= tmos_atomic.h
+local_h_src-$(USE_TMOS_LLONG)	+= tmos_llong.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -27,7 +37,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 inc_dirs += $(subdirectory) 
 
 #submodules
-local_modules-y :=
+local_modules-y := $(CFG_FAMILY)
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
