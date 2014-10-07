@@ -137,8 +137,11 @@ struct GObject
 	int draw_text(LCD_MODULE* lcd, const char* txt);
 	void draw_text_line(LCD_MODULE* lcd, const char* txt, unsigned int len);
 	void draw_line(int x1, int y1, int x2, int y2);
+	void draw_line(POINT_T a, POINT_T b){draw_line(a.x, a.y, b.x, b.y);}
 	void draw_circle(int x0, int y0, int r);
+	void draw_circle(POINT_T center, int r) {draw_circle(center.x, center.y, r);}
 	void fill_circle(int x0, int y0, int r);
+	void fill_circle(POINT_T center, int r) {fill_circle(center.x, center.y, r);}
 	virtual bool close();
 	bool remove();
 	// Redraw methods
@@ -165,8 +168,8 @@ struct GObject
 	{
 		;
 	}
-	void draw_poligon(RECT_T& frame, bool fill = false);
-	void draw_rectangle(RECT_T& frame, bool fill = false);
+	void draw_poligon(const RECT_T& frame, bool fill = false);
+	void draw_rectangle(const RECT_T& frame, bool fill = false);
 
 	// queue message
 //	void send_message (GMessage msg);
