@@ -7,8 +7,13 @@
 
 #ifndef CRC32_H_
 #define CRC32_H_
+
+#define INIT_REFLECTED 0xffffffff
+#define XOROT 0xffffffff
+
 extern "C"
 {
+extern const unsigned long g_crctable[256];
 
 unsigned int CalculateCRC32(const unsigned char * buf, unsigned int len);
 unsigned int CalculateCRC32Slow(unsigned int crc, const void * buf,
