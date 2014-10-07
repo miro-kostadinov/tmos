@@ -465,7 +465,7 @@ bool GMenu::process_selected()
 		menu_template_t* next_menu = GetMenu(item->item);
 		if( !next_menu )
 		{
-			send_message(WM_DRAW, client_rect.as_int, 0L, this);
+			send_message(WM_DRAW, 0, client_rect.as_int, this);
 			if(item->flags & GMENU_FLG_CHECK_ITEM)
 			{
 				item->flags ^= GO_FLG_CHECKED;
@@ -531,7 +531,7 @@ unsigned int GMenu::process_key (GMessage& msg)
 				item =last;
 				if(scroll)
 					scroll->SetScrollPos(GO_FLG_VSCROLL, get_item_pos(last));
-				send_message(WM_DRAW, client_rect.as_int, 0L, this);
+				send_message(WM_DRAW, 0, client_rect.as_int, this);
 				return 1;
 			}
 		}
@@ -544,7 +544,7 @@ unsigned int GMenu::process_key (GMessage& msg)
 			item = tmp;
 			if(scroll)
 				scroll->SetScrollPos(GO_FLG_VSCROLL, get_item_pos(item));
-			send_message(WM_DRAW, client_rect.as_int, 0L, this);
+			send_message(WM_DRAW, 0, client_rect.as_int, this);
 		}
 		return 1;
 
