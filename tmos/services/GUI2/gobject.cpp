@@ -280,7 +280,7 @@ void GObject::invalidate(GObject* object, RECT_T area)
 }
 
 
-void GObject::draw_poligon(RECT_T& frame, bool fill)
+void GObject::draw_poligon(const RECT_T& frame, bool fill)
 {
 	draw_hline(frame.x0 +2, frame.x1 -2, frame.y0); // top line
 	draw_hline(frame.x0 +2, frame.x1 -2, frame.y1); // bottom line
@@ -300,7 +300,7 @@ void GObject::draw_poligon(RECT_T& frame, bool fill)
 	}
 }
 
-void GObject::draw_rectangle(RECT_T& frame, bool fill)
+void GObject::draw_rectangle(const RECT_T& frame, bool fill)
 {
 	draw_hline(frame.x0, frame.x1, frame.y0); // top line
 	draw_hline(frame.x0, frame.x1, frame.y1); // bottom line
@@ -340,8 +340,37 @@ void GObject::draw_point( int x, int y)
 		parent->draw_point(x,y);
 }
 
-void  GObject::draw_line(int x1, int y1, int x2, int y2)
+void  GObject::draw_line(int x0, int y0, int x1, int y1)
 {
+
+	int sx = x0 < x1 ? 1 : -1;
+	int sy = y0 < y1 ? 1 : -1;
+	int err, e2;
+	int dx, dy;
+
+	dx = (sx == 1)?(x1 - x0):(x0 - x1);
+	dy = (sy == 1)?(y1 - y0):(y0 - y1);
+
+	err = (dx > dy ? dx : -dy) / 2;
+
+	while(1)
+	{
+		draw_point(x0, y0);
+		if (x0 == x1 && y0 == y1)
+			break;
+		e2 = err;
+		if (e2 > -dx)
+		{
+			err -= dy;
+			x0 += sx;
+		}
+		if (e2 < dy)
+		{
+			err += dx;
+			y0 += sy;
+		}
+	}
+/*
 	int x, y;
 	int xs, xe, ys, ye;
 	int a, b;
@@ -386,10 +415,11 @@ void  GObject::draw_line(int x1, int y1, int x2, int y2)
 			while(ys <= ye )
 			{
 				x = (a*ys + b)/10000;
-				parent->draw_point(x, ys);
+				parent->draw_point(x, ys++);
 			}
 		}
 	}
+*/
 }
 
 void GObject::draw_circle(int x0, int y0, int radius)
