@@ -18,6 +18,8 @@
 #define CFG_STM32_OTG_MODE			0x0010		//!< OTG Mode
 #define CFG_STM32_OTG_HS_CORE		0x0020		//!< OTG HS peripheral
 #define CFG_STM32_OTG_LOW_POWER		0x0040		//!< low power
+#define CFG_STM32_OTG_FORCE_DEVICE	0x0080		//!< Forced device mode
+#define CFG_STM32_OTG_FORCE_HOST	0x0100		//!< Forced host mode
 
 /// Number of endpoints used
 #ifndef USB_NUMENDPOINTS
@@ -74,6 +76,15 @@ typedef USB_TypeDef USB_CONTROLLER;
 /// System has a high speed USB OTG controller.
 #ifndef USB_ENABLE_OTG
 #define USB_ENABLE_OTG 0
+#endif
+
+/// USB Host mode
+#ifndef USB_ENABLE_HOST
+#define USB_ENABLE_HOST 0
+#endif
+
+#ifndef MAX_USB_DEVICES
+#define MAX_USB_DEVICES	2
 #endif
 
 

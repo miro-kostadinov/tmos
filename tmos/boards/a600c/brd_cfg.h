@@ -103,5 +103,8 @@
 
 #define USE_ADC_DMA_DRIVER 1		//Enable ADC DMA
 
+/// USB stack options
+#define USB_ENABLE_HOST 	1
+#define USB_ENABLE_OTG 		1
 
 #endif /* BRD_CFG_H_ */

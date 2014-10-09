@@ -27,13 +27,17 @@ bool usb_hal_get_ep_status(USB_DRV_INFO drv_info, uint8_t ept_num, uint16_t* dat
 void usb_hal_stall(USB_Type* hw_base, unsigned int ept_num);
 void usb_hal_stall_clear(USB_Type* hw_base, unsigned int ept_num);
 void usb_hal_device_start(USB_DRV_INFO drv_info);
-void usb_hal_host_start(USB_DRV_INFO drv_info);
 void usb_hal_ept_reset(USB_DRV_INFO drv_info, unsigned int eptnum);
 void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDescriptor, unsigned int rindx=0);
 void usb_hal_config_fifo(USB_DRV_INFO drv_info);
+#if USB_ENABLE_HOST
+RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info);
+void usb_hal_host_bus_reset(USB_DRV_INFO drv_info);
+void usb_hal_host_resume(USB_DRV_INFO drv_info);
+void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pDescriptor);
+#endif
 
 void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags);
 void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags);
-void usb_host_resume(USB_DRV_INFO drv_info);
 
 #endif /* USB_HAL_H_ */

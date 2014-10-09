@@ -64,16 +64,19 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 		{
 			sig ^= req_hnd.signal;
         	req_hnd.res &= ~FLG_SIGNALED;
+			TRACE1_USB(" | req:");
 			if(req_hnd.res == RES_OK)
 			{
-				TRACE_USB(" | req:");
 				drv_info->drv_data->device.RequestHandler(drv_info, &request, &req_hnd);
+			} else
+			{
+				TRACE_USB(" res %x", req_hnd.res);
 			}
 			requested = false;
 		}
 		if(!requested)
 		{
-#if USB_ENABLE_OTG
+#if USB_ENABLE_HOST
 			if(sig == USB_DRIVER_SIG)
 			{
 				if(drv_info->drv_data->otg_h_sig & OTG_H_SIG_CON)
@@ -117,8 +120,8 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 							if( res == RES_OK)
 								break;
 						}
-						if(res != RES_OK)
-							usb_api_otg_off(drv_info, NULL);
+//						if(res != RES_OK)
+//							usb_api_otg_off(drv_info, NULL);
 
 					}
 				}
@@ -129,7 +132,7 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 						sig = atomic_fetch((volatile int*)&drv_info->drv_data->otg_h_sig);
 						sig &= ~OTG_H_SIG_RESUME;
 					} while(atomic_store((volatile int*)&drv_info->drv_data->otg_h_sig, sig));
-					usb_host_resume(drv_info);
+					usb_hal_host_resume(drv_info);
 
 
 				}
@@ -141,8 +144,12 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 				req_hnd.mode.as_ushort[1] = drv_info->drv_data->otg_state_cnt;
 #endif
 				req_hnd.tsk_start_read(&request, 8);
-				requested = true;
 #if USB_ENABLE_OTG
+				TRACE_USB_NAME(drv_info);
+				TRACE_USB(" st req:%u", drv_info->drv_data->otg_state_cnt);
+#endif
+				requested = true;
+#if USB_ENABLE_HOST
 			}
 #endif
 		}

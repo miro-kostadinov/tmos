@@ -217,7 +217,7 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 }
 
 #if USB_ENABLE_HOST
-WEAK_C void usb_host_power(USB_DRV_INFO drv_info, bool enable)
+WEAK_C void usb_hal_host_power(USB_DRV_INFO drv_info, bool enable)
 {
 	unsigned int reg;
 
@@ -256,7 +256,7 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 	// host power
 	if(flags & USB_OTG_FLG_HOST_PWR)
 	{
-		usb_host_power(drv_info, false);
+		usb_hal_host_power(drv_info, false);
 	}
 
 	// device con
@@ -306,7 +306,7 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 				switch(flags)
 				{
 				case USB_OTG_FLG_HOST_PWR:
-					usb_host_power(drv_info, true);
+					usb_hal_host_power(drv_info, true);
 					flags |= USB_OTG_FLG_HOST_CON;
 					break;
 
@@ -370,19 +370,7 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 
 }
 
-void usb_host_resume(USB_DRV_INFO drv_info)
-{
-	USB_Type* hw_base = drv_info->hw_base;
-
-	hw_base->USBPOWER |= USB_USBPOWER_RESUME;
-	tsk_sleep(20);
-	hw_base->USBPOWER &= ~USB_USBPOWER_RESUME;
-
-	hw_base->USBDRISC = USB_USBDRISC_RESUME;
-	hw_base->USBDRIM = USB_USBDRIM_RESUME;
-}
-
-#endif
+#endif // USB_ENABLE_HOST
 
 /**
  * Called once after boot (on DCR_RESET) to reset the driver
@@ -757,54 +745,6 @@ void usb_hal_device_start(USB_DRV_INFO drv_info)
 	drv_info->hw_base->USBPOWER |= USB_USBPOWER_SOFTCONN;
 }
 
-#if USB_ENABLE_HOST
-void usb_hal_host_start(USB_DRV_INFO drv_info)
-{
-	usb_hal_start(drv_info, USB_USBIE_VBUSERR | USB_USBIE_SESREQ
-			| USB_USBIE_DISCON | USB_USBIE_CONN | USB_USBIE_RESET
-			| USB_USBIE_RESUME | USB_USBIE_SUSPND);
-
-	USB_Type* hw_base = drv_info->hw_base;
-
-
-	// reset devices
-	for(int i=0; i<= MAX_USB_DEVICES; i++)
-	{
-		usb_remote_device* dev;
-
-		dev = &drv_info->drv_data->host_bus.usb_device[i];
-		dev->dev_adress = 0;
-		dev->dev_interface = 0;
-		if(dev->config_descriptor)
-		{
-			tsk_free(dev->config_descriptor);
-			dev->config_descriptor = NULL;
-		}
-		dev->dev_descriptor.bMaxPacketSize0 = 0;
-		dev->dev_descriptor.as_generic.bLength = 0;
-	}
-
-	//configure endpoint 0
-    Endpoint *pEndpoint;
-    pEndpoint = &drv_info->drv_data->endpoints[0];
-	usb_drv_end_transfers(pEndpoint, USBD_STATUS_RESET);
-    pEndpoint->state = ENDPOINT_STATE_IDLE;
-    pEndpoint->txfifo_size = 64;
-	hw_base->DEVICE_EP[EPT_0].USBTXTYPE = USB_USBTXTYPE_SPEED_FULL;
-
-	//enable all TX interrupts
-	hw_base->USBTXIE = USB_USBTXIE_ALL;
-
-	//enable receive interrupts
-	hw_base->USBRXIE = USB_USBRXIE_ALL;
-
-	// request session now
-	hw_base->USBDEVCTL |= USB_USBDEVCTL_SESSION;
-	TRACELN1_USB("USB sh ses");
-
-}
-#endif
-
 void usb_hal_ept_reset(USB_DRV_INFO drv_info, unsigned int eptnum)
 {
 	USB_Type* hw_base = drv_info->hw_base;
@@ -953,6 +893,13 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
     TRACE_USB(" CfgEp(%x)", eptnum + (ept_dir <<7));
 }
 
+#if USB_ENABLE_HOST
+void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pDescriptor)
+{
+	usb_hal_ept_config(drv_info, &pDescriptor->as_generic, pDescriptor->bEndpointAddress & 0xF);
+}
+#endif
+
 void usb_hal_config_fifo(USB_DRV_INFO drv_info)
 {
 	unsigned int size, limit, address, size_code;
@@ -1034,6 +981,77 @@ void usb_hal_config_fifo(USB_DRV_INFO drv_info)
 	} while ((limit >= 16) && (address > 4095));
 
 }
+
+#if USB_ENABLE_HOST
+RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info)
+{
+	usb_hal_start(drv_info, USB_USBIE_VBUSERR | USB_USBIE_SESREQ
+			| USB_USBIE_DISCON | USB_USBIE_CONN | USB_USBIE_RESET
+			| USB_USBIE_RESUME | USB_USBIE_SUSPND);
+
+	USB_Type* hw_base = drv_info->hw_base;
+
+
+	// reset devices
+	for(int i=0; i<= MAX_USB_DEVICES; i++)
+	{
+		usb_remote_device* dev;
+
+		dev = &drv_info->drv_data->host_bus.usb_device[i];
+		dev->dev_adress = 0;
+		dev->dev_interface = 0;
+		if(dev->config_descriptor)
+		{
+			tsk_free(dev->config_descriptor);
+			dev->config_descriptor = NULL;
+		}
+		dev->dev_descriptor.bMaxPacketSize0 = 0;
+		dev->dev_descriptor.as_generic.bLength = 0;
+	}
+
+	//configure endpoint 0
+    Endpoint *pEndpoint;
+    pEndpoint = &drv_info->drv_data->endpoints[0];
+	usb_drv_end_transfers(pEndpoint, USBD_STATUS_RESET);
+    pEndpoint->state = ENDPOINT_STATE_IDLE;
+    pEndpoint->txfifo_size = 64;
+	hw_base->DEVICE_EP[EPT_0].USBTXTYPE = USB_USBTXTYPE_SPEED_FULL;
+
+	//enable all TX interrupts
+	hw_base->USBTXIE = USB_USBTXIE_ALL;
+
+	//enable receive interrupts
+	hw_base->USBRXIE = USB_USBRXIE_ALL;
+
+	// request session now
+	hw_base->USBDEVCTL |= USB_USBDEVCTL_SESSION;
+	TRACELN1_USB("USB sh ses");
+
+	return RES_IDLE;
+}
+
+void usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
+{
+	drv_info->hw_base->USBPOWER |= USB_USBPOWER_RESET;
+	// deassert reset
+	tsk_sleep(20);
+	drv_info->hw_base->USBPOWER &= ~USB_USBPOWER_RESET;
+	tsk_sleep(10);
+}
+
+void usb_hal_host_resume(USB_DRV_INFO drv_info)
+{
+	USB_Type* hw_base = drv_info->hw_base;
+
+	hw_base->USBPOWER |= USB_USBPOWER_RESUME;
+	tsk_sleep(20);
+	hw_base->USBPOWER &= ~USB_USBPOWER_RESUME;
+
+	hw_base->USBDRISC = USB_USBDRISC_RESUME;
+	hw_base->USBDRIM = USB_USBDRIM_RESUME;
+}
+
+#endif  // USB_ENABLE_HOST
 
 /** Handle USB bus reset
  *
