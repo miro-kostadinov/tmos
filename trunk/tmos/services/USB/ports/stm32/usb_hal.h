@@ -35,12 +35,24 @@ void usb_hal_device_start(USB_DRV_INFO drv_info);
 void usb_hal_ept_reset(USB_DRV_INFO drv_info, unsigned int ept_num);
 void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDescriptor);
 void usb_hal_config_fifo(USB_DRV_INFO drv_info);
+#if USB_ENABLE_HOST
+EXTERN_C void usb_hal_host_power(USB_DRV_INFO drv_info, bool enable);
+RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info);
+void usb_hal_host_bus_reset(USB_DRV_INFO drv_info);
+void usb_hal_host_resume(USB_DRV_INFO drv_info);
+void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pDescriptor);
+#endif
 
 void USB_HS_WKUP_ISR(USB_DRV_INFO drv_info);
 void USB_OTG_ISR(USB_DRV_INFO drv_info);
 #if USB_STM32_DEDICATED_EP1
 void USB_EP1_IN_ISR(USB_DRV_INFO drv_info);
 void USB_EP1_OUT_ISR(USB_DRV_INFO drv_info);
+#endif
+
+#if USB_ENABLE_HOST
+void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags);
+void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags);
 #endif
 
 

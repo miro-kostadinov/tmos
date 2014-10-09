@@ -12,6 +12,30 @@
 #include <usb_api.h>
 #include <usb_descriptors.h>
 
+/*
+ * 							Host logic
+ *
+ *  	The USB host is started when a client calls tsk_command(USB_CMD_OTG_CONFIG)
+ *  If the host is already running the call returns immediately with RES_OK.
+ *  if the OTG controller is already running as a device, the call is put on hold
+ *  until the session ends. Then it gets signaled with RES_FATAL and the client
+ *  can retry.
+ *  If the controller is free, the USB_CMD_OTG_CONFIG command tries to power up
+ *  the host. From the usbdrv_thread all drv_data->host_bus.usb_device[] are
+ *  initialized	and if/when the host controller gets powered the client gets
+ *  signaled with RES_OK.
+ * 	The success here means that the host is started and more likely there is a
+ * 	devices connected. But the usb bus is not reset and not scanned yet.
+ * 	The usbdrv_thread will reset and scan the bus and will set USB_OTG_FLG_HOST_OK
+ * 	flag in usb_driver.drv_data->otg_flags on success.
+ *
+ * 	Bottom line: the client shall keep calling USB_CMD_OTG_CONFIG while it gets
+ * 	RES_OK and USB_OTG_FLG_HOST_OK is set.
+ *
+ *
+ */
+
+
 RES_CODE hdc_request(USBGenericRequest* req, HANDLE hnd, void* ptr)
 {
 	RES_CODE res;
@@ -63,16 +87,13 @@ RES_CODE hcd_device_descriptor(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t indx)
 	req.wIndex = 0;									// Request-specific index parameter
 
 	device = &drv_info->drv_data->host_bus.usb_device[indx];
-	if(device->dev_descriptor.bMaxPacketSize0 == 0)
+	if(device->dev_descriptor.as_generic.bLength == 0)
 	{
 		req.wLength = 8;
-		res = hdc_request(&req, hnd, &device->dev_descriptor);
-	}
-	if(res == RES_OK)
-	{
-		req.wLength = sizeof(USBDeviceDescriptor);
-		res = hdc_request(&req, hnd, &device->dev_descriptor);
-	}
+	} else
+		req.wLength = device->dev_descriptor.as_generic.bLength;
+
+	res = hdc_request(&req, hnd, &device->dev_descriptor);
 	return res;
 }
 
@@ -302,7 +323,7 @@ static void trace_usb_class(USBClassCode code, const char* label)
 	CSTRING s;
 
 	usb_get_class_name(s, code);
-	TRACELN1("");
+	TRACELN1_USB("");
 	TRACE1_USB(label);
 	TRACE1_USB(s.c_str());
 }
@@ -426,9 +447,89 @@ static void trace_usb_dev(usb_remote_device *device)
 	}
 }
 
+RES_CODE usb_host_enum_bus(USB_DRV_INFO drv_info, HANDLE hnd)
+{
+	RES_CODE res;
+	uint32_t cnt;
+	USBEndpointDescriptor desc;
+
+	//update state counter
+	cnt = hnd->mode.as_ushort[1];
+	hnd->mode.as_ushort[1] = drv_info->drv_data->otg_state_cnt;
+	hnd->mode0 = 0;	// select device 0
+
+
+	//configure the control endpoints with default settings
+	desc.as_generic.bDescriptorType = ENDPOINT_DESCRIPTOR;
+	desc.bmAttributes = ENDPOINT_TYPE_CONTROL;
+	desc.wMaxPacketSize = 8;
+	desc.bEndpointAddress = 0x00;
+	usb_hal_host_ept_cfg(drv_info, &desc);
+	desc.bEndpointAddress = 0x80;
+	usb_hal_host_ept_cfg(drv_info, &desc);
+
+
+
+	//read device descriptor (1st 8 bytes)
+	res = hcd_device_descriptor(drv_info, hnd, 0);
+
+	//re-configure the endpoints and read the complete device descriptor
+	if(res == RES_OK )
+	{
+		usb_remote_device *device;
+
+		device = &drv_info->drv_data->host_bus.usb_device[0];
+		switch(device->dev_descriptor.bMaxPacketSize0)
+		{
+		case 8:			//we are fine
+			break;
+
+		case 16:
+		case 32:
+		case 64:
+			desc.wMaxPacketSize = device->dev_descriptor.bMaxPacketSize0;
+			desc.bEndpointAddress = 0x00;
+			usb_hal_host_ept_cfg(drv_info, &desc);
+			desc.bEndpointAddress = 0x80;
+			usb_hal_host_ept_cfg(drv_info, &desc);
+			break;
+
+		default:
+			TRACELN_USB("Unsupported bMaxPacketSize0=%u", device->dev_descriptor.bMaxPacketSize0);
+			return RES_ERROR;
+		}
+
+		if(device->dev_descriptor.as_generic.bLength >8)
+		{
+			res = hcd_device_descriptor(drv_info, hnd, 0);
+		}
+
+
+	}
+
+	if(res == RES_OK)
+	{
+		res = hcd_set_address(drv_info, hnd, 0);
+		if(res == RES_OK)
+		{
+			res = hcd_config_descriptor(drv_info, hnd, 0);
+			if(res == RES_OK)
+			{
+				usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_OK);
+
+				trace_usb_dev(&drv_info->drv_data->host_bus.usb_device[0]);
+
+			}
+		}
+	}
+	hnd->mode.as_ushort[1] = cnt;
+
+	return res;
+}
+
 RES_CODE usb_host_reset_bus(USB_DRV_INFO drv_info, HANDLE hnd)
 {
-	unsigned int res = RES_ERROR;
+	RES_CODE res = RES_ERROR;
 
 	// clear reset request and assert it
 	__disable_irq();
@@ -437,41 +538,17 @@ RES_CODE usb_host_reset_bus(USB_DRV_INFO drv_info, HANDLE hnd)
 
 	if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST)
 	{
-		drv_info->hw_base->USBPOWER |= USB_USBPOWER_RESET;
-		// deassert reset
-		tsk_sleep(20);
-		drv_info->hw_base->USBPOWER &= ~USB_USBPOWER_RESET;
-		tsk_sleep(10);
+		usb_hal_host_bus_reset(drv_info);
 
+		tsk_sleep(10);
+		if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_RST)
+		{
+			return RES_ERROR;
+		}
 		// if everything OK -> enumerate
 		if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST)
 		{
-			uint32_t cnt;
-			//read device descriptor
-
-			cnt = hnd->mode.as_ushort[1];
-			hnd->mode.as_ushort[1] = drv_info->drv_data->otg_state_cnt;
-			hnd->mode0 = 0;	//device 0
-			res = hcd_device_descriptor(drv_info, hnd, 0);
-
-			if(res == RES_OK)
-			{
-				res = hcd_set_address(drv_info, hnd, 0);
-				if(res == RES_OK)
-				{
-					res = hcd_config_descriptor(drv_info, hnd, 0);
-					if(res == RES_OK)
-					{
-//						__disable_irq();
-						usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_OK);
-//						__enable_irq();
-
-						trace_usb_dev(&drv_info->drv_data->host_bus.usb_device[0]);
-
-					}
-				}
-			}
-			hnd->mode.as_ushort[1] = cnt;
+			res = usb_host_enum_bus(drv_info, hnd);
 		}
 	}
 	return res;

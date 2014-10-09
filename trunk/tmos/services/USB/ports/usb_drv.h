@@ -48,6 +48,8 @@
 #define ENDPOINT_STATE_RECEIVING      0x08 //!< Endpoint is receiving data.
 #define ENDPOINT_STATE_RECEIVING_OFF  0x10 //!< Endpoint is receiving data (rxfifo_cnt).
 #define ENDPOINT_STATE_STALL		  0x20 //!< Endpoint is receiving data (rxfifo_cnt).
+#define ENDPOINT_STATE_NYET			  0x40 //!< Endpoint is not ready
+#define ENDPOINT_STATE_ERR			  0x80 //!< Endpoint has error
 
 /*   Constants: USB device API return values */
 #define USBD_STATUS_ABORTED   RES_SIG_IDLE	//!< Operation has been aborted (stalled)
@@ -114,7 +116,7 @@ struct usb_remote_device
 
 struct usb_bus
 {
-	usb_remote_device usb_device[MAX_USB_DEVICES + 1];
+	usb_remote_device usb_device[MAX_USB_DEVICES + 1]; //!< More than 1 device can be supported if hub present
 
 };
 #endif
@@ -150,7 +152,14 @@ struct USB_DRIVER_INFO
 	USB_DRIVER_DATA* 	drv_data;	//!< pointer to the driver data
 	const USBDDriverDescriptors * dev_descriptors;
 	const usb_config_t*		cfg;		//!< configuration port-specific parameters
+	const char*			usb_name;
 };
+
+#if TRACE_USB_LEVEL >= TRACE_LEVEL_DEBUG
+#define TRACE_USB_NAME(drv)	TRACELN1_USB(""); TRACE1_USB(drv->usb_name)
+#else
+#define TRACE_USB_NAME(drv)
+#endif
 
 typedef const USB_DRIVER_INFO* USB_DRV_INFO;
 
