@@ -33,7 +33,7 @@ typedef struct
   __IO uint32_t GRXSTSP;      		//!< (otg Offset: 0x0020) Receive Sts Q Read & POP Register
   __IO uint32_t GRXFSIZ;      		//!< (otg Offset: 0x0024) Receive FIFO Size Register
   __IO uint32_t DIEPTXF0_HNPTXFSIZ; //!< (otg Offset: 0x0028) EP0 / Non Periodic Tx FIFO Size Register
-  __IO uint32_t HNPTXSTS;   	 	//!< (otg Offset: 0x002C) Non Periodic Tx FIFO/Queue Sts reg
+  __IO uint32_t GNPTXSTS;   	 	//!< (otg Offset: 0x002C) Non Periodic Tx FIFO/Queue Sts reg
   __IO uint32_t reserved1[2];    	//!< (otg Offset: 0x0030) Reserved
   __IO uint32_t GCCFG;        		//!< (otg Offset: 0x0038) General Purpose IO Register
   __IO uint32_t CID;          		//!< (otg Offset: 0x003C) User ID Register
@@ -249,22 +249,23 @@ typedef struct
 /** @} */
 
 /** @defgroup GINTMSK;  (otg Offset: 0x0018) Core Interrupt Mask Register		*/
-#define OTG_GINTMSK_WKUM            (1u<<31)    //!< Resume/remote wakeup detected interrupt mask
-#define OTG_GINTMSK_SRQM            (1u<<30)    //!< Session request/New session detected interrupt mask
-#define OTG_GINTMSK_DISCM           (1u<<29)    //!< Disconnect detected interrupt mask
+#define OTG_GINTMSK_WUIM            (1u<<31)    //!< Resume/remote wakeup detected interrupt mask
+#define OTG_GINTMSK_SRQIM           (1u<<30)    //!< Session request/New session detected interrupt mask
+#define OTG_GINTMSK_DISCINT         (1u<<29)    //!< Disconnect detected interrupt mask
 #define OTG_GINTMSK_CIDSCHGM        (1u<<28)    //!< Connector ID status change mask
 #define OTG_GINTMSK_PTXFEM          (1u<<26)    //!< Periodic TxFIFO empty mask
-#define OTG_GINTMSK_HCM             (1u<<25)    //!< Host channels interrupt mask
-#define OTG_GINTMSK_HPRTM           (1u<<24)    //!< Host port interrupt mask
-#define OTG_GINTMSK_IPXFRM          (1u<<21)    //!< Incomplete periodic transfer mask
-#define OTG_GINTMSK_IISOOXFRM       (1u<<21)    //!< Incomplete isochronous OUT transfer mask
+#define OTG_GINTMSK_HCIM            (1u<<25)    //!< Host channels interrupt mask
+#define OTG_GINTMSK_PRTIM           (1u<<24)    //!< Host port interrupt mask
+#define OTG_GINTMSK_IPXFRM          (1u<<21)    //!<  Host Incomplete periodic transfer mask
+#define OTG_GINTMSK_IISOOXFRM       (1u<<21)    //!<  Device Incomplete isochronous OUT transfer mask
 #define OTG_GINTMSK_IISOIXFRM       (1u<<20)    //!< Incomplete isochronous IN transfer mask
-#define OTG_GINTMSK_OEPM            (1u<<19)    //!< OUT endpoints interrupt mask
-#define OTG_GINTMSK_IEPM            (1u<<18)    //!< IN endpoints interrupt mask
+#define OTG_GINTMSK_OEPINT          (1u<<19)    //!< OUT endpoints interrupt mask
+#define OTG_GINTMSK_IEPINT          (1u<<18)    //!< IN endpoints interrupt mask
+#define OTG_GINTMSK_EPMISM          (1u<<17)    //!< Endpoint mismatch interrupt mask
 #define OTG_GINTMSK_EOPFM           (1u<<15)    //!< End of periodic frame interrupt mask
 #define OTG_GINTMSK_ISOODRPM        (1u<<14)    //!< Isochronous OUT packet dropped interrupt mask
 #define OTG_GINTMSK_ENUMDNEM        (1u<<13)    //!< Enumeration done mask
-#define OTG_GINTMSK_USBRSTM         (1u<<12)    //!< USB reset mask
+#define OTG_GINTMSK_USBRST          (1u<<12)    //!< USB reset mask
 #define OTG_GINTMSK_USBSUSPM        (1u<<11)    //!< USB suspend mask
 #define OTG_GINTMSK_ESUSPM          (1u<<10)    //!< Early suspend mask
 #define OTG_GINTMSK_GONAKEFFM       (1u<<7)     //!< Global OUT NAK effective mask
@@ -272,7 +273,7 @@ typedef struct
 #define OTG_GINTMSK_NPTXFEM         (1u<<5)     //!< Non-periodic TxFIFO empty mask
 #define OTG_GINTMSK_RXFLVLM         (1u<<4)     //!< Receive FIFO non-empty mask
 #define OTG_GINTMSK_SOFM            (1u<<3)     //!< Start of (micro)frame mask
-#define OTG_GINTMSK_OTGM            (1u<<2)     //!< OTG interrupt mask
+#define OTG_GINTMSK_OTGINT          (1u<<2)     //!< OTG interrupt mask
 #define OTG_GINTMSK_MMISM           (1u<<1)     //!< Mode Mismatch interrupt
 /** @} */
 
@@ -297,13 +298,16 @@ typedef struct
 /** @defgroup GRXSTSP;  (otg Offset: 0x0020) Receive Sts Q Read & POP Register	*/
 #define OTG_GRXSTSP_PKTSTS_Msk      (15<<17)    //!< Packet status mask
 #define OTG_GRXSTSP_PKTSTS(n)       ((n)<<17)   //!< Packet status value
-#define OTG_GRXSTSP_PKTSTS_NAK 		  (1 << 17)	//!<
-#define OTG_GRXSTSP_PKTSTS_OUT_DATA   (2 << 17)	//!<  IN?? data packet received
-#define OTG_GRXSTSP_PKTSTS_OUT_COMP   (3 << 17)	//!<  IN?? transfer completed (triggers an interrupt)
-#define OTG_GRXSTSP_PKTSTS_SETUP_COMP (4 << 17)	//!<
-#define OTG_GRXSTSP_PKTSTS_TOGGLE_ERR (5 << 17)	//!<  Data toggle error (triggers an interrupt)
-#define OTG_GRXSTSP_PKTSTS_SETUP_DATA (6 << 17)	//!<
-#define OTG_GRXSTSP_PKTSTS_EP_HALT	  (7 << 17)	//!<  Channel halted (triggers an interrupt)
+#define OTG_GRXSTSP_PKTSTS_NAK 		  (1 << 17)	//!<  Dev: Global OUT NAK (triggers an interrupt)
+#define OTG_GRXSTSP_PKTSTS_OUT_DATA   (2 << 17)	//!<  Dev: OUT data packet received
+#define OTG_GRXSTSP_PKTSTS_OUT_COMP   (3 << 17)	//!<  Dev: OUT transfer completed (triggers an interrupt)
+#define OTG_GRXSTSP_PKTSTS_SETUP_COMP (4 << 17)	//!<  Dev: SETUP transaction completed (triggers an interrupt)
+#define OTG_GRXSTSP_PKTSTS_SETUP_DATA (6 << 17)	//!<  Dev: SETUP data packet received
+
+#define OTG_GRXSTSP_PKTSTS_IN_DATA    (2 << 17)	//!<  Host: IN data packet received
+#define OTG_GRXSTSP_PKTSTS_IN_COMP    (3 << 17)	//!<  Host: IN transfer completed (triggers an interrupt)
+#define OTG_GRXSTSP_PKTSTS_TOGGLE_ERR (5 << 17)	//!<  Host: Data toggle error (triggers an interrupt)
+#define OTG_GRXSTSP_PKTSTS_EP_HALT	  (7 << 17)	//!<  Host: Channel halted (triggers an interrupt)
 
 #define OTG_GRXSTSP_DPID_Msk        (3u<<15)    //!< Data PID mask
 #define OTG_GRXSTSP_DPID(n)         ((n)<<15)   //!< Data PID value
@@ -322,13 +326,24 @@ typedef struct
 /** @} */
 
 /** @defgroup DIEPTXF0_HNPTXFSIZ; (otg Offset: 0x0028) EP0 / Non Periodic Tx FIFO Size Register*/
-#define OTG_DIEPTXF_INEPTXFD_Msk    (0xFFFFu<<16)//!< IN endpoint TxFIFO depth mask
-#define OTG_DIEPTXF_INEPTXFD(n)     ((n)<<16)   //!< IN endpoint TxFIFO depth value
-#define OTG_DIEPTXF_INEPTXSA_Msk    (0xFFFF<<0) //!< IN endpoint FIFOx transmit RAM start address mask
-#define OTG_DIEPTXF_INEPTXSA(n)     ((n)<<0)    //!< IN endpoint FIFOx transmit RAM start address value
+#define OTG_DIEPTXF0_TX0FD_Msk     (0xFFFFu<<16)//!< Device Endpoint 0 TxFIFO depth mask
+#define OTG_DIEPTXF0_TX0FD(n)       ((n)<<16)   //!< Device Endpoint 0 TxFIFO dept value
+#define OTG_DIEPTXF0_TX0FSA_Msk     (0xFFFF<<0) //!< Device Endpoint 0 transmit RAM start address mask
+#define OTG_DIEPTXF0_TX0FSA(n)      ((n)<<0)    //!< Device Endpoint 0 transmit RAM start address
+
+#define OTG_HNPTXFSIZ_NPTXFD_Msk   (0xFFFFu<<16)//!< Host Non-periodic TxFIFO depth mask
+#define OTG_HNPTXFSIZ_NPTXFD(n)     ((n)<<16)   //!< Host Non-periodic TxFIFO depth value
+#define OTG_HNPTXFSIZ_NPTXFSA_Msk   (0xFFFF<<0) //!< Host Non-periodic transmit RAM start address mask
+#define OTG_HNPTXFSIZ_NPTXFSA(n)    ((n)<<0)    //!< Host Non-periodic transmit RAM start address
 /** @} */
 
-/** @defgroup HNPTXSTS; (otg Offset: 0x002C) Non Periodic Tx FIFO/Queue Sts reg	*/
+/** @defgroup GNPTXSTS; (otg Offset: 0x002C) Non Periodic Tx FIFO/Queue Sts reg	*/
+#define OTG_GNPTXSTS_NPTXQTOP_Msk   (0x7Fu<<24) //!< Top of the nonperiodic transmit request queue mask
+#define OTG_GNPTXSTS_NPTXQTOP(n)    ((n)<<24)   //!< Top of the nonperiodic transmit request queue value
+#define OTG_GNPTXSTS_NPTQXSAV_Msk   (0xFFu<<16) //!< Nonperiodic transmit request queue space available mask
+#define OTG_GNPTXSTS_NPTQXSAV(n)    ((n)<<16)   //!< Nonperiodic transmit request queue space available value
+#define OTG_GNPTXSTS_NPTXFSAV_Msk   (0xFFFF)	//!< Nonperiodic TxFIFO space available mask
+#define OTG_GNPTXSTS_NPTXFSAV(n)    (n)			//!< Nonperiodic TxFIFO space available value
 /** @} */
 
 /** @defgroup GCCFG;    (otg Offset: 0x0038) General Purpose IO Register		*/
@@ -415,6 +430,8 @@ typedef struct
 #define OTG_HPRT_PENA               (1u<<2)     //!< Port enable
 #define OTG_HPRT_PCDET              (1u<<1)     //!< Port Connect detected
 #define OTG_HPRT_PCSTS              (1u<<0)     //!< Port connect status
+#define OTG_HPRT_rc_w1_bits         (OTG_HPRT_PENA    | OTG_HPRT_PCDET |\
+	    OTG_HPRT_PENCHNG | OTG_HPRT_POCCHNG)     //!< rc_w1 bits (PENA is rc_w0 according to the RM v.6 but more likely is not)
 /** @} */
 
 
@@ -439,7 +456,7 @@ typedef struct
 #define OTG_HCCHAR_EPNUM_Msk        (15u<<11)   //!< Endpoint number mask
 #define OTG_HCCHAR_EPNUM(n)         ((n)<<11)   //!< Endpoint number value
 #define OTG_HCCHAR_MPS_Msk          (11u<<0)    //!< Maximum packet size mask
-#define OTG_HCCHAR_MPS(n)           (11u<<0)    //!< Maximum packet size value
+#define OTG_HCCHAR_MPS(n)           ((n)<<0)    //!< Maximum packet size value
 /** @} */
 
 /** @defgroup HCSPLT;   (otg Offset: 0x0504+) host channel-x split control register */
@@ -450,9 +467,11 @@ typedef struct
 #define OTG_HCINT_FRMOR             (1u<<9)     //!< Frame overrun
 #define OTG_HCINT_BBERR             (1u<<8)     //!< Babble error
 #define OTG_HCINT_TRERR             (1u<<7)     //!< Transaction Error
+#define OTG_HCINT_NYET              (1u<<6)     //!< Response received
 #define OTG_HCINT_ACK               (1u<<5)     //!< ACK response received/transmitted interrupt
 #define OTG_HCINT_NAK               (1u<<4)     //!< NAK response received interrupt
 #define OTG_HCINT_STALL             (1u<<3)     //!< STALL response received interrupt
+#define OTG_HCINT_AHBERR            (1u<<2)     //!< AHB error
 #define OTG_HCINT_CHH               (1u<<1)     //!< Channel halted
 #define OTG_HCINT_XFRC              (1u<<0)     //!< Transfer completed
 /** @} */
