@@ -99,4 +99,33 @@ RES_CODE usb_api_otg_off(USB_DRV_INFO drv_info, HANDLE client)
 	return RES_SIG_OK;
 }
 
+RES_CODE usb_api_get_hdev(USB_DRV_INFO drv_info, HANDLE client)
+{
+	usb_remote_device*	dst;
+	usb_remote_device*	src;
+
+	dst = (usb_remote_device*)client->dst.as_voidptr;
+	if(dst && dst->dev_adress && dst->dev_adress <= MAX_USB_DEVICES)
+	{
+		src = &drv_info->drv_data->host_bus.usb_device[dst->dev_adress-1];
+
+		if(dst->config_descriptor)
+			tsk_free(dst->config_descriptor);
+		memcpy(dst, src, sizeof(usb_remote_device));
+		if(src->config_descriptor)
+		{
+			uint32_t size;
+
+			size = src->config_descriptor->as_generic.bLength;
+			dst->config_descriptor = (USBConfigurationDescriptor*)tsk_malloc(size);
+			if(dst->config_descriptor)
+			{
+				memcpy(dst->config_descriptor, src->config_descriptor, size);
+				return RES_SIG_OK;
+			}
+		}
+	}
+	return RES_SIG_ERROR;
+}
+
 #endif

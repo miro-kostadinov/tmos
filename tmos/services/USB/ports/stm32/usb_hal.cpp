@@ -119,6 +119,7 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 			    		endpoint->epd_out.epd_pending = hnd->next;
 						usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 						hnd = endpoint->epd_out.epd_pending;
+						endpoint->epd_out.epd_state = ENDPOINT_STATE_IDLE;
 					} else
 					{
 						hnd->res |= FLG_OK;
@@ -136,13 +137,23 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 				return false;
 			}
 		}
-		endpoint->epd_out.epd_state = ENDPOINT_STATE_IDLE;
+//		endpoint->epd_out.epd_state = ENDPOINT_STATE_IDLE;
 	} else
 	{
-		TRACE_USB("usb drop %X %u bytes ep state=%u", status, bcnt, endpoint->epd_out.epd_state);
-		bcnt = (bcnt+3)/4;
-		while(bcnt--)
-			status = *fifo;
+		if(endpoint->epd_out.epd_state == ENDPOINT_STATE_IDLE)
+		{
+			TRACE1_USB("^");
+			endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING_OFF;
+			endpoint->rxfifo_cnt = bcnt;
+			endpoint->top_rx_cnt = top_rx_cnt;
+			return false;
+		} else
+		{
+			TRACE_USB("usb drop %X %u bytes ep state=%u", status, bcnt, endpoint->epd_out.epd_state);
+			bcnt = (bcnt+3)/4;
+			while(bcnt--)
+				status = *fifo;
+		}
 	}
 	return true;
 }
@@ -1896,7 +1907,7 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 				{
 				case USB_OTG_FLG_HOST_PWR:
 					usb_hal_host_power(drv_info, true);
-					flags |= USB_OTG_FLG_HOST_CON;
+					flags |= USB_OTG_FLG_HOST_CON | USB_OTG_FLG_HOST_PWR;
 					break;
 
 				case USB_OTG_FLG_HOST_RST:
@@ -2602,6 +2613,7 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 		    		usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 		    	else
 		    		usr_HND_SET_STATUS(hnd, RES_SIG_IDLE);
+				epdir->epd_state = ENDPOINT_STATE_IDLE;
 			}
 
 	}

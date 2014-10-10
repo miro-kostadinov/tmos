@@ -106,6 +106,7 @@ void usb_device::Initialize(const USBDDriverDescriptors *descriptors)
 void usb_device::GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd)
 {
     uint32_t length;
+    const void* res_ptr;
 
     const USBDeviceDescriptor *pDevice;
     const USBConfigurationDescriptor *pConfiguration;
@@ -115,7 +116,6 @@ void usb_device::GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd)
         (const USBGenericDescriptor **) pDescriptors->pStrings;
     const USBGenericDescriptor *pString;
     uint8_t numStrings = pDescriptors->numStrings;
-    uint8_t terminateWithNull = 0;
 
     /* Use different set of descriptors depending on device speed */
 
@@ -138,53 +138,32 @@ void usb_device::GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd)
 
     /* Check the descriptor type */
     length = pRequest->GetLength();
+    length = 0;
+    res_ptr = NULL;
     switch (pRequest->GetDescriptorType())
     {
         case DEVICE_DESCRIPTOR:
             TRACE1_USB(" Dev");
 
-            /* Adjust length and send descriptor */
-
-            if (length > pDevice->as_generic.GetLength() )
-            {
-                length = pDevice->as_generic.GetLength() ;
-            }
-            hnd->tsk_write(pDevice, length, USB_SETUP_WRITE_TOUT);
+            res_ptr = pDevice;
+            length = pDevice->as_generic.GetLength();
             break;
 
         case CONFIGURATION_DESCRIPTOR:
             TRACE1_USB(" Cfg");
 
-            /* Adjust length and send descriptor */
-
-            if (length > pConfiguration->wTotalLength)
-            {
-                length = pConfiguration->wTotalLength;
-                terminateWithNull = ((length % pDevice->bMaxPacketSize0) == 0);
-            }
-            hnd->tsk_write(pConfiguration, length, USB_SETUP_WRITE_TOUT);
-            if(terminateWithNull)
-            	hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
+            res_ptr = pConfiguration;
+            length = pConfiguration->wTotalLength;
             break;
 
         case DEVICEQUALIFIER_DESCRIPTOR:
             TRACE1_USB(" Qua");
 
             /* Check if descriptor exists */
-            if (!pQualifier)
+            if (pQualifier)
 			{
-				usb_svc_stall(hnd);
-			}
-			else
-			{
-
-				/* Adjust length and send descriptor */
-
-				if (length > pQualifier->as_generic.GetLength())
-				{
-					length = pQualifier->as_generic.GetLength();
-				}
-				hnd->tsk_write(pQualifier, length, USB_SETUP_WRITE_TOUT);
+                res_ptr = pQualifier;
+                length = pQualifier->as_generic.GetLength();
 			}
             break;
 
@@ -192,22 +171,10 @@ void usb_device::GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd)
             TRACE1_USB(" OSC");
 
             /* Check if descriptor exists */
-            if (!pOtherSpeed)
-            {
-                usb_svc_stall(hnd);
-            }
-            else
+            if (pOtherSpeed)
 			{
-				/* Adjust length and send descriptor */
-
-				if (length > pOtherSpeed->wTotalLength)
-				{
-					length = pOtherSpeed->wTotalLength;
-					terminateWithNull = ((length % pDevice->bMaxPacketSize0) == 0);
-				}
-				hnd->tsk_write(pOtherSpeed, length, USB_SETUP_WRITE_TOUT);
-				if (terminateWithNull)
-					hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
+                res_ptr = pOtherSpeed;
+                length = pOtherSpeed->wTotalLength;
 			}
             break;
 
@@ -217,34 +184,41 @@ void usb_device::GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd)
             TRACE_USB(" Str%d", indexRDesc);
 
             /* Check if descriptor exists */
-
-            if (indexRDesc >= numStrings)
-			{
-				usb_svc_stall(hnd);
-			}
-			else
+            if (indexRDesc < numStrings)
 			{
 
 				pString = pStrings[indexRDesc];
 
-				/* Adjust length and send descriptor */
-
-				if (length > pString->bLength)
-				{
-					length = pString->bLength;
-					terminateWithNull = ((length % pDevice->bMaxPacketSize0) == 0);
-				}
-				hnd->tsk_write(pString, length, USB_SETUP_WRITE_TOUT);
-				if (terminateWithNull)
-					hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
+                res_ptr = pString;
+                length = pString->bLength;
 			}
             break;
 
         default:
             TRACE_USB(" Unknown descriptor type (%d)", pRequest->GetDescriptorType());
-            usb_svc_stall(hnd);
             break;
     }
+
+    if(res_ptr)
+    {
+    	RES_CODE res;
+
+        /* Adjust length and send descriptor */
+        if ( length > pRequest->GetLength() )
+        {
+            length = pRequest->GetLength();
+        }
+        res = hnd->tsk_write(res_ptr, length, USB_SETUP_WRITE_TOUT);
+        if( res == RES_OK)
+        {
+            if( (length % pDevice->bMaxPacketSize0) == 0 )
+            	res = hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT);
+        }
+    } else
+    {
+		usb_svc_stall(hnd);
+    }
+
 }
 
 /** Returns the configuration descriptor
