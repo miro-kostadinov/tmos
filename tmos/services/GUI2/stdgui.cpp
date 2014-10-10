@@ -15,6 +15,25 @@ unsigned int current_laguage;
 STR_LIST wm_dbg_str = SZ(WM_DELETED) SZ(WM_QUIT) SZ(WN_DESTROY) SZ(WM_CLOSE)
 		SZ(WM_COMMAND) SZ(WM_CHANGE) SZ(WM_IDLE) SZ(WM_SET_FLAGS)
 		SZ(WM_CLR_FLAGS) SZ(WM_SETFOCUS) SZ(WM_KILLFOCUS) SZ(WM_TIMER) SZ(WM_INIT) SZ(WM_DRAW) SZ(WM_KEY);
+
+void trace_message(const GMessage& msg)
+{
+	TRACELN1("\e[4;1;32m");
+	if(msg.dst)
+		TRACE("%X[%d] ( %s 0x%X/%d\e[m", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param, msg.param);
+	else
+		TRACE("%X[INVALID] ( %s 0x%X/%d\e[m", msg.dst, szlist_at(wm_dbg_str, msg.code), msg.param, msg.param);
+	if(msg.code == WM_DRAW)
+	{
+		if(msg.lparam)
+			RECT_T(msg.lparam).dump();
+		else
+			msg.dst->rect.dump();
+	}
+	else
+		TRACE(" %lX ", msg.lparam);
+	TRACE1("\e[4;1;32m)\e[m");
+}
 #endif
 
 WEAK_C char TranslateKey( unsigned int key_code)
