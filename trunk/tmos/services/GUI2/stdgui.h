@@ -49,7 +49,9 @@ enum WM_MESSAGE:unsigned int
 	WM_KEY
 };
 
+#if GUI_DEBUG
 extern STR_LIST wm_dbg_str;
+#endif
 
 #define MAX_MESSAGES 10
 
