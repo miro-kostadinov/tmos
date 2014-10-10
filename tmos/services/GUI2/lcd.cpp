@@ -85,21 +85,21 @@ void LCD_MODULE::invalidate (GObject* object, RECT_T area)						//goes through t
 	}
 	while (tmp)
 	{
-		if ( (((GWindow*)tmp)->displays & display) && (tmp->flags & GO_FLG_SHOW) )
+		if ( (((GWindow*)tmp)->displays & display) && (tmp->flags & GO_FLG_SHOW) && !(tmp->flags & GO_FLG_TRANSPARENT) )
 		{
 			if (area.x0 >= tmp->rect.x0 && area.x1 <= tmp->rect.x1)
 			{
 				if (area.y0 < tmp->rect.y0)
 				{
 					if (area.y1 <= tmp->rect.y1 && area.y1 >= tmp->rect.y0)
-						area.y1 = tmp->rect.y0 - 1;									//the whole bottom part of the area is covered
+						area.y1 = tmp->rect.y0 - 1;								//the whole bottom part of the area is covered
 				}
 				else
 				{
 					if (area.y1 <= tmp->rect.y1)
 						return;													//the whole area is covered
 					if (area.y1 > tmp->rect.y1 && area.y0 <= tmp->rect.y1)
-						area.y0 = tmp->rect.y1 + 1;									//the whole upper part of the area is covered
+						area.y0 = tmp->rect.y1 + 1;								//the whole upper part of the area is covered
 				}
 			}
 		}
