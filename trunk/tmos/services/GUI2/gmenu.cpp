@@ -530,7 +530,7 @@ unsigned int GMenu::process_key (GMessage& msg)
 			{
 				item =last;
 				if(scroll)
-					scroll->SetScrollPos(GO_FLG_VSCROLL, get_item_pos(last));
+					scroll->SetScrollPos(GO_FLG_VSCROLL, get_item_pos(last),true);
 				send_message(WM_DRAW, 0, client_rect.as_int, this);
 				return 1;
 			}
@@ -543,7 +543,7 @@ unsigned int GMenu::process_key (GMessage& msg)
 		{
 			item = tmp;
 			if(scroll)
-				scroll->SetScrollPos(GO_FLG_VSCROLL, get_item_pos(item));
+				scroll->SetScrollPos(GO_FLG_VSCROLL, get_item_pos(item),true);
 			send_message(WM_DRAW, 0, client_rect.as_int, this);
 		}
 		return 1;
