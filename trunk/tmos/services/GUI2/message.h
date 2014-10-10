@@ -12,6 +12,7 @@
 #include <mqueue.h>
 
 struct GObject;
+struct GWindow;
 
 struct GMessage
 {
@@ -38,11 +39,13 @@ struct GMessage
 
 };
 
+
 template< const int size>
 struct msgQueue : mqueue<GMessage, size>
 {
 	msgQueue(): mqueue<GMessage, size>()
 		{;}
+
 	bool del_msg_for(GObject* owner)
 	{
 		unsigned short indx = this->out;
@@ -67,5 +70,12 @@ struct msgQueue : mqueue<GMessage, size>
 		return res;
 	}
 };
+
+extern msgQueue<MAX_MESSAGES> GQueue;
+extern GWindow* Gdesktop;
+
+void processes_all_messages(void);
+void send_message(WM_MESSAGE wm, unsigned int param, unsigned long long lparam, GObject* dst);
+
 
 #endif /* MESSAGE_H_ */
