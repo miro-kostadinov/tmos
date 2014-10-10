@@ -116,7 +116,11 @@ RES_CODE usb_api_get_hdev(USB_DRV_INFO drv_info, HANDLE client)
 		{
 			uint32_t size;
 
-			size = src->config_descriptor->as_generic.bLength;
+			if(src->config_descriptor->as_generic.bDescriptorType == CONFIGURATION_DESCRIPTOR)
+				size = src->config_descriptor->wTotalLength;
+			else
+				size = src->config_descriptor->as_generic.bLength;
+
 			dst->config_descriptor = (USBConfigurationDescriptor*)tsk_malloc(size);
 			if(dst->config_descriptor)
 			{

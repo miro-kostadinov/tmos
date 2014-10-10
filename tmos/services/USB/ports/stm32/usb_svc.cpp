@@ -88,13 +88,20 @@ void usb_svc_configendpoints_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 
 	endpoint = (const USBGenericDescriptor*)hnd->src.as_int;
 
+#if USB_ENABLE_HOST
+	if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
+	{
+		usb_hal_host_ept_cfg(drv_info, (const USBEndpointDescriptor*)endpoint);
+		return;
+	}
+#endif
 	usb_hal_ept_config(drv_info, endpoint);
 }
 
 /**
  * Sets the current device configuration
 */
-void usb_svc_configendpoint(HANDLE hnd, const USBGenericDescriptor* ds)
+void usb_svc_configendpoint(HANDLE hnd, const USBGenericDescriptor* ds, int bCfgFifo)
 {
 	// note: Stall will be performed for the last endpoint used by this handle!!
 	hnd->dst.as_voidptr = (void*)usb_svc_configendpoints_hook;

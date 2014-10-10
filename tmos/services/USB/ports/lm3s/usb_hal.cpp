@@ -334,7 +334,8 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 						__disable_irq();
 					}
 
-					drv_data->otg_state_cnt += drv_data->otg_state_cnt & USB_STATE_CNT_INVALID;
+					drv_data->otg_state_cnt += 2;
+					drv_data->otg_state_cnt &= 0x7FFE;
 					break;
 
 				}
@@ -352,7 +353,8 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 				switch(flags)
 				{
 				case USB_OTG_FLG_DEV_OK:
-					drv_data->otg_state_cnt += drv_data->otg_state_cnt & USB_STATE_CNT_INVALID;
+					drv_data->otg_state_cnt += 2;
+					drv_data->otg_state_cnt &= 0x7FFE;
 					break;
 
 				case USB_OTG_FLG_DEV_CON:

@@ -28,4 +28,6 @@ USBEndpointDescriptor* usb_get_enpoint(const USBConfigurationDescriptor* des,
 RES_CODE  usb_get_interface_class_name(CSTRING& s,
 		const USBConfigurationDescriptor* des, int interface);
 
+int trace_usb_descriptor(USBGenericDescriptor* des);
+
 #endif /* USB_HOST_H_ */
