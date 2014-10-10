@@ -11,6 +11,7 @@
 #include <usb_hal.h>
 #include <usb_api.h>
 #include <usb_descriptors.h>
+#include <hid_descriptors.h>
 
 /*
  * 							Host logic
@@ -316,8 +317,6 @@ RES_CODE usb_get_interface_class_name(CSTRING& s,
 	return RES_ERROR;
 }
 
-static int trace_usb_descriptor(USBGenericDescriptor* des);
-
 static void trace_usb_class(USBClassCode code, const char* label)
 {
 	CSTRING s;
@@ -327,6 +326,33 @@ static void trace_usb_class(USBClassCode code, const char* label)
 	TRACE1_USB(label);
 	TRACE1_USB(s.c_str());
 }
+
+static void trace_usb_hid_descriptor(USBHIDDescriptor* des)
+{
+	TRACELN_USB("\thid=%04x", des->bcdHID);
+	TRACELN_USB("\tcountry=%u", des->bCountryCode);
+	TRACELN_USB("\tdtors=%u", des->bNumDescriptors);
+	for(int i=0; i < des->bNumDescriptors; i++)
+	{
+		TRACELN1_USB("\tdtor=");
+		switch(des->hid_descriptors[i].bDescriptorType)
+		{
+		case HIDREPORT_DESCRIPTOR:
+			TRACE1_USB("HID_REPORT");
+			break;
+		case PHYSICAL_DESCRIPTOR:
+			TRACE1_USB("PHY_DTOR");
+			break;
+		default:
+			TRACE_USB("%u", des->hid_descriptors[i].bDescriptorType);
+			break;
+		}
+		TRACE_USB(" %u bytes", des->hid_descriptors[i].wDescriptorLength);
+
+	}
+
+}
+
 static int trace_usb_device_descriptor(USBDeviceDescriptor* des)
 {
 	trace_usb_class(des->bDeviceClass, "\tbDeviceClass=");
@@ -361,6 +387,67 @@ static int trace_usb_interface_descriptor(USBInterfaceDescriptor* des)
 	TRACELN_USB("\tbNumEndpoints=%u", des->bNumEndpoints);
 	TRACELN_USB("\tiInterface=%u", des->iInterface);
 	trace_usb_class(des->bDeviceClass, "\tbDeviceClass=");
+
+	TRACELN1_USB("\tSubClass=");
+	switch(des->bDeviceClass)
+	{
+	case CDC_DEVICE_CLASS:
+		switch(des->bDeviceSubClass)
+		{
+		case CDC_DLCM_SUBCLASS:
+			TRACE1_USB("CDC_DLCM");
+			break;
+		case CDC_ACM_SUBCLASS:
+			TRACE1_USB("CDC_ACM");
+			break;
+		case CDC_TCM_SUBCLASS:
+			TRACE1_USB("CDC_TCM");
+			break;
+		case CDC_MCCM_SUBCLASS:
+			TRACE1_USB("CDC_MCCM");
+			break;
+		case CDC_CAPI_SUBCLASS:
+			TRACE1_USB("CDC_CAPI");
+			break;
+		case CDC_ETHERNET_SUBCLASS:
+			TRACE1_USB("CDC_ETHERNET");
+			break;
+		case CDC_ATM_SUBCLASS:
+			TRACE1_USB("CDC_ATM");
+			break;
+		case VENDOR_SPECIFIC_SUBCLASS:
+			TRACE1_USB("vendor");
+			break;
+		default:
+			TRACE_USB("%u", des->bDeviceSubClass);
+			break;
+		}
+		TRACELN_USB("\tProto=", des->bDeviceProtocol);
+		break;
+
+	case HID_DEVICE_CLASS:
+		if(des->bDeviceSubClass == 1)
+			TRACE1_USB("BOOT");
+		else
+			TRACE_USB("%u", des->bDeviceSubClass);
+		switch(des->bDeviceProtocol)
+		{
+		case 1:
+			TRACELN1_USB("\tProto=keyboard");
+			break;
+		case 2:
+			TRACELN1_USB("\tProto=mouse");
+			break;
+		default:
+			TRACELN_USB("\tProto=%u", des->bDeviceProtocol);
+			break;
+		}
+		break;
+	default:
+		TRACE_USB("%u", des->bDeviceSubClass);
+		TRACELN_USB("\tProto=", des->bDeviceProtocol);
+		break;
+	}
 	return sizeof(USBInterfaceDescriptor);
 }
 
@@ -373,7 +460,7 @@ static int trace_usb_endpoit_descriptor(USBEndpointDescriptor* des)
 	return sizeof(USBEndpointDescriptor);
 }
 
-static int trace_usb_descriptor(USBGenericDescriptor* des)
+int trace_usb_descriptor(USBGenericDescriptor* des)
 {
 	int res = des->bLength;
 
@@ -416,6 +503,7 @@ static int trace_usb_descriptor(USBGenericDescriptor* des)
 		break;
 	case HID_DESCRIPTOR:
 		TRACELN1_USB("HID_DESCRIPTOR");
+		trace_usb_hid_descriptor( (USBHIDDescriptor*)des);
 		break;
 	case PHYSICAL_DESCRIPTOR:
 		TRACELN1_USB("PHY_DESCRIPTOR");
@@ -433,19 +521,19 @@ static int trace_usb_descriptor(USBGenericDescriptor* des)
 	return res;
 }
 
-static void trace_usb_dev(usb_remote_device *device)
-{
-	TRACELN1_USB("USBH Found:");
-
-	trace_usb_descriptor(&device->dev_descriptor.as_generic);
-	if(device->config_descriptor)
-	{
-		trace_usb_descriptor(&device->config_descriptor->as_generic);
-	} else
-	{
-		TRACELN1_USB("no cfg des!");
-	}
-}
+//static void trace_usb_dev(usb_remote_device *device)
+//{
+//	TRACELN1_USB("USBH Found:");
+//
+//	trace_usb_descriptor(&device->dev_descriptor.as_generic);
+//	if(device->config_descriptor)
+//	{
+//		trace_usb_descriptor(&device->config_descriptor->as_generic);
+//	} else
+//	{
+//		TRACELN1_USB("no cfg des!");
+//	}
+//}
 
 RES_CODE usb_host_enum_bus(USB_DRV_INFO drv_info, HANDLE hnd)
 {
@@ -517,7 +605,7 @@ RES_CODE usb_host_enum_bus(USB_DRV_INFO drv_info, HANDLE hnd)
 			{
 				usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_OK);
 
-				trace_usb_dev(&drv_info->drv_data->host_bus.usb_device[0]);
+//				trace_usb_dev(&drv_info->drv_data->host_bus.usb_device[0]);
 
 			}
 		}

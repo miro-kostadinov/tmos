@@ -97,7 +97,7 @@ enum USB_EVENT
 #endif
 
 
-#define USB_DRV_MODE(tx_ep, rx_ep) ((const void*)(((tx_ep)<< 8) | (rx_ep)))
+#define USB_DRV_MODE(tx_ep, rx_ep) ((const void*)(((tx_ep)<< 8) | (rx_ep) | 0x80000000))
 
 #if USB_ENABLE_HOST
 struct usb_remote_device
