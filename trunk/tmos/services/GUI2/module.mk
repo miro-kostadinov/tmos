@@ -21,7 +21,7 @@ local_cpp_src-y	+= lcd_SPFD5414D.cpp lcd_ST7565S.cpp lcd_ST7735R.cpp lcd_ST7565S
 local_cpp_src-y += gwindow.cpp gobject.cpp gcontainer.cpp gbutton.cpp gtext.cpp
 local_cpp_src-y += gdialog.cpp gradio.cpp gedit.cpp lcd_multiplex.cpp gfloating_text.cpp
 local_cpp_src-y += gfloating_button.cpp gmenu.cpp gscroll.cpp gmsgbox.cpp
-local_cpp_src-y += glistbox.cpp 
+local_cpp_src-y += glistbox.cpp message.cpp
 
 local_h_src-y 	+= gui_drv.h lcd.h fonts.h stdgui.h lcd_EM6125.h lcd_SPFD5414D.h lcd_ST7735R.h
 local_h_src-y 	+= lcd_ST7565S.h gwindow.h gobject.h gcontainer.h gbutton.h gtext.h message.h lcd_ST7565S_RS.h
