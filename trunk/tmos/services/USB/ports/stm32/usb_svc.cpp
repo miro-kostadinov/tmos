@@ -9,6 +9,7 @@
 #include <usb_svc.h>
 #include <usb_hal.h>
 
+#if USB_ENABLE_DEVICE
 void usb_svc_stall_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 {
 	unsigned char eptnum = hnd->mode.as_bytes[0];
@@ -220,5 +221,6 @@ void usb_svc_unhalt(HANDLE hnd, unsigned int eptnum)
 	hnd->hcontrol(DCR_HANDLE);
 }
 
+#endif //USB_ENABLE_DEVICE
 
 

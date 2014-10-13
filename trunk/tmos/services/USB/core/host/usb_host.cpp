@@ -11,7 +11,6 @@
 #include <usb_hal.h>
 #include <usb_api.h>
 #include <usb_descriptors.h>
-#include <hid_descriptors.h>
 
 /*
  * 							Host logic
@@ -327,6 +326,7 @@ static void trace_usb_class(USBClassCode code, const char* label)
 	TRACE1_USB(s.c_str());
 }
 
+#if USB_ENABLE_HID
 static void trace_usb_hid_descriptor(USBHIDDescriptor* des)
 {
 	TRACELN_USB("\thid=%04x", des->bcdHID);
@@ -352,6 +352,7 @@ static void trace_usb_hid_descriptor(USBHIDDescriptor* des)
 	}
 
 }
+#endif
 
 static int trace_usb_device_descriptor(USBDeviceDescriptor* des)
 {
@@ -501,10 +502,12 @@ int trace_usb_descriptor(USBGenericDescriptor* des)
 	case OTG_DESCRIPTOR:
 		TRACELN1_USB("OTG_DESCRIPTOR");
 		break;
+#if USB_ENABLE_HID
 	case HID_DESCRIPTOR:
 		TRACELN1_USB("HID_DESCRIPTOR");
 		trace_usb_hid_descriptor( (USBHIDDescriptor*)des);
 		break;
+#endif
 	case PHYSICAL_DESCRIPTOR:
 		TRACELN1_USB("PHY_DESCRIPTOR");
 		break;

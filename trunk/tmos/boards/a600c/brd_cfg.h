@@ -80,7 +80,6 @@
 #define USE_BASE32			0
 #define USE_GUI				0
 #define USE_GUI2			1
-#define USE_USB				1
 #define USE_AES_TMOS		0
 #define	USE_GPIO_EXPANDER 	0
 
@@ -104,7 +103,12 @@
 #define USE_ADC_DMA_DRIVER 1		//Enable ADC DMA
 
 /// USB stack options
+#define USE_USB				1
+#define USB_ENABLE_DEVICE	1
 #define USB_ENABLE_HOST 	1
 #define USB_ENABLE_OTG 		1
+#define USB_ENABLE_CDC		1
+#define USB_ENABLE_PRN		0
+#define USB_ENABLE_HID		1
 
 #endif /* BRD_CFG_H_ */

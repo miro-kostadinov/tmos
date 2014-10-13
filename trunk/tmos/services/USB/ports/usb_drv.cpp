@@ -64,11 +64,13 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 		{
 			sig ^= req_hnd.signal;
         	req_hnd.res &= ~FLG_SIGNALED;
+#if USB_ENABLE_DEVICE
 			TRACE1_USB(" | req:");
 			if(req_hnd.res == RES_OK)
 			{
 				drv_info->drv_data->device.RequestHandler(drv_info, &request, &req_hnd);
 			} else
+#endif
 			{
 				TRACE_USB(" res %x", req_hnd.res);
 			}
