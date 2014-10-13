@@ -8,6 +8,7 @@
 #endif
 
 
+#if USB_ENABLE_DEVICE
 /**
  * Configure the USB core in device mode
  *
@@ -40,6 +41,7 @@ RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client)
 #endif
 	return RES_SIG_OK;
 }
+#endif
 
 #if USB_ENABLE_HOST
 /**

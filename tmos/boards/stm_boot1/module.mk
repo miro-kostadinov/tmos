@@ -72,7 +72,7 @@ USE_BASE32		?=n
 USE_GUI2		?=n
 
 # GUI
-USE_USB			?=y
+USE_USB			?=n
 
 # AES TMOS
 USE_AES_TMOS	?=y

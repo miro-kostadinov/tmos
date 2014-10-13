@@ -10,6 +10,7 @@
 
 #include <fam_cpp.h>
 #include <otg_hs_stm32.h>
+#include <usb_cfg.h>
 
 #define CFG_STM32_OTG_ULPI			0x0001		//!< USE ULPI PHY
 #define CFG_STM32_OTG_SOF_OUTPUT	0x0002		//!< SOF output enable
@@ -67,25 +68,6 @@ typedef USB_TypeDef USB_CONTROLLER;
 
 #define USB_SETUP_READ_TOUT		200
 #define USB_SETUP_WRITE_TOUT	200
-
-/// Number of max interfaces used
-#ifndef USB_MAX_INTERACES
-#define	USB_MAX_INTERACES 2
-#endif
-
-/// System has a high speed USB OTG controller.
-#ifndef USB_ENABLE_OTG
-#define USB_ENABLE_OTG 0
-#endif
-
-/// USB Host mode
-#ifndef USB_ENABLE_HOST
-#define USB_ENABLE_HOST 0
-#endif
-
-#ifndef MAX_USB_DEVICES
-#define MAX_USB_DEVICES	2
-#endif
 
 
 #endif /* USB_OPT_H_ */

@@ -1055,6 +1055,7 @@ void usb_hal_host_resume(USB_DRV_INFO drv_info)
 
 #endif  // USB_ENABLE_HOST
 
+#if USB_ENABLE_DEVICE
 /** Handle USB bus reset
  *
  * @param drv_info
@@ -1095,6 +1096,7 @@ static void usb_handle_bus_reset(USB_DRV_INFO drv_info)
 #endif
 
 }
+#endif // USB_ENABLE_DEVICE
 
 void usb_b_ept0_handler(USB_DRV_INFO drv_info)
 {
@@ -1462,6 +1464,7 @@ static void usb_b_usbis_handler(USB_DRV_INFO drv_info, unsigned int status)
     	drv_info->hw_base->USBPOWER &= ~(USB_USBPOWER_SOFTCONN);
     } else
     {
+#if USB_ENABLE_DEVICE
         // Received a reset from the host.
         if(status & USB_USBIS_RESET)
         {
@@ -1469,6 +1472,7 @@ static void usb_b_usbis_handler(USB_DRV_INFO drv_info, unsigned int status)
         	usb_drv_event(drv_info, e_reset);
         	usb_handle_bus_reset(drv_info);
         }
+#endif
 
         // Suspend was signaled on the bus.
         if(status & USB_USBIS_SUSPEND)

@@ -10,14 +10,16 @@
 
 #include <tmos.h>
 #include <usb_opt.h>
-#include <usb_device.h>
+//#include <usb_device.h>
 #include <usb_drv.h>
 
 
 typedef RES_CODE (*USB_API_FUNC)(USB_DRV_INFO drv_info, HANDLE client);
 
-
+#if USB_ENABLE_DEVICE
 RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client);
+#endif
+
 #if USB_ENABLE_HOST
 RES_CODE usb_api_otg_config(USB_DRV_INFO drv_info, HANDLE client);
 RES_CODE usb_api_otg_off(USB_DRV_INFO drv_info, HANDLE client);

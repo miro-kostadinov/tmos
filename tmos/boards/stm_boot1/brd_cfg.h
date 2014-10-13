@@ -28,7 +28,7 @@
 #define USE_BASE32			0
 #define USE_GUI				0
 #define USE_GUI2			0
-#define USE_USB				1
+#define USE_USB				0
 #define USE_AES_TMOS		1
 #define	USE_GPIO_EXPANDER 	0
 

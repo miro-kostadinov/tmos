@@ -1,31 +1,14 @@
 /*
- * hid_descriptors.h
+ * usb_hid_dtors.h
  *
- *  Created on: Oct 10, 2014
+ *  Created on: Oct 13, 2014
  *      Author: miro
  */
 
-#ifndef HID_DESCRIPTORS_H_
-#define HID_DESCRIPTORS_H_
+#ifndef USB_HID_DTORS_H_
+#define USB_HID_DTORS_H_
 
-
-#include <usb_descriptors.h>
-
-/// HID class specific requests
-enum HIDGenericRequests : unsigned char
-{
-	HIDRequest_GET_REPORT			= 0x01,
-	HIDRequest_GET_IDLE				= 0x02,
-	HIDRequest_GET_PROTOCOL			= 0x03,
-	HIDRequest_SET_REPORT			= 0x09,
-	HIDRequest_SET_IDLE				= 0x0A,
-	HIDRequest_SET_PROTOCOL			= 0x0B
-};
-
-#define HID_REPORTTYPE_INPUT           0x01
-#define HID_REPORTTYPE_OUTPUT          0x02
-#define HID_REPORTTYPE_FEATURE         0x03
-
+#include <usb_std_dtors.h>
 
 //------------------------------------------------------------------------------
 //         				USBHIDDescriptor (0x21)
@@ -60,5 +43,4 @@ struct USBHIDDescriptor
 } __attribute__ ((packed)); // GCC
 
 
-
-#endif /* HID_DESCRIPTORS_H_ */
+#endif /* USB_HID_DTORS_H_ */

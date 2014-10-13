@@ -59,7 +59,6 @@
 #define USE_CACHE			1
 #define USE_SHA_1			1
 #define USE_GUI				1
-#define USE_USB				1
 #define	USE_GPIO_EXPANDER 	1
 #define USE_NET				1
 
@@ -76,7 +75,12 @@
 #define KEY_REPEAT_TIME 	300//150 //1000
 
 /// USB stack options
+#define USE_USB				1
+#define USB_ENABLE_DEVICE	1
 #define USB_ENABLE_HOST 	0
 #define USB_ENABLE_OTG 		0
+#define USB_ENABLE_CDC		1
+#define USB_ENABLE_PRN		0
+#define USB_ENABLE_HID		0
 
 #endif /* BRD_CFG_H_ */

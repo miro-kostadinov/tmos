@@ -23,7 +23,9 @@
 #include <tmos.h>
 #include <usb_opt.h>
 #include <usb_descriptors.h>
+#if USB_ENABLE_DEVICE
 #include <usb_device.h>
+#endif
 
 #define DCR_USB_STALL					0x01
 
@@ -137,7 +139,9 @@ struct USB_DRIVER_DATA
 	HANDLE			helper;
 	HANDLE			waiting;			//!< waiting for the helper thread
 	HANDLE			pending;			//!< waiting for connections etc
+#if USB_ENABLE_DEVICE
 	usb_device		device;
+#endif
 	Endpoint		endpoints[USB_NUMENDPOINTS]; //!< Endpoint structures
 #if USB_ENABLE_HOST
 	usb_bus			host_bus;

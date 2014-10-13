@@ -12,6 +12,7 @@
 #include <tmos.h>
 #include <usb_opt.h>
 #include <usb_drv.h>
+#include <usb_std_reqs.h>
 
 #define USB_HOST_FLG_LOW_SPPED		0x01
 #define USB_HOST_FLG_CFG_READ		0x02	//!<flag whether we have read the device configuration

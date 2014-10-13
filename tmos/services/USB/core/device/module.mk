@@ -1,10 +1,9 @@
 ##########################################################################
 #
-#	Make include for services/USB/core
+#	Make include for services/USB/core/device
 #	
 #   Platform: MPOS rev.2.3
 #
-#   www.thumbos.com
 #
 ##########################################################################
 
@@ -14,8 +13,11 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
+local_cpp_src-y	+= usb_device.cpp
+local_cpp_src-$(USB_ENABLE_CDC) += cdc_data_inf.cpp cdc_acm_inf.cpp
 
-local_h_src-y 	+= usb_cfg.h  
+local_h_src-y 	+= usb_device.h usb_interface.h  
+local_h_src-$(USB_ENABLE_CDC) += cdc_data_inf.h cdc_acm_inf.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -27,9 +29,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 inc_dirs += $(subdirectory) 
 
 #submodules
-local_modules-y := descriptors requests
-local_modules-$(USB_ENABLE_HOST) += host
-local_modules-$(USB_ENABLE_DEVICE) += device
+local_modules-y :=
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
