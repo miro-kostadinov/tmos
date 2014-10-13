@@ -124,7 +124,7 @@ void GScroll::SetScrollPos(GFlags sb, unsigned short p, bool redraw)
 	}
 
 	if(redraw && (object->flags &(GO_FLG_HSCROLL|GO_FLG_VSCROLL)))
-		object->send_message(WM_DRAW, 0, rect.as_int, object);
+		send_message(WM_DRAW, 0, rect.as_int, object);
 }
 
 void GScroll::SetScrollRange(GFlags sb, unsigned int p)

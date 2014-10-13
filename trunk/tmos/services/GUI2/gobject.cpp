@@ -14,7 +14,7 @@ bool GTimer::TimerProc(void)
 {
 	if(time_out && CURRENT_TIME > time_out)
 	{
-		object->send_message(WM_TIMER, timer_id, 0L, object);
+		send_message(WM_TIMER, timer_id, 0L, object);
 		time_out = 0;
 		return true;
 	}
@@ -282,6 +282,11 @@ void GObject::invalidate(GObject* object, RECT_T area)
 
 void GObject::draw_poligon(const RECT_T& frame, bool fill)
 {
+	if(frame.height() < 4 || frame.width() < 4)
+	{
+		draw_rectangle(frame, fill);
+		return;
+	}
 	draw_hline(frame.x0 +2, frame.x1 -2, frame.y0); // top line
 	draw_hline(frame.x0 +2, frame.x1 -2, frame.y1); // bottom line
 	draw_vline(frame.y0 +2, frame.y1 -2, frame.x0); // left
@@ -302,15 +307,30 @@ void GObject::draw_poligon(const RECT_T& frame, bool fill)
 
 void GObject::draw_rectangle(const RECT_T& frame, bool fill)
 {
-	draw_hline(frame.x0, frame.x1, frame.y0); // top line
-	draw_hline(frame.x0, frame.x1, frame.y1); // bottom line
-	draw_vline(frame.y0 +1, frame.y1 -1, frame.x0); // left
-	draw_vline(frame.y0 +1, frame.y1 -1, frame.x1); // right
-	if(fill)
+	if(frame.height() && frame.width() )
 	{
-		for(int i=frame.y0 +1; i <= frame.y1 -1; i++)
-			invert_hline(frame.x0+1, frame.x1-1, i);
+		draw_hline(frame.x0, frame.x1, frame.y0); // top line
+		draw_hline(frame.x0, frame.x1, frame.y1); // bottom line
+		draw_vline(frame.y0 +1, frame.y1 -1, frame.x0); // left
+		draw_vline(frame.y0 +1, frame.y1 -1, frame.x1); // right
+		if(fill)
+		{
+			for(int i=frame.y0 +1; i <= frame.y1 -1; i++)
+				invert_hline(frame.x0+1, frame.x1-1, i);
+		}
+		return;
 	}
+	if(frame.height())
+	{
+		draw_vline(frame.y0, frame.y1, frame.x0);
+		return;
+	}
+	if(frame.width())
+	{
+		draw_hline(frame.x0, frame.x1, frame.y0);
+		return;
+	}
+	draw_point(frame.x0, frame.y0);
 }
 
 void GObject::allocate_border(void)
@@ -504,11 +524,6 @@ void GObject::invert_hline( int x0, int x1, int y)
 		parent->invert_hline(x0, x1, y);
 }
 
-void GObject::send_message(WM_MESSAGE wm,
-		unsigned int param, unsigned long long lparam, GObject* dst) const
-{
-	GQueue.push(GMessage(wm, param, lparam, dst));
-}
 
 unsigned int GObject::message (GMessage& msg)
 {

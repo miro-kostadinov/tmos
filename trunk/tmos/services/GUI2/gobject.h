@@ -15,7 +15,6 @@
 struct LCD_MODULE;
 struct GContainer;
 
-extern msgQueue<MAX_MESSAGES> GQueue;
 
 struct GTimer
 {
@@ -172,9 +171,6 @@ struct GObject
 	void draw_rectangle(const RECT_T& frame, bool fill = false);
 
 	// queue message
-//	void send_message (GMessage msg);
-	void send_message(WM_MESSAGE wm, unsigned int param,
-			unsigned long long lparam, GObject* dst) const;
 	unsigned int message(GMessage& msg);
 	virtual unsigned int initialize(GMessage& msg);	//proceeds items with WM_INIT code
 	virtual unsigned int process_key(GMessage& msg)	//proceeds items with WM_KEY code
