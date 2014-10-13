@@ -40,7 +40,15 @@ unsigned int GWindow::process_destroy(GMessage& msg)
 {
 	close();
 	if(parent && parent->focus)
-		send_message(WM_DRAW, 0, rect.as_int, parent->focus);
+	{
+		GWindow* tmp = (GWindow *)parent->children;
+		while(tmp)
+		{
+			if((tmp->flags & GO_FLG_SHOW) && (tmp->displays & displays))
+				send_message(WM_DRAW, 0, rect.as_int, tmp);//parent->focus);
+			tmp = (GWindow *)tmp->nextObj;
+		}
+	}
 	notify_message(WM_QUIT, msg.param);
 	return true;
 }
