@@ -77,14 +77,12 @@ WEAK_C int detect_displays(GUI_DRIVER_INFO* drv_info)
 //*----------------------------------------------------------------------------
 //*  this is the GUI driver helper task
 //*----------------------------------------------------------------------------
-msgQueue<MAX_MESSAGES> GQueue;
 
 unsigned int ms_since(unsigned int time);
 
 void gui_thread(GUI_DRIVER_INFO* drv_info)
 {
     unsigned int res, sig;
-    GWindow* desktop;		//main_dlg;
     GWindow* tmp;
     CHandle key_hnd;
     CHandle gui_hnd;
@@ -103,7 +101,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     	tsk_sleep(10);
 
     // start desktop
-	while( !(desktop = gui_desktop()) )
+	while( !(Gdesktop = gui_desktop()) )
 	{
 		tsk_sleep(10);
 	}
@@ -114,9 +112,9 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	{
 		mult.lcd[i] = drv_info->lcd[i];
 	}
-	mult.addChild(desktop);
+	mult.addChild(Gdesktop);
 #else
-	desktop->parent = drv_info->lcd[0];
+	Gdesktop->parent = drv_info->lcd[0];
 #endif
 
 
@@ -125,9 +123,9 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 		LCD_MODULE* lcd;
 		if( (lcd=drv_info->lcd[i]) )
 		{
-			lcd->children = desktop;
+			lcd->children = Gdesktop;
 			#if GUI_DISPLAYS > 1
-				desktop->displays |= (1<<i);
+				Gdesktop->displays |= (1<<i);
 			#endif
 			lcd->lcd_init(splash_screen);
 		}
@@ -148,8 +146,8 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	gui_hnd.tsk_safe_open(GUI_DRV_INDX, 0);			//mode = 1 - control handle
 	gui_hnd.tsk_start_read(NULL, 0);
 
-	desktop->initialize(msg);
-	desktop->invalidate(desktop, desktop->rect);
+	Gdesktop->initialize(msg);
+	Gdesktop->invalidate(Gdesktop, Gdesktop->rect);
 	while(GQueue.pop(msg))
 	{
 		;
@@ -170,7 +168,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 		if(sig & gui_hnd.signal)												//checks for new items
         {
 			sig &= ~gui_hnd.signal;
-			drv_info->lcd[0]->backlight_signal();
+//			drv_info->lcd[0]->backlight_signal();
         	gui_hnd.res &= ~FLG_SIGNALED;
 
         	GWindow* win = (GWindow*)((HANDLE)gui_hnd.dst.as_voidptr)->mode.as_voidptr;
@@ -182,21 +180,18 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 					msg = *(GMessage *)(((HANDLE)gui_hnd.dst.as_voidptr))->src.as_voidptr;
 					GQueue.push(msg);
 					if(msg.code == WN_DESTROY)
-					{
 						win->hnd.mode1 = GUI_HND_DETACH;
-//						hnd_ret = RES_IDLE;
-					}
-//					else
-						hnd_ret = RES_SIG_OK;
+					hnd_ret = RES_SIG_OK;
 				}
 				if(win->hnd.mode1 == GUI_HND_OPEN)
 				{
-					win->nextObj =desktop->parent->focus->nextObj;
-					desktop->parent->focus->nextObj = win;								//adds the new item to the Z list
-					win->parent = desktop->parent;
-					GQueue.push(GMessage(WM_INIT, 0, (long long)drv_info->lcd, win));							//send WM_INIT to the new window
+					drv_info->lcd[0]->backlight_signal();
+					win->nextObj =Gdesktop->parent->focus->nextObj;
+					Gdesktop->parent->focus->nextObj = win;								//adds the new item to the Z list
+					win->parent = Gdesktop->parent;										//LCD
+					GQueue.push(GMessage(WM_INIT, 0, (long long)drv_info->lcd, win));	//send WM_INIT to the new window
 					win->hnd.mode1 = GUI_HND_ATTACH;
-					hnd_ret = RES_SIG_OK;										//signals the window thread
+					hnd_ret = RES_SIG_OK;												//signals the window thread
 				}
 			}
 			else
@@ -219,7 +214,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 
 		if(sig & SIG_GUI_TASK)
 		{
-			for (tmp = (GWindow*)desktop->nextObj; tmp; tmp = (GWindow*)tmp->nextObj)
+			for (tmp = (GWindow*)Gdesktop->nextObj; tmp; tmp = (GWindow*)tmp->nextObj)
 			{
 				if(tmp->hnd.mode0 && tmp->hnd.res == (FLG_BUSY | FLG_OK) )
 					usr_HND_SET_STATUS(&tmp->hnd, FLG_SIGNALED);
@@ -232,10 +227,10 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
         if(sig &  key_hnd.signal)												//checks for pressed buttons
         {
 			drv_info->lcd[0]->backlight_signal();
-			if(desktop->parent->focus && (desktop->parent->focus->flags & GO_FLG_SELECTED))
+			if(Gdesktop->parent->focus && (Gdesktop->parent->focus->flags & GO_FLG_SELECTED))
 			{
 				key_hnd.res &= ~FLG_SIGNALED;
-				GQueue.push(GMessage(WM_KEY, key_hnd.src.as_int, 0L, desktop->parent->focus));
+				GQueue.push(GMessage(WM_KEY, key_hnd.src.as_int, 0L, Gdesktop->parent->focus));
 				key_hnd.tsk_start_read(&key_hnd.src.as_int, 1);
 				sig &= ~key_hnd.signal;
 			}
@@ -243,9 +238,11 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 
         if (GQueue.empty()&& !sig )														//if the queue is empty sends WM_IDLE to everyone
 		{
-			for (tmp = desktop; tmp; tmp = (GWindow*)tmp->nextObj)
+			for (tmp = Gdesktop; tmp; tmp = (GWindow*)tmp->nextObj)
 				GQueue.push(GMessage(WM_IDLE, 0, 0L, tmp));
 		}
+        processes_all_messages();
+/*
 		while (GQueue.pop(msg))													//processes all messages in the queue
 		{
 #if GUI_DEBUG
@@ -279,6 +276,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			TRACE("\e[4;1;32m %d ms\e[m", ms_since(t0));
 #endif
 		}
+*/
 	}
 }
 
