@@ -208,7 +208,6 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 
 	case e_reset:
 		drv_data->usb_state = USBST_DEVICE_DEFAULT;
-		drv_data->frame_count = 0;
 		break;
 
 	default: ;
@@ -273,7 +272,7 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 	if(flags & (USB_OTG_FLG_HOST | USB_OTG_FLG_DEV | USB_OTG_FLG_HOST_PWR))
 	{
 		if(!(drv_data->otg_flags & (USB_OTG_FLG_HOST_OK | USB_OTG_FLG_DEV_OK)))
-			drv_data->otg_state_cnt  |= USB_STATE_CNT_INVALID;
+			drv_data->drv_state_cnt  |= USB_STATE_CNT_INVALID;
 		if(drv_info->drv_data->pending)
 		{
 			HANDLE hnd;
@@ -334,8 +333,8 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 						__disable_irq();
 					}
 
-					drv_data->otg_state_cnt += 2;
-					drv_data->otg_state_cnt &= 0x7FFE;
+					drv_data->drv_state_cnt += 2;
+					drv_data->drv_state_cnt &= 0x7FFE;
 					break;
 
 				}
@@ -353,8 +352,8 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 				switch(flags)
 				{
 				case USB_OTG_FLG_DEV_OK:
-					drv_data->otg_state_cnt += 2;
-					drv_data->otg_state_cnt &= 0x7FFE;
+					drv_data->drv_state_cnt += 2;
+					drv_data->drv_state_cnt &= 0x7FFE;
 					break;
 
 				case USB_OTG_FLG_DEV_CON:
@@ -463,17 +462,17 @@ void usb_drv_start_tx(USB_DRV_INFO drv_info, HANDLE hnd)
 		    //host mode?
 		    if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
 		    {
-		    	usb_remote_device* dev;
+		    	usb_hub_port_t* port;
 		    	USBHOSTFUNS_t* host_ept;
 
-		    	dev = &drv_info->drv_data->host_bus.usb_device[hnd->mode0];
+		    	port = &drv_info->drv_data->usb_hub[hnd->mode0];
 		    	host_ept = &drv_info->hw_base->HOST_EP[ept_indx];
 
 		    	//set host transmit address
-		    	host_ept->USBTXFUNCADDR = dev->dev_adress;
+		    	host_ept->USBTXFUNCADDR = port->dev_adress;
 
 		    	//set hub transmit address
-		    	host_ept->USBTXHUBADDR = (dev->hub_num << 8) | (dev->hub_port);
+		    	host_ept->USBTXHUBADDR = (port->hub_num << 8) | (port->hub_port);
 
 		    	//enable TX dir
 		    	if(ept_indx)
@@ -539,17 +538,17 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 	//host mode?
 	if (drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
 	{
-    	usb_remote_device* dev;
+		usb_hub_port_t* port;
     	USBHOSTFUNS_t* host_ept;
 
-    	dev = &drv_info->drv_data->host_bus.usb_device[hnd->mode0];
+    	port = &drv_info->drv_data->usb_hub[hnd->mode0];
     	host_ept = &drv_info->hw_base->HOST_EP[ept_indx];
 
     	//set host receive address
-    	host_ept->USBRXFUNCADDR = dev->dev_adress;
+    	host_ept->USBRXFUNCADDR = port->dev_adress;
 
     	//set hub receive address
-    	host_ept->USBRXHUBADDR = (dev->hub_num << 8) | (dev->hub_port);
+    	host_ept->USBRXHUBADDR = (port->hub_num << 8) | (port->hub_port);
 
 	    if( (prev=endpoint->pending) )	//receiving
 	    {
@@ -995,20 +994,13 @@ RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info)
 
 
 	// reset devices
-	for(int i=0; i<= MAX_USB_DEVICES; i++)
+	for(int i=0; i<= MAX_HUB_PORTS; i++)
 	{
-		usb_remote_device* dev;
+		usb_hub_port_t* port;
 
-		dev = &drv_info->drv_data->host_bus.usb_device[i];
-		dev->dev_adress = 0;
-		dev->dev_interface = 0;
-		if(dev->config_descriptor)
-		{
-			tsk_free(dev->config_descriptor);
-			dev->config_descriptor = NULL;
-		}
-		dev->dev_descriptor.bMaxPacketSize0 = 0;
-		dev->dev_descriptor.as_generic.bLength = 0;
+		port = &drv_info->drv_data->usb_hub[i];
+		port->dev_adress = 0;
+		port->dev_interface = 0;
 	}
 
 	//configure endpoint 0
@@ -1032,13 +1024,14 @@ RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info)
 	return RES_IDLE;
 }
 
-void usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
+RES_CODE usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
 {
 	drv_info->hw_base->USBPOWER |= USB_USBPOWER_RESET;
 	// deassert reset
 	tsk_sleep(20);
 	drv_info->hw_base->USBPOWER &= ~USB_USBPOWER_RESET;
 	tsk_sleep(10);
+	return RES_OK;
 }
 
 void usb_hal_host_resume(USB_DRV_INFO drv_info)

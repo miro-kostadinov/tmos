@@ -6,7 +6,9 @@
 #if USB_ENABLE_OTG
 #include <tmos_atomic.h>
 #endif
-
+#if USB_ENABLE_HOST
+#include <usb_host.h>
+#endif
 
 #if USB_ENABLE_DEVICE
 /**
@@ -37,8 +39,8 @@ RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client)
 	}
 #if USB_ENABLE_OTG
 	drv_data->otg_flags |= USB_OTG_FLG_DEV;
-	client->mode.as_ushort[1] = drv_data->otg_state_cnt & ~USB_STATE_CNT_INVALID;
 #endif
+	client->mode.as_ushort[1] = drv_data->drv_state_cnt & ~USB_STATE_CNT_INVALID;
 	return RES_SIG_OK;
 }
 #endif
@@ -78,7 +80,7 @@ RES_CODE usb_api_otg_config(USB_DRV_INFO drv_info, HANDLE client)
 	{
 		if(drv_data->otg_flags & USB_OTG_FLG_HOST_OK)
 		{
-			client->mode.as_ushort[1] = drv_data->otg_state_cnt;
+			client->mode.as_ushort[1] = drv_data->drv_state_cnt;
 			res = RES_SIG_OK;
 		}
 	}
@@ -103,33 +105,17 @@ RES_CODE usb_api_otg_off(USB_DRV_INFO drv_info, HANDLE client)
 
 RES_CODE usb_api_get_hdev(USB_DRV_INFO drv_info, HANDLE client)
 {
-	usb_remote_device*	dst;
-	usb_remote_device*	src;
+	usb_remote_dev_t*	dst;
+	usb_hub_port_t*	src;
 
-	dst = (usb_remote_device*)client->dst.as_voidptr;
-	if(dst && dst->dev_adress && dst->dev_adress <= MAX_USB_DEVICES)
+	dst = (usb_remote_dev_t*)client->dst.as_voidptr;
+	if(dst && client->mode0 <= MAX_HUB_PORTS)
 	{
-		src = &drv_info->drv_data->host_bus.usb_device[dst->dev_adress-1];
+		src = &drv_info->drv_data->usb_hub[client->mode0];
 
-		if(dst->config_descriptor)
-			tsk_free(dst->config_descriptor);
-		memcpy(dst, src, sizeof(usb_remote_device));
-		if(src->config_descriptor)
-		{
-			uint32_t size;
-
-			if(src->config_descriptor->as_generic.bDescriptorType == CONFIGURATION_DESCRIPTOR)
-				size = src->config_descriptor->wTotalLength;
-			else
-				size = src->config_descriptor->as_generic.bLength;
-
-			dst->config_descriptor = (USBConfigurationDescriptor*)tsk_malloc(size);
-			if(dst->config_descriptor)
-			{
-				memcpy(dst->config_descriptor, src->config_descriptor, size);
-				return RES_SIG_OK;
-			}
-		}
+		dst->usb_drv_info = drv_info;
+		memcpy(&dst->usb_hub_port, src, sizeof(usb_hub_port_t));
+		return RES_SIG_OK;
 	}
 	return RES_SIG_ERROR;
 }

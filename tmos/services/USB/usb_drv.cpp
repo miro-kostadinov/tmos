@@ -143,13 +143,11 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 			if(drv_info->drv_data->otg_flags & USB_OTG_FLG_DEV_OK)
 			{
 
-				req_hnd.mode.as_ushort[1] = drv_info->drv_data->otg_state_cnt;
+				req_hnd.mode.as_ushort[1] = drv_info->drv_data->drv_state_cnt;
 #endif
 				req_hnd.tsk_start_read(&request, 8);
-#if USB_ENABLE_OTG
 				TRACE_USB_NAME(drv_info);
-				TRACE_USB(" st req:%u", drv_info->drv_data->otg_state_cnt);
-#endif
+				TRACE_USB(" st req:%u", drv_info->drv_data->drv_state_cnt);
 				requested = true;
 #if USB_ENABLE_HOST
 			}
@@ -166,9 +164,7 @@ void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
     {
         case DCR_RESET:
         	// drv_data constructor is not called yet!
-#if USB_ENABLE_OTG
-        	drv_info->drv_data->otg_state_cnt = USB_STATE_CNT_INVALID;
-#endif
+        	drv_info->drv_data->drv_state_cnt = USB_STATE_CNT_INVALID;
         	usb_drv_reset(drv_info);
             break;
 
@@ -229,14 +225,12 @@ void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd)
 		return;
 	}
 
-#if USB_ENABLE_OTG
-	if(hnd->mode.as_ushort[1] != drv_data->otg_state_cnt)
+	if(hnd->mode.as_ushort[1] != drv_data->drv_state_cnt)
 	{
 		//driver state has changed, handle must update...
 		svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
 		return;
 	}
-#endif
 
 	if (hnd->cmd & FLAG_WRITE)
     {

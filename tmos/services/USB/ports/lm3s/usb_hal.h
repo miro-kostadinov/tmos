@@ -32,7 +32,7 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
 void usb_hal_config_fifo(USB_DRV_INFO drv_info);
 #if USB_ENABLE_HOST
 RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info);
-void usb_hal_host_bus_reset(USB_DRV_INFO drv_info);
+RES_CODE usb_hal_host_bus_reset(USB_DRV_INFO drv_info);
 void usb_hal_host_resume(USB_DRV_INFO drv_info);
 void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pDescriptor);
 #endif

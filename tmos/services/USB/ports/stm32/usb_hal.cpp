@@ -34,9 +34,9 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 	if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
 	{
 		is_host = true;
-		ept_indx >>= 1; // convert CHNUM to EPNUM
 	}
-	endpoint = &drv_info->drv_data->endpoints[ept_indx];
+	endpoint = &drv_info->drv_data->endpoints[ept_indx >> 1];
+	endpoint->epd_out.epd_flags ^= EPD_FLAG_DATA1;
 #else
 	endpoint = &drv_info->drv_data->endpoints[status & OTG_GRXSTSP_EPNUM_Msk];
 #endif
@@ -74,17 +74,36 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 					{
 						// nothing left in fifo or top
 #if USB_ENABLE_HOST
-						if((is_host && !hnd->len) ||
-							(!is_host && (status & OTG_GRXSTSP_PKTSTS_Msk) != OTG_GRXSTSP_PKTSTS_SETUP_DATA))
-#else
-						if((status & OTG_GRXSTSP_PKTSTS_Msk) != OTG_GRXSTSP_PKTSTS_SETUP_DATA)
+						if(is_host)
+						{
+							if(hnd->len)
+							{
+								// re-activate
+								uint32_t reg;
+								OTG_HC_REGS* ch_regs = &drv_info->hw_base->HC_REGS[ept_indx];
+
+								reg = ch_regs->HCCHAR ;
+								if(!(reg & OTG_HCCHAR_CHDIS))
+								{
+									//re -activate
+									ch_regs->HCCHAR = reg;
+								}
+								status = OTG_GRXSTSP_PKTSTS_SETUP_DATA; // leave
+							} else
+							{
+								status = 0; // signal
+							}
+						}
 #endif
+						if((status & OTG_GRXSTSP_PKTSTS_Msk) != OTG_GRXSTSP_PKTSTS_SETUP_DATA)
 						{
 							endpoint->epd_out.epd_pending = hnd->next;
 							usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 							endpoint->epd_out.epd_state = ENDPOINT_STATE_IDLE;
 						} else
+						{
 							hnd->res |= FLG_OK;
+						}
 
 						return true;
 					}
@@ -1012,6 +1031,8 @@ void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pD
 	usb_drv_end_transfers(epdir, USBD_STATUS_RESET);
 	epdir->epd_state = ENDPOINT_STATE_IDLE;
 	epdir->epd_fifo_sz = pDescriptor->wMaxPacketSize;
+	epdir->epd_flags = 0;
+	epdir->epd_type = ept_type;
 }
 
 static bool stm_host_phy_clock(USB_DRV_INFO drv_info, uint32_t clk)
@@ -1163,16 +1184,35 @@ static void stm_host_start_xfer(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptn
 		reg = 1; //PKTCNT = 1
 	}
 	if(eptnum)
-		dpid = OTG_HCTSIZ_DPID_DATA1;
+	{
+		if(epdir->epd_type == ENDPOINT_TYPE_INTERRUPT)
+		{
+			if(epdir->epd_flags & EPD_FLAG_DATA1)
+			{
+				dpid = OTG_HCTSIZ_DPID_DATA1;
+				TRACE1_USB(" data1");
+			}
+			else
+			{
+				dpid = OTG_HCTSIZ_DPID_DATA0;
+				TRACE1_USB(" data0");
+			}
+
+
+		} else
+			dpid = OTG_HCTSIZ_DPID_DATA1;
+	}
 	else
-		dpid = OTG_HCTSIZ_DPID_MDATA; //TODO:
+		dpid = OTG_HCTSIZ_DPID_MDATA;
+
 	hc_regs->HCTSIZ = OTG_HCTSIZ_XFRSIZ(hnd->len) |	OTG_HCTSIZ_PKTCNT(reg) | dpid;
 
 	// Program the HCCHAR register
-	reg = hc_regs->HCCHAR & ~(OTG_HCCHAR_ODDFRM | OTG_HCCHAR_CHDIS | OTG_HCCHAR_DAD_Msk);
-	reg |= OTG_HCCHAR_DAD(drv_info->drv_data->host_bus.usb_device[hnd->mode0].dev_adress);
+	reg = hc_regs->HCCHAR;
+	reg &= ~(OTG_HCCHAR_ODDFRM | OTG_HCCHAR_CHDIS | OTG_HCCHAR_DAD_Msk);
+	reg |= OTG_HCCHAR_DAD(drv_info->drv_data->usb_hub[hnd->mode0].dev_adress);
 
-	if( (!drv_info->hw_base->host_regs.HFNUM & 1))
+	if( !(drv_info->hw_base->host_regs.HFNUM & 1))
 		reg |= OTG_HCCHAR_ODDFRM;
 
 	hc_regs->HCCHAR = reg | OTG_HCCHAR_CHENA;
@@ -1250,7 +1290,6 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 
 	case e_reset:
 		drv_data->usb_state = USBST_DEVICE_DEFAULT;
-		drv_data->frame_count = 0;
 		break;
 
 	case e_disconnect:
@@ -1660,20 +1699,13 @@ RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info)
 	stm_otg_core_init1(drv_info);
 
 	// reset devices
-	for(int i=0; i<= MAX_USB_DEVICES; i++)
+	for(int i=0; i<= MAX_HUB_PORTS; i++)
 	{
-		usb_remote_device* dev;
+		usb_hub_port_t* port;
 
-		dev = &drv_info->drv_data->host_bus.usb_device[i];
-		dev->dev_adress = 0;
-		dev->dev_interface = 0;
-		if(dev->config_descriptor)
-		{
-			tsk_free(dev->config_descriptor);
-			dev->config_descriptor = NULL;
-		}
-		dev->dev_descriptor.bMaxPacketSize0 = 0;
-		dev->dev_descriptor.as_generic.bLength = 0;
+		port = &drv_info->drv_data->usb_hub[i];
+		port->dev_adress = 0;
+		port->dev_interface = 0;
 	}
 
 	if(stm_set_host_mode(drv_info))
@@ -1698,10 +1730,11 @@ RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info)
 	return RES_SIG_OK;
 }
 
-void usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
+RES_CODE usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
 {
 	uint32_t reg, port_config, port_status;
 	USB_TypeDef* otg = drv_info->hw_base;
+	RES_CODE res = RES_ERROR;
 
 	TRACE_USB_NAME(drv_info);
 	TRACE1_USB(" start reset");
@@ -1736,6 +1769,7 @@ void usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
 			}
 			TRACE1_USB(" FULL_SPEED");
 		}
+		res = RES_OK;
 	} else
 	{
 		TRACE1_USB(" no PENA!");
@@ -1834,6 +1868,7 @@ void usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
 	drv_info->hw_base->HPRT = reg;	// deassert reset
 
 	tsk_sleep(10);
+	return res;
 }
 
 void usb_hal_host_resume(USB_DRV_INFO drv_info)
@@ -1879,7 +1914,7 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 	if(flags & (USB_OTG_FLG_HOST | USB_OTG_FLG_DEV | USB_OTG_FLG_HOST_PWR))
 	{
 		if(!(drv_data->otg_flags & (USB_OTG_FLG_HOST_OK | USB_OTG_FLG_DEV_OK)))
-			drv_data->otg_state_cnt  |= USB_STATE_CNT_INVALID;
+			drv_data->drv_state_cnt  |= USB_STATE_CNT_INVALID;
 		if(drv_info->drv_data->pending)
 		{
 			HANDLE hnd;
@@ -1941,8 +1976,8 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 						__disable_irq();
 					}
 
-					drv_data->otg_state_cnt += 2;
-					drv_data->otg_state_cnt &= 0x7FFE;
+					drv_data->drv_state_cnt += 2;
+					drv_data->drv_state_cnt &= 0x7FFE;
 					break;
 
 				}
@@ -1960,8 +1995,8 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 				switch(flags)
 				{
 				case USB_OTG_FLG_DEV_OK:
-					drv_data->otg_state_cnt += 2;
-					drv_data->otg_state_cnt &= 0x7FFE;
+					drv_data->drv_state_cnt += 2;
+					drv_data->drv_state_cnt &= 0x7FFE;
 					break;
 
 				case USB_OTG_FLG_DEV_CON:
@@ -2648,11 +2683,12 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 	{
 		TRACE1_USB(" NAK ");
 
-		if(!is_in || epdir->epd_type == ENDPOINT_TYPE_INTERRUPT)
+		if(!is_in)
 		{
 			stm_host_ch_halt(drv_info, ch_regs);
 		} else
 		{
+//			epdir->epd_flags ^= EPD_FLAG_DATA1;
 			if(epdir->epd_state == ENDPOINT_STATE_RECEIVING)
 			{
 				hnd = epdir->epd_pending;
@@ -2660,21 +2696,13 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 				{
 					if(hnd->cmd & FLAG_READ) // not cancelled
 					{
-						ch_regs->HCCHAR &= ~OTG_HCCHAR_CHDIS;
-						ch_regs->HCCHAR |= OTG_HCCHAR_CHENA;
+						uint32_t reg;
+
+						reg = ch_regs->HCCHAR ;
+						ch_regs->HCCHAR = reg; // if CHDIS ->halt else re-enable
 					} else
 					{
 						stm_host_ch_halt(drv_info, ch_regs);
-//						if(hnd->list_remove(epdir->epd_pending))
-//						{
-//							svc_HND_SET_STATUS(hnd, FLG_SIGNALED | (hnd->res & FLG_OK));
-//							epdir->epd_state = ENDPOINT_STATE_IDLE;
-//
-//							hnd = epdir->epd_pending;
-//							if(hnd)
-//								usb_drv_start_rx(drv_info, hnd);
-//
-//						}
 					}
 				} else
 					epdir->epd_state = ENDPOINT_STATE_IDLE;
@@ -2689,8 +2717,7 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 		if(epdir->epd_state & ENDPOINT_STATE_ERR)
 		{
 		      /* re-activate the channel  */
-			ch_regs->HCCHAR &= ~OTG_HCCHAR_CHDIS;
-			ch_regs->HCCHAR |= OTG_HCCHAR_CHENA;
+			ch_regs->HCCHAR = (ch_regs->HCCHAR & ~OTG_HCCHAR_CHDIS) | OTG_HCCHAR_CHENA;
 			epdir->epd_state ^= ENDPOINT_STATE_ERR;
 		} else
 		{
@@ -2779,12 +2806,11 @@ static void usb_a_hprt_int(USB_DRV_INFO drv_info)
 				}
 
 			}
-		} /*else
+		} else
 		{
-			// unmask disconnect
-			otg->core_regs.GINTMSK |= OTG_GINTMSK_DISCINT;
-
-		}*/
+			if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_OK)
+				usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST);
+		}
 	}
 	otg->HPRT = port_status & ~OTG_HPRT_PENA;
 
@@ -2955,6 +2981,7 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 	else
 #endif
 	{
+		TRACE_USB(" %04X", drv_info->hw_base->host_regs.HFNUM & 0xFFFF);
 		status &= otg->core_regs.GINTMSK;
 		if(status)
 		{
@@ -3016,7 +3043,19 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		    if (status & OTG_GINTSTS_IPXFR)		//incomplete periodic transactions
 		    									// still pending, which are scheduled for the current frame
 		    {
+
 				TRACE1_USB(" IPXFR?");
+		    	//disable one endoint:
+				for(int i=0; i<USB_NUMENDPOINTS; i++)
+				{
+					ep_dir_state_t* ep_dir = &drv_info->drv_data->endpoints[i].epd_out;
+					if(ep_dir->epd_state == ENDPOINT_STATE_RECEIVING)
+					{
+						TRACE_USB(" disable %u", i);
+						stm_host_ch_halt(drv_info, &otg->HC_REGS[i*2+1]);
+						break;
+					}
+				}
 		    }
 
 	        /* Handle Rx Queue Level Interrupts */
