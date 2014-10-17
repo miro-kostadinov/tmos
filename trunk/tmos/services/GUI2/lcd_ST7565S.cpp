@@ -137,9 +137,19 @@ void ST7565S::draw_bitmap( int x0, int y0, const char* src, int width, int rows)
 
 void ST7565S::draw_point( int x, int y)
 {
-	if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
+	if(color == PIX_WHITE)
 	{
-		disp_buf[frame.y0>>3][x] |= (1 << (y&7));
+		if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
+		{
+			disp_buf[frame.y0>>3][x] |= (1 << (y&7));
+		}
+	}
+	else
+	{
+		if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
+		{
+			disp_buf[frame.y0>>3][x] |= (1 << (y&7));
+		}
 	}
 }
 

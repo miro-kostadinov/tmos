@@ -83,9 +83,19 @@ void ST7565S_RS::draw_bitmap( int x0, int y0, const char* src, int width, int ro
 
 void ST7565S_RS::draw_point( int x, int y)
 {
-	if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
+	if(color == PIX_WHITE)
 	{
-		disp_buf[frame.y0>>3][x] |= revert_char(1 << (y&7));
+		if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
+		{
+			disp_buf[frame.y0>>3][x] |= revert_char(1 << (y&7));
+		}
+	}
+	else
+	{
+		if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
+		{
+			disp_buf[frame.y0>>3][x] &= ~revert_char(1 << (y&7));
+		}
 	}
 }
 
@@ -93,7 +103,7 @@ void ST7565S_RS::draw_hline( int x0, int x1, int y)
 {
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
-		y = 1 << (y&7);
+		y = revert_char(1 << (y&7));
 		while(x0 <= x1)
 		{
 			if (frame.x0 <= x0 && x0 <= frame.x1)
@@ -102,7 +112,10 @@ void ST7565S_RS::draw_hline( int x0, int x1, int y)
 				{
 					TRACELN1("Oooops! draw_hline");
 				}
-				disp_buf[frame.y0>>3][x0] |= revert_char(y);
+				if(color == PIX_WHITE)
+					disp_buf[frame.y0>>3][x0] |= y;//revert_char(y);
+				else
+					disp_buf[frame.y0>>3][x0] &= ~y;//revert_char(y);
 			}
 			x0++;
 		}
@@ -113,7 +126,7 @@ void ST7565S_RS::draw_bline( int x0, int x1, int y)
 {
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
-		y = ~(1 << (y&7));
+		y = ~revert_char(1 << (y&7));
 		while(x0 <= x1)
 		{
 			if (frame.x0 <= x0 && x0 <= frame.x1)
@@ -122,7 +135,7 @@ void ST7565S_RS::draw_bline( int x0, int x1, int y)
 				{
 					TRACELN1("Oooops! draw_bline");
 				}
-				disp_buf[frame.y0>>3][x0] &= revert_char(y);
+				disp_buf[frame.y0>>3][x0] &= y;//revert_char(y);
 			}
 			x0++;
 		}
@@ -133,7 +146,7 @@ void ST7565S_RS::invert_hline( int x0, int x1, int y)
 {
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
-		y = 1 << (y&7);
+		y = revert_char(1 << (y&7));
 		while(x0 <= x1)
 		{
 			if (frame.x0 <= x0 && x0 <= frame.x1)
@@ -142,7 +155,7 @@ void ST7565S_RS::invert_hline( int x0, int x1, int y)
 				{
 					TRACELN1("Oooops! invert_hline");
 				}
-				disp_buf[frame.y0>>3][x0] ^= revert_char(y);
+				disp_buf[frame.y0>>3][x0] ^= y;//revert_char(y);
 			}
 			x0++;
 		}

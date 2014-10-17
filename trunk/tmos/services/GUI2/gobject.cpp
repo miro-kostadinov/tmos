@@ -390,56 +390,6 @@ void  GObject::draw_line(int x0, int y0, int x1, int y1)
 			y0 += sy;
 		}
 	}
-/*
-	int x, y;
-	int xs, xe, ys, ye;
-	int a, b;
-
-	if(x1 > x2)
-		xs = x2, xe = x1;
-	else
-		xs = x1, xe = x2;
-	if(y1 > y2)
-		ys = y2, ye = y1;
-	else
-		ys = y1, ye = y2;
-	if (ys >= rect.y0 && ye <= rect.y1 &&
-		xs >= rect.x0 && xe <= rect.x1)
-	{
-		if(xs == xe)
-		{
-			draw_vline(ys, ye, xs);
-			return;
-		}
-		if(ys == ye)
-		{
-			draw_hline(xs, xe, ys);
-			return;
-		}
-
-
-		if((ye - ys) < (xe-xs))
-		{
-			a = ((y1-y2)*10000)/(x1-x2);
-			b = y1*10000 - a*x1;
-			while(xs <= xe )
-			{
-				y = (a*xs + b)/10000;
-				parent->draw_point(xs++, y);
-			}
-		}
-		else
-		{
-			a = ((x1-x2)*10000)/(y1-y2);
-			b = x1*10000 - a*y1;
-			while(ys <= ye )
-			{
-				x = (a*ys + b)/10000;
-				parent->draw_point(x, ys++);
-			}
-		}
-	}
-*/
 }
 
 void GObject::draw_circle(int x0, int y0, int radius)
