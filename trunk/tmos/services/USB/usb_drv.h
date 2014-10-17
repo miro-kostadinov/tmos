@@ -102,51 +102,36 @@ enum USB_EVENT
 #define USB_DRV_MODE(tx_ep, rx_ep) ((const void*)(((tx_ep)<< 8) | (rx_ep) | 0x80000000))
 
 #if USB_ENABLE_HOST
-struct usb_remote_device
+struct usb_hub_port_t
 {
 	uint8_t dev_adress;    //!< current address
 	uint8_t dev_interface; //!< current interface
-	uint8_t	dev_flags;
 	uint8_t hub_num;		//!< hub number to which this device is attached
 	uint8_t hub_port;		//!< hub port to which this device is attached
-
-
-	USBDeviceDescriptor 		dev_descriptor;
-	USBConfigurationDescriptor	*config_descriptor;
-
-};
-
-struct usb_bus
-{
-	usb_remote_device usb_device[MAX_USB_DEVICES + 1]; //!< More than 1 device can be supported if hub present
-
 };
 #endif
 
 struct USB_DRIVER_DATA
 {
-#if USB_ENABLE_OTG
-	uint16_t		otg_state_cnt;
-	uint8_t			otg_flags;
-	uint32_t		otg_h_sig;
-#endif
-	uint8_t		 	usb_state;			//!< Current usb state (USBST_XXX)
-	uint8_t		 	usb_previous_state;	//!< Previous usb state (USDST_XXX)
-//	unsigned char	dev_adr;
-
-	unsigned int 	frame_count;
-	unsigned int 	wake_count;
 	HANDLE			helper;
 	HANDLE			waiting;			//!< waiting for the helper thread
 	HANDLE			pending;			//!< waiting for connections etc
+	Task* 			helper_task;
+	Endpoint		endpoints[USB_NUMENDPOINTS]; //!< Endpoint structures
+	uint16_t		drv_state_cnt;
+	uint8_t			otg_flags;
+
 #if USB_ENABLE_DEVICE
+	uint8_t		 	usb_state;			//!< Current usb state (USBST_XXX)
+	uint8_t		 	usb_previous_state;	//!< Previous usb state (USDST_XXX)
 	usb_device		device;
 #endif
-	Endpoint		endpoints[USB_NUMENDPOINTS]; //!< Endpoint structures
+
 #if USB_ENABLE_HOST
-	usb_bus			host_bus;
+	uint32_t		otg_h_sig;
+	usb_hub_port_t 	usb_hub[MAX_HUB_PORTS + 1]; //!< More than 1 device can be supported if hub present
 #endif
-	Task* 			helper_task;
+
 };
 
 struct USB_DRIVER_INFO
@@ -155,7 +140,7 @@ struct USB_DRIVER_INFO
 	USB_CONTROLLER *	hw_base;	//!< pointer to the hardware peripheral
 	USB_DRIVER_DATA* 	drv_data;	//!< pointer to the driver data
 	const USBDDriverDescriptors * dev_descriptors;
-	const usb_config_t*		cfg;		//!< configuration port-specific parameters
+	const usb_config_t*	cfg;		//!< configuration port-specific parameters
 	const char*			usb_name;
 };
 

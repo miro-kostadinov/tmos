@@ -255,7 +255,6 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 
 	case e_reset:
 		drv_data->usb_state = USBST_DEVICE_DEFAULT;
-		drv_data->frame_count = 0;
 		break;
 
 	default: ;

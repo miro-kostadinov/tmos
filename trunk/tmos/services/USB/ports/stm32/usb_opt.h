@@ -32,6 +32,7 @@
 #define USB_STM32_DEDICATED_EP1 0
 #endif
 
+#define EPD_FLAG_DATA1		1
 
 struct usb_config_t
 {
@@ -45,6 +46,7 @@ struct ep_dir_state_t		// directional endpoint state
 {
 	uint8_t		epd_state;	  	//!< Endpoint state
 	uint8_t		epd_type;		//!< Endpoint type
+	uint8_t		epd_flags;		//!< PID DATA0/1 toggle
 	uint16_t	epd_fifo_sz;	//!< Enpoint fifo size
 	HANDLE		epd_pending;	//!< Enpoint pending handles
 };

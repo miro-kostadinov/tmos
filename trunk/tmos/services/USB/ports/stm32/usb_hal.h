@@ -38,7 +38,7 @@ void usb_hal_config_fifo(USB_DRV_INFO drv_info);
 #if USB_ENABLE_HOST
 EXTERN_C void usb_hal_host_power(USB_DRV_INFO drv_info, bool enable);
 RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info);
-void usb_hal_host_bus_reset(USB_DRV_INFO drv_info);
+RES_CODE usb_hal_host_bus_reset(USB_DRV_INFO drv_info);
 void usb_hal_host_resume(USB_DRV_INFO drv_info);
 void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pDescriptor);
 #endif

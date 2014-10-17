@@ -1,10 +1,9 @@
 ##########################################################################
 #
-#	Make include for services/USB
+#	Make include for services/USB/core/host
 #	
 #   Platform: MPOS rev.2.3
 #
-#   www.thumbos.com
 #
 ##########################################################################
 
@@ -14,10 +13,13 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= usb_drv.cpp usb_api.cpp
+local_cpp_src-y	+= usb_host.cpp
+local_cpp_src-$(USB_ENABLE_PRN) += usbh_prn.cpp
+local_cpp_src-$(USB_ENABLE_HID) += usbh_hid.cpp
 
-local_h_src-y 	+= usb_cfg.h usb_drv.h usb_api.h
-
+local_h_src-y 	+= usb_host.h   
+local_h_src-$(USB_ENABLE_PRN) += usbh_prn.h
+local_h_src-$(USB_ENABLE_HID) += usbh_hid.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -29,9 +31,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 inc_dirs += $(subdirectory) 
 
 #submodules
-local_modules-y := ports descriptors requests
-local_modules-$(USB_ENABLE_HOST) += host
-local_modules-$(USB_ENABLE_DEVICE) += device
+local_modules-y :=
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
