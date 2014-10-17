@@ -133,7 +133,7 @@ struct GObject
 	bool cut_hline(int& x0, int& x1, int& y);
 	bool cut_vline(int& y0, int& y1, int& x);
 	void set_xy_all(LCD_MODULE* lcd, unsigned int xy, unsigned int all);
-	int draw_text(LCD_MODULE* lcd, const char* txt);
+	int  draw_text(LCD_MODULE* lcd, const char* txt);
 	void draw_text_line(LCD_MODULE* lcd, const char* txt, unsigned int len);
 	void draw_line(int x1, int y1, int x2, int y2);
 	void draw_line(POINT_T a, POINT_T b){draw_line(a.x, a.y, b.x, b.y);}
@@ -141,10 +141,13 @@ struct GObject
 	void draw_circle(POINT_T center, int r) {draw_circle(center.x, center.y, r);}
 	void fill_circle(int x0, int y0, int r);
 	void fill_circle(POINT_T center, int r) {fill_circle(center.x, center.y, r);}
+	void draw_poligon(const RECT_T& frame, bool fill = false);
+	void draw_rectangle(const RECT_T& frame, bool fill = false);
+	// Control methods
 	virtual bool close();
 	bool remove();
-	// Redraw methods
 	virtual bool get_focus(bool notify_msg = true);	//sets the parent focus on this
+	// Redraw methods
 	virtual void draw(LCD_MODULE* lcd, RECT_T area);
 	virtual void draw_this(LCD_MODULE* lcd)
 	{
@@ -167,8 +170,6 @@ struct GObject
 	{
 		;
 	}
-	void draw_poligon(const RECT_T& frame, bool fill = false);
-	void draw_rectangle(const RECT_T& frame, bool fill = false);
 
 	// queue message
 	unsigned int message(GMessage& msg);

@@ -64,6 +64,7 @@ struct LCD_MODULE: public GContainer
 		size_x(x), size_y(y), lcd_hnd(hnd), pins(p)
 	{
 		rect = RECT_T (0, 0, x - 1, y - 1);
+		color = PIX_WHITE;
 	}
 	;
 	virtual ~LCD_MODULE(){};
