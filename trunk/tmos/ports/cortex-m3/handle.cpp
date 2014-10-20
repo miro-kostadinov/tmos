@@ -480,6 +480,7 @@ RES_CODE CHandle::tsk_read(CSTRING& str, unsigned int size)
 {
 	char * buf;
 
+	str.clear();
 	if(str.reserve(size) >= size)
 	{
 		buf = (char*)str.c_str();
