@@ -951,11 +951,13 @@ unsigned int CSTRING::reserve( unsigned int size)
 		{
 			// we need to make a new storage
 
+			if(size < storage.ram->len)
+				size = storage.ram->len;
 			tmp = str_malloc1(size + STR_MIN_SIZE);
 			if(tmp)
 			{
-				strcpy(tmp->buf, storage.ram->buf);
-				tmp->len = storage.ram->len;
+				memcpy(&tmp->len, &storage.ram->len, storage.ram->len + 3);
+//				tmp->len = storage.ram->len;
 				tmp->refs = 1;
 			}
 			else
