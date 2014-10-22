@@ -34,8 +34,10 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 	if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
 	{
 		is_host = true;
-	}
-	endpoint = &drv_info->drv_data->endpoints[ept_indx >> 1];
+		endpoint = &drv_info->drv_data->endpoints[ept_indx >> 1];
+	} else
+		endpoint = &drv_info->drv_data->endpoints[ept_indx];
+
 	endpoint->epd_out.epd_flags ^= EPD_FLAG_DATA1;
 #else
 	endpoint = &drv_info->drv_data->endpoints[status & OTG_GRXSTSP_EPNUM_Msk];
