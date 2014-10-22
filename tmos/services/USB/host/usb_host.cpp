@@ -36,6 +36,44 @@
  *
  */
 
+static RES_CODE hdc_write(HANDLE hnd, const void* ptr, uint32_t len)
+{
+	RES_CODE res;
+
+	for(int i=0; i<20; i++)
+	{
+		res = hnd->tsk_write(ptr, len, USB_SETUP_WRITE_TOUT);
+		if(res == RES_OK)
+			break;
+		tsk_sleep(5);
+	}
+	return res;
+}
+
+static RES_CODE hdc_read(HANDLE hnd, void* ptr, uint32_t len)
+{
+	RES_CODE res;
+
+	hnd->len = len;
+	do
+	{
+		res = hnd->tsk_read(ptr, hnd->len, USB_SETUP_READ_TOUT);
+		ptr = hnd->dst.as_voidptr;
+	} while(hnd->len && res == RES_OK);
+
+	//flush unexpected data
+	if(hnd->mode1 && (res == RES_OK) && !hnd->len)	//mode1 = available data length
+	{
+		char buf[8];
+
+		while(hnd->tsk_read(buf, sizeof(buf), USB_SETUP_READ_TOUT)== RES_OK)
+		{
+			if(!hnd->mode1)
+				break;
+		}
+	}
+	return res;
+}
 
 RES_CODE hdc_request(USBGenericRequest* req, void* ptr,  HANDLE hnd)
 {
@@ -43,25 +81,32 @@ RES_CODE hdc_request(USBGenericRequest* req, void* ptr,  HANDLE hnd)
 
 	for(int i=0; i<5; i++)
 	{
+		//SETUP
+		hnd->mode1 = 1;	// mode1 = start of setup (use MDATA PID)
 		res = hnd->tsk_write(req, sizeof(USBGenericRequest), USB_SETUP_WRITE_TOUT);
+		hnd->mode1 = 0;	// mode1 = continue with data
 		if(res == RES_OK)
 		{
-			hnd->len = req->wLength;
-			do
+			if((req->bmRequestType & USB_REQ_DIR) == USB_REQ_DIR_OUT)
 			{
-				res = hnd->tsk_read(ptr, hnd->len, USB_SETUP_WRITE_TOUT);
-				ptr = hnd->dst.as_voidptr;
-			} while(hnd->len && res == RES_OK);
+				//DATA OUT
+				if(req->wLength)
+					hdc_write(hnd, ptr, req->wLength);
 
-			if(hnd->mode1 && (res == RES_OK) && !hnd->len)	//mode1 = available data length
-			{
-				char buf[8];
-
-				while(hnd->tsk_read(buf, sizeof(buf), USB_SETUP_WRITE_TOUT)== RES_OK)
+				// STATUS IN
+				if(res == RES_OK)
 				{
-					if(!hnd->mode1)
-						break;
-				}
+					res = hdc_read(hnd, NULL, 0);
+				} else
+					hdc_read(hnd, NULL, 0);
+			} else
+			{
+				// DATA IN
+				res = hdc_read(hnd, ptr, req->wLength);
+
+				// STATUS OUT
+				if(res == RES_OK)
+					res = hdc_write(hnd, NULL, 0);
 			}
 		}
 		if(res == RES_OK)
