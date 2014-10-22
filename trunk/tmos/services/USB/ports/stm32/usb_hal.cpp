@@ -1183,27 +1183,38 @@ static void stm_host_start_xfer(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptn
 	{
 		reg = 1; //PKTCNT = 1
 	}
-	if(eptnum)
+
+	//Handle data toggle
+	if(epdir->epd_type == ENDPOINT_TYPE_CONTROL)
 	{
-		if(epdir->epd_type == ENDPOINT_TYPE_INTERRUPT)
+		if(epdir->epd_state == ENDPOINT_STATE_RECEIVING)
 		{
-			if(epdir->epd_flags & EPD_FLAG_DATA1)
-			{
-				dpid = OTG_HCTSIZ_DPID_DATA1;
-				TRACE1_USB(" data1");
-			}
-			else
-			{
-				dpid = OTG_HCTSIZ_DPID_DATA0;
-				TRACE1_USB(" data0");
-			}
-
-
-		} else
+			// The control receive always starts with DATA1 then toggles
 			dpid = OTG_HCTSIZ_DPID_DATA1;
+		} else
+		{
+			// Control sending starts with MDATA, this sends SETUP + DATA0
+			// then DATA1 (the core will toggle the packets if we do a single write
+			if(hnd->mode1)	// mode1 = start of setup (use MDATA PID)
+				dpid = OTG_HCTSIZ_DPID_MDATA;
+			else
+				dpid = OTG_HCTSIZ_DPID_DATA1;
+		}
+
+	} else
+	{
+		// By default start with DATA0 then toggles
+		if(epdir->epd_flags & EPD_FLAG_DATA1)
+		{
+			dpid = OTG_HCTSIZ_DPID_DATA1;
+			TRACE1_USB(" data1");
+		}
+		else
+		{
+			dpid = OTG_HCTSIZ_DPID_DATA0;
+			TRACE1_USB(" data0");
+		}
 	}
-	else
-		dpid = OTG_HCTSIZ_DPID_MDATA;
 
 	hc_regs->HCTSIZ = OTG_HCTSIZ_XFRSIZ(hnd->len) |	OTG_HCTSIZ_PKTCNT(reg) | dpid;
 
@@ -1492,8 +1503,8 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 				hnd->mode1 = 0; //TODO
 				if(endpoint->epd_out.epd_state == ENDPOINT_STATE_IDLE )
 				{
-					stm_host_start_xfer(drv_info, hnd, eptnum*2+1, &endpoint->epd_out);
 					endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING;
+					stm_host_start_xfer(drv_info, hnd, eptnum*2+1, &endpoint->epd_out);
 				}
 			} else
 #endif
