@@ -474,7 +474,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 
 bool GEdit::process_char(unsigned int ch)
 {
-	if(txt.length() < max_len && ch > 0x100)
+	if(txt.length() < max_len && ch > KEY_ASCII_CODE)
 	{
 		ch &= 0xFF;
 		if(IS_ALPHANUM(ch) || IS_PUNC(ch) || ch == ' ')
