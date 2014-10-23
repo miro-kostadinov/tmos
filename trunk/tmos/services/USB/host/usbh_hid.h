@@ -58,16 +58,18 @@ struct usb_remote_kbd_t: public usb_remote_hid_t
 	uint8_t 		key_leds2;
 	uint8_t 		key_lang;
 	uint8_t 		def_lang;
+	uint32_t		key_time;
 
 	uint32_t get_modifier(uint32_t modifier);
 	void key_press(uint32_t code);
 	void key_release(uint32_t code);
 	usb_remote_kbd_t(HANDLE h1, HANDLE h2): usb_remote_hid_t(h1, h2),
-		key_leds(0), key_leds2(0), key_lang(0), def_lang(1)
+		key_leds(0), key_leds2(0), key_lang(0), def_lang(1), key_time(0)
 	{
 	};
 
 	void kbd_process();
+	void kbd_timeout();
 };
 
 #endif /* USBH_HID_H_ */

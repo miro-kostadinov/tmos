@@ -498,3 +498,37 @@ void usb_remote_kbd_t::kbd_process()
 
 	}
 }
+
+#ifndef KEY_REPEAT_TIME
+	#define KEY_REPEAT_TIME 	300
+#endif
+
+void usb_remote_kbd_t::kbd_timeout()
+{
+	uint32_t time, code;
+	int32_t	tout;
+
+	time = CURRENT_TIME;
+
+	if(time != key_time)
+	{
+		tout = time - key_time;
+		if(tout < 0)
+			tout += 0x80000000;
+
+
+		for(int i=0; i<old_keys.len; i++)
+		{
+			key_tout[i] += tout;
+			if(key_tout[i] > KEY_REPEAT_TIME)
+			{
+				key_tout[i] -= KEY_REPEAT_TIME;
+				code = old_keys.key_code[i];
+				code = usb_scan_to_ascii(code, get_modifier(old_keys.key_modifier), key_lang);
+				usb_kbd_post_key(code, KEY_DOWN_CODE);
+			}
+		}
+		key_time = time;
+	}
+
+}
