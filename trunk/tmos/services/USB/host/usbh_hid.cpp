@@ -170,7 +170,7 @@ RES_CODE usb_remote_hid_t::scan_hid(uint32_t port_indx, USBSubClassCode subcls, 
 							pid->bDeviceSubClass == subcls && pid->bDeviceProtocol == proto)
 					{
 						// set the configuration
-						set_configuration(0);
+//						set_configuration(0);
 						res = set_configuration(config_descriptor->bConfigurationValue);
 
 						if(res == RES_OK)
