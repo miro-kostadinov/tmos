@@ -110,18 +110,6 @@ struct GObject
 		return p;
 	}
 
-/*
-	void operator delete(void * ptr)
-	{
-		if(ptr)
-		{
-			if(((GObject *)ptr)->ref_cnt == 1 )
-			{
-				tsk_free(ptr);
-			}
-		}
-	}
-*/
 	// Timer methods
 	bool SetTimer(GId event, unsigned int elapse);
 	void KillTimer(GId event);
@@ -170,9 +158,21 @@ struct GObject
 	{
 		;
 	}
-
 	// queue message
 	unsigned int message(GMessage& msg);
+
+	virtual bool set_flag(GFlags val);
+	virtual bool clr_flag(GFlags val);
+
+	virtual GObject* get_object(GId xid);
+
+	virtual bool is_available();
+	virtual void move(int x, int y);
+
+protected:
+	friend struct GContainer;
+	friend struct GFloating_Button;
+
 	virtual unsigned int initialize(GMessage& msg);	//proceeds items with WM_INIT code
 	virtual unsigned int process_key(GMessage& msg)	//proceeds items with WM_KEY code
 	{
@@ -187,15 +187,9 @@ struct GObject
 	{
 		return 0;
 	}
+
 	virtual unsigned int process_destroy(GMessage& msg); //The WM_DESTROY message is sent when a window is being destroyed.
 
-	virtual bool set_flag(GFlags val);
-	virtual bool clr_flag(GFlags val);
-
-	virtual GObject* get_object(GId xid);
-
-	virtual bool is_available();
-	virtual void move(int x, int y);
 private:
 	// Timer methods
 	GTimer* FindTimer(GId event);
