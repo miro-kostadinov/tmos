@@ -69,8 +69,6 @@ GObject* GContainer::addChild (GObject* child)
 
 GObject* GContainer::addChildRef(GObject* child)
 {
-//	if(child)
-//		child->ref_cnt++;
 	return addChild (child);
 }
 
@@ -246,32 +244,6 @@ bool GContainer::close (GObject* toClose)
 		pchild =  &child->nextObj;
 	}
 	return false;
-
-/*
-	GObject* tmp = children;
-	if(tmp)
-	{
-		if (children == toClose)
-		{
-			children = children->nextObj;
-			if (toClose == focus)
-				set_focus_last();
-			return true;
-		}
-		while (tmp->nextObj)
-		{
-			if (toClose == tmp->nextObj)
-			{
-				tmp->nextObj = toClose->nextObj;
-				if (toClose == focus)
-					set_focus_last();
-				return true;
-			}
-			tmp = tmp->nextObj;
-		}
-	}
-	return false;
-*/
 }
 
 bool GContainer::set_flag(GFlags val)
