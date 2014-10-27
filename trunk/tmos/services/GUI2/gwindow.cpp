@@ -39,13 +39,14 @@ unsigned int GWindow::process_key (GMessage& msg)
 unsigned int GWindow::process_destroy(GMessage& msg)
 {
 	close();
+	flags &= ~ (GO_FLG_SHOW|GO_FLG_ENABLED|GO_FLG_SELECTED); // hide and disable this window
 	if(parent && parent->focus)
 	{
 		GWindow* tmp = (GWindow *)parent->children;
 		while(tmp)
 		{
 			if((tmp->flags & GO_FLG_SHOW) && (tmp->displays & displays))
-				send_message(WM_DRAW, 0, rect.as_int, tmp);//parent->focus);
+				tmp->invalidate(this, rect.as_int); //send_message(WM_DRAW, 0, rect.as_int, tmp);//parent->focus);
 			tmp = (GWindow *)tmp->nextObj;
 		}
 	}
