@@ -14,6 +14,7 @@
 #include <gwindow.h>
 #include <gbutton.h>
 #include <gtext.h>
+#include <gdowait.h>
 
 #if GUI_DISPLAYS > 1
 #include <lcd_multiplex.h>
