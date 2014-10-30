@@ -13,7 +13,7 @@
 
 #define ID_BUSY_CLOCK 		1
 #define ID_BUSY_SET_OWNER 	0x1111
-#define BUSY_START_TIME		200
+#define BUSY_START_TIME		300
 
 struct GWaitOwner
 {

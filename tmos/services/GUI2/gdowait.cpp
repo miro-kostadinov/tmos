@@ -33,7 +33,7 @@ unsigned int GWait::initialize (GMessage& msg)
 	last_state = 0;
 	new_state = 0x3;
 	displays = 1;
-	R = 15;
+	R = 12;
 	SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
 	dowait_win->owners = new GWaitOwner(parent->focus);
 	return 0;
