@@ -22,6 +22,11 @@ const char* MB_IDS[] =
 	"Cancel"
 };
 
+WEAK void weak_gui_message_beep(int code)
+{
+
+}
+
 WEAK RES_CODE msg_error(CSTRING& msg, int err_code)
 {
 	MessageBox(msg.c_str());
@@ -167,7 +172,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
     }
     else
 		addChild(new GText(ID_MB-1, message_rect, body, NULL,
-    			((bnum)?0:GO_FLG_SELECTED)|
+    			//((bnum)?0:GO_FLG_SELECTED)|
 				GO_FLG_VSCROLL|GO_FLG_TRANSPARENT|GO_FLG_DEFAULT,
 				SS_DEFAULT,
 				font));
@@ -217,6 +222,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 //			button_rect.x0 += button_rect.width();
 //		}
 //	}
+	weak_gui_message_beep(GET_MBF_BEEP_TYPE(type));
 	return GWindow::initialize(msg);
 }
 
@@ -285,11 +291,24 @@ unsigned int GMsgBox::process_key (GMessage& msg)
 	}
 	if (msg.param == KEY_CANCEL)
 	{
-		if((type&(MBF_LAST_BTN-1)) == MBF_OK)
+		unsigned int param;
+		switch((type&(MBF_LAST_BTN-1)))
 		{
-			notify_message(WM_CLOSE, GO_IDCANCEL, this);
-			return 1;
+		case 0: // no buttons
+			param = GO_EXIT;
+		case MB_OKCANCEL:
+		case MB_RETRYCANCEL:
+		case MB_YESNOCANCEL:
+			param = GO_IDCANCEL;
+			break;
+		case MB_YESNO:
+			param = GO_IDNO;
+			break;
+		default:
+			return 0;
 		}
+		notify_message(WM_CLOSE, param, this);
+		return 1;
 	}
 	return 0;
 }
@@ -364,4 +383,37 @@ int EditBox(CSTRING& value, const char* Caption, unsigned int Style, text_metric
 	}
 
 	return 0;
+}
+
+void StatusMessageBox(const char* Text, const char* Caption, unsigned int Style, unsigned int time)
+{
+	GMsgBox box;
+	GMessage msg;
+
+	box.displays = 1;
+	box.type = 	Style;
+	box.body =  Text;
+	box.title = Caption;
+
+	if(box.Create())
+	{
+		while(1)
+		{
+			if(box.GetMessage(msg, 100))
+			{
+				if(box.DefWinProc(msg))
+					break;
+			}
+			else
+			{
+				if(time)
+				{
+					if(time > 100)
+						time -= 100;
+					else
+						break;
+				}
+			}
+		}
+	}
 }

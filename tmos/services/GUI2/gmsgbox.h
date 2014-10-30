@@ -32,17 +32,30 @@
 #define MBF_CLR			(1<<6)
 
 // control fields
-#define MBF_INPUT_TYPE(type) 	((type)<<8)
+#define MBF_INPUT_TYPE(type) 	(((type)&0xF)<<8)
 #define MBF_EDIT_FLAGS(flags) 	((flags)<<16)
+#define MBF_BEEP_TYPE(num)		(((num)&0xF)<<12)
 
-#define GET_MBF_INPUT_TYPE(mb_type)	((key_mode)(((mb_type)>>8)&0xFF))
+#define GET_MBF_INPUT_TYPE(mb_type)	((key_mode)(((mb_type)>>8)&0xF))
 #define GET_MBF_EDIT_FLAGS(mb_type)	(((mb_type)>>16)&0xFFFF)
+#define GET_MBF_BEEP_TYPE(mb_type)	(((mb_type)>>12)&0xF)
 
 #define MB_OK			MBF_OK
 #define MB_OKCANCEL 	(MBF_OK|MBF_CANCEL)
 #define	MB_RETRYCANCEL  (MBF_RETRY|MBF_CANCEL)
 #define MB_YESNO		(MBF_YES|MBF_NO)
 #define MB_YESNOCANCEL  (MBF_YES|MBF_NO|MBF_CANCEL)
+
+#define MB_BEEP(code)	MBF_BEEP_TYPE(code)
+/*
+ * Message(Edit)Box style format
+ * ------------------------------------------------------------------------------
+ *  31   30   29   28   27   26   25   24   23   22   21   20   19   18   17   16
+ *
+ *  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+ * |   beep type      | BG/EN/bg/en/123   | ctrl flags   |   Buttons             |
+ *  nc   nc   nc   nc   nc   nc   nc   nc   nc   CLR  EDI  CANC  NO  YES  RETRY OK
+ */
 
 // simple edit dialog
 #define EB_
@@ -71,6 +84,7 @@ private:
 };
 
 int MessageBox(const char* Text, const char* Caption = NULL, unsigned int Style=MB_OK);
+void StatusMessageBox(const char* Text, const char* Caption, unsigned int Style=0, unsigned int time=5000);
 
 #define NEB_PASSWORD (MBF_EDIT_FLAGS(ES_PASSWORD|ES_CENTER|ES_HIDE_CURSOR))
 #define NEB_DIGIT 	 (MBF_EDIT_FLAGS(ES_CENTER|ES_HIDE_CURSOR))
