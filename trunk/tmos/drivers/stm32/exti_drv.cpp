@@ -88,15 +88,7 @@ void EXTI_DCR(EXTI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 							lines = 1 << pos;
 							pin_pattern ^= lines;
 
-							if(pos < 5)
-								pos = EXTI0_IRQn + pos;
-							else
-							{
-								if(pos <10)
-									pos = EXTI9_5_IRQn;
-								else
-									pos = EXTI15_10_IRQn;
-							}
+							pos = stm_get_drv_indx(pos);
 
 							// Handles can be open with any EXTI driver, so check
 							// here if the actual driver is installed

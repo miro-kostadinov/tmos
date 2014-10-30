@@ -137,7 +137,7 @@ typedef struct
 #define USART_STATUS_RXNEIE USART_CR1_RXNEIE	//!< RXNE enable flag for F2 family
 #define USART_STATUS_IDLEIE USART_CR1_IDLEIE	//!< IDLE enableflag for F2 family
 
-unsigned int get_usart_source_clk(unsigned int periph_id);
+unsigned int set_usart_baudrate(USART_TypeDef* usart, uint32_t periph_id, uint32_t rate);
 
 /// Maskable status bits
 #define USART_SR_MASKABLE (USART_CR1_IDLEIE | USART_CR1_RXNEIE | USART_CR1_TCIE | USART_CR1_TXEIE)

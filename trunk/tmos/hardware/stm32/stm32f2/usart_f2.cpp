@@ -30,6 +30,30 @@ unsigned int get_usart_source_clk(unsigned int periph_id)
 }
 
 
+unsigned int set_usart_baudrate(USART_TypeDef* usart, uint32_t periph_id, uint32_t rate)
+{
+	uint32_t integerdivider , fractionaldivider;
+
+	integerdivider = ((25 * get_usart_source_clk(periph_id)) / (2 * rate));
+	if( !(usart->USART_CR1 & USART_CR1_OVER8) )
+		integerdivider /= 2;
+
+	fractionaldivider = integerdivider;
+	integerdivider /= 100;
+	fractionaldivider -=  100 * integerdivider;
+	if (usart->USART_CR1 & USART_CR1_OVER8)
+	{
+		fractionaldivider = (((fractionaldivider * 8) + 50) / 100) &  0x07;
+	}
+	else
+	{
+		fractionaldivider = (((fractionaldivider * 16) + 50) / 100) &  0x0F;
+	}
+
+	usart->USART_BRR = USART_BRR_DIV_Mantissa_Set(integerdivider) | fractionaldivider;
+
+	return 1;
+}
 
 
 

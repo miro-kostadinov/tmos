@@ -66,7 +66,7 @@ struct NVIC_Type
 
 #ifndef __ASSEMBLY__
 //EXTERN_C void NVIC_EnableIRQ(uint32_t IRQn);
-//EXTERN_C void NVIC_DisableIRQ(uint32_t IRQn);
+EXTERN_C void NVIC_DisableIRQ(uint32_t IRQn);
 //EXTERN_C uint32_t NVIC_GetPendingIRQ(uint32_t IRQn);
 //EXTERN_C void NVIC_SetPendingIRQ(uint32_t IRQn);
 //EXTERN_C void NVIC_ClearPendingIRQ(uint32_t IRQn);

@@ -567,13 +567,42 @@ static inline void __set_FPSCR(uint32_t fpscr)
 
 #endif /* (__CORTEX_M == 0x04) */
 
-static inline unsigned int __CLZ(unsigned int val)
+static inline uint32_t __CLZ(uint32_t num)
 {
-	unsigned int result;
+	register uint32_t cnt, tmp;
 
-	asm volatile ("clz %0, %1" : "=r" (result) : "r" (val) );
-	return (result);
+	asm volatile (
+		".syntax unified  				\n\t"
+		"	movs        %1,#32          \n\t"
+		"   lsrs        %2,%0,#16       \n\t"
+		"	beq         16f	            \n\t"
+		"   subs        %1,#16          \n\t"
+		"   mov         %0,%2           \n\t"
+		"16:                            \n\t"
+		"	lsrs        %2,%0,#8        \n\t"
+		"   beq         8f 		        \n\t"
+		"   subs        %1,#8           \n\t"
+		"   mov         %0,%2           \n\t"
+		"8:                             \n\t"
+		"	lsrs        %2,%0,#4        \n\t"
+		"   beq         4f	            \n\t"
+		"   subs        %1,#4           \n\t"
+		"   mov         %0,%2           \n\t"
+		"4:                             \n\t"
+		"	lsrs        %2,%0,#2        \n\t"
+		"   beq         2f	            \n\t"
+		"   subs        %1,#2           \n\t"
+		"   mov         %0,%2           \n\t"
+		"2:                             \n\t"
+		"	lsrs		%0, #1          \n\t"
+		"	subs		%0, %1, %0      \n\t"
+		".syntax divided				\n\t"
+	  : "=r" (num), "=r" (cnt), "=r" (tmp)
+	  : "0" (num)
+	  :
+	  );
+	return num;
+
 }
-
 
 #endif /* CORE_INSTR_H_ */

@@ -12,31 +12,13 @@ void ConfigureUsart(USART_DRIVER_INFO * drv_info, USART_DRIVER_DATA * drv_data,
 		USART_DRIVER_MODE * mode)
 {
 	USART_TypeDef* USARTx = drv_info->hw_base;
-	uint32_t integerdivider , fractionaldivider;
 
 	USARTx->USART_CR2 = mode->mode_cr2;
 	USARTx->USART_CR1 = mode->mode_cr1;
 	USARTx->USART_CR3 = mode->mode_cr3;
 
 	/* Configure the USART Baud Rate -------------------------------------------*/
-	integerdivider = ((25 * get_usart_source_clk(drv_info->info.peripheral_indx))
-			/ (2 * mode->baudrate));
-	if( !(mode->mode_cr1 & USART_CR1_OVER8) )
-		integerdivider /= 2;
-
-	fractionaldivider = integerdivider;
-	integerdivider /= 100;
-	fractionaldivider -=  100 * integerdivider;
-	if (mode->mode_cr1 & USART_CR1_OVER8)
-	{
-		fractionaldivider = (((fractionaldivider * 8) + 50) / 100) &  0x07;
-	}
-	else
-	{
-		fractionaldivider = (((fractionaldivider * 16) + 50) / 100) &  0x0F;
-	}
-
-	USARTx->USART_BRR = USART_BRR_DIV_Mantissa_Set(integerdivider) | fractionaldivider;
+	set_usart_baudrate(USARTx, drv_info->info.peripheral_indx, mode->baudrate);
 
 	drv_enable_isr(&drv_info->info);
 
