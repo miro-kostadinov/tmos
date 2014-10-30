@@ -1,12 +1,12 @@
 /*
- * gpio_f2.h
+ * gpio_f0.h
  *
- *  Created on: Oct 29, 2012
+ *  Created on: Oct 27, 2014
  *      Author: miro
  */
 
-#ifndef GPIO_F2_H_
-#define GPIO_F2_H_
+#ifndef GPIO_F0_H_
+#define GPIO_F0_H_
 
 #include <mcu_inc.h>
 #include <tmos_types.h>
@@ -20,14 +20,6 @@
 #define PD_AF5		(PD_AF | PD_MUX_AF5	)	//!< Alternative function map 5
 #define PD_AF6		(PD_AF | PD_MUX_AF6	)	//!< Alternative function map 6
 #define PD_AF7		(PD_AF | PD_MUX_AF7	)	//!< Alternative function map 7
-#define PD_AF8		(PD_AF | PD_MUX_AF8	)	//!< Alternative function map 8
-#define PD_AF9		(PD_AF | PD_MUX_AF9	)	//!< Alternative function map 9
-#define PD_AF10		(PD_AF | PD_MUX_AF10)	//!< Alternative function map 10
-#define PD_AF11		(PD_AF | PD_MUX_AF11)	//!< Alternative function map 11
-#define PD_AF12		(PD_AF | PD_MUX_AF12)	//!< Alternative function map 12
-#define PD_AF13		(PD_AF | PD_MUX_AF13)	//!< Alternative function map 13
-#define PD_AF14		(PD_AF | PD_MUX_AF14)	//!< Alternative function map 14
-#define PD_AF15		(PD_AF | PD_MUX_AF15)	//!< Alternative function map 15
 
 #define PD_AF_SYS 		PD_AF0			//!< Alternate function map for SYS
 #define PD_AF_TIM1 		PD_AF1			//!< Alternate function map for Timer 1
@@ -82,6 +74,7 @@ typedef struct
 	__IO uint32_t GPIO_BSRR;     //!< (gpio Offset: 0x18) GPIO port bit set/reset register
 	__IO uint32_t GPIO_LCKR;     //!< (gpio Offset: 0x1C) GPIO port configuration lock register
 	__IO uint32_t GPIO_AFR[2];   //!< (gpio Offset: 0x20) GPIO alternate function registers
+	__IO uint32_t GPIO_BRR;		 //!< (gpio Offset: 0x28) Port bit reset register
 } GPIO_TypeDef;
 
 /*******************************************************************************
@@ -115,9 +108,8 @@ typedef struct
 #define GPIO_OSPEEDER_OSPEEDRy_Set(pin,x)   ((x)<<((pin)*2))
 
 #define GPIO_OSPEEDER_OSPEEDRy_2MHz   	0		//!< 2 MHz Low speed
-#define GPIO_OSPEEDER_OSPEEDRy_25MHz   	1		//!< 25 MHz Medium speed
-#define GPIO_OSPEEDER_OSPEEDRy_50MHz   	2		//!< 50 MHz Fast speed
-#define GPIO_OSPEEDER_OSPEEDRy_100MHz  	3		//!< 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
+#define GPIO_OSPEEDER_OSPEEDRy_10MHz   	1		//!< 10 MHz Medium speed
+#define GPIO_OSPEEDER_OSPEEDRy_50MHz   	3		//!< 50 MHz High speed
 /** @} */
 
 /** @defgroup GPIO_PUPDR:	(gpio Offset: 0x0C) GPIO port pull-up/pull-down register */
@@ -155,14 +147,6 @@ typedef struct
 #define GPIO_AFR_AFRy_AF5   		5 			//!< AF5
 #define GPIO_AFR_AFRy_AF6   		6 			//!< AF6
 #define GPIO_AFR_AFRy_AF7   		7 			//!< AF7
-#define GPIO_AFR_AFRy_AF8   		8 			//!< AF8
-#define GPIO_AFR_AFRy_AF9   		9 			//!< AF9
-#define GPIO_AFR_AFRy_AF10  		10			//!< AF10
-#define GPIO_AFR_AFRy_AF11  		11			//!< AF11
-#define GPIO_AFR_AFRy_AF12  		12			//!< AF12
-#define GPIO_AFR_AFRy_AF13  		13			//!< AF13
-#define GPIO_AFR_AFRy_AF14  		14			//!< AF14
-#define GPIO_AFR_AFRy_AF15  		15			//!< AF15
 /** @} */
 
 
@@ -173,11 +157,10 @@ typedef struct
  ******************************************************************************/
 typedef struct
 {
-  __IO uint32_t SYSCFG_MEMRMP;      //!< (syscfg Offset: 0x00) SYSCFG memory remap register
-  __IO uint32_t SYSCFG_PMC;         //!< (syscfg Offset: 0x04) SYSCFG peripheral mode configuration register
+  __IO uint32_t SYSCFG_CFGR1; 	    //!< (syscfg Offset: 0x00) SYSCFG configuration register 1
+  __IO uint32_t reserved; 		    //!< (syscfg Offset: 0x04)
   __IO uint32_t SYSCFG_EXTICR[4];   //!< (syscfg Offset: 0x08) SYSCFG external interrupt configuration registers
-  __IO uint32_t SYSCFG_RESERVED[2]; //!< (syscfg Offset: 0x18) Reserved
-  __IO uint32_t SYSCFG_CMPCR;       //!< (syscfg Offset: 0x20) SYSCFG Compensation cell control register
+  __IO uint32_t SYSCFG_CFGR2; 	    //!< (syscfg Offset: 0x18) SYSCFG configuration register 2
 } SYSCFG_TypeDef;
 
 /*******************************************************************************
@@ -185,17 +168,14 @@ typedef struct
  * @{
  ******************************************************************************/
 
-/** @defgroup SYSCFG_MEMRMP:    (syscfg Offset: 0x00) SYSCFG memory remap register */
-#define SYSCFG_MEMRMP_MEM_MODE      	0x00000003 //!< <SYSCFG_Memory Remap Config
-#define SYSCFG_MEMRMP_MEM_MODE_FLASH    0x00000000 //!<  Main Flash memory mapped
-#define SYSCFG_MEMRMP_MEM_MODE_ROM    	0x00000001 //!<  System Flash memory mapped
-#define SYSCFG_MEMRMP_MEM_MODE_FSMC    	0x00000002 //!<  FSMC Bank1 (NOR/PSRAM 1 and 2)
-#define SYSCFG_MEMRMP_MEM_MODE_SRAM    	0x00000003 //!<  Embedded SRAM (112kB) mapped
+/** @defgroup SYSCFG_CFGR1:    (syscfg Offset: 0x00) SYSCFG configuration register 1 */
+#define SYSCFG_CFGR1_MEM_MODE     	 	0x00000003 //!< SYSCFG_Memory Remap Config
+#define SYSCFG_CFGR1_MEM_MODE_FLASH     0x00000000 //!<  Main Flash memory mapped
+#define SYSCFG_CFGR1_MEM_MODE_ROM    	0x00000001 //!<  System Flash memory mapped
+#define SYSCFG_CFGR1_MEM_MODE_FSMC    	0x00000002 //!<  FSMC Bank1 (NOR/PSRAM 1 and 2)
+#define SYSCFG_CFGR1_MEM_MODE_SRAM    	0x00000003 //!<  Embedded SRAM (112kB) mapped
 /** @} */
 
-/** @defgroup SYSCFG_PMC:       (syscfg Offset: 0x04) SYSCFG peripheral mode configuration register */
-#define SYSCFG_PMC_MII_RMII         	0x0080 //!< Ethernet PHY interface selection
-/** @} */
 
 /** @defgroup SYSCFG_EXTICR[4]: (syscfg Offset: 0x08) SYSCFG external interrupt configuration registers */
 #define SYSCFG_EXTICRy_EXTIx_Msk(x)     (0xF << ((x)*4))            //!< EXTI x configuration
@@ -203,9 +183,7 @@ typedef struct
 #define SYSCFG_EXTICRy_EXTIx_Set(x,y)   ((y) << ((x)*4))            //!< EXTI x configuration set
 /** @} */
 
-/** @defgroup SYSCFG_CMPCR:     (syscfg Offset: 0x20) SYSCFG Compensation cell control register */
-#define SYSCFG_CMPCR_CMP_PD         0x00000001 //!< Compensation cell ready flag
-#define SYSCFG_CMPCR_READY          0x00000100 //!< Compensation cell power-down
+/** @defgroup SYSCFG_CFGR2:     (syscfg Offset: 0x18) SYSCFG configuration register 2 */
 /** @} */
 
 
@@ -215,19 +193,7 @@ typedef struct
 #define PORT_ADDRESS(num) ((GPIO_TypeDef*)(BASE_GPIOA + ((num)*0x400)))
 
 /// Return IRqn for exti line
-static inline uint32_t stm_get_drv_indx(uint32_t line)
-{
-	if(line < 5)
-		line = EXTI0_IRQn + line;
-	else
-	{
-		if(line <10)
-			line = EXTI9_5_IRQn;
-		else
-			line = EXTI15_10_IRQn;
-	}
-	return line;
-}
+#define stm_get_drv_indx(line) (((line)<4)?(EXTI0_1_IRQn + ((line)>>1)):EXTI4_15_IRQn)
 
 void PIO_Cfg(PIN_DESC cfg);
 void PIO_CfgOutput1(PIN_DESC pins);
@@ -252,4 +218,7 @@ void exti_set_line_source(unsigned int line, unsigned int port);
 }
 #endif
 
-#endif /* GPIO_F2_H_ */
+
+
+
+#endif /* GPIO_F0_H_ */
