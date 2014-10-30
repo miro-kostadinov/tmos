@@ -367,7 +367,7 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 	//check the receiver
 	if (status & USART_STATUS_ORE)
 	{
-		TRACELN("over");
+//		TRACELN("over");
 		get_usart_rdr(uart); //clear overrun flag
     	if( (hnd=drv_data->hnd_rcv) )
     	{
@@ -387,8 +387,6 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 		{
 			if(!--drv_data->rx_remaining )
 			{
-				if(uart == USART1)
-					TRACELN1("^i");
 				if( (hnd=drv_data->hnd_rcv) )
 					STOP_RX_HND(uart, drv_data, hnd, RES_SIG_OK);
 				else
@@ -416,7 +414,7 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 	    	{
 	    		if(drv_data->rx_remaining != hnd->len)
 	    		{
-	    			TRACELN("idle");
+//	    			TRACELN("idle");
 	    			STOP_RX_HND(uart, drv_data, hnd, RES_SIG_OK);
 	    		}
 	    	}
