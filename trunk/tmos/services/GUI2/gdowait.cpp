@@ -158,6 +158,7 @@ void GWait::DoWait(int code)
 	{
 		if(dowait_win)
 		{
+			dowait_win->Destroy();
 			delete dowait_win;
 			dowait_win = NULL;
 		}
