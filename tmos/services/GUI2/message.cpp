@@ -31,17 +31,18 @@ void processes_all_messages(void)
 
 		if(GWait::dowait_win && msg.code == WN_DESTROY && msg.dst && msg.dst != GWait::dowait_win)
 		{
-			GWaitOwner *tmp = GWait::dowait_win->owners;
-			while(tmp)
+			GWaitOwner** powner = &GWait::dowait_win->owners;
+			GWaitOwner* owner;
+
+			while((owner = *powner))
 			{
-				if(tmp->owner == msg.dst)
+				if(owner->owner == msg.dst)
 				{
-					GWaitOwner* to_delete  = tmp;
-					tmp = tmp->next;
-					delete to_delete;
+					*powner =  owner->next;
+					delete owner;
 					break;
 				}
-				tmp = tmp->next;
+				powner =  &owner->next;
 			}
 		}
 
