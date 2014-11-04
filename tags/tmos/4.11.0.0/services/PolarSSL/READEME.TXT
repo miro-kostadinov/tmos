@@ -1,0 +1,8 @@
+
+This source code was derived from the PolarSSL cryptographic library and 
+modified for TMOS. Only parts of the library were used.  
+
+The PolarSSL library is subject to the LGPL license, Version 2.1 (see LGPL.txt).
+
+For more information about PolarSSL see http://polarssl.org
+
