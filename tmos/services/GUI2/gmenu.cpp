@@ -555,7 +555,7 @@ unsigned int GMenu::process_key (GMessage& msg)
 		{
 			char  ch = TranslateKey(msg.param);
 			char* hot_pos;
-			if(ch)
+			if(ch && !(msg.param & KEY_ASCII_CODE))
 			{
 				tmp = menu;
 				while(tmp)
