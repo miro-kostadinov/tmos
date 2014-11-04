@@ -118,6 +118,7 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 						// Reset requested
 						for(int retries =0; retries <3; ++retries)
 						{
+							tsk_sleep(100);
 							res = usb_host_reset_bus(drv_info, &req_hnd);
 							if( res == RES_OK)
 								break;
