@@ -27,13 +27,14 @@ unsigned int GWait::initialize (GMessage& msg)
 	LCD_MODULE* lcd = ((LCD_MODULE **)msg.lparam)[0];
 
 	client_rect = rect = lcd->rect;
-	flags = GO_FLG_SHOW|GO_FLG_TRANSPARENT;
+	flags = GO_FLG_TRANSPARENT;
 	base.x = rect.x0 + rect.width()/2;
 	base.y = rect.y0 + rect.height()/2;
 	last_state = 0;
 	new_state = 0x3;
 	displays = 1;
 	R = 12;
+	client_rect = rect = RECT_T(base.x - R, base.y -R, base.x +R, base.y +R);
 	SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
 	dowait_win->owners = new GWaitOwner(parent->focus);
 	return 0;
@@ -52,7 +53,8 @@ unsigned int GWait::process_default (GMessage& msg)
 			if(new_state & 0x100)
 				new_state ^= 0x101;
 			last_state &= ~new_state;
-			invalidate(this, RECT_T(base.x -R, base.y -R, base.x +R, base.y +R));
+			flags |= GO_FLG_SHOW;
+			invalidate(this, rect);
 		}
 	}
 	return 0;
@@ -150,7 +152,7 @@ void GWait::DoWait(int code)
 					}
 				}
 				if(code == 0) // restore wait
-					dowait_win->PostMessage(WM_SET_FLAGS, GO_FLG_SHOW, dowait_win);
+					dowait_win->PostMessage(WM_TIMER, ID_BUSY_CLOCK, dowait_win);
 			}
 		}
 	}
