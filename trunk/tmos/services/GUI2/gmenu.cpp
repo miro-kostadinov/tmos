@@ -244,6 +244,7 @@ bool GMenu::RemoveItem(int item_id)
 //		}
 		new_base[j].parent = base[i].parent;
 		new_base[j].item = base[i].item;
+		new_base[j].flags = base[i].flags;
 		new_base[j].item_name = base[i].item_name;
 		base[i].item_name.free();
 
