@@ -65,16 +65,19 @@ void processes_all_messages(void)
 					}
 					tmp = tmp->next;
 				}
-				if(hide &&  (GWait::dowait_win->flags & GO_FLG_SHOW))
+				if(hide)
 				{
-					GWait::dowait_win->flags &= ~GO_FLG_SHOW;
 					GWait::dowait_win->KillTimer(ID_BUSY_CLOCK);
-					GWindow* win = (GWindow *)(GWait::dowait_win->parent->children);
-					while(win)
+					if( GWait::dowait_win->flags & GO_FLG_SHOW)
 					{
-						if((win->flags & GO_FLG_SHOW) && (win->displays & GWait::dowait_win->displays))
-							send_message(WM_DRAW, 0, GWait::dowait_win->rect.as_int, win);
-						win = (GWindow *)win->nextObj;
+						GWait::dowait_win->flags &= ~GO_FLG_SHOW;
+						GWindow* win = (GWindow *)(GWait::dowait_win->parent->children);
+						while(win)
+						{
+							if((win->flags & GO_FLG_SHOW) && (win->displays & GWait::dowait_win->displays))
+								send_message(WM_DRAW, 0, GWait::dowait_win->rect.as_int, win);
+							win = (GWindow *)win->nextObj;
+						}
 					}
 				}
 			}
@@ -84,7 +87,6 @@ void processes_all_messages(void)
 				{
 					if(tmp->owner == Gdesktop->parent->focus && !(GWait::dowait_win->flags & GO_FLG_SHOW))
 					{
-						send_message(WM_SET_FLAGS, GO_FLG_SHOW, 0, GWait::dowait_win);
 						GWait::dowait_win->SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
 						break;
 					}

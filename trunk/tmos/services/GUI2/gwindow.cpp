@@ -45,8 +45,20 @@ unsigned int GWindow::process_destroy(GMessage& msg)
 		GWindow* tmp = (GWindow *)parent->children;
 		while(tmp)
 		{
-			if((tmp->flags & GO_FLG_SHOW) && (tmp->displays & displays))
-				tmp->invalidate(this, rect.as_int); //send_message(WM_DRAW, 0, rect.as_int, tmp);//parent->focus);
+			if(tmp->flags & GO_FLG_SHOW)
+			{
+#if GUI_DISPLAYS > 1
+				if(tmp->displays & displays)
+				{
+					unsigned int backup = tmp->displays;
+					tmp->displays = displays;
+					tmp->invalidate(this, rect.as_int); //updating only the display from which this window is visible
+					tmp->displays = backup;
+				}
+#else
+				tmp->invalidate(this, rect.as_int); //updating only the display from which this window is visible
+#endif
+			}
 			tmp = (GWindow *)tmp->nextObj;
 		}
 	}
