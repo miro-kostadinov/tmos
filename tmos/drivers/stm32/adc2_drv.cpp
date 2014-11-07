@@ -42,6 +42,10 @@ bool ADC_START_HND(const ADC_DRIVER_INFO* drv_info, HANDLE hnd)
 			}
 
 		}
+		else
+		{
+			adc->ADC_CR1 |= ADC_CR1_EOCIE;
+		}
 #endif
 
 		// enable ADC
