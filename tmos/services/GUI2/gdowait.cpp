@@ -109,10 +109,27 @@ unsigned int GWait::process_command(GMessage& msg)
 				ptr = ptr->next;
 			}
 		}
+		SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
 		notify_message(WM_COMMAND, ID_BUSY_SET_OWNER, this);
 		return 1;
 	}
 	return 0;
+}
+
+void GWait::hide(void)
+{
+	GWait::dowait_win->KillTimer(ID_BUSY_CLOCK);
+	if( GWait::dowait_win->flags & GO_FLG_SHOW)
+	{
+		GWait::dowait_win->flags &= ~GO_FLG_SHOW;
+		GWindow* win = (GWindow *)(GWait::dowait_win->parent->children);
+		while(win)
+		{
+			if((win->flags & GO_FLG_SHOW) && (win->displays & GWait::dowait_win->displays))
+				send_message(WM_DRAW, 0, GWait::dowait_win->rect.as_int, win);
+			win = (GWindow *)win->nextObj;
+		}
+	}
 }
 
 void GWait::DoWait(int code)

@@ -54,7 +54,7 @@ public:
 	}
 
 static void DoWait(int code);
-
+	void hide(void);
 protected:
 	virtual unsigned int initialize (GMessage& msg);
 	virtual void draw_this(LCD_MODULE* lcd);
