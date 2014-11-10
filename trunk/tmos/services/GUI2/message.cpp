@@ -55,31 +55,14 @@ void processes_all_messages(void)
 			if(msg.code == WM_INIT && msg.lparam)
 			{
 				// msg.lparam set only if window object
-				bool hide = true;
 				while(tmp)
 				{
 					if(tmp->owner == msg.dst && msg.dst->is_available())
-					{
-						hide = false;
 						break;
-					}
 					tmp = tmp->next;
 				}
-				if(hide)
-				{
-					GWait::dowait_win->KillTimer(ID_BUSY_CLOCK);
-					if( GWait::dowait_win->flags & GO_FLG_SHOW)
-					{
-						GWait::dowait_win->flags &= ~GO_FLG_SHOW;
-						GWindow* win = (GWindow *)(GWait::dowait_win->parent->children);
-						while(win)
-						{
-							if((win->flags & GO_FLG_SHOW) && (win->displays & GWait::dowait_win->displays))
-								send_message(WM_DRAW, 0, GWait::dowait_win->rect.as_int, win);
-							win = (GWindow *)win->nextObj;
-						}
-					}
-				}
+				if(!tmp)
+					GWait::dowait_win->hide();
 			}
 			if(msg.code == WN_DESTROY)
 			{
@@ -92,6 +75,8 @@ void processes_all_messages(void)
 					}
 					tmp = tmp->next;
 				}
+				if(!tmp)
+					GWait::dowait_win->hide();
 			}
 		}
 #if GUI_DEBUG
