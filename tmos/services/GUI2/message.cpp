@@ -68,7 +68,7 @@ void processes_all_messages(void)
 			{
 				while(tmp)
 				{
-					if(tmp->owner == Gdesktop->parent->focus && !(GWait::dowait_win->flags & GO_FLG_SHOW))
+					if(tmp->owner == Gdesktop->parent->focus && (tmp->flags & GO_FLG_SHOW))//!(GWait::dowait_win->flags & GO_FLG_SHOW))
 					{
 						GWait::dowait_win->SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
 						break;
