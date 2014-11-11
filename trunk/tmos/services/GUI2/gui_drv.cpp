@@ -172,44 +172,52 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 //			drv_info->lcd[0]->backlight_signal();
         	gui_hnd.res &= ~FLG_SIGNALED;
 
-        	GWindow* win = (GWindow*)((HANDLE)gui_hnd.dst.as_voidptr)->mode.as_voidptr;
-        	RES_CODE hnd_ret = RES_SIG_ERROR;
-			if(win->hnd.cmd & FLAG_WRITE)
-			{
-				if(win->hnd.mode1 == GUI_HND_ATTACH)
-				{
-					msg = *(GMessage *)(((HANDLE)gui_hnd.dst.as_voidptr))->src.as_voidptr;
-					GQueue.push(msg);
-					if(msg.code == WN_DESTROY)
-						win->hnd.mode1 = GUI_HND_DETACH;
-					hnd_ret = RES_SIG_OK;
-				}
-				if(win->hnd.mode1 == GUI_HND_OPEN)
-				{
-					drv_info->lcd[0]->backlight_signal();
-					win->nextObj =Gdesktop->parent->focus->nextObj;
-					Gdesktop->parent->focus->nextObj = win;								//adds the new item to the Z list
-					win->parent = Gdesktop->parent;										//LCD
-					GQueue.push(GMessage(WM_INIT, 0, (long long)drv_info->lcd, win));	//send WM_INIT to the new window
-					win->hnd.mode1 = GUI_HND_ATTACH;
-					hnd_ret = RES_SIG_OK;												//signals the window thread
-				}
-			}
-			else
-			{
-				if((win->hnd.cmd & FLAG_READ) && win->hnd.mode1 != GUI_HND_OPEN)
-				{
-					if(!win->Queue.empty())
-						hnd_ret = RES_SIG_OK;
-					else
-					{
-						hnd_ret = RES_IDLE;
-						win->hnd.res = FLG_BUSY | FLG_OK;
-					}
-				}
-			}
-			if(hnd_ret & FLG_SIGNALED)
-				usr_HND_SET_STATUS(&win->hnd, hnd_ret);
+        	if(((HANDLE)gui_hnd.dst.as_voidptr)->cmd & FLAG_COMMAND)
+        	{
+        		GWait::GUIDoWait(((HANDLE)gui_hnd.dst.as_voidptr)->src.as_int);
+        		usr_HND_SET_STATUS((HANDLE)gui_hnd.dst.as_voidptr, RES_SIG_OK);
+        	}
+        	else
+        	{
+            	GWindow* win = (GWindow*)((HANDLE)gui_hnd.dst.as_voidptr)->mode.as_voidptr;
+            	RES_CODE hnd_ret = RES_SIG_ERROR;
+    			if(win->hnd.cmd & FLAG_WRITE)
+    			{
+    				if(win->hnd.mode1 == GUI_HND_ATTACH)
+    				{
+    					msg = *(GMessage *)(((HANDLE)gui_hnd.dst.as_voidptr))->src.as_voidptr;
+    					GQueue.push(msg);
+    					if(msg.code == WN_DESTROY)
+    						win->hnd.mode1 = GUI_HND_DETACH;
+    					hnd_ret = RES_SIG_OK;
+    				}
+    				if(win->hnd.mode1 == GUI_HND_OPEN)
+    				{
+    					drv_info->lcd[0]->backlight_signal();
+    					win->nextObj =Gdesktop->parent->focus->nextObj;
+    					Gdesktop->parent->focus->nextObj = win;								//adds the new item to the Z list
+    					win->parent = Gdesktop->parent;										//LCD
+    					GQueue.push(GMessage(WM_INIT, 0, (long long)drv_info->lcd, win));	//send WM_INIT to the new window
+    					win->hnd.mode1 = GUI_HND_ATTACH;
+    					hnd_ret = RES_SIG_OK;												//signals the window thread
+    				}
+    			}
+    			else
+    			{
+    				if((win->hnd.cmd & FLAG_READ) && win->hnd.mode1 != GUI_HND_OPEN)
+    				{
+    					if(!win->Queue.empty())
+    						hnd_ret = RES_SIG_OK;
+    					else
+    					{
+    						hnd_ret = RES_IDLE;
+    						win->hnd.res = FLG_BUSY | FLG_OK;
+    					}
+    				}
+    			}
+    			if(hnd_ret & FLG_SIGNALED)
+    				usr_HND_SET_STATUS(&win->hnd, hnd_ret);
+        	}
 			gui_hnd.tsk_start_read(NULL, 0);
         }
 

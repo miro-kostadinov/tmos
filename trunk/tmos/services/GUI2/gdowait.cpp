@@ -6,21 +6,13 @@
  */
 
 #include <gdowait.h>
-#include <lcd.h>
+#include <lcd_multiplex.h>
 
 GWait* GWait::dowait_win =NULL;
 int32_t GWait::dowait_cnt = 0;
 void * GWait::dowait_locker = NULL;
 
 POINT_T get_position(int deg, int r);
-
-//WEAK void hide_dowait()
-//{
-//	if(GWait::dowait_win)
-//	{
-//		GQueue.push(GMessage(WM_CLR_FLAGS, GO_FLG_SHOW, 0, GWait::dowait_win));
-//	}
-//}
 
 unsigned int GWait::initialize (GMessage& msg)
 {
@@ -53,7 +45,19 @@ unsigned int GWait::process_default (GMessage& msg)
 			if(new_state & 0x100)
 				new_state ^= 0x101;
 			last_state &= ~new_state;
-			flags |= GO_FLG_SHOW;
+			if(!(flags & GO_FLG_SHOW))
+			{
+				flags |= GO_FLG_SHOW;
+				GWaitOwner *tmp = GWait::dowait_win->owners;
+				while(tmp)
+				{
+					if(tmp->owner->is_available())
+						tmp->flags = flags;
+					else
+						tmp->flags &=~GO_FLG_SHOW;
+					tmp = tmp->next;
+				}
+			}
 			invalidate(this, rect);
 		}
 	}
@@ -86,34 +90,28 @@ void GWait::draw_this(LCD_MODULE* lcd)
 }
 
 
-unsigned int GWait::process_command(GMessage& msg)
+void GWait::add_owner(void)
 {
-	if(msg.param == ID_BUSY_SET_OWNER)
+	GWaitOwner* ptr = owners;
+	if(!owners)
 	{
-		GWaitOwner* ptr = owners;
-		if(!owners)
-		{
-			owners = new GWaitOwner(parent->focus);
-		}
-		else
-		{
-			while(ptr)
-			{
-				if(ptr->owner == parent->focus)
-					break;
-				if(!ptr->next)
-				{
-					ptr->next = new GWaitOwner(parent->focus);
-					break;
-				}
-				ptr = ptr->next;
-			}
-		}
-		SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
-		notify_message(WM_COMMAND, ID_BUSY_SET_OWNER, this);
-		return 1;
+		owners = new GWaitOwner(parent->focus);
 	}
-	return 0;
+	else
+	{
+		while(ptr)
+		{
+			if(ptr->owner == parent->focus)
+				break;
+			if(!ptr->next)
+			{
+				ptr->next = new GWaitOwner(parent->focus);
+				break;
+			}
+			ptr = ptr->next;
+		}
+	}
+	SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
 }
 
 void GWait::hide(void)
@@ -132,11 +130,8 @@ void GWait::hide(void)
 	}
 }
 
-void GWait::DoWait(int code)
+void GWait::GUIDoWait(int code)
 {
-	while(locked_set_if_null(&dowait_locker, CURRENT_TASK))
-		tsk_sleep(10);
-
 	dowait_cnt += code;
 	if(dowait_cnt > 0)
 	{
@@ -145,11 +140,10 @@ void GWait::DoWait(int code)
 			dowait_win = new GWait();
 			if(dowait_win)
 			{
-				if(!dowait_win->Create())
-				{
-					delete dowait_win;
-					dowait_win = NULL;
-				}
+				dowait_win->nextObj =Gdesktop->parent->focus->nextObj;
+				Gdesktop->parent->focus->nextObj = dowait_win;								//adds the new item to the Z list
+				dowait_win->parent = Gdesktop->parent;										//LCD
+				GQueue.push(GMessage(WM_INIT, 0, (long long)((LCD_MULT *)(Gdesktop->parent))->lcd, dowait_win));
 			}
 			if(!dowait_win)
 				dowait_cnt = 0;
@@ -159,17 +153,9 @@ void GWait::DoWait(int code)
 			if(dowait_win)
 			{
 				if(code == 1) // begin wait
-				{
-					dowait_win->PostMessage(WM_COMMAND, ID_BUSY_SET_OWNER, dowait_win);
-					GMessage msg;
-					while(dowait_win->GetMessage(msg, 10))
-					{
-						if(msg.code == WM_COMMAND && msg.param == ID_BUSY_SET_OWNER)
-							break;
-					}
-				}
+					dowait_win->add_owner();
 				if(code == 0) // restore wait
-					dowait_win->PostMessage(WM_TIMER, ID_BUSY_CLOCK, dowait_win);
+					dowait_win->SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
 			}
 		}
 	}
@@ -177,7 +163,8 @@ void GWait::DoWait(int code)
 	{
 		if(dowait_win)
 		{
-			dowait_win->Destroy();
+			GMessage msg;
+			dowait_win->process_destroy(msg);
 			delete dowait_win;
 			dowait_win = NULL;
 		}
@@ -186,19 +173,28 @@ void GWait::DoWait(int code)
 	dowait_locker = NULL;
 }
 
+void DoWait(int code)
+{
+	CHandle hnd;
+	if(hnd.tsk_open(GUI_DRV_INDX, &hnd))
+	{
+		hnd.tsk_command((void *)code, 0);
+	}
+}
+
 void BeginWait()
 {
-	GWait::DoWait(1);
+	DoWait(1);
 }
 
 void RestoreWait()
 {
-	GWait::DoWait(0);
+	DoWait(0);
 }
 
 void EndWait()
 {
-	GWait::DoWait(-1);
+	DoWait(-1);
 }
 
 

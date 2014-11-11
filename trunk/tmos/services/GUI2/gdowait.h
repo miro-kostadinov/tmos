@@ -19,8 +19,9 @@ struct GWaitOwner
 {
 	GObject*			owner;
 	GWaitOwner*			next;
+	GFlags				flags;
 
-	GWaitOwner(GObject* win) : owner(win), next(NULL)
+	GWaitOwner(GObject* win) : owner(win), next(NULL), flags(0)
 	{
 	}
 
@@ -53,13 +54,13 @@ public:
 		}
 	}
 
-static void DoWait(int code);
+static void GUIDoWait(int code);
 	void hide(void);
 protected:
 	virtual unsigned int initialize (GMessage& msg);
 	virtual void draw_this(LCD_MODULE* lcd);
 	virtual unsigned int process_default (GMessage& msg);
-	virtual unsigned int process_command (GMessage& msg);
+	virtual void add_owner(void);
 };
 
 
