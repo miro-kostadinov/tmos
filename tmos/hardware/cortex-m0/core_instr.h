@@ -374,7 +374,7 @@ static inline uint32_t __get_PSP(void)
 	register uint32_t result asm ("r0") = 0;
 
 	asm volatile ("MRS %0, psp\n"
-			"BX  lr     \n" : "=r" (result) );
+			: "=r" (result) );
 	return (result);
 }
 
@@ -389,7 +389,7 @@ static inline uint32_t __get_PSP(void)
 static inline void __set_PSP(uint32_t topOfProcStack)
 {
 	asm volatile ("MSR psp, %0\n"
-			"BX  lr     \n" : : "r" (topOfProcStack) );
+			: : "r" (topOfProcStack) );
 }
 
 /**
@@ -405,7 +405,7 @@ static inline uint32_t __get_MSP(void)
 	register uint32_t result asm ("r0") = 0;
 
 	asm volatile ("MRS %0, msp\n"
-			"BX  lr     \n" : "=r" (result) );
+			: "=r" (result) );
 	return (result);
 }
 
@@ -420,7 +420,7 @@ static inline uint32_t __get_MSP(void)
 static inline void __set_MSP(uint32_t topOfMainStack)
 {
 	asm volatile ("MSR msp, %0\n"
-			"BX  lr     \n" : : "r" (topOfMainStack) );
+			: : "r" (topOfMainStack) );
 }
 
 /**
