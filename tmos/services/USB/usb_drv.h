@@ -118,8 +118,10 @@ struct USB_DRIVER_DATA
 	HANDLE			pending;			//!< waiting for connections etc
 	Task* 			helper_task;
 	Endpoint		endpoints[USB_NUMENDPOINTS]; //!< Endpoint structures
+#if USB_ENABLE_OTG
 	uint16_t		drv_state_cnt;
 	uint8_t			otg_flags;
+#endif
 
 #if USB_ENABLE_DEVICE
 	uint8_t		 	usb_state;			//!< Current usb state (USBST_XXX)

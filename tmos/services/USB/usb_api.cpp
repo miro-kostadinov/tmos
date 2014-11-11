@@ -39,8 +39,8 @@ RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client)
 	}
 #if USB_ENABLE_OTG
 	drv_data->otg_flags |= USB_OTG_FLG_DEV;
-#endif
 	client->mode.as_ushort[1] = drv_data->drv_state_cnt & ~USB_STATE_CNT_INVALID;
+#endif
 	return RES_SIG_OK;
 }
 #endif
