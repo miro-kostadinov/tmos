@@ -391,5 +391,48 @@ FUNC(   tmos_uldivmod     )
 ENDF(   tmos_uldivmod     )
 
 
+//*-----------------------------------------------------------------------------
+//*         64-bit shifts
+//*-----------------------------------------------------------------------------
+// long long __aeabi_llsr(long long num, int shift)
+FUNC(   __aeabi_llsr     )
+                rsb             r12,r2,#32
+                subs            r3,r2,#32
+                iteee           pl
+                lsrpl           r0,r1,r3
+                lsrmi           r0,r2
+                lslmi           r3,r1,r12
+                orrmi           r0,r0,r3
+                lsrs            r1,r2
+                bx              lr
+ENDF(   __aeabi_llsr     )
+
+//long long __aeabi_llsl(long long, int)
+FUNC(   __aeabi_llsl     )
+                rsb             r12,r2,#32
+                subs            r3,r2,#32
+                iteee           pl
+                lslpl           r1,r0,r3
+                lslmi           r1,r2
+                lsrmi           r3,r0,r12
+                orrmi           r1,r3
+                lsls            r0, r2
+                bx              lr
+ENDF(   __aeabi_llsl     )
+
+//long long __aeabi_lasr(long long, int)
+FUNC(   __aeabi_lasr     )
+
+                rsb             r12,r2,#32
+                subs            r3,r2,#32
+                iteee           pl
+                asrpl           r0,r1,r3
+                lsrmi           r0,r2
+                lslmi           r3,r1,r12
+                orrmi           r0,r0,r3
+                asrs            r1, r2
+                bx              lr
+ENDF(   __aeabi_lasr     )
+
 
 .end
