@@ -93,7 +93,7 @@
 
 #define URL_CUSTOM_ROUTING	1
 
-#define USE_CPU_SLEEP_MODE	0
+#define USE_CPU_SLEEP_MODE	1
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 KEY DRIVER
