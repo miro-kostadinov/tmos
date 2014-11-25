@@ -12,6 +12,24 @@
 
 //-------------------  local static functions --------------------------------//
 
+#if USE_CPU_SLEEP_MODE
+static void usr_usb_HND_SET_STATUS(HANDLE hnd, RES_CODE result)
+{
+	if(hnd->error == RES_BUSY)
+		locked_dec_int(&cpu_sleep_counter);
+	usr_HND_SET_STATUS(hnd, result);
+}
+static void svc_usb_HND_SET_STATUS(HANDLE hnd, RES_CODE result)
+{
+	if(hnd->error == RES_BUSY)
+		locked_dec_int(&cpu_sleep_counter);
+	svc_HND_SET_STATUS(hnd, result);
+}
+#else
+#define usr_usb_HND_SET_STATUS(hnd, res) usr_HND_SET_STATUS(hnd, res)
+#define svc_usb_HND_SET_STATUS(hnd, res) svc_HND_SET_STATUS(hnd, res)
+#endif
+
 /**
  * Reads a packet from the Rx FIFO
  * @param drv_info
@@ -100,7 +118,7 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 						if((status & OTG_GRXSTSP_PKTSTS_Msk) != OTG_GRXSTSP_PKTSTS_SETUP_DATA)
 						{
 							endpoint->epd_out.epd_pending = hnd->next;
-							usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+							usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
 							endpoint->epd_out.epd_state = ENDPOINT_STATE_IDLE;
 						} else
 						{
@@ -138,7 +156,7 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 					if((status & OTG_GRXSTSP_PKTSTS_Msk) != OTG_GRXSTSP_PKTSTS_SETUP_DATA)
 					{
 			    		endpoint->epd_out.epd_pending = hnd->next;
-						usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+			    		usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
 						hnd = endpoint->epd_out.epd_pending;
 						endpoint->epd_out.epd_state = ENDPOINT_STATE_IDLE;
 					} else
@@ -857,9 +875,11 @@ static void stm_otg_core_init1(USB_DRV_INFO drv_info)
 
     //-- Enable Clocking to the USB controller.
 	RCCPeripheralEnable(drv_info->info.peripheral_indx);
+	// RCCPeripheralLPEnable(drv_info->info.peripheral_indx);
     if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_ULPI)
 	{
 		RCCPeripheralEnable(ID_PERIPH_OTGHS_ULPI);
+		// RCCPeripheralLPEnable(ID_PERIPH_OTGHS_ULPI);
 	}
 	RCCPeripheralReset(drv_info->info.peripheral_indx);
 
@@ -1230,6 +1250,10 @@ static void stm_host_start_xfer(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptn
 
 	hc_regs->HCCHAR = reg | OTG_HCCHAR_CHENA;
 
+#if USE_CPU_SLEEP_MODE
+	locked_inc_int(&cpu_sleep_counter);
+	hnd->error = RES_BUSY;
+#endif
 }
 
 static void stm_host_start_tx(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptnum, ep_dir_state_t* epdir)
@@ -1362,7 +1386,7 @@ void usb_drv_cancel_hnd(USB_DRV_INFO drv_info, HANDLE hnd)
     	}
 		if(hnd->list_remove(epdir->epd_pending))
 		{
-			svc_HND_SET_STATUS(hnd, FLG_SIGNALED | (hnd->res & FLG_OK));
+			svc_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | (hnd->res & FLG_OK));
 //			TRACE1_USB("Can!");
 			if(!epdir->epd_pending && epdir->epd_state == ENDPOINT_STATE_SENDING)
 				epdir->epd_state = ENDPOINT_STATE_IDLE;
@@ -1531,11 +1555,11 @@ void usb_drv_end_transfers(ep_dir_state_t* epdir, unsigned int status)
 		epdir->epd_pending = hnd->next;
 		if (__get_CONTROL() & 2)
 		{
-			usr_HND_SET_STATUS(hnd, status);
+			usr_usb_HND_SET_STATUS(hnd, status);
 		}
 		else
 		{
-			svc_HND_SET_STATUS(hnd, status);
+			svc_usb_HND_SET_STATUS(hnd, status);
 		}
 	}
 }
@@ -1886,12 +1910,17 @@ RES_CODE usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
 
 void usb_hal_host_resume(USB_DRV_INFO drv_info)
 {
+	uint32_t reg;
 
-	drv_info->hw_base->HPRT |= OTG_HPRT_PRES;	// drive resume signaling
+	reg = drv_info->hw_base->HPRT & ~OTG_HPRT_rc_w1_bits;
+	if(!(reg & OTG_HPRT_PRES))
+	{
+		drv_info->hw_base->HPRT = reg | OTG_HPRT_PRES;	// drive resume signaling
+	}
 	tsk_sleep(20);
-	drv_info->hw_base->HPRT &= ~OTG_HPRT_PRES;	// stop driving
+	reg = drv_info->hw_base->HPRT & ~OTG_HPRT_rc_w1_bits;
+	drv_info->hw_base->HPRT = reg & ~OTG_HPRT_PRES;	// stop driving
 
-	// resume interrupts?
 }
 
 void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
@@ -1900,9 +1929,11 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 
 	if(flags & USB_OTG_FLG_HOST)
 		flags |= USB_OTG_FLG_HOST_CON | USB_OTG_FLG_HOST_PWR
-				| USB_OTG_FLG_HOST_RST | USB_OTG_FLG_HOST_OK;
+				| USB_OTG_FLG_HOST_RST | USB_OTG_FLG_HOST_OK | USB_OTG_FLG_WKUP
+				| USB_OTG_FLG_SUSPEND;
 	if(flags & USB_OTG_FLG_DEV)
-		flags |= USB_OTG_FLG_DEV_CON | USB_OTG_FLG_DEV_OK;
+		flags |= USB_OTG_FLG_DEV_CON | USB_OTG_FLG_DEV_OK | USB_OTG_FLG_WKUP
+				| USB_OTG_FLG_SUSPEND;
 
 	flags &= drv_data->otg_flags;
 	drv_data->otg_flags &= ~flags;
@@ -1934,7 +1965,7 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 			while( (hnd=drv_data->pending) )
 			{
 				drv_data->pending = hnd->next;
-				usr_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+				usr_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
 			}
 			atomic_clrex();
 		}
@@ -1985,7 +2016,7 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 					{
 						drv_data->pending = hnd->next;
 						__enable_irq();
-						usr_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+						usr_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
 						__disable_irq();
 					}
 
@@ -2650,7 +2681,7 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 		   		// End of transfer ?
 		    	TRACE1_USB(" Wr!");
 		    	epdir->epd_pending = hnd->next;
-				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+		    	usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
 			}
 
 			//check if we have more to write
@@ -2670,9 +2701,9 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 			{
 		    	epdir->epd_pending = hnd->next;
 		    	if(!hnd->len || (hnd->res & FLG_OK))
-		    		usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+		    		usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
 		    	else
-		    		usr_HND_SET_STATUS(hnd, RES_SIG_IDLE);
+		    		usr_usb_HND_SET_STATUS(hnd, RES_SIG_IDLE);
 				epdir->epd_state = ENDPOINT_STATE_IDLE;
 			}
 
@@ -2738,7 +2769,7 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 			{
 				TRACE1_USB(" EoT ");
 				epdir->epd_pending = hnd->next;
-				usr_HND_SET_STATUS(hnd, FLG_SIGNALED | (hnd->res & FLG_OK));
+				usr_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | (hnd->res & FLG_OK));
 			}
 			epdir->epd_state = ENDPOINT_STATE_IDLE;
 
@@ -2897,7 +2928,7 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 				if(hnd->src.as_voidptr == USB_CMD_OTG_CONFIG)
 					usr_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_OK);
 				else
-					usr_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+					usr_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
 			}
 			atomic_clrex();
 		}
@@ -3000,7 +3031,22 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		{
 			if (status & OTG_GINTSTS_WKUPINT)	// remote wakeup is detected on the USB
 			{
-	    		TRACE1_USB(" WKUPINT?");
+				USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+				HANDLE hnd;
+	    		TRACE1_USB(" WKUPINT");
+	    		if(drv_data->otg_flags & USB_OTG_FLG_SUSPEND)
+	    		{
+	    			drv_data->otg_flags |= USB_OTG_FLG_WKUP;
+	    			if(drv_info->drv_data->pending)
+	    			{
+	    				while( (hnd=drv_data->pending) )
+	    				{
+	    					drv_data->pending = hnd->next;
+	    					usr_HND_SET_STATUS(hnd, FLG_SIGNALED);
+	    				}
+	    				atomic_clrex();
+	    			}
+	    		}
 			}
 
 			if (status & OTG_GINTSTS_SRQINT)	// session request is detected from the device

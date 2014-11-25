@@ -245,9 +245,11 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 
 	if(flags & USB_OTG_FLG_HOST)
 		flags |= USB_OTG_FLG_HOST_CON | USB_OTG_FLG_HOST_PWR
-				| USB_OTG_FLG_HOST_RST | USB_OTG_FLG_HOST_OK;
+				| USB_OTG_FLG_HOST_RST | USB_OTG_FLG_HOST_OK | USB_OTG_FLG_WKUP
+				| USB_OTG_FLG_SUSPEND;
 	if(flags & USB_OTG_FLG_DEV)
-		flags |= USB_OTG_FLG_DEV_CON | USB_OTG_FLG_DEV_OK;
+		flags |= USB_OTG_FLG_DEV_CON | USB_OTG_FLG_DEV_OK | USB_OTG_FLG_WKUP
+			    | USB_OTG_FLG_SUSPEND;
 
 	flags &= drv_data->otg_flags;
 	drv_data->otg_flags &= ~flags;

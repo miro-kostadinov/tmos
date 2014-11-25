@@ -120,4 +120,13 @@ RES_CODE usb_api_get_hdev(USB_DRV_INFO drv_info, HANDLE client)
 	return RES_SIG_ERROR;
 }
 
-#endif
+RES_CODE usb_api_host_resume(USB_DRV_INFO drv_info, HANDLE client)
+{
+	usb_hal_host_resume(drv_info);
+	__disable_irq();
+	drv_info->drv_data->otg_flags &= ~USB_OTG_FLG_SUSPEND;
+	__enable_irq();
+	return RES_SIG_OK;
+}
+
+#endif //USB_ENABLE_HOST

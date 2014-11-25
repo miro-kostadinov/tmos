@@ -41,6 +41,9 @@ struct usb_remote_dev_t
 	RES_CODE get_device_descriptor();
 	RES_CODE get_config_descriptor_part(uint32_t size);
 	RES_CODE get_config_descriptor(uint32_t cfg_indx);
+	RES_CODE get_status_dev(uint32_t& status);
+	RES_CODE set_feature_dev(uint32_t feature);
+	RES_CODE clr_feature_dev(uint32_t feature);
 	RES_CODE set_configuration(uint32_t cfg_indx);
 	RES_CODE set_address(uint32_t adr);
 	RES_CODE set_interface(uint32_t iface_indx, uint32_t alt_set);
