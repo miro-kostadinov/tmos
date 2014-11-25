@@ -243,6 +243,7 @@ void usb_svc_host_suspend_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 		}
 		drv_info->hw_base->HPRT = (drv_info->hw_base->HPRT & ~OTG_HPRT_rc_w1_bits) | OTG_HPRT_PSUSP;
 		drv_data->otg_flags |= USB_OTG_FLG_SUSPEND;
+		drv_info->hw_base->PCGCCTL |= OTG_PCGCCTL_GATEHCLK | OTG_PCGCCTL_STPPCLK;
 	}
 }
 
