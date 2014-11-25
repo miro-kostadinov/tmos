@@ -40,6 +40,9 @@
 #ifdef __cplusplus
 extern "C"
 {
+#if USE_CPU_SLEEP_MODE
+	extern volatile int cpu_sleep_counter;
+#endif
 	extern volatile __no_init unsigned int system_clock_frequency;
 
 	extern const char restart_on_exception;

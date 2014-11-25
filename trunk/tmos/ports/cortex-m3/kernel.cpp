@@ -22,6 +22,10 @@
 
 #include <tmos.h>
 
+#if USE_CPU_SLEEP_MODE
+volatile int cpu_sleep_counter;
+#endif
+
 extern TASK_STRU main_task;
 extern TASK_DESCRIPTION main_task_desc;
 // main task declaration

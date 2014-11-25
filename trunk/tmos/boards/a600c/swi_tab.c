@@ -23,6 +23,7 @@ void sys_realloc(void);
 void svc_HND_SET_STATUS(void);
 void svc_drv_service(void);
 void svc_drv_hcontrol(void);
+void svc_wfi(void);
 
 //initialization using Designated Initializers (not supported in C++)
 
@@ -102,6 +103,9 @@ SWI_FUNC const SWI_TABLE[] __attribute__ ((section (".SWIHandler")))  =
 	[realloc_swi]					= sys_realloc,
 #endif
 
+#if USE_CPU_SLEEP_MODE
+	[wfi_swi]						= svc_wfi,
+#endif
 	NULL
 
 };

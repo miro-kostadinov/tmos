@@ -23,5 +23,10 @@
 #define USE_STATIC_CONSTRUCTORS 1  //enabled by default
 #endif
 
+#ifndef USE_CPU_SLEEP_MODE
+#define USE_CPU_SLEEP_MODE 0  	  //disabled by default
+#endif
+
+
 #endif /* TMOS_CFG_H_ */
 /** @} ingroup ports */

@@ -510,6 +510,8 @@ typedef struct
 void RCCPeripheralReset(unsigned int periph_id);
 void RCCPeripheralEnable(unsigned int periph_id);
 void RCCPeripheralDisable(unsigned int periph_id);
+void RCCPeripheralLPEnable(unsigned int periph_id);
+void RCCPeripheralLPDisable(unsigned int periph_id);
 
 void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks);
 
