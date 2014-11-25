@@ -68,15 +68,17 @@ enum USB_EVENT
 };
 
 #if USB_ENABLE_OTG
-#define USB_OTG_FLG_DEV			0x01	//!< Device mode requested. Set on USB_CMD_DEVICE_CONFIG. Cleared
-#define USB_OTG_FLG_DEV_CON		0x02	//!< Device detected. Set on USBIDVISC, BRST
-#define USB_OTG_FLG_DEV_OK		0x04	//!< Device mode entered. Set on BRST
-#define USB_OTG_FLG_HOST		0x08	//!< Host mode requested. Set on USB_CMD_OTG. Cleared on USBIDVISC, vbus droop, DISCON, SUSPEND, BRST
-#define USB_OTG_FLG_HOST_CON	0x10	//!< Host connected. Set on USB_CMD_OTG. Cleared on !FLG_HOST
-#define USB_OTG_FLG_HOST_PWR	0x20	//!< Host power enabled. Set on USBIDVISC. Cleared on !FLG_HOST
-#define USB_OTG_FLG_HOST_RST	0x40	//!< Set from interrupt to tell helper that it can reset the bus
-#define USB_OTG_FLG_HOST_OK		0x80	//!< Host mode entered. Set on HBRST. Cleared on !FLG_HOST
-#define USB_OTG_FLG_ALL			0xFF
+#define USB_OTG_FLG_DEV			0x0001	//!< Device mode requested. Set on USB_CMD_DEVICE_CONFIG. Cleared
+#define USB_OTG_FLG_DEV_CON		0x0002	//!< Device detected. Set on USBIDVISC, BRST
+#define USB_OTG_FLG_DEV_OK		0x0004	//!< Device mode entered. Set on BRST
+#define USB_OTG_FLG_HOST		0x0008	//!< Host mode requested. Set on USB_CMD_OTG. Cleared on USBIDVISC, vbus droop, DISCON, SUSPEND, BRST
+#define USB_OTG_FLG_HOST_CON	0x0010	//!< Host connected. Set on USB_CMD_OTG. Cleared on !FLG_HOST
+#define USB_OTG_FLG_HOST_PWR	0x0020	//!< Host power enabled. Set on USBIDVISC. Cleared on !FLG_HOST
+#define USB_OTG_FLG_HOST_RST	0x0040	//!< Set from interrupt to tell helper that it can reset the bus
+#define USB_OTG_FLG_HOST_OK		0x0080	//!< Host mode entered. Set on HBRST. Cleared on !FLG_HOST
+#define USB_OTG_FLG_SUSPEND		0x0100
+#define USB_OTG_FLG_WKUP		0x0200
+#define USB_OTG_FLG_ALL			0x03FF
 
 #define OTG_H_SIG_RST			0x01
 #define OTG_H_SIG_RESUME		0x02
@@ -119,8 +121,8 @@ struct USB_DRIVER_DATA
 	Task* 			helper_task;
 	Endpoint		endpoints[USB_NUMENDPOINTS]; //!< Endpoint structures
 #if USB_ENABLE_OTG
-	uint16_t		drv_state_cnt;
-	uint8_t			otg_flags;
+	uint16_t		drv_state_cnt;		//!< session counter
+	uint16_t		otg_flags;
 #endif
 
 #if USB_ENABLE_DEVICE

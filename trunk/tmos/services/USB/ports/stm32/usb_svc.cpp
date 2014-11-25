@@ -8,6 +8,7 @@
 #include <tmos.h>
 #include <usb_svc.h>
 #include <usb_hal.h>
+#include <tmos_atomic.h>
 
 #if USB_ENABLE_DEVICE
 void usb_svc_stall_hook(USB_DRV_INFO drv_info, HANDLE hnd)
@@ -222,5 +223,67 @@ void usb_svc_unhalt(HANDLE hnd, unsigned int eptnum)
 }
 
 #endif //USB_ENABLE_DEVICE
+
+#if USB_ENABLE_HOST
+//-----------------------------------------------------------------------------
+void usb_svc_host_suspend_hook(USB_DRV_INFO drv_info, HANDLE hnd)
+{
+	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+
+	if(!(drv_data->otg_flags & (USB_OTG_FLG_SUSPEND | USB_OTG_FLG_WKUP)))
+	{
+		for(int i=0; i<USB_NUMENDPOINTS; i++)
+		{
+			if(drv_data->endpoints[i].epd_in.epd_state > ENDPOINT_STATE_IDLE
+				|| drv_data->endpoints[i].epd_out.epd_state > ENDPOINT_STATE_IDLE)
+			{
+				hnd->res = RES_ERROR;
+				return;
+			}
+		}
+		drv_info->hw_base->HPRT = (drv_info->hw_base->HPRT & ~OTG_HPRT_rc_w1_bits) | OTG_HPRT_PSUSP;
+		drv_data->otg_flags |= USB_OTG_FLG_SUSPEND;
+	}
+}
+
+RES_CODE usb_svc_host_suspend(HANDLE hnd)
+{
+	hnd->res = RES_OK;
+	hnd->dst.as_voidptr = (void*)usb_svc_host_suspend_hook;
+	hnd->hcontrol(DCR_HANDLE);
+	return hnd->res;
+}
+
+//-----------------------------------------------------------------------------
+void usb_svc_host_wait_wkup_hook(USB_DRV_INFO drv_info, HANDLE hnd)
+{
+	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+	if((drv_data->otg_flags & USB_OTG_FLG_WKUP) || !(drv_data->otg_flags & USB_OTG_FLG_SUSPEND))
+	{
+		drv_data->otg_flags &= ~USB_OTG_FLG_WKUP;
+		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+	} else
+	{
+		hnd->next = drv_data->pending;
+		drv_data->pending = hnd;
+		atomic_clrex();
+	}
+
+}
+
+RES_CODE usb_svc_host_wait_wkup(HANDLE hnd)
+{
+	if(hnd->complete())
+	{
+		hnd->set_res_cmd(CMD_COMMAND);
+		hnd->dst.as_voidptr = (void*)usb_svc_host_wait_wkup_hook;
+		hnd->hcontrol(DCR_HANDLE);
+		tsk_get_signal(hnd->signal);
+		hnd->res &= ~FLG_SIGNALED;
+	}
+	return (hnd->res);
+}
+
+#endif // USB_ENABLE_HOST
 
 

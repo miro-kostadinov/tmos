@@ -216,6 +216,49 @@ RES_CODE usb_remote_dev_t::get_config_descriptor(uint32_t cfg_indx)
 	return res;
 }
 
+RES_CODE usb_remote_dev_t::get_status_dev(uint32_t& status)
+{
+	RES_CODE res;
+
+	req.bmRequestType = USB_REQ_IN_STANDARD_DEVICE;
+	req.bRequest = USBGenericRequest_GET_STATUS;
+	req.wValue = 0;
+	req.wIndex = 0;
+	req.wLength = 2;
+
+	status = 0;
+	res = std_request(&status);
+	return res;
+}
+
+RES_CODE usb_remote_dev_t::set_feature_dev(uint32_t feature)
+{
+	RES_CODE res;
+
+	req.bmRequestType = USB_REQ_OUT_STANDARD_DEVICE;
+	req.bRequest = USBGenericRequest_SET_FEATURE;
+	req.wValue = feature;											// Configuration Value
+	req.wIndex = 0;													// Zero
+	req.wLength = 0;
+
+	res = std_request(NULL);
+	return res;
+}
+
+RES_CODE usb_remote_dev_t::clr_feature_dev(uint32_t feature)
+{
+	RES_CODE res;
+
+	req.bmRequestType = USB_REQ_OUT_STANDARD_DEVICE;
+	req.bRequest = USBGenericRequest_CLEAR_FEATURE;
+	req.wValue = feature;											// Configuration Value
+	req.wIndex = 0;													// Zero
+	req.wLength = 0;
+
+	res = std_request(NULL);
+	return res;
+}
+
 RES_CODE usb_remote_dev_t::set_configuration(uint32_t cfg_indx)
 {
 	RES_CODE res;

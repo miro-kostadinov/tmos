@@ -27,4 +27,9 @@ void usb_svc_unhalt(HANDLE hnd, unsigned int eptnum);
 #define usb_svc_send_control_status(hnd) hnd->tsk_write(NULL, 0, USB_SETUP_WRITE_TOUT)
 #endif
 
+#if USB_ENABLE_HOST
+RES_CODE usb_svc_host_suspend(HANDLE hnd);
+RES_CODE usb_svc_host_wait_wkup(HANDLE hnd);
+#endif
+
 #endif /* USB_SVC_H_ */
