@@ -70,6 +70,11 @@
                 ldr			\ra, = REG_SCB_ICSR
                 movs		\rb, #SCB_ICSR_PENDSVSET
                 str			\rb, [\ra]
+#if USE_CPU_SLEEP_MODE
+                ldr         \rb, [\ra, #REG_SCB_SCR - REG_SCB_ICSR]
+                bic         \rb, #SCB_SCR_SLEEPONEXIT
+                str         \rb, [\ra, #REG_SCB_SCR - REG_SCB_ICSR]
+#endif
 .endm
 
 
@@ -543,6 +548,21 @@ FUNC(	sys_isr_contol		)
                 bx				r3			//DCR(r0-info, r1-reason, r2-param)
 
 ENDF(	sys_isr_contol		)
+
+#if USE_CPU_SLEEP_MODE
+//void svc_wfi(void)
+FUNC(   svc_wfi      )
+                ldr             r1, =cpu_sleep_counter
+                ldr             r0, [r1]
+                cbnz            r0, 1f
+                ldr             r1, =REG_SCB_SCR
+                ldr             r2, [r1]
+                orrs            r2, #SCB_SCR_SLEEPONEXIT
+                str             r2, [r1]
+1:
+                bx              lr
+ENDF(   svc_wfi      )
+#endif
 
 #define TRACE_PORT 0
 //------------------------------------------------------------------------------

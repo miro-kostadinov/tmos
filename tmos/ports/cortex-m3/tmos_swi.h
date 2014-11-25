@@ -268,6 +268,16 @@ inline static void* usr_realloc(void* volatile ptr, unsigned int volatile size)
 }
 #endif
 
+#if USE_CPU_SLEEP_MODE
+inline static void usr_sleep_on_exit(void)
+{
+	asm volatile ("swi %0"
+	  :
+	  : "I" (wfi_swi)
+	  : "r3", "memory");
+}
+#endif
+
 #ifdef __cplusplus
 }
 #endif

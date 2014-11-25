@@ -96,6 +96,38 @@ void RCCPeripheralDisable(unsigned int periph_id)
     }
 }
 
+void RCCPeripheralLPEnable(unsigned int periph_id)
+{
+	__IO uint32_t* reg;
+	unsigned int index;
+
+    if(periph_id < ID_NO_PERIPH)
+    {
+    	index = periph_id>>5;
+
+		reg = &RCC->RCC_AHB1LPENR;
+
+		// Enable this peripheral clock.
+		reg[index] |= 1<<(periph_id&0x1f);
+    }
+}
+
+void RCCPeripheralLPDisable(unsigned int periph_id)
+{
+	__IO uint32_t* reg;
+	unsigned int index;
+
+    if(periph_id < ID_NO_PERIPH)
+    {
+    	index = periph_id>>5;
+
+		reg = &RCC->RCC_AHB1LPENR;
+
+		// Disable this peripheral clock.
+		reg[index] &= ~(1<<(periph_id&0x1f));
+    }
+}
+
 const uint8_t APBAHBPrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
 
 /**
