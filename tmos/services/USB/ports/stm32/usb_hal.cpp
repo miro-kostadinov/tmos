@@ -1912,11 +1912,9 @@ void usb_hal_host_resume(USB_DRV_INFO drv_info)
 {
 	uint32_t reg;
 
+	drv_info->hw_base->PCGCCTL = 0;	//Ungate clocks
 	reg = drv_info->hw_base->HPRT & ~OTG_HPRT_rc_w1_bits;
-	if(!(reg & OTG_HPRT_PRES))
-	{
-		drv_info->hw_base->HPRT = reg | OTG_HPRT_PRES;	// drive resume signaling
-	}
+	drv_info->hw_base->HPRT = reg | OTG_HPRT_PRES;	// drive resume signaling
 	tsk_sleep(20);
 	reg = drv_info->hw_base->HPRT & ~OTG_HPRT_rc_w1_bits;
 	drv_info->hw_base->HPRT = reg & ~OTG_HPRT_PRES;	// stop driving
