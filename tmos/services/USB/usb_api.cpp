@@ -90,6 +90,12 @@ RES_CODE usb_api_otg_config(USB_DRV_INFO drv_info, HANDLE client)
 		{
 			client->next = (HANDLE)atomic_fetch((volatile int*)&drv_data->pending);
 		} while(atomic_store((volatile int*)&drv_data->pending, (int)client));
+
+#if USE_CPU_SLEEP_MODE
+		locked_dec_int(&cpu_sleep_counter);			//enable sleep
+		locked_inc_int(&drv_data->otg_sleep_flag);	// till next irq
+#endif
+
 	}
 
 	TRACELN_USB("USB cfg res %u", res);
