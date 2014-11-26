@@ -2903,12 +2903,20 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 {
 	uint32_t status;
 	USB_TypeDef* otg = drv_info->hw_base;
+	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 
 	status = otg->core_regs.GINTSTS;
 	TRACE_USB_NAME(drv_info);
 	TRACE_USB(": [%08X]", status);
 
 #if USB_ENABLE_HOST
+#if USE_CPU_SLEEP_MODE
+	while(drv_data->otg_sleep_flag)
+	{
+		locked_inc_int(&cpu_sleep_counter);			// disable sleep
+		locked_dec_int(&drv_data->otg_sleep_flag);
+	}
+#endif
 	if(status & OTG_GINTSTS_CIDSCHG)	// Connector ID status change
     {
 		otg->core_regs.GINTSTS = OTG_GINTSTS_CIDSCHG;
@@ -2917,7 +2925,6 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		if((status & OTG_GINTSTS_CMOD) && (otg->core_regs.GINTMSK == OTG_GINTMSK_CIDSCHGM))
 		{
 			HANDLE hnd;
-			USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 
 			usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_RST);
 			while( (hnd=drv_data->pending) )
@@ -3029,7 +3036,6 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		{
 			if (status & OTG_GINTSTS_WKUPINT)	// remote wakeup is detected on the USB
 			{
-				USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 				HANDLE hnd;
 	    		TRACE1_USB(" WKUPINT");
 	    		if(drv_data->otg_flags & USB_OTG_FLG_SUSPEND)
