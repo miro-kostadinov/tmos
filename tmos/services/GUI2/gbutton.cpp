@@ -19,11 +19,19 @@ void GButton::draw_border(RECT_T& frame)
 {
 	draw_hline(frame.x0, frame.x1-1, frame.y0);
 	draw_vline(frame.y0 + 1, frame.y1 - 1, frame.x0);
-	draw_hline(frame.x0, frame.x1-1, frame.y1-1);
-	draw_vline(frame.y0 + 1, frame.y1 - 2, frame.x1-1);
+	if(flags & GO_FLG_SELECTED)
+	{
+		draw_hline(frame.x0, frame.x1, frame.y1);
+		draw_vline(frame.y0, frame.y1, frame.x1);
+	}
+	else
+	{
+		draw_hline(frame.x0, frame.x1-1, frame.y1-1);
+		draw_vline(frame.y0 + 1, frame.y1 - 2, frame.x1-1);
 
-	draw_hline(frame.x0+1, frame.x1, frame.y1);
-	draw_vline(frame.y0+1, frame.y1, frame.x1);
+		draw_hline(frame.x0+1, frame.x1, frame.y1);
+		draw_vline(frame.y0+1, frame.y1, frame.x1);
+	}
 }
 
 void GButton::draw_this (LCD_MODULE* lcd)
@@ -60,9 +68,9 @@ void GButton::draw_this (LCD_MODULE* lcd)
 	draw_text(lcd, label.c_str());
 	if (flags & GO_FLG_SELECTED)
 	{
-		draw_poligon(client_rect, type);
-//		for (int i = client_rect.y0; i <= client_rect.y1; i++)
-//			invert_hline (client_rect.x0, client_rect.x1, i);
+//		draw_poligon(client_rect, type);
+		for (int i = client_rect.y0 +1; i < client_rect.y1; i++)
+			invert_hline (client_rect.x0, client_rect.x1, i);
 	}
 }
 
