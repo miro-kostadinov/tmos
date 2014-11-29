@@ -6,7 +6,7 @@
  */
 
 #include <tmos.h>
-#include <cdc_descriptors.h>
+#include <usb_cdc_dtors.h>
 
 extern const USBDDriverDescriptors fpp100_descriptors;
 

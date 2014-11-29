@@ -287,6 +287,9 @@ static unsigned int get_clocks_per200ms(void)
 	unsigned int res;
 
 	asm volatile (
+#ifdef USE_ARMv6_SET 
+		".syntax unified  				\n\t"
+#endif			
 		"1: \n\t"
 		"	movs			%0, #0				\n\t"
 		"	mov				r1, r10				\n\t"	//r1 = REG_MTASK
@@ -302,6 +305,9 @@ static unsigned int get_clocks_per200ms(void)
 		"	adds			r3, #1				\n\t"
 		"	subs			r2, #1				\n\t"
 		"	bne				2b 					\n\t"
+#ifdef USE_ARMv6_SET 
+		".syntax divided						\n\t"
+#endif			
 
 	  : "=r"(res)
 	  : "I" (tsk_time)
