@@ -13,6 +13,10 @@ local_c_src-y 	:=
 local_cpp_src-y	:=   
 local_h_src-y 	:=
 
+ifeq ($(CFG_CORE), cortex-m0)
+local_cpp_src-y	+= systick_drv.cpp
+local_h_src-y 	+= systick_drv.h
+endif
 ifeq ($(CFG_CORE), cortex-m3)
 local_cpp_src-y	+= systick_drv.cpp
 local_h_src-y 	+= systick_drv.h
