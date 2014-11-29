@@ -75,7 +75,6 @@ typedef struct
 #define USART_CR1_WAKE              0x0800 //!< Wakeup method
 #define USART_CR1_M                 0x1000 //!< Word length
 #define USART_CR1_UE                0x2000 //!< USART Enable
-#define USART_CR1_OVER8             0x8000 //!< USART Oversmapling 8-bits
 /** @} */
 
 /** @defgroup USART_CR2:	(usart Offset: 0x10) Control register 2				*/

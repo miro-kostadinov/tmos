@@ -370,6 +370,21 @@ typedef struct
 #define PORT_ADDRESS(num) ((GPIO_TypeDef*)(GPIOA_BASE + ((num)*0x400)))
 
 
+/// Return IRqn for exti line
+static inline uint32_t stm_get_drv_indx(uint32_t line)
+{
+	if(line < 5)
+		line = EXTI0_IRQn + line;
+	else
+	{
+		if(line <10)
+			line = EXTI9_5_IRQn;
+		else
+			line = EXTI15_10_IRQn;
+	}
+	return line;
+}
+
 void PIO_Cfg(PIN_DESC cfg);
 void PIO_CfgOutput1(PIN_DESC pins);
 void PIO_CfgOutput0(PIN_DESC pins);
