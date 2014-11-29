@@ -548,10 +548,24 @@ FUNC(	sys_isr_contol		)
 
 ENDF(	sys_isr_contol		)
 
+//------------------------------------------------------------------------------
+//void usr_trace_str(const char *buf);
+FUNC(	usr_trace_str		)
+.weak usr_trace_str
+
+				bx				lr
+
+ENDF(	usr_trace_str		)
 
 
+//------------------------------------------------------------------------------
+//void usr_trace_char(char c);
+FUNC(	usr_trace_char		)
+.weak usr_trace_char
 
+				bx				lr
 
+ENDF(	usr_trace_char		)
 
 
 
