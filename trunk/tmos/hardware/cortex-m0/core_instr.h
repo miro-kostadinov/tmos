@@ -11,6 +11,7 @@
 #include <tmos_types.h>
 #include <hardware_inc.h>
 
+#define USE_ARMv6_SET	1
 /**
  * @brief  No Operation
  *
