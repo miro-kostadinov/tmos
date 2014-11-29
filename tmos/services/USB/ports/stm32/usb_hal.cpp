@@ -2903,7 +2903,9 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 {
 	uint32_t status;
 	USB_TypeDef* otg = drv_info->hw_base;
+#if USB_ENABLE_HOST
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+#endif
 
 	status = otg->core_regs.GINTSTS;
 	TRACE_USB_NAME(drv_info);
@@ -3111,7 +3113,7 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		    	//disable one endoint:
 				for(int i=0; i<USB_NUMENDPOINTS; i++)
 				{
-					ep_dir_state_t* ep_dir = &drv_info->drv_data->endpoints[i].epd_out;
+					ep_dir_state_t* ep_dir = &drv_data->endpoints[i].epd_out;
 					if(ep_dir->epd_state == ENDPOINT_STATE_RECEIVING)
 					{
 						TRACE_USB(" disable %u", i);
