@@ -39,6 +39,10 @@ WEAK_C void init_main_menu(void)
 
 }
 
+WEAK_C unsigned int scan_code_to_key(unsigned int scan_cod)
+{
+	return 0;
+}
 //extern TASK_STRU gui_task;
 
 __attribute__ ((weak)) void splash_screen(LCD_MODULE* lcd)
@@ -239,7 +243,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			if(Gdesktop->parent->focus && (Gdesktop->parent->focus->flags & GO_FLG_SELECTED))
 			{
 				key_hnd.res &= ~FLG_SIGNALED;
-				GQueue.push(GMessage(WM_KEY, key_hnd.src.as_int, 0L, Gdesktop->parent->focus));
+				GQueue.push(GMessage(WM_KEY, scan_code_to_key(key_hnd.src.as_int), 0L, Gdesktop->parent->focus));
 				key_hnd.tsk_start_read(&key_hnd.src.as_int, 1);
 				sig &= ~key_hnd.signal;
 			}

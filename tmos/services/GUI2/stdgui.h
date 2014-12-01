@@ -25,7 +25,7 @@
 #endif
 
 #ifndef GO_OBJ_FRAME_HEIGHT
-#define GO_OBJ_FRAME_HEIGHT	3
+#define GO_OBJ_FRAME_HEIGHT	1
 #endif
 
 #define GUI_DEBUG			0
@@ -125,7 +125,7 @@ typedef unsigned char GId;
 #define ES_AUTO_SCROLL	(1<<12)
 #define ES_LEAD_ZERO	(1<<14)
 
-#define ES_DEFAULT		(ES_CENTER|ES_MULTILINE|ES_AUTO_SCROLL)
+#define ES_DEFAULT		(ES_CENTER|ES_MIDDLE|ES_MULTILINE|ES_AUTO_SCROLL)
 
 // list box
 #define LBS_DROPDOWN	(1<<13)
@@ -146,6 +146,32 @@ extern "C" char TranslateKey( unsigned int key_code);
 #define GICON_LEFT				7
 #define GICON_RIGHT				8
 
+enum gui_base_keys:unsigned char
+{
+	KEY_0		= 1,
+	KEY_1		= 2,
+	KEY_2		= 3,
+	KEY_3		= 4,
+	KEY_4		= 5,
+	KEY_5		= 6,
+	KEY_6		= 7,
+	KEY_7		= 8,
+	KEY_8		= 9,
+	KEY_9		=10,
+	KEY_OK		=11,
+	KEY_ENTER	=11,
+	KEY_CANCEL	=12,
+	KEY_C		=12,
+	KEY_UP		=13,
+	KEY_DOWN	=14,
+	KEY_LEFT	=15,
+	KEY_RIGHT	=16,
+	KEY_ESC		=17,
+	KEY_DP		=18,
+	KEY_SHIFT	=19,
+	KEY_X		=20,
+	KEY_USER_DEFINED = 21
+};
 
 struct POINT_T
 {
