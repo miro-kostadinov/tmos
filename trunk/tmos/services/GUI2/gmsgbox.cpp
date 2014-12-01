@@ -62,7 +62,7 @@ RECT_T GMsgBox::GetTitleRect(void)
 	{
 		trect = client_rect;
 		trect.x1 = trect.x0 + strlen(title) * font->hspacing +  2*font->hdistance;
-		trect.y1 = trect.y0 + 2*font->vdistance + font->vspacing;
+		trect.y1 = trect.y0 + /*2* font->vdistance*/ + font->vspacing;
 	}
 	return trect;
 }
@@ -102,8 +102,8 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 		title_rect = GetTitleRect();
 		message_rect =client_rect;
 
-		message_rect.y0 += title_rect.height();
-		message_rect.y1 -= button_rect.height();
+		message_rect.y0 += title_rect.height()+1; 								// title to message spacing 1 dot
+		message_rect.y1 -= (button_rect.height())?(button_rect.height()):1;								// message to buttons spacing 1 dot
 
 		int width=0;
 		int dec = message_rect.width();
@@ -154,7 +154,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
     {
     	edit_box = new GEdit(ID_MB-1, message_rect, body, NULL,
     			((bnum)?0:GO_FLG_SELECTED)|
-				GO_FLG_BORDER|GO_FLG_VSCROLL|GO_FLG_TRANSPARENT|GO_FLG_DEFAULT,
+				 GO_FLG_BORDER|GO_FLG_VSCROLL|GO_FLG_TRANSPARENT|GO_FLG_DEFAULT,
 				 GET_MBF_EDIT_FLAGS(type),
 				font);
     	if(edit_box)
