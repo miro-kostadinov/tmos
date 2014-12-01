@@ -36,7 +36,7 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 		{
 			if(!(object->flags&GO_FLG_VSCROLL))
 			{
-				object->client_rect.x1 -= GO_SCROLL_WIDTH+1;
+				object->client_rect.x1 -= GO_SCROLL_WIDTH;//+1;
 				object->flags |= GO_FLG_VSCROLL;
 				res = true;
 				//res = (res || object->set_flag(GO_FLG_VSCROLL));
@@ -47,7 +47,7 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 			if(object->flags&GO_FLG_VSCROLL)
 			{
 				object->flags &= ~GO_FLG_VSCROLL;
-				object->client_rect.x1 += GO_SCROLL_WIDTH+1;
+				object->client_rect.x1 += GO_SCROLL_WIDTH;//+1;
 				res = true;
 				//res = ( res || object->clr_flag(GO_FLG_VSCROLL));
 			}

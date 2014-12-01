@@ -55,27 +55,30 @@ bool GListBox::select(int num)
 
 void GListBox::draw_this (LCD_MODULE* lcd)
 {
-	if(flags & GO_FLG_BORDER)
-		draw_border(rect);
-
-	lcd->set_font(text_font);
-	lcd->color = PIX_WHITE;
-	lcd->allign = (align & (TA_HORIZONTAL|TA_VERTICAL));
-
-	draw_caption(lcd);
-	GClientLcd dc(this);
-	if(dc.CreateLcd(scroll_rect, lcd))
+	if(client_rect.height() > 0 && client_rect.width() > 0)
 	{
-		lcd->pos_x = dc.client_rect.x0;
-		lcd->pos_y = dc.client_rect.y0 +text_font->vdistance;
-		remove_amp(txt);
-		dc.draw_text(lcd, txt.c_str());
-		dc.RelaseLcd();
+		if(flags & GO_FLG_BORDER)
+			draw_border(rect);
+
+		lcd->set_font(text_font);
+		lcd->color = PIX_WHITE;
+		lcd->allign = (align & (TA_HORIZONTAL|TA_VERTICAL));
+
+		draw_caption(lcd);
+		GClientLcd dc(this);
+		if(dc.CreateLcd(scroll_rect, lcd))
+		{
+			lcd->pos_x = dc.client_rect.x0;
+			lcd->pos_y = dc.client_rect.y0 +text_font->vdistance;
+			remove_amp(txt);
+			dc.draw_text(lcd, txt.c_str());
+			dc.RelaseLcd();
+		}
+		if(vscroll)
+			vscroll->draw_scroll(lcd);
+		if (flags & GO_FLG_SELECTED)
+			draw_rectangle(client_rect, true);
 	}
-	if(vscroll)
-		vscroll->draw_scroll(lcd);
-	if (flags & GO_FLG_SELECTED)
-		draw_rectangle(client_rect, true);
 }
 
 POINT_T GListBox::get_border_size(void)
@@ -122,48 +125,58 @@ unsigned int GListBox::initialize (GMessage& msg)
 			list = NULL;
 			return 1;
 		}
-		// align horizontal
-		if(sx < client_rect.width())
-			rc.x0 = client_rect.x0, rc.x1 = client_rect.x1;
-		else
+		if(client_rect.height() > 0 && client_rect.width() > 0)
 		{
-			if(sx < rc.width())
+			// align horizontal
+			if(sx < client_rect.width())
+				rc.x0 = client_rect.x0, rc.x1 = client_rect.x1;
+			else
 			{
-				if(client_rect.x1 - sx > rc.x0)
-					rc.x1 = client_rect.x1, rc.x0 = rc.x1 - sx;
-				else
+				if(sx < rc.width())
 				{
-					if(client_rect.x0 + sx < rc.x1)
-						rc.x0 = rect.x0, rc.x1 = rc.x0 + sx;
+					if(client_rect.x1 - sx > rc.x0)
+						rc.x1 = client_rect.x1, rc.x0 = rc.x1 - sx;
 					else
 					{
-						if(rect.x1 - sx > rc.x0)
-							rc.x1 = rect.x1, rc.x0 = rc.x1 - sx;
+						if(client_rect.x0 + sx < rc.x1)
+							rc.x0 = rect.x0, rc.x1 = rc.x0 + sx;
 						else
 						{
-							if(rect.x0 + sx < rc.x1)
-								rc.x0 = rect.x0, rc.x1 = rc.x0 + sx;
+							if(rect.x1 - sx > rc.x0)
+								rc.x1 = rect.x1, rc.x0 = rc.x1 - sx;
 							else
-								rc.x0 = (rc.width() - sx)/2, rc.x1 = rc.x0 + sx;
+							{
+								if(rect.x0 + sx < rc.x1)
+									rc.x0 = rect.x0, rc.x1 = rc.x0 + sx;
+								else
+									rc.x0 = (rc.width() - sx)/2, rc.x1 = rc.x0 + sx;
+							}
 						}
 					}
 				}
 			}
-		}
-		// align vertical
-		if(sy + client_rect.y1 < rc.y1)
-			rc.y0 = client_rect.y1, rc.y1 = rc.y0 + sy;
-		else
-		{
-			if(rc.y0  < client_rect.y0 - sy )
-				rc.y1 = client_rect.y0, rc.y0 = rc.y1 - sy;
+			// align vertical
+			if(sy + client_rect.y1 < rc.y1)
+				rc.y0 = client_rect.y1, rc.y1 = rc.y0 + sy;
 			else
 			{
-				if(rc.y1 - client_rect.y1 > rc.y0 - client_rect.y0)
-					rc.y0 = client_rect.y1;
+				if(rc.y0  < client_rect.y0 - sy )
+					rc.y1 = client_rect.y0, rc.y0 = rc.y1 - sy;
 				else
-					rc.y1 = client_rect.y0;
+				{
+					if(rc.y1 - client_rect.y1 > rc.y0 - client_rect.y0)
+						rc.y0 = client_rect.y1;
+					else
+						rc.y1 = client_rect.y0;
+				}
 			}
+		}
+		else
+		{
+			if(rc.width() > sx)
+				rc.x0 = rc.x1 - sx;
+			if(rc.height() > sy)
+				rc.x0 = rc.x1 - sy;
 		}
 		if(!msg.param)
 		{

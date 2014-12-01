@@ -47,6 +47,7 @@ struct GText: GObject
 		}
 	}
 
+	virtual unsigned int process_default (GMessage& msg);
 	virtual unsigned int initialize (GMessage& msg);
 	virtual unsigned int process_key (GMessage& msg);
 	virtual void draw_this (LCD_MODULE* lcd);

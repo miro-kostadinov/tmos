@@ -335,9 +335,12 @@ void GObject::draw_rectangle(const RECT_T& frame, bool fill)
 
 void GObject::allocate_border(void)
 {
-	POINT_T pt = get_border_size();
-	client_rect = rect;
-	client_rect.Inflate(pt.x, pt.y);
+	if(rect.height() && rect.width())
+	{
+		POINT_T pt = get_border_size();
+		client_rect = rect;
+		client_rect.Inflate(pt.x, pt.y);
+	}
 }
 
 POINT_T GObject::get_border_size(void)
@@ -813,7 +816,7 @@ text_metrics_t get_text_metrics(const char* text, short int x_size, const RENDER
 	size.as_int=0;
 	const char* ptr = text;
 
-	if(!text)
+	if(!text || !text[0])
 	{
     	size.height = font->vspacing;
 		return size;

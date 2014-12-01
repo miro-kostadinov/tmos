@@ -255,7 +255,7 @@ unsigned int GEdit::process_default (GMessage& msg)
 	default:
 		break;
 	}
-	return GText::process_default(msg);
+	return GObject::process_default(msg);
 }
 
 void GEdit::process_alpha_key(char pressed_key, const char* key_val)
@@ -420,7 +420,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 		text_change();
 		return 1;
 
-	case KEY_HASHTAG: // bar code
+	case KEY_USER_DEFINED: // bar code
 	case KEY_OK:
 		if(align & ES_WANTRETURN)
 			 process_alpha_key(msg.param, table[CHAR_TABLE_INDEX_ENTER].bg_vals);
