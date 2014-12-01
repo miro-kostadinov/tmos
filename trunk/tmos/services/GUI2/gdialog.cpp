@@ -34,33 +34,78 @@ unsigned int GDialog::process_key (GMessage& msg)
 	}
 	if(vscroll && focus)
 	{
-		int y, offset=0;
-		y = vpos + focus->rect.y1;
-		vscroll->SetScrollPos(GO_FLG_VSCROLL, y/10, true);
-		if(focus->rect.y1 > client_rect.y1)
+		int y, items, offset=0;
+		y = (client_rect.height() - focus->rect.height())/2;
+		if(y < 0)
+			y = 0;
+		if(focus->rect.y1 >= client_rect.y1)
 		{
 			// scroll down
-			offset = client_rect.y1 - focus->rect.y1 -5;
+			GObject* tmp = focus;
+			while(tmp)
+			{
+				if(!tmp->nextObj)
+				{
+					if(tmp->rect.y1 - focus->rect.y0 <= client_rect.height())
+					{
+						offset = client_rect.y1 - tmp->rect.y1;
+					}
+					else
+					{
+						offset = client_rect.y1 -y - focus->rect.y1;
+					}
+					break;
+				}
+				else
+				{
+					if(tmp->nextObj->is_available())
+					{
+						offset = client_rect.y1 -y - focus->rect.y1;
+						break;
+					}
+				}
+				tmp = tmp->nextObj;
+			}
 		}
-		if(focus->rect.y0 < client_rect.y0 )
+		if(focus->rect.y0 <= client_rect.y0 )
 		{
-			offset = client_rect.y0 -focus->rect.y0 +10;
 			// scroll up
+			offset =0;
+			GObject* tmp = children;
+			while(tmp)
+			{
+				if(tmp->is_available())
+				{
+					if(tmp == focus && tmp->rect.y1 - children->rect.y0 <= client_rect.height())
+					{
+						offset = client_rect.y0 - children->rect.y0;
+					}
+					else
+					{
+						offset = client_rect.y0 +y - focus->rect.y0;
+					}
+					break;
+				}
+				tmp = tmp->nextObj;
+			}
 		}
 		if(offset != 0)
 		{
 			GObject* tmp = children;
-
-			vpos -= offset;
+			y = items=0;
 			while (tmp)
 			{
-				if(tmp->flags & GO_FLG_SHOW)
-				{
-					tmp->move(0, offset);
-				}
+				if(tmp->is_available())
+					items++;
+				if(tmp == focus)
+					y = items;
+				tmp->move(0, offset);
 				tmp = tmp->nextObj;
 			}
-
+			if(client_rect.y0 == children->rect.y0)
+				y = 0;
+			vscroll->SetScrollRange(GO_FLG_VSCROLL, items);
+			vscroll->SetScrollPos(GO_FLG_VSCROLL, y, true); // y/10
 			send_message(WM_DRAW, 0, 0L, this);
 		}
 
@@ -129,13 +174,14 @@ unsigned int GDialog::initialize (GMessage& msg)
 	{
 		GObject* tmp = children;
 		int maxy = client_rect.height();
-
+		int items=0;
 		while (tmp)
 		{
 			if(tmp->is_available())
+				items++;
+			if(maxy < tmp->client_rect.y1)
 			{
-				if(maxy < tmp->client_rect.y1)
-					maxy = tmp->client_rect.y1;
+				maxy = tmp->client_rect.y1;
 			}
 			tmp = tmp->nextObj;
 		}
@@ -145,7 +191,14 @@ unsigned int GDialog::initialize (GMessage& msg)
 			if(!vscroll)
 				vscroll = new GScroll(this);
 			if(vscroll)
-				vscroll->SetScrollRange(GO_FLG_VSCROLL, maxy/10 + 1);
+			{
+				if(flags & GO_FLG_BORDER)
+					client_rect.x1 += get_border_size().x;
+				vscroll->SetScrollRange(GO_FLG_VSCROLL, items);
+				vscroll->SetScrollPos(GO_FLG_VSCROLL, 0, false);
+				flags &= ~GO_FLG_VSCROLL;
+				vscroll->ShowScroll(GO_FLG_VSCROLL, true);
+			}
 		}
 	}
 	return res;
