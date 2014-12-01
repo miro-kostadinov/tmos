@@ -49,6 +49,9 @@ WEAK_C void on_key(unsigned int key)
 static void key_post(unsigned int key)
 {
 	//TRACELN("[%2X]%d", key, (key&0x3f));
+#if KEY_REPEAT_CODE > 0xFF
+	key |= KEY_SCAN_CODE;
+#endif
     usr_drv_icontrol(KEY_DRV_INDX, DCR_PARAMS, (void *)key);
     on_key(key);
 }
