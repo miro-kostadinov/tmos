@@ -251,16 +251,16 @@ RES_CODE usb_remote_hid_t::scan_hid(uint32_t port_indx, USBSubClassCode subcls, 
 #define K4C 	255		// DELFWD
 #define K4D 	255		// END
 #define K4E 	255			// PAGEDOWN
-#define K4F 	KEY_RIGHT	// RIGHT
-#define K50 	KEY_LEFT    // LEFT
+#define K4F 	255			// RIGHT
+#define K50 	255    		// LEFT
 #define K51 	255		    // ???
-#define K52 	KEY_UP  	//
+#define K52 	255  		//
 #define K53 	255			// Num Lock
 #define K54 	'/'			// Keypad /
 #define K55 	'*'			// Keypad *
 #define K56 	'-'			// Keypad -
 #define K57 	'+'			// Keypad +
-#define K58 	KEY_ENTER	// Keypad ENTER
+#define K58 	255			// Keypad ENTER
 #define K59 	'1'			// Keypad 1
 #define K5A 	'2'			// Keypad 2
 #define K5B 	'3'			// Keypad 3
