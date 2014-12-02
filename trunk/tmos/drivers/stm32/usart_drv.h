@@ -19,7 +19,7 @@
 /** UART Driver mode structure **/
 struct USART_DRIVER_MODE
 {
-	uint32_t baudrate;		//!< baudrate e.g. 9600
+	uint32_t baudrate;		//!< baudrate e.g. 9600, For M0 USART1 two MSB = clock source
 	uint16_t mode_cr1;		//!< USART_CR1 register value
 	uint16_t mode_cr2;		//!< USART_CR2 register value
 	uint16_t mode_cr3;		//!< USART_CR3 register value

@@ -12,6 +12,8 @@
 #include <tmos_types.h>
 #include <gpio_stm32.h>
 
+#define PD_LAST_PORT		8				//!< number of physical ports
+
 #define PD_AF0		(PD_AF | PD_MUX_AF0	)	//!< Alternative function map 0
 #define PD_AF1		(PD_AF | PD_MUX_AF1	)	//!< Alternative function map 1
 #define PD_AF2		(PD_AF | PD_MUX_AF2	)	//!< Alternative function map 2

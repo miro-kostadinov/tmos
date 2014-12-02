@@ -63,6 +63,8 @@ typedef struct
 #define RCC_CFGR_MCO_HSE            0x06000000 //!<  External 4-32 MHz (HSE) oscillator clock selected
 #define RCC_CFGR_MCO_PLL            0x07000000 //!<  PLL clock divided by 2 selected
 #define RCC_CFGR_PLLMUL             0x003C0000 //!< PLL multiplication factor
+#define  RCC_CFGR_PLLMUL_Get(x)    (((x) >> 18) & 0xF)
+#define  RCC_CFGR_PLLMUL_Set(x)    (((x) & 0xF) << 18)
 #define RCC_CFGR_PLLXTPRE           0x00020000 //!< HSE divider for PLL input clock
 #define RCC_CFGR_PLLSRC             0x00010000 //!< PLL entry clock source
 #define RCC_CFGR_ADCPRE             0x00004000 //!< ADC prescaler
@@ -268,6 +270,17 @@ typedef struct
 /** @} */ // @defgroup RCC_regs_define
 
 /**
+ * @brief In the following line adjust the value of External High Speed oscillator (HSE)
+   used in your application
+
+   Tip: To avoid modifying this file each time you need to use different HSE, you
+        can define the HSE value in your toolchain compiler preprocessor.
+  */
+#ifndef HSE_VALUE
+#define HSE_VALUE            8000000 /*!< Value of the External oscillator in Hz */
+#endif /* HSE_VALUE */
+
+/**
  * @brief In the following line adjust the External High Speed oscillator (HSE) Startup
    Timeout value
    */
@@ -278,6 +291,10 @@ typedef struct
 #ifndef HSI_VALUE
 #define HSI_VALUE            8000000 /*!< Value of the Internal oscillator in Hz*/
 #endif /* HSI_VALUE */
+
+#ifndef LSE_VALUE
+#define LSE_VALUE            32768 /*!< Value of the LSE oscillator in Hz*/
+#endif
 
 
 typedef struct
