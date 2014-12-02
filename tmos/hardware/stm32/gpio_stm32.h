@@ -118,7 +118,6 @@ typedef unsigned int PIN_DESC;
 #define	PD_PORT_H			(7 << PD_PORT_Pos)		//!< port H
 #define	PD_PORT_I			(8 << PD_PORT_Pos)		//!< port I
 #define PD_PORT_V           (0xF << PD_PORT_Pos)	//!< virtual port V
-#define PD_LAST_PORT		8						//!< number of physical ports
 
 
 

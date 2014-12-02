@@ -1,14 +1,14 @@
 /**************************************************************************//**
- * @file     hardware/stm32/stm32f2/STM32F205ZC/mcu_inc.h
- * @ingroup	 hardware_stm32f205zc
- * @brief    STM32F205ZC definitions
+ * @file     hardware/stm32/stm32f0/STM32F030R8T6/mcu_inc.h
+ * @ingroup	 hardware_stm32f030r8
+ * @brief    STM32F030R8 definitions
  * @version  V3.00
  * @date     26. October 2012
  * @author	 Miroslav Kostadinov
  *
- * @defgroup hardware_stm32f205zc
- * @ingroup	 hardware_stm32f2
- * Source and definitions for STM32F205ZC chip
+ * @defgroup hardware_stm32f030r8
+ * @ingroup	 hardware_stm32f0
+ * Source and definitions for STM32F030R8 chip
  *
  *
  ******************************************************************************/
