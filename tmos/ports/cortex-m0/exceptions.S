@@ -154,7 +154,8 @@ ENDF(	sys_call_static_ctors	)
 //*----------------------------------------------------------------------------
 FUNC(	sys_nmi_handler		)
 
-				b 			FaultHandler
+				ldr     r0, = FaultHandler
+				bx      r0
 
 ENDF(	sys_nmi_handler		)
 
@@ -165,7 +166,8 @@ ENDF(	sys_nmi_handler		)
 
 FUNC(	sys_hard_fault_handler		)
 
-				b			FaultHandler
+                ldr     r0, = FaultHandler
+                bx      r0
 
 ENDF(	sys_hard_fault_handler		)
 

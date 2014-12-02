@@ -125,8 +125,14 @@ void TRACE_TEXT(const void* buf, unsigned int len, unsigned int color)
 
 void drv_enable_isr(DRIVER_INFO drv_info)
 {
+	__IO uint32_t* reg;
+	uint32_t pos;
+
 	//set priority
-    NVIC->NVIC_IPR[drv_info->drv_index] = drv_info->isr_priority;
+	reg = &NVIC->NVIC_IPR[drv_info->drv_index >> 2];
+	pos = ((drv_info->drv_index & 3) << 3);
+	reg[0] = (reg[0] & ~(0xFF << pos)) | (drv_info->isr_priority << pos);
+
     //enable
-    NVIC->NVIC_ISER = 1 << (drv_info->drv_index & 0x1F);
+    NVIC->NVIC_ISER = 1 << drv_info->drv_index;
 }

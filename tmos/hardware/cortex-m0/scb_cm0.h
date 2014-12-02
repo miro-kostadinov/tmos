@@ -22,7 +22,7 @@ struct SCB_Type
   __IO uint32_t SCB_AIRCR;   //!< (SCB Offset: 0x0C)  Application Interrupt / Reset Control Register
   __IO uint32_t SCB_SCR;     //!< (SCB Offset: 0x10)  System Control Register
   __IO uint32_t SCB_CCR;     //!< (SCB Offset: 0x14)  Configuration Control Register
-  __IO uint8_t  SCB_SHPR[12];//!< (SCB Offset: 0x18)  System Handlers Priority Registers (4-7, 8-11, 12-15)
+  __IO uint32_t SCB_SHPR[3]; //!< (SCB Offset: 0x18)  System Handlers Priority Registers (4-7, 8-11, 12-15)
   __IO uint32_t SCB_SHCSR;   //!< (SCB Offset: 0x24)  System Handler Control and State Register
   __IO uint32_t reserved[2]; //!< (SCB Offset: 0x28)
   __IO uint32_t SCB_DFSR;    //!< (SCB Offset: 0x30)  Debug Fault Status Register
@@ -84,7 +84,7 @@ struct SCB_Type
 #define SCB_CCR_UNALIGN_TRP		   0x00000008 //!< Enables unaligned access traps Read-As-One
 /** @} */
 
-/** @defgroup SCB_SHPR[12]:  (SCB Offset: 0x18)  System Handlers Priority Registers (4-7, 8-11, 12-15) */
+/** @defgroup SCB_SHPR[3]:  (SCB Offset: 0x18)  System Handlers Priority Registers (4-7, 8-11, 12-15) */
 // The SHPRx registers set the priority level, 0 to 255, of the exception handlers that have
 // configurable priority
 #define SCB_SHPR_indx_SVCall		7	//!< PRI_11 Priority of system handler 11, SVCall
