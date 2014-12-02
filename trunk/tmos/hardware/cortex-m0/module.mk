@@ -13,7 +13,7 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= 
+local_cpp_src-y	+= nvic_cm0.cpp
 
 local_h_src-y 	+= core_map.h cdbg_cm0.h mpu_cm0.h nvic_cm0.h scb_cm0.h systick_cm0.h
 local_h_src-y 	+= core_instr.h

@@ -13,7 +13,7 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_as_src-y	+= exceptions.S services.S 
+local_as_src-y	+= exceptions.S services.S tmos_long.S
 local_as_src-$(USE_TMOS_STRING)	+= tmos_string.S 
 local_as_src-$(USE_TMOS_STDLIB)	+= tmos_stdlib.S 
 local_as_src-$(USE_TMOS_STDIO)	+= tmos_stdio.S 

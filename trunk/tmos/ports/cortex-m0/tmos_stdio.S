@@ -253,7 +253,7 @@ _get_param_width_loop:
         adds		r1, #1
         b           _check_precision
 
-get_flag_left:
+_get_flag_left:
         movs		r7, #PF_LEFT
         ldrb		r3, [r1]
         adds		r1, #1
@@ -403,7 +403,7 @@ _print_s_get_len:
 2:		// get length/precision
         ldrb        r3, [r5]
         cmp			r3, #0
-		beq			prints_left_pad
+		beq			_prints_left_pad
 		str			r7, [sp]
 		movs		r7, #1
 3:

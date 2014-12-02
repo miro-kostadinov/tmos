@@ -25,7 +25,7 @@ struct NVIC_Type
 	   uint32_t reserved2[31];	//!< (NVIC Offset: 0x104)
   __IO uint32_t NVIC_ICPR;      //!< (NVIC Offset: 0x180) Interrupt Clear Pending Register
 	   uint32_t reserved3[95];	//!< (NVIC Offset: 0x184)
-  __IO uint8_t  NVIC_IPR[8];	//!< (NVIC Offset: 0x300) Interrupt Priority Register (8Bit wide) */
+  __IO uint32_t NVIC_IPR[8];	//!< (NVIC Offset: 0x300) Interrupt Priority Register (8Bit wide) */
 };
 #endif /* __ASSEMBLY__ */
 
@@ -65,16 +65,13 @@ struct NVIC_Type
 
 
 #ifndef __ASSEMBLY__
-//EXTERN_C void NVIC_EnableIRQ(uint32_t IRQn);
+EXTERN_C void NVIC_EnableIRQ(uint32_t IRQn);
 EXTERN_C void NVIC_DisableIRQ(uint32_t IRQn);
-//EXTERN_C uint32_t NVIC_GetPendingIRQ(uint32_t IRQn);
-//EXTERN_C void NVIC_SetPendingIRQ(uint32_t IRQn);
-//EXTERN_C void NVIC_ClearPendingIRQ(uint32_t IRQn);
-//EXTERN_C uint32_t NVIC_GetActive(uint32_t IRQn);
-//EXTERN_C void NVIC_SetPriority(int32_t IRQn, uint32_t priority);
-//EXTERN_C uint32_t NVIC_GetPriority(int32_t IRQn);
-//EXTERN_C uint32_t NVIC_EncodePriority (uint32_t PriorityGroup, uint32_t PreemptPriority, uint32_t SubPriority);
-//EXTERN_C void NVIC_DecodePriority (uint32_t Priority, uint32_t PriorityGroup, uint32_t* pPreemptPriority, uint32_t* pSubPriority);
+EXTERN_C uint32_t NVIC_GetPendingIRQ(uint32_t IRQn);
+EXTERN_C void NVIC_SetPendingIRQ(uint32_t IRQn);
+EXTERN_C void NVIC_ClearPendingIRQ(uint32_t IRQn);
+EXTERN_C void NVIC_SetPriority(int32_t IRQn, uint32_t priority);
+EXTERN_C uint32_t NVIC_GetPriority(int32_t IRQn);
 #endif /* __ASSEMBLY__ */
 
 
