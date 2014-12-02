@@ -164,23 +164,33 @@ __tmos_ldivmod_helper:
                 blt             1f
                 cmp             r3, #0
                 blt             2f
-                b               tmos__udivmoddi4
+                b               tmos__udivmoddi4        // ++   ->  ++
 
-1:
-                negs            r0, r0                      // n < 0
+1:  // n<0
+                negs            r0, r0
                 sbc             r1, r1, r1, lsl #1
                 cmp             r3, #0
                 bge             3f
-                negs            r2, r2                      // n < 0, d <0
+                negs            r2, r2
                 sbc             r3, r3, r3, lsl #1
-                b               tmos__udivmoddi4
+                push            {lr}
+                bl              tmos__udivmoddi4        // --   ->  +-
+                negs            r2, r2
+                sbc             r3, r3, r3, lsl #1
+                pop             {pc}
 
 2:  // n>=0 , d<0
                 negs            r2, r2
                 sbc             r3, r3, r3, lsl #1
-3:
                 push            {lr}
-                bl              tmos__udivmoddi4
+                bl              tmos__udivmoddi4        // +-   ->  -+
+                negs            r0, r0
+                sbc             r1, r1, r1, lsl #1
+                pop             {pc}
+
+3:  // n<0 ,d>=0
+                push            {lr}
+                bl              tmos__udivmoddi4        // -+   ->  --
                 negs            r0, r0
                 sbc             r1, r1, r1, lsl #1
                 negs            r2, r2
