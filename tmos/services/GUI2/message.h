@@ -69,6 +69,30 @@ struct msgQueue : mqueue<GMessage, size>
 		}
 		return res;
 	}
+
+	bool del_msg(WM_MESSAGE code, GObject* owner)
+	{
+		unsigned short indx = this->out;
+		bool res = false;
+
+		while(this->in != indx)
+		{
+			if(this->items[indx].dst == owner && this->items[indx].code == code)
+			{
+#if GUI_DEBUG
+				TRACELN1("\e[4;1;33m");
+				TRACE("%X[%d] ( %s 0x%X ) deleted!\e[m",
+						this->items[indx].dst, this->items[indx].dst->id,
+						szlist_at(wm_dbg_str, this->items[indx].code), this->items[indx].param);
+#endif
+				this->items[indx].code = WM_DELETED;
+				res = true;
+			}
+			if(++indx == size)
+				indx=0;
+		}
+		return res;
+	}
 };
 
 extern msgQueue<MAX_MESSAGES> GQueue;
