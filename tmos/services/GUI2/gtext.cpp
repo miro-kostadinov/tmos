@@ -20,6 +20,7 @@ unsigned int GText::initialize (GMessage& msg)
 		send_message(WM_DRAW, 0, 0L, this);
 	return 1;
 }
+
 void GText::alloc_scrollbars( void )
 {
 	if(!(align & SS_WORDWRAP))
@@ -74,8 +75,7 @@ text_metrics_t GText::SetTextAlign(unsigned int new_align )
 				client_rect.x0 += text_font->hspacing*strlen(caption);
 		}
 	}
-//	client_rect.x0 += text_font->hdistance;
-//	client_rect.y0 += text_font->vdistance;
+
 	scroll_rect = client_rect;
 
 	if(new_align != align )
@@ -102,9 +102,9 @@ text_metrics_t GText::SetTextAlign(unsigned int new_align )
 	}
 	// check number of rows
 	if(txt_size.height == text_font->vspacing)
-	{
 		txt_size.height = text_font->height;	// only one row, resize to char vertical size
-	}
+	if(txt_size.height > text_font->vspacing)
+		txt_size.height--;						// exclude last v distance
 	// align text horizontally
 	if(scroll_rect.width())
 	{
@@ -162,8 +162,10 @@ unsigned int GText::process_key (GMessage& msg)
 			if(vscroll)
 				vscroll->SetScrollPos(GO_FLG_VSCROLL, client_rect.y0 - scroll_rect.y0, true);
 			invalidate(this, client_rect);
+			return 1;
 		}
-		return 1;
+		break;
+
 	case KEY_UP:
 		if(scroll_rect.y0 < client_rect.y0)
 		{
@@ -172,8 +174,9 @@ unsigned int GText::process_key (GMessage& msg)
 			if(vscroll)
 				vscroll->SetScrollPos(GO_FLG_VSCROLL, client_rect.y0 - scroll_rect.y0, true);
 			invalidate(this, client_rect);
+			return 1;
 		}
-		return 1;
+		break;
 	}
 	return 0;
 }
@@ -184,24 +187,21 @@ unsigned int GText::process_default (GMessage& msg)
 	{
 		case WM_KILLFOCUS:
 			client_rect.Deflate(0,1);
-			if(scroll_rect.y1 > client_rect.y1)
+			if(scroll_rect.y1 >= client_rect.y1 && scroll_rect.y0 <= client_rect.y0 )
 			{
-				scroll_rect.y0 --;
-				scroll_rect.y1 --;
+				scroll_rect.Offset(0, -1);
 				if(vscroll)
 					vscroll->SetScrollPos(GO_FLG_VSCROLL, client_rect.y0 - scroll_rect.y0, true);
-				invalidate(this, client_rect);
 			}
 			break;
 		case WM_SETFOCUS:
 			if(get_focus(false))
 			{
+				if(scroll_rect.y0 <= client_rect.y0 && scroll_rect.y1 >= client_rect.y1 )
+					scroll_rect.Offset(0, 1);
 				client_rect.Inflate(0,1);
-				if(scroll_rect.y0 < client_rect.y0)
-				{
-					scroll_rect.y0 ++;
-					scroll_rect.y1 ++;
-				}
+				if(vscroll)
+					vscroll->SetScrollPos(GO_FLG_VSCROLL, client_rect.y0 - scroll_rect.y0, true);
 				return 1;
 			}
 			break;
@@ -266,5 +266,36 @@ void GText::draw_this (LCD_MODULE* lcd)
 			vscroll->draw_scroll(lcd);
 		if (flags & GO_FLG_SELECTED)
 			draw_poligon(rect);//client_rect);
+	}
+}
+
+unsigned int GTitle::process_default (GMessage& msg)
+{
+	return GObject::process_default(msg);
+}
+
+void GTitle::draw_this (LCD_MODULE* lcd)
+{
+	if(client_rect.height() > 0 && client_rect.width() > 0)
+	{
+		lcd->set_font(text_font);
+		lcd->color = PIX_WHITE;
+		lcd->allign = (align & (TA_HORIZONTAL|TA_VERTICAL));
+		GClientLcd dc(this);
+		if(dc.CreateLcd(scroll_rect, lcd))
+		{
+			lcd->pos_x = dc.client_rect.x0;
+			lcd->pos_y = dc.client_rect.y0;// +text_font->vdistance;
+			dc.draw_text(lcd, txt.c_str());
+			dc.RelaseLcd();
+		}
+
+		RECT_T rc(client_rect);
+		client_rect = parent->rect;
+		client_rect.y1 = client_rect.y0 + rc.height();
+		draw_border(client_rect);
+		draw_poligon(client_rect, true);
+		draw_hline(client_rect.x0, client_rect.x1, client_rect.y1);
+		client_rect = rc;
 	}
 }
