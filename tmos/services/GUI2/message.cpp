@@ -14,14 +14,16 @@
 msgQueue<MAX_MESSAGES> GQueue;
 GWindow* Gdesktop;
 
+unsigned int ms_since(unsigned int time);
+
 void processes_all_messages(void)
 {
 	GMessage msg;
 	while (GQueue.pop(msg))														//processes all messages in the queue
 	{
 #if GUI_DEBUG
-		t0 = CURRENT_TIME;
-		trace_message();
+		unsigned int t0 = CURRENT_TIME;
+		trace_message(msg);
 #endif
 		if(msg.code == WM_DELETED || !Gdesktop)
 			continue;

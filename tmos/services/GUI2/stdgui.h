@@ -50,7 +50,9 @@ enum WM_MESSAGE:unsigned int
 };
 
 #if GUI_DEBUG
+struct GMessage;
 extern STR_LIST wm_dbg_str;
+void trace_message(const GMessage& msg);
 #endif
 
 #define MAX_MESSAGES 10

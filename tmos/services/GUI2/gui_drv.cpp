@@ -230,7 +230,13 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			for (tmp = (GWindow*)Gdesktop->nextObj; tmp; tmp = (GWindow*)tmp->nextObj)
 			{
 				if(tmp->hnd.mode0 && tmp->hnd.res == (FLG_BUSY | FLG_OK) )
+				{
+#if GUI_DEBUG
+					TRACELN1("\e[4;1;32m");
+					TRACE("%X[%d] CANCEL\e[m", tmp, tmp->id);
+#endif
 					usr_HND_SET_STATUS(&tmp->hnd, FLG_SIGNALED);
+				}
 			}
 			sig &=~SIG_GUI_TASK;
 			if(!sig)
