@@ -65,7 +65,11 @@ void GButton::draw_this (LCD_MODULE* lcd)
 		lcd->pos_x = /*(client_rect.y1 - client_rect.y0) +*/
 				client_rect.x0 + ((lcd->font->hspacing * 4)/3);
 	}
-	draw_text(lcd, label.c_str());
+	text_metrics_t size = get_text_metrics(label.c_str(), client_rect.width() -lcd->pos_x, &FNT5x7);
+	if(size.height > client_rect.height())
+		draw_text_line(lcd, label.c_str(), label.length());
+	else
+		draw_text(lcd, label.c_str());
 	if (flags & GO_FLG_SELECTED)
 	{
 //		draw_poligon(client_rect, type);
