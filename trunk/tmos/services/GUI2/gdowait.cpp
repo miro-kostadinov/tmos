@@ -12,7 +12,7 @@ GWait* GWait::dowait_win =NULL;
 int32_t GWait::dowait_cnt = 0;
 void * GWait::dowait_locker = NULL;
 
-POINT_T get_position(int deg, int r);
+POINT_T PolarToDevXY(int deg, int r, LCD_MODULE* lcd);
 
 unsigned int GWait::initialize (GMessage& msg)
 {
@@ -20,13 +20,19 @@ unsigned int GWait::initialize (GMessage& msg)
 
 	client_rect = rect = lcd->rect;
 	flags = GO_FLG_TRANSPARENT;
-	base.x = rect.x0 + rect.width()/2;
-	base.y = rect.y0 + rect.height()/2;
 	last_state = 0;
 	new_state = 0x3;
 	displays = 1;
-	R = 12;
-	client_rect = rect = RECT_T(base.x - R, base.y -R, base.x +R, base.y +R);
+	R = 10;
+	POINT_T r(R,R);
+	DPtoLP(r);
+	R = (r.x > r.y)?r.x:r.y;
+	// reserve one text row
+	rect.y0 += FNT5x7.vspacing + FNT5x7.vdistance;
+	base.x = rect.x0 + rect.width()/2;
+	base.y = rect.y0 + rect.height()/2;
+	LPtoDP(r);
+	client_rect  = RECT_T(base.x - r.x, base.y -r.y, base.x +r.x, base.y +r.y);//= rect;
 	SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
 	dowait_win->owners = new GWaitOwner(parent->focus);
 	return 0;
@@ -69,10 +75,11 @@ void GWait::draw_this(LCD_MODULE* lcd)
 	uint8_t mask=1;
 	if(R > 5)
 	{
-		POINT_T p;
+		POINT_T p;//, r(R-2,R-2);
 		for(int i=0; i < 8; i++, mask <<=1)
 		{
-			p = get_position(i*45, R-4) + base;
+			p = PolarToDevXY(i*45, R-4, lcd);
+			p += base;
 			if(last_state & mask)
 			{
 				lcd->color = PIX_BLACK;
