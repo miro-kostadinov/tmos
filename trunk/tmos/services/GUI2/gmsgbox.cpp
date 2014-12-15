@@ -628,5 +628,6 @@ void StatusMessageBox(const char* Text, const char* Caption, unsigned int Style,
 				}
 			}
 		}
+		box.Destroy();
 	}
 }
