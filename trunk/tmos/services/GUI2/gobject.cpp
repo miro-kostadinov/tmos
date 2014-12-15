@@ -348,6 +348,18 @@ POINT_T GObject::get_border_size(void)
 	return POINT_T(GO_OBJ_FRAME_WIDTH, GO_OBJ_FRAME_HEIGHT);
 }
 
+void GObject::LPtoDP(POINT_T& size, unsigned char lcd_index)
+{
+	if(parent)
+		parent->LPtoDP(size, lcd_index);
+}
+
+void GObject::DPtoLP(POINT_T& size, unsigned char lcd_index)
+{
+	if(parent)
+		parent->DPtoLP(size, lcd_index);
+}
+
 void GObject::draw_border(RECT_T& frame)
 {
 	if(frame.width() >= 4 && frame.height() >= 4 )
@@ -395,21 +407,29 @@ void  GObject::draw_line(int x0, int y0, int x1, int y1)
 	}
 }
 
-void GObject::draw_circle(int x0, int y0, int radius)
+void GObject::draw_circle(int x0, int y0, int radius, int sectors)
 {
 	int x = radius, y = 0;
 	int radiusError = 1 - x;
 
 	while (x >= y)
 	{
-		draw_point(x + x0, y + y0);
-		draw_point(y + x0, x + y0);
-		draw_point(-x + x0, y + y0);
-		draw_point(-y + x0, x + y0);
-		draw_point(-x + x0, -y + y0);
-		draw_point(-y + x0, -x + y0);
-		draw_point(x + x0, -y + y0);
-		draw_point(y + x0, -x + y0);
+		if( sectors & (1<<0) )
+			draw_point( x + x0,  y + y0);
+		if( sectors & (1<<1) )
+			draw_point( y + x0,  x + y0);
+		if( sectors & (1<<2) )
+			draw_point(-y + x0,  x + y0);
+		if( sectors & (1<<3) )
+			draw_point(-x + x0,  y + y0);
+		if( sectors & (1<<4) )
+			draw_point(-x + x0, -y + y0);
+		if( sectors & (1<<5) )
+			draw_point(-y + x0, -x + y0);
+		if( sectors & (1<<6) )
+			draw_point( y + x0, -x + y0);
+		if( sectors & (1<<7) )
+			draw_point( x + x0, -y + y0);
 		y++;
 		if (radiusError < 0)
 		{
@@ -421,6 +441,52 @@ void GObject::draw_circle(int x0, int y0, int radius)
 			radiusError += 2 * (y - x + 1);
 		}
 	}
+}
+
+void GObject::draw_ellipse (int x0, int y0, int width, int height, int sectors)
+{
+    int a2 = width * width;
+    int b2 = height * height;
+    int fa2 = 4 * a2, fb2 = 4 * b2;
+    int x, y, sigma;
+
+    /* first half */
+    for (x = 0, y = height, sigma = 2*b2+a2*(1-2*height); b2*x <= a2*y; x++)
+    {
+		if( sectors & (1<<1) )
+			draw_point (x0 + x, y0 + y);
+		if( sectors & (1<<2) )
+			draw_point (x0 - x, y0 + y);
+		if( sectors & (1<<6) )
+			draw_point (x0 + x, y0 - y);
+		if( sectors & (1<<5) )
+			draw_point (x0 - x, y0 - y);
+        if (sigma >= 0)
+        {
+            sigma += fa2 * (1 - y);
+            y--;
+        }
+        sigma += b2 * ((4 * x) + 6);
+    }
+
+    /* second half */
+    for (x = width, y = 0, sigma = 2*a2+b2*(1-2*width); a2*y <= b2*x; y++)
+    {
+		if( sectors & (1<<0) )
+			draw_point (x0 + x, y0 + y);
+		if( sectors & (1<<3) )
+			draw_point (x0 - x, y0 + y);
+		if( sectors & (1<<7) )
+			draw_point (x0 + x, y0 - y);
+		if( sectors & (1<<4) )
+			draw_point (x0 - x, y0 - y);
+        if (sigma >= 0)
+        {
+            sigma += fb2 * (1 - x);
+            x--;
+        }
+        sigma += a2 * ((4 * y) + 6);
+    }
 }
 
 void GObject::fill_circle(int x0, int y0, int radius)

@@ -115,6 +115,10 @@ struct GObject
 	void KillTimer(GId event);
 	bool IsActiveTimer(GId event);
 	bool StopTimer(GId event);
+	// size and position methods
+	virtual void LPtoDP(POINT_T& size, unsigned char lcd_index =0);
+	virtual void DPtoLP(POINT_T& size, unsigned char lcd_index =0);
+
 	// Draw methods
 
 	void clear_rect(const RECT_T& area);
@@ -125,8 +129,12 @@ struct GObject
 	void draw_text_line(LCD_MODULE* lcd, const char* txt, unsigned int len);
 	void draw_line(int x1, int y1, int x2, int y2);
 	void draw_line(POINT_T a, POINT_T b){draw_line(a.x, a.y, b.x, b.y);}
-	void draw_circle(int x0, int y0, int r);
-	void draw_circle(POINT_T center, int r) {draw_circle(center.x, center.y, r);}
+	void draw_circle(int x0, int y0, int r, int sectors = 0xFF);
+	void draw_circle(POINT_T center, int r, int sectors = 0xFF)
+		{draw_circle(center.x, center.y, r, sectors);}
+	void draw_ellipse (int x0, int y0, int width, int height, int sectors = 0xFF);
+	void draw_ellipse (POINT_T center, int width, int height, int sectors = 0xFF)
+		{draw_ellipse(center.x, center.y, width, height, sectors);}
 	void fill_circle(int x0, int y0, int r);
 	void fill_circle(POINT_T center, int r) {fill_circle(center.x, center.y, r);}
 	void draw_poligon(const RECT_T& frame, bool fill = false);
