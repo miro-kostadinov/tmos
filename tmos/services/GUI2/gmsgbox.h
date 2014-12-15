@@ -11,7 +11,9 @@
 #include <gdialog.h>
 #include <gedit.h>
 
-#define ID_MB		0xFF
+#define ID_MB_DLG		0xF0
+#define ID_MB_TITLE		0xF1
+#define ID_MB_TEXT_BOX	0xF2
 
 // buttons text index
 #define IDS_OK			0
@@ -68,22 +70,32 @@ struct GMsgBox : GDialog
 	CSTRING body;
 	const RENDER_MODE* font;
 	unsigned int type;
+	unsigned int default_button;
 	text_metrics_t init_size;
 	GEdit* edit_box;
-	GMsgBox() : title(NULL), body(), font(&FNT5x7), type(MB_OK), edit_box(NULL)
+	GTitle* title_box;
+	GText*	text_box;
+	GMsgBox() : title(NULL), body(), font(&FNT5x7), type(MB_OK), default_button(0),
+			edit_box(NULL), title_box(NULL), text_box(NULL)
 	 {};
 
+protected:
 	virtual void draw_this(LCD_MODULE* lcd);
 	virtual unsigned int initialize (GMessage& msg);
 	virtual unsigned int process_command(GMessage& msg);
 	virtual unsigned int process_key(GMessage& msg);
+	virtual bool is_available()
+	{
+		return true;
+	}
 private:
 	RECT_T GetButtonRect(void);
 	RECT_T GetTitleRect(void);
+	bool   SelectDefaultButton(GObject* button);
 
 };
 
-int MessageBox(const char* Text, const char* Caption = NULL, unsigned int Style=MB_OK);
+int MessageBox(const char* Text, const char* Caption = NULL, unsigned int Style=MB_OK, unsigned int def_button=0);
 void StatusMessageBox(const char* Text, const char* Caption, unsigned int Style=0, unsigned int time=5000);
 
 #define NEB_PASSWORD (MBF_EDIT_FLAGS(ES_PASSWORD|ES_CENTER|ES_MIDDLE|ES_HIDE_CURSOR))

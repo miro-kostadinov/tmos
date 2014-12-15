@@ -72,7 +72,7 @@ static const char ret_codes[] = {GO_IDOK, GO_IDRETRY, GO_IDYES, GO_IDNO, GO_IDCA
 unsigned int GMsgBox::initialize (GMessage& msg)
 {
 	LCD_MODULE* lcd = ((LCD_MODULE **)msg.lparam)[0];
-	id = ID_MB;
+	id = ID_MB_DLG;
 	rect = lcd->rect;
 	flags = GO_FLG_BORDER|GO_FLG_ENABLED|GO_FLG_SHOW|GO_FLG_SELECTED;
 
@@ -94,6 +94,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 
 	POINT_T bs = get_border_size();
 	text_metrics_t msg_size;
+    int x_offset, y_offset;
 	while(1)
 	{
 		allocate_border();
@@ -103,7 +104,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 		message_rect =client_rect;
 
 		message_rect.y0 += title_rect.height()+1; 								// title to message spacing 1 dot
-		message_rect.y1 -= (button_rect.height())?(button_rect.height()):1;								// message to buttons spacing 1 dot
+		message_rect.y1 -= (button_rect.height())?(button_rect.height()):1;		// message to buttons spacing 1 dot
 
 		int width=0;
 		int dec = message_rect.width();
@@ -119,6 +120,23 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 		{
 			rect.y1 -= message_rect.height() - (msg_size.height + font->vspacing);
 			continue;
+		}
+		else
+		{
+			if(message_rect.height() < msg_size.height)
+			{
+				flags |= GO_FLG_VSCROLL;
+				x_offset = message_rect.height();
+				if(client_rect.height() > msg_size.height)
+					message_rect.y1 = message_rect.y0 + msg_size.height;
+				else
+					message_rect.y1 = message_rect.y0 + client_rect.height();// +client_rect.y1;
+				x_offset = message_rect.height() - x_offset;
+				if(button_rect)
+				{
+					button_rect.Offset(0, x_offset);
+				}
+			}
 		}
 		if(dec > msg_size.width + 3*font->hdistance)
 			message_rect.x1 -= dec - msg_size.width - 3*font->hdistance;
@@ -138,45 +156,51 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 	if(type & MBF_CLR)
 		body.clear();
 
-
-    int x_offset, y_offset;
     x_offset = (lcd->rect.width() - rect.width())/2;
     y_offset = (lcd->rect.height() - rect.height())/2;
 
     rect.Offset(x_offset, y_offset);
     client_rect.Offset(x_offset, y_offset);
     button_rect.Offset(x_offset, y_offset);
+    if(title_rect)
+    {
+    	title_rect.x0 = rect.x0;
+    	title_rect.x1 = rect.x1;
+    	title_rect.Offset(0, y_offset);
+    	GFlags flg = GO_FLG_SHOW|GO_FLG_TRANSPARENT;
+    	if(message_rect.height() >= client_rect.height())
+    		flg |= GO_FLG_ENABLED;
+    	title_box = new GTitle(	ID_MB_TITLE, title_rect, title, NULL,
+    							flg, SS_CENTER|SS_TOP);
+    	addChild(title_box);
+    }
     if(message_rect.width() < client_rect.width())
     	x_offset += (client_rect.width() - message_rect.width())/2;
     message_rect.Offset(x_offset, y_offset);
 
     if(type & MBF_EDIT)
     {
-    	edit_box = new GEdit(ID_MB-1, message_rect, body, NULL,
+    	edit_box = new GEdit(ID_MB_TEXT_BOX, message_rect, body, NULL,
     			((bnum)?0:GO_FLG_SELECTED)|
 				 GO_FLG_BORDER|GO_FLG_VSCROLL|GO_FLG_TRANSPARENT|GO_FLG_DEFAULT,
 				 GET_MBF_EDIT_FLAGS(type),
 				font);
-    	if(edit_box)
-    	{
-			if(addChild(edit_box))
-			{
-				edit_box->shift = GET_MBF_INPUT_TYPE(type);
-			}
-			else
-			{
-				delete edit_box;
-				edit_box = NULL;
-			}
-    	}
+		if(addChild(edit_box))
+		{
+			edit_box->shift = GET_MBF_INPUT_TYPE(type);
+			text_box = edit_box;
+		}
     }
     else
-		addChild(new GText(ID_MB-1, message_rect, body, NULL,
-    			//((bnum)?0:GO_FLG_SELECTED)|
-				GO_FLG_VSCROLL|GO_FLG_TRANSPARENT|GO_FLG_DEFAULT,
-				SS_DEFAULT,
-				font));
-
+    {
+    	text_box = new GText(ID_MB_TEXT_BOX, message_rect, body, NULL,
+ 				GO_FLG_VSCROLL|GO_FLG_TRANSPARENT|GO_FLG_SHOW,SS_DEFAULT,font);
+		if(addChild( text_box ))
+		{
+			if(message_rect.height() < msg_size.height)
+				text_box->flags |= GO_FLG_ENABLED;
+		}
+    }
 	int bdistance = client_rect.width();
 
 	if ( bnum )
@@ -195,58 +219,25 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 		{
 			if(type & mask)
 			{
+				if(!default_button)
+					default_button = mask;
+
 				button_rect.x0 += bdistance;
 				button_rect.x1 = button_rect.x0 + (strlen(MB_IDS[i]) * font->hspacing) + distance;
-				addChild(new GButton(ret_codes[i], button_rect, ret_codes[i],
-						MB_IDS[i], GO_FLG_DEFAULT|GO_FLG_BORDER | ((bnum)?GO_FLG_SELECTED:0 )));
-				bnum = 0;
+				addChild(new GButton(mask/*ret_codes[i]*/, button_rect, ret_codes[i], MB_IDS[i],
+						GO_FLG_DEFAULT|GO_FLG_BORDER|GO_FLG_TRANSPARENT|
+						((default_button&mask)?GO_FLG_SELECTED:0 )));
 				button_rect.x0 += button_rect.width();
 			}
 		}
 	}
-//	else
-//		bdistance = 0;
-
-//	int distance = 4*font->hdistance + 2*bs.x;
-//	button_rect.Inflate(0,2);
-//	button_rect.Offset(0,1);
-//	for(unsigned char mask =1, i=0; mask < MBF_LAST_BTN; mask <<=1, i++)
-//	{
-//		if(type & mask)
-//		{
-//			button_rect.x0 += bdistance;
-//			button_rect.x1 = button_rect.x0 + (strlen(MB_IDS[i]) * font->hspacing) + distance;
-//			addChild(new GButton(ID_MB -(i+1), button_rect, ret_codes[i],
-//					MB_IDS[i], GO_FLG_DEFAULT|GO_FLG_BORDER | (bnum)?GO_FLG_SELECTED:0 ));
-//			bnum = 0;
-//			button_rect.x0 += button_rect.width();
-//		}
-//	}
 	weak_gui_message_beep(GET_MBF_BEEP_TYPE(type));
-	return GWindow::initialize(msg);
+	return GDialog::initialize(msg);
 }
 
 void GMsgBox::draw_this(LCD_MODULE* lcd)
 {
-	if(flags & GO_FLG_BORDER)
-		draw_border(rect);
-
-	if(title && *title)
-	{
-		RECT_T rc(client_rect);
-		client_rect = rect;
-		client_rect = GetTitleRect();
-		client_rect.x1 = rect.x1;
-		draw_border(client_rect);
-		lcd->pos_x = client_rect.x0 +font->hdistance;
-		lcd->pos_y = client_rect.y0 +font->vdistance;
-		lcd->allign = TA_CENTER;
-		lcd->font = font;
-		draw_text(lcd, title);
-		draw_poligon(client_rect, true);
-		draw_hline(client_rect.x0, client_rect.x1, client_rect.y1);
-		client_rect = rc;
-	}
+	GWindow::draw_this(lcd);
 }
 
 unsigned int GMsgBox::process_command (GMessage& msg)
@@ -254,7 +245,7 @@ unsigned int GMsgBox::process_command (GMessage& msg)
 
 	switch(msg.param)
 	{
-	case ID_MB-1:
+	case ID_MB_TEXT_BOX:
 		if(type &(MBF_LAST_BTN-1))
 			break;
 		notify_message(WM_CLOSE, GO_IDOK, this);								//closes the window
@@ -275,23 +266,238 @@ unsigned int GMsgBox::process_command (GMessage& msg)
 	return 0;
 }
 
+bool GMsgBox::SelectDefaultButton(GObject* button)
+{
+	while(button)
+	{
+		if(button->is_available() && (button->id & default_button))
+			return button->get_focus();
+		button = button->nextObj;
+	}
+	return false;
+}
+
 unsigned int GMsgBox::process_key (GMessage& msg)
 {
-	if(GDialog::process_key(msg))
+	unsigned int param;
+	unsigned int res=0;
+	GObject* tmp = focus;
+
+	if(GWindow::process_key(msg))
 		return 1;
 
-	if (msg.param == KEY_OK)
+	if( !text_box )
+		return 0;
+
+	switch (msg.param)
 	{
+	case KEY_RIGHT:
+		if(focus)
+		{
+			if(focus->rect.y1 <= rect.y1)
+			{
+				if(text_box == focus || title_box == focus)
+					break;	// It's a message or title_box, do nothing
+				if(focus != last_available()) // It's not a last button
+					res = focus_on_next();
+				if(res)
+					default_button = focus->id;
+			}
+			move(0,0);
+		}
+		break;
+
+	case KEY_DOWN:
+		if(focus)
+		{
+			if(focus->rect.y1 <= rect.y1)
+			{
+				if(focus == title_box)
+				{
+					// try to move on the text
+					res = text_box->get_focus();
+					if(!res)
+					{
+						// all text is visible, try buttons
+						res = SelectDefaultButton(text_box->nextObj);
+						if(!res)
+						{
+							// without buttons, do nothing
+							break;
+						}
+					}
+				}
+				else
+				{
+					if(text_box == focus)
+					{	// move on the buttons
+						res = SelectDefaultButton(text_box->nextObj);
+						if(!res)
+						{
+							// without buttons, try title
+							if(title_box)
+							{
+								res = title_box->get_focus();
+								if(!res)
+								{
+									// all text is visible and no buttons, scroll to title
+									focus = title_box;
+									focus->flags |= GO_FLG_ENABLED;
+									move(0,0);
+									focus->flags &= ~GO_FLG_ENABLED;
+									focus = tmp;
+									break;
+								}
+							}
+						}
+					}
+					else
+					{
+						// at buttons
+						if(title_box && title_box->rect.y0 <= rect.y0) // title not full visible
+						{
+							// try title
+							res = title_box->get_focus();
+							if(!res)
+							{
+								// all text visible and has a title
+								focus = title_box;
+								focus->flags |= GO_FLG_ENABLED;
+								move(0,0);
+								focus->flags &= ~GO_FLG_ENABLED;
+								focus = tmp;
+								break;
+							}
+						}
+						else
+						{
+							res = text_box->get_focus();
+							if(!res)
+							{
+								// all text visible and no title
+								focus = text_box;
+								focus->flags |= GO_FLG_ENABLED;
+								move(0,0);
+								focus->flags &= ~GO_FLG_ENABLED;
+								focus = tmp;
+								break;
+							}
+						}
+					}
+				}
+			}
+			move(0,0);
+		}
+		break;
+
+	case KEY_LEFT:
+		if(focus)
+		{
+			if(focus->rect.y1 <= rect.y1)
+			{
+				if(text_box == focus || title_box == focus) // It's a message, do nothing
+					break;
+				if(text_box->nextObj != focus) // It's not a first button
+					res =  focus_on_previous();
+				if(res)
+					default_button = focus->id;
+			}
+			move(0,0);
+		}
+		break;
+
+	case KEY_UP:
+		if(focus)
+		{
+			if(focus->rect.y1 <= rect.y1)
+			{
+				if(focus == title_box)
+				{
+					// at the title
+					// try to go on the buttons
+					res = SelectDefaultButton(text_box->nextObj);
+					if(!res)
+					{
+						// box without buttons.
+						res = text_box->get_focus();
+						if(!res)
+						{
+							// the whole message is visible on the screen
+							// do nothing
+							break;
+						}
+					}
+				}
+				else
+				{
+					if(focus == text_box)
+					{
+						// at the text
+						// text can be scrolled, try to select title
+						if(title_box)
+						{
+							res = title_box->get_focus();
+							if(!res)
+							{
+								// try to go on buttons
+								res = SelectDefaultButton(text_box->nextObj);
+								if(!res)
+								{
+									// box with text only
+								}
+							}
+						}
+						else
+						{
+							//box without title, we are at text. try to select buttons
+							res = SelectDefaultButton(text_box->nextObj);
+							if(!res)
+							{
+								// box with text only and all text is visible
+								break;
+							}
+						}
+					}
+					else
+					{
+						// at the button
+						res = text_box->get_focus();
+						if(!res)
+						{
+							// all text is visible
+							if(title_box)
+							{
+								// has a title, move to it
+								res = title_box->get_focus();
+								if(!res)
+								{
+									focus = title_box;
+									focus->flags |= GO_FLG_ENABLED;
+									move(0,0);
+									focus->flags &= ~GO_FLG_ENABLED;
+									focus = tmp;
+									break;
+								}
+							}
+							else
+								break;
+						}
+					}
+				}
+			}
+			move(0,0);
+		}
+		break;
+
+	case KEY_OK:
 		if (!(type & (MBF_LAST_BTN-1)) || (type & ((MBF_LAST_BTN-1))) == MBF_OK )
 		{
 			notify_message(WM_CLOSE, GO_IDOK, this);
 			return 1;
 		}
+		break;
 
-	}
-	if (msg.param == KEY_CANCEL)
-	{
-		unsigned int param;
+	case KEY_CANCEL:
 		switch((type&(MBF_LAST_BTN-1)))
 		{
 		case 0: // no buttons
@@ -309,16 +515,23 @@ unsigned int GMsgBox::process_key (GMessage& msg)
 		}
 		notify_message(WM_CLOSE, param, this);
 		return 1;
+		break;
+
+	default:
+		return 0;
 	}
-	return 0;
+
+	return res;
 }
-int MessageBox(const char* Text, const char* Caption, unsigned int Style)
+
+int MessageBox(const char* Text, const char* Caption, unsigned int Style, unsigned int def_button)
 {
 	GMsgBox box;
 	box.displays = 1;
 	box.type = Style;
 	box.body =  Text;
 	box.title = Caption;
+	box.default_button = def_button;
 	return box.DoModal();
 }
 
