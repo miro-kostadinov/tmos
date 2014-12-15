@@ -36,7 +36,10 @@ typedef struct
 	};
 } RENDER_MODE;
 
+
 extern const RENDER_MODE FNT10x21;
+extern const RENDER_MODE FNT10x14;
+extern const RENDER_MODE FNT10x12;
 extern const RENDER_MODE FNT7x9;
 extern const RENDER_MODE FNT5x7;
 
