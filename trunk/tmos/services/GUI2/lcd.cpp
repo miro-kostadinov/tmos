@@ -334,6 +334,34 @@ void LCD_MODULE::clear_rect (const RECT_T& area)
         draw_bline(area.x0, area.x1, y++);
 }
 
+void LCD_MODULE::LPtoDP(POINT_T& size, unsigned char lcd_index)
+{
+	if(dot_pitch_x > dot_pitch_y)
+	{
+		size.x *= dot_pitch_y;
+		size.x = (size.x/dot_pitch_x) + (((size.x%dot_pitch_x) >= (dot_pitch_x/2))?1:0);
+	}
+	if(dot_pitch_x < dot_pitch_y)
+	{
+		size.y *= dot_pitch_x;
+		size.y = (size.y/dot_pitch_y) + (((size.y%dot_pitch_y) >= (dot_pitch_y/2))?1:0);
+	}
+}
+
+void LCD_MODULE::DPtoLP(POINT_T& size, unsigned char lcd_index)
+{
+	if(dot_pitch_x > dot_pitch_y)
+	{
+		size.x *= dot_pitch_x;
+		size.x = (size.x/dot_pitch_y) + (((size.x%dot_pitch_y) >= (dot_pitch_y/2))?1:0);
+	}
+	if(dot_pitch_x < dot_pitch_y)
+	{
+		size.y *= dot_pitch_y;
+		size.y = (size.y/dot_pitch_x) + (((size.y%dot_pitch_x) >= (dot_pitch_x/2))?1:0);
+	}
+}
+
 bool GClientLcd::CreateLcd(RECT_T& area, LCD_MODULE* lcd)
 {
 	if(client_rect.normalize(lcd->frame))
@@ -356,3 +384,4 @@ bool GClientLcd::RelaseLcd( )
 	}
 	return false;
 }
+

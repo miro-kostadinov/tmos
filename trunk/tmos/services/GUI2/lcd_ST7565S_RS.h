@@ -14,8 +14,10 @@
 
 struct ST7565S_RS: public ST7565S
 {
-	ST7565S_RS(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p, unsigned int m):
-		ST7565S(x, y, hnd, p, m)
+	ST7565S_RS(	unsigned int x, unsigned int y,
+				unsigned int dx, unsigned int dy,
+				HANDLE hnd, const PIN_DESC* p, unsigned int m):
+		ST7565S(x, y, dx, dy, hnd, p, m)
 	{
 	}
 	;

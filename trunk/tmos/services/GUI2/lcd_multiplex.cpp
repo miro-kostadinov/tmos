@@ -22,3 +22,15 @@ void LCD_MULT::invalidate (GObject* object, RECT_T area)
 		parent = NULL;
 	}
 }
+
+void LCD_MULT::LPtoDP(POINT_T& size, unsigned char lcd_index)
+{
+	if(lcd_index < GUI_DISPLAYS)
+		lcd[lcd_index]->LPtoDP(size, lcd_index);
+}
+
+void LCD_MULT::DPtoLP(POINT_T& size, unsigned char lcd_index)
+{
+	if(lcd_index < GUI_DISPLAYS)
+		lcd[lcd_index]->DPtoLP(size, lcd_index);
+}

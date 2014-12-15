@@ -29,8 +29,10 @@ struct ST7565S: public LCD_MODULE
 	unsigned int lcd_mode;
 	unsigned char disp_buf[8][132];
 
-	ST7565S(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p, unsigned int m):
-		LCD_MODULE(x, y, hnd, p), reset_timeout(0), lcd_mode(m)
+	ST7565S(unsigned int x, unsigned int y,
+			unsigned int dx, unsigned int dy,
+			HANDLE hnd, const PIN_DESC* p, unsigned int m):
+		LCD_MODULE(x, y, dx, dy, hnd, p), reset_timeout(0), lcd_mode(m)
 	{
 	}
 	;

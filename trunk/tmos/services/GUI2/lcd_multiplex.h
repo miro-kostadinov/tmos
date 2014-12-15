@@ -17,6 +17,8 @@ struct LCD_MULT: GContainer
 	LCD_MODULE* lcd[GUI_DISPLAYS];
 
 	void invalidate (GObject* object, RECT_T area);
+	virtual void LPtoDP(POINT_T& size, unsigned char lcd_index=0);
+	virtual void DPtoLP(POINT_T& size, unsigned char lcd_index=0);
 };
 
 
