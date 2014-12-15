@@ -16,8 +16,10 @@ struct SPFD5414D: public LCD_MODULE
 	unsigned int* disp_buf;
     unsigned int video_buf[256];
 
-	SPFD5414D(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p) :
-		LCD_MODULE(x, y, hnd, p), reset_timeout(0)
+	SPFD5414D(	unsigned int x, unsigned int y,
+				unsigned int dx, unsigned int dy,
+				HANDLE hnd, const PIN_DESC* p) :
+		LCD_MODULE(x, y, dx, dy, hnd, p), reset_timeout(0)
 	{
 	}
 	;

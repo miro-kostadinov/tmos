@@ -13,8 +13,10 @@
 struct ST7735R : public SPFD5414D
 {
 
-    ST7735R(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p) :
-    	SPFD5414D(x, y, hnd, p)
+    ST7735R(unsigned int x, unsigned int y,
+    		unsigned int dx, unsigned int dy,
+    		HANDLE hnd, const PIN_DESC* p) :
+    	SPFD5414D(x, y, dx, dy, hnd, p)
 	{
 	}
 	;

@@ -49,6 +49,8 @@ struct LCD_MODULE: public GContainer
 	short pos_y; //!< current draw pos
 	unsigned short size_x;
 	unsigned short size_y;
+	unsigned short dot_pitch_x; //!< in mm x 1000
+	unsigned short dot_pitch_y; //!< in mm x 1000
 	RECT_T	frame;
 	unsigned short chars_per_row;
 	unsigned short allign;
@@ -60,8 +62,10 @@ struct LCD_MODULE: public GContainer
 	unsigned char	display;
 #endif
 
-	LCD_MODULE(unsigned int x, unsigned int y, HANDLE hnd, const PIN_DESC* p) :
-		size_x(x), size_y(y), lcd_hnd(hnd), pins(p)
+	LCD_MODULE(	unsigned int x, unsigned int y,
+				unsigned int dx, unsigned int dy,
+				HANDLE hnd, const PIN_DESC* p) :
+		size_x(x), size_y(y), dot_pitch_x(dx), dot_pitch_y(dy), lcd_hnd(hnd), pins(p)
 	{
 		rect = RECT_T (0, 0, x - 1, y - 1);
 		color = PIX_WHITE;
@@ -88,6 +92,8 @@ struct LCD_MODULE: public GContainer
 	void draw_icon (unsigned char icon);
 	const char* draw_row(const char *txt);
 	virtual void direct_write(GSplash draw_cb){};
+	virtual void LPtoDP(POINT_T& size, unsigned char lcd_index=0);
+	virtual void DPtoLP(POINT_T& size, unsigned char lcd_index=0);
 };
 
 struct GClientLcd : GObject
