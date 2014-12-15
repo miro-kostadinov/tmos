@@ -32,13 +32,17 @@ struct GDialog : GWindow
 			vscroll = NULL;
 		}
 	}
+
+	virtual void move(int x, int y);
+
 protected:
 	virtual unsigned int process_key (GMessage& msg);
 	virtual unsigned int process_default (GMessage& msg);
 	virtual unsigned int process_command(GMessage& msg);
 	virtual void draw_this (LCD_MODULE* lcd);
 	virtual unsigned int initialize (GMessage& msg);
-
+private:
+	int move_objects(int offset, int& selected_indx);
 };
 
 
