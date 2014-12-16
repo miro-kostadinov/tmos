@@ -484,6 +484,11 @@ bool GEdit::process_char(unsigned int ch)
 			last_key = 0;
 			times_pressed = 0;
 			txt.insert(ch, pos);								//inserts the new character from the key array into the string
+			if((align & ES_AUTO_SCROLL))
+			{
+				if((int)txt.length() >= client_rect.width() / text_font->hspacing)
+					text_change();
+			}
 			pos_change(+1);
 			return true;
 		}
