@@ -52,6 +52,7 @@ struct CCache
 	RES_CODE getc(char& c);
 	RES_CODE get_pc(char&c);
 	RES_CODE skip_ws();
+	RES_CODE skip_char(char c);
 	bool ungetc();
 	RES_CODE readline(CSTRING& var);
 	RES_CODE readline(CSTRING& str, unsigned int time);
