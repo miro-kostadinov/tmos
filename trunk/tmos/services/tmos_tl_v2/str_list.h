@@ -251,6 +251,7 @@ public:
 	unsigned int length() const;
 	str_storage * get_storage();
 	CSTRING& erase(unsigned int index, unsigned int count);
+	void trim_right();
 
 	unsigned int atoi() const;
 	long long atoll() const;
