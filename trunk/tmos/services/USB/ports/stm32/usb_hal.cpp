@@ -2030,7 +2030,7 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 		} else
 		{
 			//device flags
-			if(drv_info->drv_data->otg_flags & USB_OTG_FLG_DEV)
+			if(drv_info->drv_data->otg_flags )
 			{
 				usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST);
 
@@ -2428,6 +2428,8 @@ static void usb_b_gint_usbrst(USB_DRV_INFO drv_info)
 
   	/* Clear interrupt */
 	drv_info->hw_base->core_regs.GINTSTS = OTG_GINTSTS_USBRST;
+
+	usb_otg_set_flags(drv_info, USB_OTG_FLG_DEV_CON);
 
 #if USB_ENABLE_OTG
 	//Step 3. Wakeup clients..
@@ -2924,15 +2926,19 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		otg->core_regs.GINTSTS = OTG_GINTSTS_CIDSCHG;
 		status ^= OTG_GINTSTS_CIDSCHG;
 		TRACE1_USB(" CIDSCHG");
-		if((status & OTG_GINTSTS_CMOD) && (otg->core_regs.GINTMSK == OTG_GINTMSK_CIDSCHGM))
+		if(status & OTG_GINTSTS_CMOD) //host mode
 		{
 			HANDLE hnd;
 
-			usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_RST);
+			if(otg->core_regs.GINTMSK == OTG_GINTMSK_CIDSCHGM)
+			{
+				usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_RST);
+			}
 			while( (hnd=drv_data->pending) )
 			{
 				drv_data->pending = hnd->next;
-				if(hnd->src.as_voidptr == USB_CMD_OTG_CONFIG)
+				if(hnd->src.as_voidptr == USB_CMD_OTG_CONFIG &&
+						otg->core_regs.GINTMSK == OTG_GINTMSK_CIDSCHGM)
 					usr_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_OK);
 				else
 					usr_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
