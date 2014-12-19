@@ -75,7 +75,9 @@ RES_CODE usb_api_otg_config(USB_DRV_INFO drv_info, HANDLE client)
 	if(!(otg_flags & (USB_OTG_FLG_DEV_CON | USB_OTG_FLG_HOST_CON)) )
 	{
 		// Host starts here and only here!
-		res = usb_hal_host_start(drv_info);
+		if((drv_info->cfg->stm32_otg & CFG_STM32_OTG_FORCE_HOST)||
+				(drv_info->hw_base->core_regs.GINTSTS & OTG_GINTSTS_CMOD ))
+			res = usb_hal_host_start(drv_info);
 	} else
 	{
 		if(drv_data->otg_flags & USB_OTG_FLG_HOST_OK)
