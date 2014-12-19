@@ -178,6 +178,26 @@ inline ForwardIterator2 swap_ranges (ForwardIterator1 first, ForwardIterator2 la
 	return (result);
 }
 
+/*******************************************************************************
+ * 								 copy
+ ******************************************************************************/
+/// Copy copies elements from the range [first, last) to the output
+template <typename InputIterator, typename OutputIterator>
+inline OutputIterator copy (InputIterator first, InputIterator last, OutputIterator result)
+{
+    for (; first != last; ++result, ++first)
+    	*result = *first;
+    return (result);
+}
+
+/// Copy_n copies elements from the range [first, first + n) to the output
+template <typename InputIterator, typename OutputIterator>
+inline OutputIterator copy_n (InputIterator first, size_t count, OutputIterator result)
+{
+    for (; count; --count, ++result, ++first)
+	*result = *first;
+    return (result);
+}
 } // namespace ttl
 
 
