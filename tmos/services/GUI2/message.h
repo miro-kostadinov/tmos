@@ -100,6 +100,7 @@ extern GWindow* Gdesktop;
 
 void processes_all_messages(void);
 void send_message(WM_MESSAGE wm, unsigned int param, unsigned long long lparam, GObject* dst);
+void send_message(GMessage msg, GObject* dst);
 
 
 #endif /* MESSAGE_H_ */
