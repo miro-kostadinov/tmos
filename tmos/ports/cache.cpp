@@ -55,7 +55,7 @@ RES_CODE CCache::getc(char& c)
 }
 
 /**
- * Reads print character (skip white spaces) from the chached object
+ * Reads print character (skip white spaces) from the cached object
  * @param c - reference to store the character
  * @return RES_OK or error returned from load()
  */
@@ -69,7 +69,7 @@ RES_CODE CCache::get_pc(char&c)
 		if (res != RES_OK)
 			break;
 
-		if (c >= ' ')
+		if (c > ' ')
 			break;
 	}
 
@@ -101,6 +101,33 @@ RES_CODE CCache::skip_ws()
 
 	return (res);
 
+}
+
+/**
+ * Skips everything up to and including c
+ * @param c
+ * @return
+ */
+RES_CODE CCache::skip_char(char c)
+{
+	RES_CODE res;
+
+	do
+	{
+		if (pos)
+		{
+			const char* end = buf.c_str() + buf.length();
+			while (pos < end)
+			{
+				if (*pos++ == c)
+					return RES_OK;
+			}
+		}
+
+		res = load();
+	} while (res == RES_OK);
+
+	return (res);
 }
 
 /**
@@ -174,11 +201,11 @@ RES_CODE CCache::load()
 {
 	pos = NULL;
 
-	if (next.empty())
-		return RES_EOF;
-
 	buf = next;
 	next.clear();
+
+	if (buf.empty())
+		return RES_EOF;
 
 	pos = buf.c_str();
 	return RES_OK;
