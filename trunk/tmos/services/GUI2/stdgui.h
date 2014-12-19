@@ -109,6 +109,7 @@ typedef unsigned char GId;
 #define SS_MIDDLE    	TA_MIDDLE
 #define SS_BOTTOM  		TA_BOTTOM
 #define SS_WORDWRAP 	(1<<8)
+#define SS_AUTO_SCROLL	(1<<12)
 
 #define SS_DEFAULT		(SS_WORDWRAP|SS_CENTER|SS_MIDDLE)
 
