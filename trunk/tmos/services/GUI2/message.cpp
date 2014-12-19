@@ -94,3 +94,10 @@ void send_message(WM_MESSAGE wm,
 		processes_all_messages();
 }
 
+void send_message(GMessage msg, GObject* dst)
+{
+	if(dst)
+		msg.dst = dst;
+	while(!GQueue.push(msg))
+		processes_all_messages();
+}
