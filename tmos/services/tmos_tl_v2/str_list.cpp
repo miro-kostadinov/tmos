@@ -1178,7 +1178,27 @@ CSTRING& CSTRING::erase(unsigned int index, unsigned int count)
 	return (*this);
 }
 
+void CSTRING::trim_right()
+{
+	unsigned int pos;
 
+	pos = length();
+	while(pos--)
+	{
+		if(RAM_ADR(storage.adr))
+		{
+			if(storage.ram->buf[pos] != ' ')
+				break;
+		} else
+		{
+			if(!storage.adr)
+				break;
+			if(storage.rom[pos] != ' ')
+				break;
+		}
+		erase(pos, 1);
+	}
+}
 /** Convert to integer
  *
  * @return
