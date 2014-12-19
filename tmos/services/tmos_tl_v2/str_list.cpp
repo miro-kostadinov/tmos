@@ -1267,12 +1267,14 @@ unsigned int CSTRING::find_in_list(STR_LIST sl, unsigned int* dwRead) const
  */
 char& CSTRING::operator[]( unsigned int index )
 {
-	ASSERT(storage.adr);
+	if(!RAM_ADR(storage.adr))
+		reserve();
 	if(RAM_ADR(storage.adr))
 	{
 		ASSERT(index <= storage.ram->len);
 		return (storage.ram->buf[index]);
 	}
+	ASSERT(0);
 	return (dummy_char);
 }
 
