@@ -598,7 +598,7 @@ static void stm_enable_dev_int(USB_TypeDef* otg, uint32_t cfg)
 
 	/* Enable interrupts matching to the Device mode ONLY */
 	mask = OTG_GINTMSK_WUIM | OTG_GINTMSK_USBSUSPM | OTG_GINTMSK_USBRST | OTG_GINTMSK_ENUMDNEM |
-			OTG_GINTMSK_IEPINT | OTG_GINTMSK_OEPINT | OTG_GINTMSK_SOFM |
+			OTG_GINTMSK_IEPINT | OTG_GINTMSK_OEPINT | OTG_GINTMSK_SOFM | OTG_GINTMSK_CIDSCHGM |
 			OTG_GINTMSK_IISOOXFRM | OTG_GINTMSK_IISOIXFRM | OTG_GINTMSK_RXFLVLM;
 
     if(cfg & CFG_STM32_OTG_VBUS_SENS)
@@ -822,7 +822,7 @@ void usb_hal_device_start(USB_DRV_INFO drv_info)
 	stm_otg_core_init(drv_info);
 
 	// force device mode
-	stm_set_current_mode(otg, OTG_GUSBCFG_FDMOD);
+//	stm_set_current_mode(otg, OTG_GUSBCFG_FDMOD);
 
 	// init device
 	stm_otg_core_init_dev(otg, drv_info->cfg);
