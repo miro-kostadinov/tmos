@@ -12,8 +12,8 @@ SVC_STACK_SIZE = 0x0340;
  
 MEMORY
 {
-  rom (rx)   : ORIGIN = 0x00000000, LENGTH = 128k
-  ram (rwx)  : ORIGIN = 0x20000000, LENGTH = 20k
+  rom (rx)   : ORIGIN = 0x08000000, LENGTH = 64k
+  ram (rwx)  : ORIGIN = 0x20000000, LENGTH = 8k
 }
 
 /*
