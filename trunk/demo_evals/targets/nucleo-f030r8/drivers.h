@@ -48,9 +48,7 @@ typedef void (*DRV_DCR)(DRIVER_INFO drv_info, unsigned int reason, void *param);
 typedef void (*DRV_DSR)(DRIVER_INFO drv_info, HANDLE hnd);
 typedef void (*DRV_ISR)(DRIVER_INFO drv_info);
 
-//subw	r0, pc, #4
-//ldr.w	pc, [r0, #8]
-#define DRIVER_INFO_STUB  0x0004f2af, 0xf008f8d0
+
 
 
 
