@@ -133,9 +133,13 @@ struct DRIVER_INFO_Type {
 };
 
 /**
- *  Cortex M3 instructions ...?
+ *  Cortex M0 instructions ...
  */
-#define DRIVER_INFO_STUB  0x0004f2af, 0xf008f8d0
+//      	mov	r0, pc
+//      	subs	r0, #4
+//      	ldr	r1, [r0, #8]
+//      	bx	r1
+#define DRIVER_INFO_STUB  0x38044678, 0x47086881
 
 void drv_enable_isr(DRIVER_INFO drv_info);
 
