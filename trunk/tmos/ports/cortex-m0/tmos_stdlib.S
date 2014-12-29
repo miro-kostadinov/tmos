@@ -326,7 +326,7 @@ FUNC(	svc_pool_free		)						// r0    r1    r2    r3		r12
 				bls				smf_exit  //BAD ptr!
 //check next
 				subs			r0, #4
-				mov				r1,	r12
+				mov				r12, r1
 				ldrh			r1, [r0]			// ptr  size				pool
 #ifdef USE_MEMORY_TRACKING
 #if USE_TASK_REGISTERS
