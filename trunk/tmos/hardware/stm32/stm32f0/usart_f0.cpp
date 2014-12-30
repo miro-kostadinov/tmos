@@ -57,7 +57,7 @@ unsigned int set_usart_baudrate(USART_TypeDef* usart, uint32_t periph_id, uint32
 		rate =  freq /rate;
 	}
 
-	usart->USART_BRR = freq;
+	usart->USART_BRR = rate;
 
 	return 1;
 }
