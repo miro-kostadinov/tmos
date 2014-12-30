@@ -21,21 +21,21 @@ extern "C" char __BUILD_VERSION;
 //#define RF_TEST 1
 
 //----- Driver Priorities ----------------//
-#define DRV_PRIORITY_KERNEL		0x01	// OS-aware ISRs  must have lower priority (higher number)
-#define DRV_PRIORITY_UART0		0x02
-#define DRV_PRIORITY_UART1		0x02
-#define DRV_PRIORITY_UART2		0x02
-#define DRV_PRIORITY_EXTI0		0x03
-#define DRV_PRIORITY_EXTI1		0x03
-#define DRV_PRIORITY_EXTI2		0x03
-#define DRV_PRIORITY_EXTI3		0x03
-#define DRV_PRIORITY_EXTI4		0x03
-#define DRV_PRIORITY_EXTI5		0x03
-#define DRV_PRIORITY_EXTI10		0x03
-#define DRV_PRIORITY_SPI0		0x03
-#define DRV_PRIORITY_USB		0x03
-#define DRV_PRIORITY_TIMER		0x03
-#define DRV_PRIORITY_WDT		0x04
+#define DRV_PRIORITY_KERNEL		NVIC_PIORITY(0x01)	// OS-aware ISRs  must have lower priority (higher number)
+#define DRV_PRIORITY_UART0		NVIC_PIORITY(0x02)
+#define DRV_PRIORITY_UART1		NVIC_PIORITY(0x02)
+#define DRV_PRIORITY_UART2		NVIC_PIORITY(0x02)
+#define DRV_PRIORITY_EXTI0		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_EXTI1		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_EXTI2		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_EXTI3		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_EXTI4		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_EXTI5		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_EXTI10		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_SPI0		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_USB		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_TIMER		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_WDT		NVIC_PIORITY(0x04)
 
 
 
@@ -60,6 +60,7 @@ typedef void (*DRV_ISR)(DRIVER_INFO drv_info);
 extern const USART_DRIVER_MODE uart_default_mode;
 
 #define UART_TEST_DRIVER USART2_IRQn
+#define TEST_UART 1
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 GPIO DRIVER
@@ -70,8 +71,8 @@ extern const USART_DRIVER_MODE uart_default_mode;
 // Port A
 #define PIN_WAKE_UP		(PD_PA0  | PD_IN | PD_INT_BE)							//!< CN8.1	CN7.28	ADC_IN0
 #define PIN_UART2_RTS	(PD_PA1  | PD_IN)										//!< CN8.2	CN7.30	ADC_IN1
-#define PIN_UART2_TX	(PD_PA2  | PD_IN)										//!< CN9.2	CN10.35	USART2_TX
-#define PIN_UART2_RX	(PD_PA3  | PD_IN)										//!< CN9.1	CN10.37	USART2_RX
+#define PIN_UART2_TX	(PD_PA2  | PD_AF_USART2)								//!< CN9.2	CN10.35	USART2_TX
+#define PIN_UART2_RX	(PD_PA3  | PD_AF_USART2)								//!< CN9.1	CN10.37	USART2_RX
 #define PIN_SPI1_NSS	(PD_PA4  | PD_OUT | PD_ACTIVE_LOW)						//!< CN8.3	CN7.32	ADC_IN4
 #define PIN_LED			(PD_PA5  | PD_OUT | PD_ACTIVE_HIGH)						//!< CN5.6	CN10.11	SPI1_SCK
 #define PIN_SPI1_MISO	(PD_PA6  | PD_AF)										//!< CN5.5	CN10.13	SPI1_MISO
