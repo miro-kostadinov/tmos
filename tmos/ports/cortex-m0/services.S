@@ -431,9 +431,9 @@ FUNC(	sys_wait_signal		)
 				ldr				r3, =main_task
                 ldr             r2, [r3, #tsk_int_task]
 #endif
+				ldr				r3, [r3, #tsk_time]			//cur time
+				add				r1, r3
 				mov				r12, r1
-				ldr				r1, [r3, #tsk_time]			//cur time
-				add				r1, r12
 				str				r1, [r2, #tsk_time]
 
 				ldr				r1, [r2, #tsk_signal]

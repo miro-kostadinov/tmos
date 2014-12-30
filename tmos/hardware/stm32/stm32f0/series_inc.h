@@ -31,8 +31,8 @@
 
 #define __CORTEX_M                (0x00)  //!< Cortex core
 
-#define __MPU_PRESENT             0 		//!< STM32F2XX provide an MPU */
-#define __NVIC_PRIO_BITS          4 //!< STM32F2XX uses 4 Bits for the Priority Levels
+#define __MPU_PRESENT             0 	//!< STM32F0XX provide an MPU */
+#define __NVIC_PRIO_BITS          2		//!< STM32F0XX uses 2 Bits for the Priority Levels
 #define NVIC_PIORITY(priority) ((priority) << (8 - __NVIC_PRIO_BITS))
 
 /**	 @} end of addtogroup CMSIS_CM3_core_definitions	*/

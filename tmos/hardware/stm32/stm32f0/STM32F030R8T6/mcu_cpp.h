@@ -109,15 +109,15 @@
 #define ID_PERIPH_DBGMCU    ((1<<5)|22) //!< TIM 17
 
 // ------------------- index 2 ->   RCC_APB1ENR  -------------------------------
-#define ID_PERIPH_TIM3      ((4<<5)| 1) //!< TIM 3
-#define ID_PERIPH_TIM6      ((4<<5)| 4) //!< TIM 6
-#define ID_PERIPH_TIM14     ((4<<5)| 8) //!< TIM 14
-#define ID_PERIPH_WWDG      ((4<<5)|11) //!< W WDG
-#define ID_PERIPH_SPI2      ((4<<5)|14) //!< SPI 2
-#define ID_PERIPH_USART2    ((4<<5)|17) //!< USART 2
-#define ID_PERIPH_I2C1      ((4<<5)|21) //!< I2C 1
-#define ID_PERIPH_I2C2      ((4<<5)|22) //!< I2C 2
-#define ID_PERIPH_PWR       ((4<<5)|28) //!< PWR
+#define ID_PERIPH_TIM3      ((2<<5)| 1) //!< TIM 3
+#define ID_PERIPH_TIM6      ((2<<5)| 4) //!< TIM 6
+#define ID_PERIPH_TIM14     ((2<<5)| 8) //!< TIM 14
+#define ID_PERIPH_WWDG      ((2<<5)|11) //!< W WDG
+#define ID_PERIPH_SPI2      ((2<<5)|14) //!< SPI 2
+#define ID_PERIPH_USART2    ((2<<5)|17) //!< USART 2
+#define ID_PERIPH_I2C1      ((2<<5)|21) //!< I2C 1
+#define ID_PERIPH_I2C2      ((2<<5)|22) //!< I2C 2
+#define ID_PERIPH_PWR       ((2<<5)|28) //!< PWR
 
 
 #define ID_NO_PERIPH 		(255)		//!< invalid index for peripheral
