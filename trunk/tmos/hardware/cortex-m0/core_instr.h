@@ -595,7 +595,6 @@ static inline uint32_t __CLZ(uint32_t num)
 		"   subs        %1,#2           \n\t"
 		"   mov         %0,%2           \n\t"
 		"2:                             \n\t"
-		"	lsrs		%0, #1          \n\t"
 		"	subs		%0, %1, %0      \n\t"
 		".syntax divided				\n\t"
 	  : "=r" (num), "=r" (cnt), "=r" (tmp)
