@@ -23,40 +23,10 @@
 #define PD_AF6		(PD_AF | PD_MUX_AF6	)	//!< Alternative function map 6
 #define PD_AF7		(PD_AF | PD_MUX_AF7	)	//!< Alternative function map 7
 
-#define PD_AF_SYS 		PD_AF0			//!< Alternate function map for SYS
-#define PD_AF_TIM1 		PD_AF1			//!< Alternate function map for Timer 1
-#define PD_AF_TIM2 		PD_AF1			//!< Alternate function map for Timer 2
-#define PD_AF_TIM3 		PD_AF2			//!< Alternate function map for Timer 3
-#define PD_AF_TIM4 		PD_AF2			//!< Alternate function map for Timer 4
-#define PD_AF_TIM5 		PD_AF2			//!< Alternate function map for Timer 5
-#define PD_AF_TIM8 		PD_AF3			//!< Alternate function map for Timer 8
-#define PD_AF_TIM9 		PD_AF3			//!< Alternate function map for Timer 9
-#define PD_AF_TIM10		PD_AF3			//!< Alternate function map for Timer 10
-#define PD_AF_TIM11		PD_AF3			//!< Alternate function map for Timer 11
-#define PD_AF_I2C1 		PD_AF4			//!< Alternate function map for I2C1
-#define PD_AF_I2C2 		PD_AF4			//!< Alternate function map for I2C2
-#define PD_AF_I2C3 		PD_AF4			//!< Alternate function map for I2C3
-#define PD_AF_SPI1 		PD_AF5			//!< Alternate function map for SPI1
-#define PD_AF_SPI2 		PD_AF5			//!< Alternate function map for SPI2
-#define PD_AF_I2S2 		PD_AF5			//!< Alternate function map for I2S2
-#define PD_AF_SPI3 		PD_AF6			//!< Alternate function map for SPI3
-#define PD_AF_I2S3 		PD_AF6			//!< Alternate function map for I2S3
-#define PD_AF_USART1	PD_AF7			//!< Alternate function map for USART1
-#define PD_AF_USART2	PD_AF7			//!< Alternate function map for USART2
-#define PD_AF_USART3	PD_AF7			//!< Alternate function map for USART3
-#define PD_AF_USART6	PD_AF8			//!< Alternate function map for USART6
-#define PD_AF_UART4		PD_AF8			//!< Alternate function map for UART4
-#define PD_AF_UART5		PD_AF8			//!< Alternate function map for UART5
-#define PD_AF_CAN1		PD_AF9			//!< Alternate function map for CAN1
-#define PD_AF_CAN2		PD_AF9			//!< Alternate function map for CAN2
-#define PD_AF_TIM12		PD_AF9			//!< Alternate function map for Timer 12
-#define PD_AF_TIM13		PD_AF9			//!< Alternate function map for Timer 13
-#define PD_AF_TIM14 	PD_AF9			//!< Alternate function map for Timer 14
-#define PD_AF_OTG_HS	PD_AF10			//!< Alternate function map for OTG_HS
-#define PD_AF_ETH		PD_AF11			//!< Alternate function map for ETH
-#define PD_AF_FSMC		PD_AF12			//!< Alternate function map for FSMC
-#define PD_AF_SDIO		PD_AF12			//!< Alternate function map for SDIO
-#define PD_AF_DCMI		PD_AF13			//!< Alternate function map for DCMI
+#define PD_AF_SPI1 		PD_AF0			//!< Alternate function map for SPI1
+#define PD_AF_SPI2 		PD_AF0			//!< Alternate function map for SPI2
+#define PD_AF_SDIO		PD_AF0			//!< Alternate function map for SDIO
+#define PD_AF_USART2	PD_AF1			//!< Alternate function map for USART2
 
 #ifdef __cplusplus
  extern "C" {

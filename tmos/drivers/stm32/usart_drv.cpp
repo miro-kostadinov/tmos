@@ -409,7 +409,7 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 	{
 		if (status & USART_STATUS_IDLE)
 		{
-			get_usart_rdr(uart); //clear idle flag
+			clr_usart_idle(uart); //clear idle flag
 	    	if( (hnd=drv_data->hnd_rcv) )
 	    	{
 	    		if(drv_data->rx_remaining != hnd->len)
