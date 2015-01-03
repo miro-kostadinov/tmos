@@ -231,6 +231,7 @@ unsigned int set_usart_baudrate(USART_TypeDef* usart, uint32_t periph_id, uint32
 
 #define get_usart_tdr(uart) (uart->USART_TDR)	//!< transmit data register for F2
 #define get_usart_rdr(uart) (uart->USART_RDR)	//!< receive data register for F2
+#define clr_usart_idle(uart) uart->USART_ICR=USART_ICR_IDLECF	//!< clear IDLE flag
 
 #define enable_usart_drv_ints(uart, f) (uart->USART_CR1 |= (f))		//!< enable usart interrupts
 #define disable_usart_drv_ints(uart, f) (uart->USART_CR1 &= ~(f)) 	//!< disable usart interrupts
