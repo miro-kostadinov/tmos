@@ -10,6 +10,9 @@
 
 #include <series_cpp.h>
 
+#ifndef CFG_SERIES
+#error "unknown series"
+#endif
 /*******************************************************************************
  * @defgroup STD_PIO Standard PIO definitions
  * @{
