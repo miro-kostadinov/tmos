@@ -18,6 +18,8 @@
 
 #include <mcu_inc.h>
 
+#define stm32f0  0x535432f0
+#define CFG_SERIES stm32f0
 
 /**
  * @ingroup hardware_sam3s

@@ -11,10 +11,12 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-#ifdef CFG_SERIES
+#ifndef CFG_SERIES
+#error "unknown series"
+#endif
+
 #if (CFG_SERIES == stm32f0) || (CFG_SERIES == stm32f3)
 #define STM32_SPI_TYPE 03
-#endif
 #endif
 
 #ifndef STM32_SPI_TYPE
