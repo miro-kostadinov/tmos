@@ -30,6 +30,173 @@ static void svc_usb_HND_SET_STATUS(HANDLE hnd, RES_CODE result)
 #define svc_usb_HND_SET_STATUS(hnd, res) svc_HND_SET_STATUS(hnd, res)
 #endif
 
+static void stm_uDelay (uint32_t usec)
+{
+	usec ++;
+	usec *= 16;
+	while(usec--)
+		__NOP();
+}
+
+/**
+* Soft reset of the core
+*/
+static void stm_otg_core_reset(USB_TypeDef* otg)
+{
+	uint32_t count = 0;
+	uint32_t mask;
+
+	/* Wait for AHB master IDLE state. */
+	while (!(otg->core_regs.GRSTCTL & OTG_GRSTCTL_AHBIDL))
+	{
+		if (++count > 200000)
+		{
+			TRACE1_USB("otg busy!");
+			break;
+		}
+		stm_uDelay(3);
+	}
+
+	mask = otg->core_regs.GINTMSK;
+	otg->core_regs.GINTMSK = mask & ~OTG_GINTSTS_CIDSCHG;
+	/* Core Soft Reset */
+	otg->core_regs.GRSTCTL |= OTG_GRSTCTL_CSRST;
+	count = 0;
+	while (otg->core_regs.GRSTCTL & OTG_GRSTCTL_CSRST)
+	{
+		if (++count > 200000)
+		{
+			TRACE1_USB("otg rst!");
+			break;
+		}
+	}
+
+	/* Wait for 3 PHY Clocks*/
+	stm_uDelay(3);
+	otg->core_regs.GINTSTS = OTG_GINTSTS_CIDSCHG;
+	otg->core_regs.GINTMSK = mask;
+}
+
+/**
+ * First level initialization (common for host and device)
+ * @param drv_info
+ */
+static void stm_otg_core_init1(USB_DRV_INFO drv_info)
+{
+	//-- Enable USB related pins
+	PIO_Cfg_List(drv_info->cfg->usb_pins);
+
+    //-- Enable Clocking to the USB controller.
+	RCCPeripheralEnable(drv_info->info.peripheral_indx);
+	// RCCPeripheralLPEnable(drv_info->info.peripheral_indx);
+    if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_ULPI)
+	{
+		RCCPeripheralEnable(ID_PERIPH_OTGHS_ULPI);
+		// RCCPeripheralLPEnable(ID_PERIPH_OTGHS_ULPI);
+	}
+	RCCPeripheralReset(drv_info->info.peripheral_indx);
+
+	//-- Enable common interrupts
+	drv_info->hw_base->core_regs.GINTSTS = -1u; //debug
+	drv_enable_isr(&drv_info->info);
+}
+
+/**
+ * Second level initialization (common for host and device)
+ * @param drv_info
+ */
+static void stm_otg_core_init2(USB_DRV_INFO drv_info)
+{
+	uint32_t old_reg, new_reg, cfg;
+	USB_TypeDef* hw_base = drv_info->hw_base;
+
+	// disable global ints
+	hw_base->core_regs.GAHBCFG &= ~OTG_GAHBCFG_GINTMSK;
+
+	cfg = drv_info->cfg->stm32_otg;
+
+	//--- change phy
+	old_reg = hw_base->core_regs.GUSBCFG;
+    if(cfg & CFG_STM32_OTG_ULPI)
+    {
+    	// power down the phy
+       	hw_base->core_regs.GCCFG &= ~(OTG_GCCFG_PWRDWN);
+		new_reg = old_reg & ~(OTG_GUSBCFG_TSDPS | OTG_GUSBCFG_ULPIFSLS | OTG_GUSBCFG_PHYSEL);
+		new_reg |= OTG_GUSBCFG_PHYSEL_ULPI;
+    }
+    else
+    	new_reg = old_reg | OTG_GUSBCFG_PHYSEL_FSSER;
+    if(old_reg != new_reg)
+    {
+    	TRACE1_USB(" phy change");
+
+        hw_base->core_regs.GUSBCFG = new_reg;
+
+        //--- Reset after a PHY select
+    	stm_otg_core_reset(hw_base);
+
+    }
+	//--- general core configuration register (GCCFG)
+    if(!(cfg & CFG_STM32_OTG_ULPI))
+    	hw_base->core_regs.GCCFG = OTG_GCCFG_PWRDWN;
+
+	// CIDSCHG is set on powerup or after phy change, we do not need it now...
+	hw_base->core_regs.GINTSTS = OTG_GINTSTS_CIDSCHG;
+
+	hw_base->core_regs.GINTMSK = OTG_GINTMSK_WUIM | OTG_GINTMSK_CIDSCHGM |
+			OTG_GINTMSK_RXFLVLM | OTG_GINTMSK_OTGINT | OTG_GINTMSK_SRQIM;
+
+	// enable global ints
+	hw_base->core_regs.GAHBCFG |= OTG_GAHBCFG_GINTMSK;
+
+
+	//--- USB configuration register (GUSBCFG)
+	// TRDT = 4 x AHB clock frequency+ 1 PHY clock frequency (it will be updated after enumeration?)
+	new_reg = hw_base->core_regs.GUSBCFG;
+	new_reg &= ~(OTG_GUSBCFG_TRDT_Msk | OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_FHMOD |
+			OTG_GUSBCFG_HNPCAP | OTG_GUSBCFG_SRPCAP);
+	new_reg |= OTG_GUSBCFG_TRDT(11);
+
+	if (cfg & CFG_STM32_OTG_FORCE_DEVICE)
+		new_reg |= OTG_GUSBCFG_FDMOD;
+
+    if (cfg & CFG_STM32_OTG_FORCE_HOST)
+    	new_reg |= OTG_GUSBCFG_FHMOD;
+
+
+	if(cfg & CFG_STM32_OTG_INTERNAL_VBUS)
+		new_reg &= ~(OTG_GUSBCFG_ULPIEVBUSD | OTG_GUSBCFG_ULPIEVBUSI); /* Use internal VBUS */
+	else
+		new_reg |= OTG_GUSBCFG_ULPIEVBUSD | OTG_GUSBCFG_ULPIEVBUSI;  /* Use external VBUS */
+
+
+    hw_base->core_regs.GUSBCFG = new_reg;
+
+	// Restart the Phy Clock
+    hw_base->PCGCCTL = 0;
+
+
+}
+
+static void stm_otg_core_init3(USB_DRV_INFO drv_info)
+{
+	uint32_t reg, cfg;
+
+	cfg = drv_info->cfg->stm32_otg;
+
+	// Enable pull-up (start device)
+	if (cfg & CFG_STM32_OTG_VBUS_SENS)
+		reg = OTG_GCCFG_PWRDWN | OTG_GCCFG_VBUSBSEN /*| OTG_GCCFG_VBUSASEN*/;
+	else
+		reg = OTG_GCCFG_PWRDWN | OTG_GCCFG_NOVBUSSENS;
+
+	if (cfg & CFG_STM32_OTG_SOF_OUTPUT)
+	{
+		reg |= OTG_GCCFG_SOFOUTEN;
+	}
+	drv_info->hw_base->core_regs.GCCFG = reg;
+}
+
 /**
  * Reads a packet from the Rx FIFO
  * @param drv_info
@@ -197,48 +364,6 @@ static bool stm_read_payload(USB_DRV_INFO drv_info,	uint32_t status)
 	return true;
 }
 
-static void stm_uDelay (uint32_t usec)
-{
-	usec ++;
-	usec *= 16;
-	while(usec--)
-		__NOP();
-}
-
-/**
-* Soft reset of the core
-*/
-static void stm_otg_core_reset(USB_TypeDef* otg)
-{
-	uint32_t count = 0;
-
-	/* Wait for AHB master IDLE state. */
-	while (!(otg->core_regs.GRSTCTL & OTG_GRSTCTL_AHBIDL))
-	{
-		if (++count > 200000)
-		{
-			TRACE1_USB("otg busy!");
-			break;
-		}
-		stm_uDelay(3);
-	}
-
-	/* Core Soft Reset */
-	otg->core_regs.GRSTCTL |= OTG_GRSTCTL_CSRST;
-	count = 0;
-	while (otg->core_regs.GRSTCTL & OTG_GRSTCTL_CSRST)
-	{
-		if (++count > 200000)
-		{
-			TRACE1_USB("otg rst!");
-			break;
-		}
-	}
-
-	/* Wait for 3 PHY Clocks*/
-	stm_uDelay(3);
-}
-
 /** Flush a Tx FIFO
  *
  * @param otg
@@ -355,95 +480,6 @@ static void stm_write_payload(USB_DRV_INFO drv_info, uint32_t ept_indx)
 	drv_info->hw_base->device_regs.DIEPEMPMSK &= ~OTG_DIEPEMPMSK_INEPTXFEM(ept_indx);
 }
 
-static void stm_otg_core_init(USB_DRV_INFO drv_info)
-{
-	uint32_t reg, cfg = drv_info->cfg->stm32_otg;
-	USB_TypeDef* hw_base = drv_info->hw_base;
-
-
-	//-- Enable USB related pins
-	PIO_Cfg_List(drv_info->cfg->usb_pins);
-
-    //-- Enable Clocking to the USB controller.
-	RCCPeripheralEnable(drv_info->info.peripheral_indx);
-    if(cfg & CFG_STM32_OTG_ULPI)
-	{
-		RCCPeripheralEnable(ID_PERIPH_OTGHS_ULPI);
-	}
-	RCCPeripheralReset(drv_info->info.peripheral_indx);
-
-	drv_enable_isr(&drv_info->info);
-
-	// disable global interrupts
-	hw_base->core_regs.GAHBCFG &= ~OTG_GAHBCFG_GINTMSK;
-
-	//--- change phy
-	reg = hw_base->core_regs.GUSBCFG & ~OTG_GUSBCFG_PHYSEL;
-    if(cfg & CFG_STM32_OTG_ULPI)
-		reg |= OTG_GUSBCFG_PHYSEL_ULPI;
-    else
-    	reg |= OTG_GUSBCFG_PHYSEL_FSSER;
-    hw_base->core_regs.GUSBCFG = reg;
-
-    //--- Reset after a PHY select
-	stm_otg_core_reset(hw_base);
-
-	//--- general core configuration register (GCCFG)
-	if (cfg & CFG_STM32_OTG_VBUS_SENS)
-		reg = OTG_GCCFG_PWRDWN | OTG_GCCFG_VBUSBSEN | OTG_GCCFG_VBUSASEN;
-	else
-		reg = OTG_GCCFG_PWRDWN | OTG_GCCFG_NOVBUSSENS;
-
-    if (cfg & CFG_STM32_OTG_SOF_OUTPUT)
-    {
-		reg |= OTG_GCCFG_SOFOUTEN;
-    }
-    hw_base->core_regs.GCCFG = reg;
-
-	//--- USB configuration register (GUSBCFG)
-	// TRDT = 4 x AHB clock frequency+ 1 PHY clock frequency (it will be updated after enumeration?)
-	reg = hw_base->core_regs.GUSBCFG;
-	reg &= ~(OTG_GUSBCFG_TRDT_Msk | OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_FHMOD |
-			OTG_GUSBCFG_HNPCAP | OTG_GUSBCFG_SRPCAP);
-	reg |= OTG_GUSBCFG_TRDT(11);
-
-	if (cfg & CFG_STM32_OTG_FORCE_DEVICE)
-		reg |= OTG_GUSBCFG_FDMOD;
-
-    if (cfg & CFG_STM32_OTG_FORCE_HOST)
-		reg |= OTG_GUSBCFG_FHMOD;
-
-
-	if(cfg & CFG_STM32_OTG_INTERNAL_VBUS)
-		reg &= ~(OTG_GUSBCFG_ULPIEVBUSD | OTG_GUSBCFG_ULPIEVBUSI); /* Use internal VBUS */
-	else
-		reg |= OTG_GUSBCFG_ULPIEVBUSD | OTG_GUSBCFG_ULPIEVBUSI;  /* Use external VBUS */
-
-    if( cfg & CFG_STM32_OTG_MODE)
-    {
-    	reg |= OTG_GUSBCFG_HNPCAP | OTG_GUSBCFG_SRPCAP;
-    }
-
-    hw_base->core_regs.GUSBCFG = reg;
-
-}
-
-/**
- *
- * @param otg
- * @param mode - select OTG_GUSBCFG_FDMOD or OTG_GUSBCFG_FHMOD
- */
-static void stm_set_current_mode(USB_CONTROLLER* otg , uint32_t mode)
-{
-	uint32_t reg;
-
-	reg = otg->core_regs.GUSBCFG;
-	reg &= ~(OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_FHMOD);
-	otg->core_regs.GUSBCFG = reg | mode;
-
-	tsk_sleep(50);
-}
-
 static void stm_start_tx(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptnum, ep_dir_state_t* epdir)
 {
 	uint32_t reg;
@@ -538,92 +574,21 @@ static void stm_start_rx(USB_DRV_INFO drv_info, uint32_t ept_indx, Endpoint *end
 	}
 }
 
-/** Initializes the common interrupts, used in both device and modes
- *
- * @param otg
- * @param cfg
- */
-static void stm_enable_common_int(USB_TypeDef* otg, uint32_t cfg)
-{
-	uint32_t mask;
-
-	/* Clear any pending USB_OTG Interrupts */
-    if( cfg & CFG_STM32_OTG_MODE)
-    {
-    	otg->core_regs.GOTGINT = 0xFFFFFFFF;
-    }
-
-    /* Clear any pending interrupts */
-	otg->core_regs.GINTSTS = 0xBFFFFFFF;
-
-	mask = OTG_GINTMSK_WUIM | OTG_GINTMSK_USBSUSPM;
-    if( cfg & CFG_STM32_OTG_MODE)
-    {
-    	mask |= OTG_GINTMSK_OTGINT | OTG_GINTMSK_SRQIM | OTG_GINTMSK_CIDSCHGM;
-    }
-	otg->core_regs.GINTMSK = mask;
-}
-
-/** USB_OTG_InitDevSpeed :Initializes the DevSpd field of DCFG register
- * 	depending the PHY type and the enumeration speed of the device.
- * @param otg
- * @param speed = OTG_DCFG_DSPD_HS or OTG_DCFG_DSPD_HS_FS or OTG_DCFG_DSPD_FS11
- */
-static void stm_init_dev_speed(USB_TypeDef* otg, uint32_t speed)
-{
-	uint32_t reg;
-
-	reg = otg->device_regs.DCFG;
-	reg &= ~OTG_DCFG_DSPD_Msk;
-	otg->device_regs.DCFG = reg | speed;
-}
-
-/**
- * Enables the Device mode interrupts
- * @param otg
- * @param cfg
- */
-static void stm_enable_dev_int(USB_TypeDef* otg, uint32_t cfg)
-{
-	uint32_t mask;
-
-	/* Disable all interrupts. */
-	otg->core_regs.GINTMSK = 0;
-
-	/* Clear any pending interrupts */
-	otg->core_regs.GINTSTS = 0xBFFFFFFF;
-
-	/* Enable the common interrupts */
-	stm_enable_common_int(otg, cfg);
-
-	/* Enable interrupts matching to the Device mode ONLY */
-	mask = OTG_GINTMSK_WUIM | OTG_GINTMSK_USBSUSPM | OTG_GINTMSK_USBRST | OTG_GINTMSK_ENUMDNEM |
-			OTG_GINTMSK_IEPINT | OTG_GINTMSK_OEPINT | OTG_GINTMSK_SOFM | OTG_GINTMSK_CIDSCHGM |
-			OTG_GINTMSK_IISOOXFRM | OTG_GINTMSK_IISOIXFRM | OTG_GINTMSK_RXFLVLM;
-
-    if(cfg & CFG_STM32_OTG_VBUS_SENS)
-    	mask |= OTG_GINTMSK_SRQIM | OTG_GINTMSK_OTGINT;
-
-	otg->core_regs.GINTMSK = mask;
-}
-
-
-
 static void stm_otg_core_init_dev(USB_TypeDef* otg, const usb_config_t* cfg)
 {
 	uint32_t reg, adr;
 	uint32_t dev_endpoints;
 
-	/* Restart the Phy Clock */
-	otg->PCGCCTL = 0;
+	TRACELN1_USB("dev init");
 
 	/* Device configuration register */
 	reg = otg->device_regs.DCFG;
-	reg &= ~OTG_DCFG_PFIVL_Msk;
+	reg &= ~(OTG_DCFG_PFIVL_Msk | OTG_DCFG_DAD_Msk);
 	reg |= OTG_DCFG_PFIVL_80;
 	otg->device_regs.DCFG = reg;
 
 
+	// Device speed
 	if(cfg->stm32_otg & CFG_STM32_OTG_HS_CORE)
 	{
 		// HS core
@@ -631,11 +596,11 @@ static void stm_otg_core_init_dev(USB_TypeDef* otg, const usb_config_t* cfg)
 		/* Set High speed phy */
 		if(cfg->stm32_otg & CFG_STM32_OTG_ULPI)
 		{
-			stm_init_dev_speed(otg, OTG_DCFG_DSPD_HS);
+			reg = OTG_DCFG_DSPD_HS;
 		}
 		else /* set High speed phy in Full speed mode */
 		{
-			stm_init_dev_speed(otg, OTG_DCFG_DSPD_FS11);
+			reg =  OTG_DCFG_DSPD_FS11;
 		}
 
 	    dev_endpoints    = 6-1;
@@ -643,10 +608,12 @@ static void stm_otg_core_init_dev(USB_TypeDef* otg, const usb_config_t* cfg)
 	{
 		// FS core
 		/* Set Full speed phy */
-		stm_init_dev_speed(otg, OTG_DCFG_DSPD_FS11);
+		reg =  OTG_DCFG_DSPD_FS11;
 
 	    dev_endpoints    = 4-1;
 	}
+	reg |= otg->device_regs.DCFG & ~OTG_DCFG_DSPD_Msk;
+	otg->device_regs.DCFG = reg;
 
 	adr = cfg->rx_fifo_sz;
 	/* set Rx FIFO size */
@@ -706,7 +673,15 @@ static void stm_otg_core_init_dev(USB_TypeDef* otg, const usb_config_t* cfg)
 	otg->device_regs.DOUTEP1MSK = OTG_DOEPMSK_BOIM | OTG_DOEPMSK_OPEM |
 			OTG_DOEPMSK_B2BSTUP | OTG_DOEPMSK_EPDM;
 #endif
-	stm_enable_dev_int(otg, cfg->stm32_otg);
+
+	/* Enable interrupts matching to the Device mode ONLY */
+	otg->core_regs.GINTSTS = OTG_GINTSTS_USBRST;
+	otg->core_regs.GINTMSK |= OTG_GINTMSK_USBSUSPM | OTG_GINTMSK_USBRST	|
+			OTG_GINTMSK_ENUMDNEM |	OTG_GINTMSK_IEPINT | OTG_GINTMSK_OEPINT |
+			OTG_GINTMSK_SOFM | OTG_GINTMSK_IISOOXFRM | OTG_GINTMSK_IISOIXFRM;
+
+	TRACELN1_USB("dev init done");
+
 }
 
 static void stm_ept_config(USB_DRV_INFO drv_info, uint32_t ept_num,
@@ -819,18 +794,12 @@ void usb_hal_device_start(USB_DRV_INFO drv_info)
 	USB_CONTROLLER* otg = drv_info->hw_base;
 
 	// init core
-	stm_otg_core_init(drv_info);
-
-	// force device mode
-//	stm_set_current_mode(otg, OTG_GUSBCFG_FDMOD);
+	stm_otg_core_init1(drv_info);
+	stm_otg_core_init2(drv_info);
 
 	// init device
 	stm_otg_core_init_dev(otg, drv_info->cfg);
-
-	// enable global ints
-	otg->core_regs.GAHBCFG |= OTG_GAHBCFG_GINTMSK;
-
-	drv_enable_isr(&drv_info->info);
+	stm_otg_core_init3(drv_info);
 }
 
 /**
@@ -864,121 +833,92 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
 
 #endif // USB_ENABLE_DEVICE
 
+/**
+ * USB starts with USB_CMD_DEVICE_CONFIG or USB_CMD_OTG_CONFIG and we get here
+ *
+ * Common low level initialization is called and then if the current mode does
+ * not match the requested RES_IDLE is returned and the client will wait for
+ * (CIDSCHGM, ...)
+ *
+ * Device:
+ *  - on bus reset
+ *  	reset endpoints
+ *  	cfg endpoints
+ *  	|= USB_OTG_FLG_DEV_CON | USB_OTG_FLG_DEV_OK
+ *  	restart pending
+ *
+ * Host:
+ *
+ *
+ * @param drv_info
+ * @param mode
+ * @return
+ */
+RES_CODE usb_hal_start(USB_DRV_INFO drv_info, uint32_t mode)
+{
+	RES_CODE res;
+	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+	USB_TypeDef* hw_base = drv_info->hw_base;
+
+	if( drv_data->otg_flags & mode )
+	{
+		res = RES_SIG_OK;
+	} else
+	{
+		// The mode we need is not active
+		res = RES_IDLE;
+		if ( !(drv_data->otg_flags & (USB_OTG_FLG_DEV | USB_OTG_FLG_HOST)) )
+		{
+			// otg peripheral is idle
+
+			// low level reset now
+			TRACE_USB_NAME(drv_info);
+			TRACE1_USB(" Init");
+
+			stm_otg_core_init1(drv_info);
+			stm_otg_core_init2(drv_info);
+
+			//wait resets and phy/clk changes to take effect and CMOD get set
+			tsk_sleep(250);
+
+			// check if the mode matches
+#if USB_ENABLE_DEVICE
+			if(mode == USB_OTG_FLG_DEV)
+			{
+				// check if we can continue as device
+				if( !(hw_base->core_regs.GINTSTS & OTG_GINTSTS_CMOD))
+				{
+					stm_otg_core_init_dev(hw_base, drv_info->cfg);
+					stm_otg_core_init3(drv_info);
+					drv_data->otg_flags |= USB_OTG_FLG_DEV;
+					res = RES_SIG_OK;
+				}
+			} else
+#endif
+			{
+#if USB_ENABLE_HOST
+				// check if we can continue as host
+				if(hw_base->core_regs.GINTSTS & OTG_GINTSTS_CMOD)
+				{
+					drv_data->otg_flags |= USB_OTG_FLG_HOST;
+					res = usb_hal_host_start(drv_info);
+				}
+#endif
+			}
+			TRACE_USB_NAME(drv_info);
+			TRACE1_USB(" Init done");
+
+		}
+	}
+
+	return res;
+}
+
+
 //------------------------------------------------------------------------------
 //						HOST related functions
 //------------------------------------------------------------------------------
 #if USB_ENABLE_HOST
-static void stm_otg_core_init1(USB_DRV_INFO drv_info)
-{
-	//-- Enable USB related pins
-	PIO_Cfg_List(drv_info->cfg->usb_pins);
-
-    //-- Enable Clocking to the USB controller.
-	RCCPeripheralEnable(drv_info->info.peripheral_indx);
-	// RCCPeripheralLPEnable(drv_info->info.peripheral_indx);
-    if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_ULPI)
-	{
-		RCCPeripheralEnable(ID_PERIPH_OTGHS_ULPI);
-		// RCCPeripheralLPEnable(ID_PERIPH_OTGHS_ULPI);
-	}
-	RCCPeripheralReset(drv_info->info.peripheral_indx);
-
-	drv_enable_isr(&drv_info->info);
-
-}
-
-static void stm_otg_core_init2(USB_DRV_INFO drv_info)
-{
-	uint32_t old_reg, new_reg, cfg = drv_info->cfg->stm32_otg;
-	USB_TypeDef* hw_base = drv_info->hw_base;
-
-
-	// disable global interrupts
-	hw_base->core_regs.GAHBCFG &= ~OTG_GAHBCFG_GINTMSK;
-
-	//--- change phy ?
-	old_reg = hw_base->core_regs.GUSBCFG;
-	new_reg = old_reg & ~OTG_GUSBCFG_PHYSEL;
-    if(cfg & CFG_STM32_OTG_ULPI)
-		new_reg |= OTG_GUSBCFG_PHYSEL_ULPI;
-    else
-    	new_reg |= OTG_GUSBCFG_PHYSEL_FSSER;
-    if(old_reg != new_reg)
-    {
-    	TRACE1_USB(" phy change");
-        hw_base->core_regs.GUSBCFG = new_reg;
-
-        //--- Reset after a PHY select
-    	stm_otg_core_reset(hw_base);
-    }
-
-
-	//--- general core configuration register (GCCFG)
-	if (cfg & CFG_STM32_OTG_VBUS_SENS)
-		new_reg = OTG_GCCFG_PWRDWN | OTG_GCCFG_VBUSBSEN | OTG_GCCFG_VBUSASEN;
-	else
-		new_reg = OTG_GCCFG_PWRDWN | OTG_GCCFG_NOVBUSSENS;
-
-    if (cfg & CFG_STM32_OTG_SOF_OUTPUT)
-    {
-		new_reg |= OTG_GCCFG_SOFOUTEN;
-    }
-    hw_base->core_regs.GCCFG = new_reg;
-
-	//--- USB configuration register (GUSBCFG)
-	// TRDT = 4 x AHB clock frequency+ 1 PHY clock frequency (it will be updated after enumeration?)
-	new_reg = hw_base->core_regs.GUSBCFG;
-	new_reg &= ~(OTG_GUSBCFG_TRDT_Msk | OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_FHMOD |
-			OTG_GUSBCFG_HNPCAP | OTG_GUSBCFG_SRPCAP);
-	new_reg |= OTG_GUSBCFG_TRDT(11);
-
-	if (cfg & CFG_STM32_OTG_FORCE_DEVICE)
-		new_reg |= OTG_GUSBCFG_FDMOD;
-
-    if (cfg & CFG_STM32_OTG_FORCE_HOST)
-    	new_reg |= OTG_GUSBCFG_FHMOD;
-
-
-	if(cfg & CFG_STM32_OTG_INTERNAL_VBUS)
-		new_reg &= ~(OTG_GUSBCFG_ULPIEVBUSD | OTG_GUSBCFG_ULPIEVBUSI); /* Use internal VBUS */
-	else
-		new_reg |= OTG_GUSBCFG_ULPIEVBUSD | OTG_GUSBCFG_ULPIEVBUSI;  /* Use external VBUS */
-
-    if( cfg & CFG_STM32_OTG_MODE)
-    {
-    	new_reg |= OTG_GUSBCFG_HNPCAP | OTG_GUSBCFG_SRPCAP;
-    }
-
-    hw_base->core_regs.GUSBCFG = new_reg;
-
-	hw_base->core_regs.GAHBCFG |= OTG_GAHBCFG_GINTMSK;
-}
-
-static bool stm_set_host_mode(USB_DRV_INFO drv_info)
-{
-	USB_TypeDef* hw_base = drv_info->hw_base;
-
-	stm_otg_core_init2(drv_info);
-
-	//wait for host mode...
-	for(int tout=0; tout<2500; tout++)
-	{
-		if(hw_base->core_regs.GINTSTS & OTG_GINTSTS_CMOD)
-		{
-			if(tout >10)
-				TRACE_USB(" hmode(%u)", tout);
-			return true;
-		}
-		tsk_sleep(1);
-	}
-
-	TRACE1_USB(" wait ID");
-	// enable only CIDSCHGM and wait it before
-	hw_base->core_regs.GINTMSK = OTG_GINTMSK_CIDSCHGM;
-	return false;
-
-}
-
 void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pDescriptor)
 {
 	uint32_t ept_indx;
@@ -1057,67 +997,100 @@ void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pD
 	epdir->epd_type = ept_type;
 }
 
-static bool stm_host_phy_clock(USB_DRV_INFO drv_info, uint32_t clk)
+static void stm_otg_core_init_host(USB_DRV_INFO drv_info)
 {
 	USB_TypeDef* otg = drv_info->hw_base;
-
-	while((otg->host_regs.HCFG & OTG_HCFG_FSLSPCS_Msk) != clk)
-	{
-		// disable global interrupts
-		otg->core_regs.GAHBCFG &= ~OTG_GAHBCFG_GINTMSK;
-
-		TRACE_USB(" phy_clk=%x", clk);
-
-		//change phy clock
-		otg->host_regs.HCFG = (otg->host_regs.HCFG & ~OTG_HCFG_FSLSPCS_Msk) | clk;
-
-		//reset
-    	stm_otg_core_reset(otg);
-
-    	if(!stm_set_host_mode(drv_info))
-    		return false;
-	}
-
-
-	// enable all
-	otg->core_regs.GINTMSK = OTG_GINTMSK_WUIM | OTG_GINTMSK_SRQIM | OTG_GINTMSK_DISCINT
-		| OTG_GINTMSK_CIDSCHGM | OTG_GINTMSK_HCIM | OTG_GINTMSK_PRTIM |	OTG_GINTMSK_IPXFRM
-		| OTG_GINTMSK_RXFLVLM | OTG_GINTMSK_SOFM | OTG_GINTMSK_OTGINT | OTG_GINTMSK_MMISM;
-
-	// Restart the Phy Clock
-	otg->PCGCCTL = 0;
-	return true;
-}
-
-static void stm_otg_core_init_host(USB_DRV_INFO drv_info, uint32_t clk)
-{
-	USB_TypeDef* otg = drv_info->hw_base;
+	uint32_t port_config, port_status, new_phy_clk;
 
 	// request session now
 	TRACE_USB_NAME(drv_info);
 	TRACE1_USB(" init host");
 
-	if(stm_host_phy_clock(drv_info, clk))
+	// enable host specific interrupts
+	otg->core_regs.GINTMSK |= OTG_GINTMSK_WUIM | OTG_GINTMSK_SRQIM | OTG_GINTMSK_DISCINT
+		| OTG_GINTMSK_CIDSCHGM | OTG_GINTMSK_HCIM | OTG_GINTMSK_PRTIM |	OTG_GINTMSK_IPXFRM
+		| OTG_GINTMSK_RXFLVLM | OTG_GINTMSK_SOFM | OTG_GINTMSK_OTGINT | OTG_GINTMSK_MMISM;
+
+	/* Enable VBUS driving */
+	usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_PWR);
+
+
+	// Enable VBUS sensing
+	port_config = drv_info->cfg->stm32_otg;
+	if (port_config & CFG_STM32_OTG_VBUS_SENS)
+		port_status = OTG_GCCFG_PWRDWN | OTG_GCCFG_VBUSASEN;
+	else
+		port_status = OTG_GCCFG_PWRDWN | OTG_GCCFG_NOVBUSSENS;
+
+	if (port_config & CFG_STM32_OTG_SOF_OUTPUT)
 	{
-		// Flush the FIFOs are flushed.
-		stm_flush_tx_fifo(otg, 0x10);
-		stm_flush_rx_fifo(otg);
-
-		// Clear all HC Interrupts
-		for (int i = 0; i < OTG_MAX_FIFOS; i++)
-		{
-			otg->HC_REGS[i].HCDMA = -1u;
-			otg->HC_REGS[i].HCINTMSK = 0;
-		}
-
-		// set Rx FIFO size
-		otg->core_regs.GRXFSIZ = 0x80;
-		otg->core_regs.DIEPTXF0_HNPTXFSIZ = OTG_HNPTXFSIZ_NPTXFD(0x60) | 0x80;
-		otg->core_regs.HPTXFSIZ			  = OTG_HPTXFSIZ_PTXFD(0x40)   | (0x80+0x60);
-
-		/* Enable VBUS driving */
-		usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_PWR);
+		port_status |= OTG_GCCFG_SOFOUTEN;
 	}
+	drv_info->hw_base->core_regs.GCCFG = port_status;
+
+	// reset devices
+	for(int i=0; i<= MAX_HUB_PORTS; i++)
+	{
+		usb_hub_port_t* port;
+
+		port = &drv_info->drv_data->usb_hub[i];
+		port->dev_adress = 0;
+		port->dev_interface = 0;
+	}
+
+	// if port is enabled check if phy clock speed is OK
+	port_status = otg->HPRT;
+	port_config = otg->host_regs.HCFG;
+	new_phy_clk = 0;
+	if( (port_status & OTG_HPRT_PSPD_Msk) == OTG_HPRT_PSPD_LS)
+	{
+		// Set the Host Frame Interval Register for the 6KHz speed
+		otg->host_regs.HFIR = 6000;
+
+		// Are we switching from FS to LS?
+		if((port_config & OTG_HCFG_FSLSPCS_Msk) != OTG_HCFG_FSLSPCS_6)
+		{
+			// configure for LS
+			new_phy_clk = OTG_HCFG_FSLSPCS_6;
+		}
+		TRACE1_USB(" LOW_SPEED");
+	} else
+	{
+		otg->host_regs.HFIR = 48000;
+
+		// Are we switching from LS to FS?
+
+		if((port_config & OTG_HCFG_FSLSPCS_Msk) != OTG_HCFG_FSLSPCS_48)
+		{
+			// configure for FS
+			new_phy_clk = OTG_HCFG_FSLSPCS_48;
+		}
+		TRACE1_USB(" FULL_SPEED");
+	}
+
+	if(new_phy_clk)
+	{
+		TRACE_USB(" phy_clk=%x", new_phy_clk);
+
+		//change phy clock
+		otg->host_regs.HCFG = (port_config & ~OTG_HCFG_FSLSPCS_Msk) | new_phy_clk;
+	}
+
+	// Flush the FIFOs are flushed.
+	stm_flush_tx_fifo(otg, 0x10);
+	stm_flush_rx_fifo(otg);
+
+	// Clear all HC Interrupts
+	for (int i = 0; i < OTG_MAX_FIFOS; i++)
+	{
+		otg->HC_REGS[i].HCDMA = -1u;
+		otg->HC_REGS[i].HCINTMSK = 0;
+	}
+
+	// set Rx FIFO size
+	otg->core_regs.GRXFSIZ = 0x80;
+	otg->core_regs.DIEPTXF0_HNPTXFSIZ = OTG_HNPTXFSIZ_NPTXFD(0x60) | 0x80;
+	otg->core_regs.HPTXFSIZ			  = OTG_HPTXFSIZ_PTXFD(0x40)   | (0x80+0x60);
 
 }
 
@@ -1345,9 +1318,10 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 void usb_drv_reset(USB_DRV_INFO drv_info)
 {
 	TRACE_USB_NAME(drv_info);
-	TRACE1_USB(" Init");
+	TRACE1_USB(" Rst");
     //set priority
     NVIC->NVIC_IPR[drv_info->info.drv_index] = drv_info->info.isr_priority;
+    NVIC->NVIC_ICER[drv_info->info.drv_index >> 5] = 1 << (drv_info->info.drv_index & 0x1F);
 	if(drv_info->info.peripheral_indx != ID_NO_PERIPH)
 	{
     	Task* task;
@@ -1426,7 +1400,7 @@ void usb_drv_start_tx(USB_DRV_INFO drv_info, HANDLE hnd)
     {
 	    if (epdir->epd_state != ENDPOINT_STATE_IDLE)
 	    {
-			svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
+			svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
 	    } else
 	    {
 	    	epdir->epd_state = ENDPOINT_STATE_SENDING;
@@ -1512,35 +1486,41 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
 	} else
 	{
-		HANDLE prev;
+	    if (endpoint->epd_out.epd_state == ENDPOINT_STATE_DISABLED)
+	    {
+			svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+	    } else
+	    {
+			HANDLE prev;
 
-		if( (prev=endpoint->epd_out.epd_pending) )	//receiving
-		{
-			while(prev->next)
-				prev = prev->next;
-			prev->next = hnd;
-		} else
-		{
-			endpoint->epd_out.epd_pending = hnd;	//receiving
-#if USB_ENABLE_HOST
-			//host mode?
-			if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
+			if( (prev=endpoint->epd_out.epd_pending) )	//receiving
 			{
-				hnd->mode1 = 0; //TODO
-				if(endpoint->epd_out.epd_state == ENDPOINT_STATE_IDLE )
-				{
-					endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING;
-					stm_host_start_xfer(drv_info, hnd, eptnum*2+1, &endpoint->epd_out);
-				}
+				while(prev->next)
+					prev = prev->next;
+				prev->next = hnd;
 			} else
-#endif
 			{
-#if USB_ENABLE_DEVICE
-				stm_start_rx(drv_info, eptnum, endpoint);
-				endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING;
+				endpoint->epd_out.epd_pending = hnd;	//receiving
+#if USB_ENABLE_HOST
+				//host mode?
+				if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
+				{
+					hnd->mode1 = 0; //TODO
+					if(endpoint->epd_out.epd_state == ENDPOINT_STATE_IDLE )
+					{
+						endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING;
+						stm_host_start_xfer(drv_info, hnd, eptnum*2+1, &endpoint->epd_out);
+					}
+				} else
 #endif
+				{
+#if USB_ENABLE_DEVICE
+					stm_start_rx(drv_info, eptnum, endpoint);
+					endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING;
+#endif
+				}
 			}
-		}
+	    }
 	}
 
 }
@@ -1728,31 +1708,13 @@ RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info)
 {
 	USB_TypeDef* otg = drv_info->hw_base;
 
+
 	// init core
 	TRACE_USB_NAME(drv_info);
 	TRACE1_USB(" host");
 
-
-	stm_otg_core_init1(drv_info);
-
-	// reset devices
-	for(int i=0; i<= MAX_HUB_PORTS; i++)
-	{
-		usb_hub_port_t* port;
-
-		port = &drv_info->drv_data->usb_hub[i];
-		port->dev_adress = 0;
-		port->dev_interface = 0;
-	}
-
-	if(stm_set_host_mode(drv_info))
-	{
-		// init host
-		stm_otg_core_init_host(drv_info, otg->host_regs.HCFG & OTG_HCFG_FSLSPCS_Msk);
-	} else
-	{
-		return RES_IDLE;
-	}
+	// init host
+	stm_otg_core_init_host(drv_info);
 
 	if(!(otg->HPRT & OTG_HPRT_PENA))
 	{
@@ -1769,141 +1731,26 @@ RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info)
 
 RES_CODE usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
 {
-	uint32_t reg, port_config, port_status;
+	uint32_t reg;
 	USB_TypeDef* otg = drv_info->hw_base;
 	RES_CODE res = RES_ERROR;
 
 	TRACE_USB_NAME(drv_info);
 	TRACE1_USB(" start reset");
 
-	// if port is enabled check if phy clock speed is OK
-	port_status = otg->HPRT;
-	port_config = otg->host_regs.HCFG;
-	if(port_status & OTG_HPRT_PENA)
-	{
-		if( (port_status & OTG_HPRT_PSPD_Msk) == OTG_HPRT_PSPD_LS)
-		{
-			// Set the Host Frame Interval Register for the 6KHz speed
-			otg->host_regs.HFIR = 6000;
-
-			// Are we switching from FS to LS?
-			if((port_config & OTG_HCFG_FSLSPCS_Msk) != OTG_HCFG_FSLSPCS_6)
-			{
-				// configure for LS
-				stm_otg_core_init_host(drv_info, OTG_HCFG_FSLSPCS_6);
-			}
-			TRACE1_USB(" LOW_SPEED");
-		} else
-		{
-			otg->host_regs.HFIR = 48000;
-
-			// Are we switching from LS to FS?
-
-			if((port_config & OTG_HCFG_FSLSPCS_Msk) != OTG_HCFG_FSLSPCS_48)
-			{
-				// configure for FS
-				stm_otg_core_init_host(drv_info, OTG_HCFG_FSLSPCS_48);
-			}
-			TRACE1_USB(" FULL_SPEED");
-		}
+	if(otg->HPRT & OTG_HPRT_PENA)
 		res = RES_OK;
-	} else
-	{
-		TRACE1_USB(" no PENA!");
-		//we may have a problem...
-#if 0
-		if(port_status & OTG_HPRT_PCSTS)
-		{
-			//there is a device connected
-			if( (port_status & OTG_HPRT_PSPD_Msk) == OTG_HPRT_PSPD_LS)
-			{
-				// Set the Host Frame Interval Register for the 6KHz speed
-				otg->host_regs.HFIR = 6000;
 
-				// Are we switching from FS to LS?
-				if((port_config & OTG_HCFG_FSLSPCS_Msk) != OTG_HCFG_FSLSPCS_6)
-				{
-					// configure for LS
-					stm_otg_core_init_host(drv_info, OTG_HCFG_FSLSPCS_6);
-					if(!(otg->HPRT & OTG_HPRT_PENA))
-					{
-						tsk_sleep(200);
-					}
-					if(!(otg->HPRT & OTG_HPRT_PENA))
-					{
-						TRACE1_USB(" clk not helped!");
-						otg->host_regs.HFIR = 48000;
+	stm_otg_core_init_host(drv_info);
 
-						// Are we switching from LS to FS?
-
-						if((port_config & OTG_HCFG_FSLSPCS_Msk) != OTG_HCFG_FSLSPCS_48)
-						{
-							// configure for FS
-							stm_otg_core_init_host(drv_info, OTG_HCFG_FSLSPCS_48);
-							if(!(otg->HPRT & OTG_HPRT_PENA))
-							{
-								tsk_sleep(200);
-							}
-							if(!(otg->HPRT & OTG_HPRT_PENA))
-							{
-								TRACE1_USB(" clk not helped!");
-							}
-						}
-					}
-				}
-
-			} else
-			{
-				otg->host_regs.HFIR = 48000;
-
-				// Are we switching from LS to FS?
-
-				if((port_config & OTG_HCFG_FSLSPCS_Msk) != OTG_HCFG_FSLSPCS_48)
-				{
-					// configure for FS
-					stm_otg_core_init_host(drv_info, OTG_HCFG_FSLSPCS_48);
-					if(!(otg->HPRT & OTG_HPRT_PENA))
-					{
-						tsk_sleep(200);
-					}
-					if(!(otg->HPRT & OTG_HPRT_PENA))
-					{
-						TRACE1_USB(" clk not helped!");
-						// Set the Host Frame Interval Register for the 6KHz speed
-						otg->host_regs.HFIR = 6000;
-
-						// Are we switching from FS to LS?
-						if((port_config & OTG_HCFG_FSLSPCS_Msk) != OTG_HCFG_FSLSPCS_6)
-						{
-							// configure for LS
-							stm_otg_core_init_host(drv_info, OTG_HCFG_FSLSPCS_6);
-							if(!(otg->HPRT & OTG_HPRT_PENA))
-							{
-								tsk_sleep(200);
-							}
-							if(!(otg->HPRT & OTG_HPRT_PENA))
-							{
-								TRACE1_USB(" clk not helped!");
-							}
-						}
-					}
-				}
-
-			}
-		}
-#endif
-	}
-
-
-	reg = drv_info->hw_base->HPRT & ~OTG_HPRT_rc_w1_bits;
-	drv_info->hw_base->HPRT = reg | OTG_HPRT_PRST;	// assert reset
+	reg = otg->HPRT & ~OTG_HPRT_rc_w1_bits;
+	otg->HPRT = reg | OTG_HPRT_PRST;	// assert reset
 	tsk_sleep(20);
 
 	TRACE_USB_NAME(drv_info);
 	TRACE1_USB(" end reset");
-	reg = drv_info->hw_base->HPRT & ~(OTG_HPRT_rc_w1_bits | OTG_HPRT_PRST);
-	drv_info->hw_base->HPRT = reg;	// deassert reset
-
+	reg = otg->HPRT & ~(OTG_HPRT_rc_w1_bits | OTG_HPRT_PRST);
+	otg->HPRT = reg;	// deassert reset
 	tsk_sleep(10);
 	return res;
 }
@@ -1925,33 +1772,6 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 {
     USB_DRIVER_DATA* drv_data = drv_info->drv_data;
 
-	if(flags & USB_OTG_FLG_HOST)
-		flags |= USB_OTG_FLG_HOST_CON | USB_OTG_FLG_HOST_PWR
-				| USB_OTG_FLG_HOST_RST | USB_OTG_FLG_HOST_OK | USB_OTG_FLG_WKUP
-				| USB_OTG_FLG_SUSPEND;
-	if(flags & USB_OTG_FLG_DEV)
-		flags |= USB_OTG_FLG_DEV_CON | USB_OTG_FLG_DEV_OK | USB_OTG_FLG_WKUP
-				| USB_OTG_FLG_SUSPEND;
-
-	flags &= drv_data->otg_flags;
-	drv_data->otg_flags &= ~flags;
-
-	// host power
-	if(flags & USB_OTG_FLG_HOST_PWR)
-	{
-		usb_hal_host_power(drv_info, false);
-	}
-
-	// device con
-	if(flags & USB_OTG_FLG_DEV_CON)
-	{
-        // Abort all transfers
-    	for(int i= 1; i<USB_NUMENDPOINTS; i++)
-    	{
-    		usb_hal_ept_reset(drv_info, i);
-    	}
-	}
-
 	// disconnect
 	if(flags & (USB_OTG_FLG_HOST | USB_OTG_FLG_DEV | USB_OTG_FLG_HOST_PWR))
 	{
@@ -1967,6 +1787,35 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 			}
 			atomic_clrex();
 		}
+	}
+
+	if(flags & USB_OTG_FLG_HOST)
+		flags |= USB_OTG_FLG_HOST_CON | USB_OTG_FLG_HOST_PWR
+				| USB_OTG_FLG_HOST_RST | USB_OTG_FLG_HOST_OK | USB_OTG_FLG_WKUP
+				| USB_OTG_FLG_SUSPEND;
+	if(flags & USB_OTG_FLG_DEV)
+		flags |= USB_OTG_FLG_DEV_CON | USB_OTG_FLG_DEV_OK | USB_OTG_FLG_WKUP
+				| USB_OTG_FLG_SUSPEND;
+
+	flags &= drv_data->otg_flags;
+	drv_data->otg_flags &= ~flags;
+
+	// host power
+	if(flags & USB_OTG_FLG_HOST_PWR)
+	{
+		drv_info->hw_base->core_regs.GINTMSK = OTG_GINTMSK_WUIM | OTG_GINTMSK_CIDSCHGM |
+				OTG_GINTMSK_RXFLVLM | OTG_GINTMSK_OTGINT | OTG_GINTMSK_SRQIM;
+		usb_hal_host_power(drv_info, false);
+	}
+
+	// device con
+	if(flags & USB_OTG_FLG_DEV_CON)
+	{
+        // Abort all transfers
+    	for(int i= 1; i<USB_NUMENDPOINTS; i++)
+    	{
+    		usb_hal_ept_reset(drv_info, i);
+    	}
 	}
 
 }
@@ -2328,36 +2177,27 @@ static void usb_b_gint_usbsusp(USB_DRV_INFO drv_info)
 
 
 		// reset endpoints
-	    if( !(drv_info->cfg->stm32_otg & CFG_STM32_OTG_VBUS_SENS))
-	    {
-			if(drv_info->drv_data->usb_state == USBST_DEVICE_CONFIGURED)
-			{
-				uint32_t dev_endpoints;
-				if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_HS_CORE)
-				{
-				    dev_endpoints    = 6-1;
-				} else
-				{
-				    dev_endpoints    = 4-1;
-				}
-				for(uint32_t i= 0; i<dev_endpoints; i++)
-				{
-					Endpoint* endpoint;
+		uint32_t dev_endpoints;
+		if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_HS_CORE)
+		{
+			dev_endpoints    = 6-1;
+		} else
+		{
+			dev_endpoints    = 4-1;
+		}
+		for(uint32_t i= 0; i<dev_endpoints; i++)
+		{
+			usb_hal_ept_reset(drv_info, i | 0x80);
+			usb_hal_ept_reset(drv_info, i);
+		}
+		/* Turn off forced host/peripheral mode  */
+		otg->core_regs.GUSBCFG &= ~(OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_FHMOD);
 
-					endpoint = &drv_info->drv_data->endpoints[i];
-					usb_drv_end_transfers(&endpoint->epd_out, RES_FATAL | FLG_SIGNALED);
-					usb_drv_end_transfers(&endpoint->epd_in, RES_FATAL | FLG_SIGNALED);
-				}
-			    /* Turn off forced host/peripheral mode  */
-				otg->core_regs.GUSBCFG &= ~(OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_FHMOD);
-
-				usb_drv_event(drv_info, e_disconnect);
-				return;
-			}
-	    }
-
-
+		usb_drv_event(drv_info, e_disconnect);
 		usb_drv_event(drv_info, e_susppend);
+#if USB_ENABLE_HOST
+		usb_otg_clr_flags(drv_info, USB_OTG_FLG_DEV_OK);
+#endif
 	}
 }
 
@@ -2560,8 +2400,6 @@ static void usb_b_gint_srqint(USB_DRV_INFO drv_info)
 	/* Clear interrupt */
 	otg->core_regs.GINTSTS = OTG_GINTSTS_SRQINT;
 
-	// enable otg interrupts
-	otg->core_regs.GINTMSK |= OTG_GINTMSK_OTGINT;
 
 	stm_otg_ungate_clock(otg, drv_info->cfg->stm32_otg);
 	usb_drv_event(drv_info, e_powered);
@@ -2586,9 +2424,6 @@ static void usb_b_gint_otgint(USB_DRV_INFO drv_info)
 		/* Inform upper layer by the Disconnect Event */
 		TRACELN1_USB("ses end");
 		usb_drv_event(drv_info, e_disconnect);
-
-		// disable otg interrupts
-		drv_info->hw_base->core_regs.GINTMSK &= ~OTG_GINTMSK_OTGINT;
 
 	}
 
@@ -2809,7 +2644,8 @@ static void usb_a_hprt_int(USB_DRV_INFO drv_info)
 	if(port_status & OTG_HPRT_POCCHNG)	// Port overcurrent change
 	{
 		TRACE1_USB(" CURRENT!");
-		usb_otg_clr_flags(drv_info, USB_OTG_FLG_ALL);
+		if(port_status & OTG_HPRT_POCA)
+			usb_otg_clr_flags(drv_info, USB_OTG_FLG_ALL);
 	}
 
 
@@ -2903,7 +2739,7 @@ static void usb_a_gint_rxflvl(USB_DRV_INFO drv_info)
 
 void USB_OTG_ISR(USB_DRV_INFO drv_info)
 {
-	uint32_t status;
+	uint32_t status, host_mode;
 	USB_TypeDef* otg = drv_info->hw_base;
 #if USB_ENABLE_HOST
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
@@ -2912,6 +2748,8 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 	status = otg->core_regs.GINTSTS;
 	TRACE_USB_NAME(drv_info);
 	TRACE_USB(": [%08X]", status);
+	host_mode = status & OTG_GINTSTS_CMOD;
+	status &= otg->core_regs.GINTMSK;
 
 #if USB_ENABLE_HOST
 #if USE_CPU_SLEEP_MODE
@@ -2921,38 +2759,37 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		locked_dec_int(&drv_data->otg_sleep_flag);
 	}
 #endif
+
 	if(status & OTG_GINTSTS_CIDSCHG)	// Connector ID status change
     {
 		otg->core_regs.GINTSTS = OTG_GINTSTS_CIDSCHG;
 		status ^= OTG_GINTSTS_CIDSCHG;
 		TRACE1_USB(" CIDSCHG");
-		if(status & OTG_GINTSTS_CMOD) //host mode
-		{
-			HANDLE hnd;
 
-			if(otg->core_regs.GINTMSK == OTG_GINTMSK_CIDSCHGM)
+		if(otg->core_regs.GOTGCTL & OTG_GOTGCTL_CIDSTS)
+		{
+			//devive mode now
+			TRACE1_USB(" ->dev");
+			usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST);
+
+		} else
+		{
+			//host mode now
+			TRACE1_USB(" ->host");
+			usb_otg_clr_flags(drv_info, USB_OTG_FLG_DEV);
+			if(drv_data->otg_flags & USB_OTG_FLG_HOST)
 			{
-				usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_RST);
+				if(drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
+					usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_RST);
 			}
-			while( (hnd=drv_data->pending) )
-			{
-				drv_data->pending = hnd->next;
-				if(hnd->src.as_voidptr == USB_CMD_OTG_CONFIG &&
-						otg->core_regs.GINTMSK == OTG_GINTMSK_CIDSCHGM)
-					usr_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_OK);
-				else
-					usr_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
-			}
-			atomic_clrex();
 		}
     }
-#endif
+#endif //USB_ENABLE_HOST
 
 #if USB_ENABLE_DEVICE
 	/* ensure that we are in device mode */
-	if( !(status & OTG_GINTSTS_CMOD) )
+	if( !host_mode )
 	{
-		status &= otg->core_regs.GINTMSK;
 		if(status) /* avoid spurious interrupt */
 		{
 			if (status & OTG_GINTSTS_OEPINT) 	// OUT endpoints interrupt
@@ -3039,7 +2876,6 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 #endif
 	{
 		TRACE_USB(" %04X", drv_info->hw_base->host_regs.HFNUM & 0xFFFF);
-		status &= otg->core_regs.GINTMSK;
 		if(status)
 		{
 			if (status & OTG_GINTSTS_WKUPINT)	// remote wakeup is detected on the USB

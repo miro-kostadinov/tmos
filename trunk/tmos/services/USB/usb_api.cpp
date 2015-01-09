@@ -10,6 +10,28 @@
 #include <usb_host.h>
 #endif
 
+#if USB_ENABLE_OTG
+static void proc_client(USB_DRIVER_DATA* drv_data, HANDLE client, RES_CODE res)
+{
+	if(res == RES_SIG_OK)
+		client->mode.as_ushort[1] = drv_data->drv_state_cnt;
+
+	if( !(res & FLG_SIGNALED))
+	{
+		do
+		{
+			client->next = (HANDLE)atomic_fetch((volatile int*)&drv_data->pending);
+		} while(atomic_store((volatile int*)&drv_data->pending, (int)client));
+
+#if USE_CPU_SLEEP_MODE
+		locked_dec_int(&cpu_sleep_counter);			//enable sleep
+		locked_inc_int(&drv_data->otg_sleep_flag);	// till next irq
+#endif
+
+	}
+}
+#endif
+
 #if USB_ENABLE_DEVICE
 /**
  * Configure the USB core in device mode
@@ -23,6 +45,30 @@
  * @param client
  * @return
  */
+#if USB_ENABLE_OTG
+RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client)
+{
+	const USBDDriverDescriptors* descriptors;
+	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+	RES_CODE res = RES_IDLE;
+
+	//initialize drv_data->device
+	if(drv_data->usb_state == USBST_ALL_DOWN)
+	{
+		drv_data->usb_state = USBST_DEVICE_MODE;
+		descriptors = (const USBDDriverDescriptors*)client->dst.as_cvoidptr;
+		if(!descriptors)
+			descriptors = drv_info->dev_descriptors;
+		drv_data->device.Initialize(descriptors);
+	}
+
+	//initialize the hardware
+	res = usb_hal_start(drv_info, USB_OTG_FLG_DEV);
+
+	proc_client(drv_data, client, res);
+	return res;
+}
+#else
 RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client)
 {
 	const USBDDriverDescriptors* descriptors;
@@ -37,13 +83,14 @@ RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client)
 		drv_data->device.Initialize(descriptors);
 		usb_hal_device_start(drv_info);
 	}
-#if USB_ENABLE_OTG
-	drv_data->otg_flags |= USB_OTG_FLG_DEV;
-	client->mode.as_ushort[1] = drv_data->drv_state_cnt & ~USB_STATE_CNT_INVALID;
-#endif
 	return RES_SIG_OK;
 }
-#endif
+#endif //USB_ENABLE_OTG
+
+#endif // USB_ENABLE_DEVICE
+
+
+
 
 #if USB_ENABLE_HOST
 /**
@@ -60,45 +107,15 @@ RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client)
 RES_CODE usb_api_otg_config(USB_DRV_INFO drv_info, HANDLE client)
 {
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-	uint32_t otg_flags;
 	RES_CODE res = RES_IDLE;
 
 	TRACE_USB_NAME(drv_info);
 	TRACE1_USB(" cfg");
-	otg_flags = drv_data->otg_flags;
-	if( !(otg_flags & USB_OTG_FLG_HOST))
-	{
-		// this is the first host request
-		drv_data->otg_flags |= USB_OTG_FLG_HOST;
-	}
 
-	if(!(otg_flags & (USB_OTG_FLG_DEV_CON | USB_OTG_FLG_HOST_CON)) )
-	{
-		// Host starts here and only here!
-		if((drv_info->cfg->stm32_otg & CFG_STM32_OTG_FORCE_HOST)||
-				(drv_info->hw_base->core_regs.GINTSTS & OTG_GINTSTS_CMOD ))
-			res = usb_hal_host_start(drv_info);
-	} else
-	{
-		if(drv_data->otg_flags & USB_OTG_FLG_HOST_OK)
-		{
-			client->mode.as_ushort[1] = drv_data->drv_state_cnt;
-			res = RES_SIG_OK;
-		}
-	}
-	if( !(res & FLG_SIGNALED))
-	{
-		do
-		{
-			client->next = (HANDLE)atomic_fetch((volatile int*)&drv_data->pending);
-		} while(atomic_store((volatile int*)&drv_data->pending, (int)client));
+	//initialize the hardware
+	res = usb_hal_start(drv_info, USB_OTG_FLG_HOST);
 
-#if USE_CPU_SLEEP_MODE
-		locked_dec_int(&cpu_sleep_counter);			//enable sleep
-		locked_inc_int(&drv_data->otg_sleep_flag);	// till next irq
-#endif
-
-	}
+	proc_client(drv_data, client, res);
 
 	TRACELN_USB("USB cfg res %u", res);
 	return res;
