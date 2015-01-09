@@ -42,6 +42,7 @@ RES_CODE usb_hal_host_bus_reset(USB_DRV_INFO drv_info);
 void usb_hal_host_resume(USB_DRV_INFO drv_info);
 void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pDescriptor);
 #endif
+RES_CODE usb_hal_start(USB_DRV_INFO drv_info, uint32_t mode);
 
 void USB_HS_WKUP_ISR(USB_DRV_INFO drv_info);
 void USB_OTG_ISR(USB_DRV_INFO drv_info);
