@@ -412,10 +412,13 @@ unsigned int GEdit::process_key (GMessage& msg)
 		}
 		return 1;
 	case KEY_CANCEL:
-		if (pos)
+		if (pos && !IsActiveTimer(EDIT_TIMER_INPUT))
 		{
 			pos_change(-1);
-		} 
+		}
+		StopTimer(EDIT_TIMER_INPUT);
+		last_key = 0;
+		times_pressed = 0;
 		txt.erase(pos, 1);												//erases the previous symbol
 		text_change();
 		return 1;
