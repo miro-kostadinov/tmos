@@ -1775,9 +1775,14 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 	// disconnect
 	if(flags & (USB_OTG_FLG_HOST | USB_OTG_FLG_DEV | USB_OTG_FLG_HOST_PWR))
 	{
-		if(!(drv_data->otg_flags & (USB_OTG_FLG_HOST_OK | USB_OTG_FLG_DEV_OK)))
-			drv_data->drv_state_cnt  |= USB_STATE_CNT_INVALID;
-		if(drv_info->drv_data->pending)
+		// cancel all transfers
+		drv_data->drv_state_cnt  |= USB_STATE_CNT_INVALID;
+		for(int i=0; i<USB_NUMENDPOINTS; i++)
+		{
+			usb_drv_end_transfers(&drv_data->endpoints[i].epd_in, USBD_STATUS_RESET);
+			usb_drv_end_transfers(&drv_data->endpoints[i].epd_out, USBD_STATUS_RESET);
+		}
+		if(drv_data->pending)
 		{
 			HANDLE hnd;
 			while( (hnd=drv_data->pending) )
