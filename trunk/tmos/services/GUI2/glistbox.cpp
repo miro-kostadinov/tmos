@@ -176,7 +176,7 @@ unsigned int GListBox::initialize (GMessage& msg)
 			if(rc.width() > sx)
 				rc.x0 = rc.x1 - sx;
 			if(rc.height() > sy)
-				rc.x0 = rc.x1 - sy;
+				rc.y0 = rc.y1 - sy;
 		}
 		if(!msg.param)
 		{
