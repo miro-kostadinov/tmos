@@ -445,6 +445,9 @@ void time_t::sprintf(CSTRING& str, const char* format) const
 			case 'w':
 				str += day_name[get_week_day()];
 				break;
+			case 'b':
+				str += mon_name[mon];
+				break;
 			default:
 				str += format[0];
 				break;
