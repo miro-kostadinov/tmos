@@ -56,13 +56,25 @@ RES_CODE CSocket::bind(unsigned int ip_adr, unsigned int port)
  */
 RES_CODE CSocket::bind(const char* url)
 {
+	NET_CODE result = NET_IDLE;
 	if(complete())
 	{
-		src.as_charptr = (char*)url;
-		set_res_cmd(SOCK_CMD_BIND_URL);
-		tsk_start_and_wait();
+		CURL link;
+
+		result = link.url_parse(url);
+		if(result == RES_OK)
+		{
+			src.as_ccharptr = link.host.c_str();
+			dst.as_int = link.port;
+			set_res_cmd(SOCK_CMD_BIND_URL);
+			tsk_start_and_wait();
+			if(res == RES_OK)
+				result = NET_OK;
+			else
+				result = error;
+		}
 	}
-	return (res);
+	return (result);
 }
 
 /**
@@ -162,11 +174,11 @@ NET_CODE CSocket::connect(const char* url)
  * @param timeout
  * @return
  */
-CSocket* CSocket::accept(unsigned int timeout)
+NET_CODE CSocket::accept(CSocket* new_sock, unsigned int timeout)
 {
 	if(complete())
 	{
-		dst.as_voidptr = NULL;
+		dst.as_voidptr = new_sock;
 		set_res_cmd(SOCK_CMD_ACCEPT);
 	    tsk_start_handle();
 	    if(tsk_wait_signal(signal, timeout))
@@ -176,9 +188,8 @@ CSocket* CSocket::accept(unsigned int timeout)
 	    else
 	    	tsk_cancel();
 
-        return (CSocket*)dst.as_voidptr;
 	}
-	return (NULL);
+	return (res);
 }
 
 /**
@@ -211,3 +222,15 @@ RES_CODE CSocket::gethostbyname(CSTRING& ip_adr, const char* url)
 	return (res);
 }
 
+RES_CODE CSocket::get_addr(unsigned int& ip_adr, unsigned short& port, int local)
+{
+	if(complete())
+	{
+		src.as_intptr = &ip_adr;
+		dst.as_shortptr = &port;
+		len = local;
+		set_res_cmd(SOCK_CMD_GET_ADDR);
+		tsk_start_and_wait();
+	}
+	return (res);
+}

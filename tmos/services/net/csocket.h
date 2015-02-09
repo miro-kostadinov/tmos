@@ -22,11 +22,13 @@
 #define SOCK_CMD_ACCEPT			(( 7 <<4)+CMD_COMMAND)
 #define SOCK_CMD_CLOSE			(( 8 <<4)+CMD_COMMAND)
 #define SOCK_CMD_GET_HOST		(( 9 <<4)+CMD_COMMAND)
+#define SOCK_CMD_GET_ADDR		((10 <<4)+CMD_COMMAND)
 
 #define SOCKET_CLOSED		0
 #define SOCKET_OPEN			1
 #define SOCKET_CONECTED		3
 #define SOCKET_WRITE_FLAG	4
+#define SOCKET_LISTEN	    (8 + SOCKET_OPEN)
 
 #define SOCKET_ID_INVALID	0xffff
 
@@ -67,8 +69,9 @@ struct CSocket: public CHandle
 	NET_CODE connect(const char* ip_adr, unsigned int port);
 	NET_CODE connect(const CURL& link);
 	NET_CODE connect(const char* url);
-	CSocket* accept(unsigned int timeout = 1024*1024);
+	NET_CODE accept(CSocket* new_sock, unsigned int timeout = 1024*1024);
 	RES_CODE gethostbyname(CSTRING& ip_adr, const char* url);
+	RES_CODE get_addr(unsigned int& ip_adr, unsigned short& port, int local);
 	RES_CODE close();
 };
 
