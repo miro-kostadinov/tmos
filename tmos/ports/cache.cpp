@@ -50,7 +50,7 @@ RES_CODE CCache::getc(char& c)
 
 	res = load();
 	if (res == RES_OK)
-		return (c = *pos++);
+		c = *pos++;
 	return (res);
 }
 
