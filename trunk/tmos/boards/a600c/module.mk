@@ -63,7 +63,7 @@ USE_CRC16		?=y
 USE_CRC32		?=y
 
 # class CCache
-USE_CACHE		?=n
+USE_CACHE		?=y
 
 # SHA-1 class
 USE_SHA_1		?=y

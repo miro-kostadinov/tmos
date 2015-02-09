@@ -81,7 +81,7 @@
 #define USE_TMOS_LLONG		1
 #define USE_CRC16			0
 #define USE_CRC32			1
-#define USE_CACHE			0
+#define USE_CACHE			1
 #define USE_SHA_1			1
 #define USE_BASE32			0
 #define USE_GUI				0
