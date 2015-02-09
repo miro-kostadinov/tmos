@@ -57,7 +57,7 @@ public:
 	{
 	}
 	CURL& operator= (const CURL& url);
-	NET_CODE url_parse(const char* url);
+	NET_CODE url_parse(const char* url, bool path_only=false);
 	NET_CODE url_resolve(const CURL& old_link);
 	void url_print(CSTRING& str);
 };

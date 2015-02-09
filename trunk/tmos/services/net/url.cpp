@@ -562,7 +562,7 @@ const char* CURL::url_get_userinfo (const char *url)
 //	Description:
 // 		Parse a URL. URL_LINK is assumed to be cleared
 //*----------------------------------------------------------------------------
-NET_CODE CURL::url_parse(const char* url)
+NET_CODE CURL::url_parse(const char* url, bool path_only)
 {
 	CSTRING s;
 	char* surl;
@@ -669,7 +669,7 @@ NET_CODE CURL::url_parse(const char* url)
 		{
 			path = s.c_str();
 		} else
-			if(s[0] == '/' && (url_flags & (URL_FLAG_SCHEME_FTP | URL_FLAG_SCHEME_HTTP)))
+			if(path_only || (s[0] == '/' && (url_flags & (URL_FLAG_SCHEME_FTP | URL_FLAG_SCHEME_HTTP))))
 			{
 				path = s.c_str();
 			} else
