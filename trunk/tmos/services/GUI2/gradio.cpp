@@ -100,6 +100,7 @@ unsigned int  GRadio::process_default (GMessage& msg)
 				checked->clr_flag(GO_FLG_CHECKED);								//if there is already a checked item, clears its CHECKED flag
 			checked = (GObject*)msg.param;
 			checked->set_flag(GO_FLG_CHECKED);									//sets CHECKED flag on the new checked item
+			send_message(WM_CHANGE, (unsigned int)this, 0, parent);
 		}
 		return 1;
 	}
