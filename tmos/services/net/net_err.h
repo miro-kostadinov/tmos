@@ -38,6 +38,7 @@ typedef unsigned int  NET_CODE;
 #define NET_ERR_URL_REDIRECTED		0xA3	//!< Redirected
 #define NET_ERR_HTTP_CODE			0xA4	//!< HTTP code is not 200 OK
 #define NET_ERR_HTTP_ERROR			2048	//!< 2048..4096 HTTP code + 2048
+#define NET_ERR_FTP_CODE			4096	//!< 4096..81926 FTP code + 4096
 
 //-----------------		file error codes					 -----------------//
 #define NET_ERR_FILE_SYSTEM			0xB0	//!< BAD or broken file system
