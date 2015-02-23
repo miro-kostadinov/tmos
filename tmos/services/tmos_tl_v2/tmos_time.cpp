@@ -446,7 +446,8 @@ void time_t::sprintf(CSTRING& str, const char* format) const
 				str += day_name[get_week_day()];
 				break;
 			case 'b':
-				str += mon_name[mon];
+				if(mon && mon < 13)
+					str += mon_name[mon-1];
 				break;
 			default:
 				str += format[0];
