@@ -437,11 +437,10 @@ unsigned int GEdit::process_key (GMessage& msg)
 
 	case KEY_X:
 		if(shift != KT_DIGIT)
-		{
 			process_alpha_key(msg.param, table[CHAR_TABLE_INDEX_00].bg_vals);
-			return 1;
-		}
-		return 0;
+		else
+			process_alpha_key(msg.param, "-");
+		return 1;
 
 	default:
 		{
