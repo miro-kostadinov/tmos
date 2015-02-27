@@ -46,6 +46,7 @@ static void RTC_CONFIG(RTC_DRIVER_INFO* drv_info)
     // 2. Allow access to RTC
 	PWR_BB->PWR_CR_DBP_BB = 1;
 
+	drv_info->drv_data->rtc_state = rtc->RTC_ISR;
 	if( !(rtc->RTC_ISR & RTC_ISR_INITS) )
 	{
 		// RTC is not running...
@@ -159,8 +160,11 @@ void RTC_DSR(RTC_DRIVER_INFO* drv_info, HANDLE hnd)
 				// Note: set time can be very slow...
 				if(rtc_set_time(drv_info->hw_base, time))
 				{
+					// update drv_data with new time
+					rtc_get_time(drv_info->hw_base, &drv_info->drv_data->rtc_time);
 					res = RES_SIG_OK;
 				}
+				drv_info->drv_data->rtc_state = drv_info->hw_base->RTC_ISR;
 			}
 	    }
 
