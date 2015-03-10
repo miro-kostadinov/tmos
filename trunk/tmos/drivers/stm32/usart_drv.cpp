@@ -7,6 +7,9 @@
 
 #include <tmos.h>
 #include <usart_drv.h>
+#if USE_UART_DMA_DRIVER
+#include <dma_drv.h>
+#endif
 
 void ConfigureUsart(USART_DRIVER_INFO * drv_info, USART_DRIVER_DATA * drv_data,
 		USART_DRIVER_MODE * mode)
@@ -23,20 +26,63 @@ void ConfigureUsart(USART_DRIVER_INFO * drv_info, USART_DRIVER_DATA * drv_data,
 	drv_enable_isr(&drv_info->info);
 
 	memcpy(&drv_data->mode, mode, sizeof(USART_DRIVER_MODE));
+#if USE_UART_DMA_DRIVER
+	if(drv_info->rx_dma_mode.dma_index < INALID_DRV_INDX)
+	{
+		USARTx->USART_CR3 |= USART_CR3_DMAR;
+	}
+	if(drv_info->tx_dma_mode.dma_index < INALID_DRV_INDX)
+	{
+		USARTx->USART_CR3 |= USART_CR3_DMAT;
+	}
+#endif
 }
+
+#if USE_UART_DMA_DRIVER
+void UPDATE_RX_WRPTR(USART_DRIVER_INFO * drv_info, USART_DRIVER_DATA* drv_data)
+{
+	if(drv_info->rx_dma_mode.dma_index < INALID_DRV_INDX)
+	{
+		uint32_t remaining;
+
+		remaining = dma_drv_get_ndtr(drv_info->rx_dma_mode.dma_index);
+		if(remaining)
+		{
+			if(remaining < USART_DRV_RX_BUF_SIZE)
+				remaining = USART_DRV_RX_BUF_SIZE - remaining;
+			else
+				remaining = 0;
+		}
+		drv_data->rx_wrptr = drv_data->rx_buf + remaining;
+	}
+}
+#else
+#define UPDATE_RX_WRPTR(drv_info, drv_data)
+#endif
+
 
 static inline void START_RX_BUF(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data)
 {
+	uint32_t ints = USART_STATUS_RXNEIE | USART_STATUS_IDLEIE;
+
 	drv_data->rx_ptr = drv_data->rx_buf;
 	drv_data->rx_wrptr = drv_data->rx_buf;
-	drv_data->rx_remaining = USART_DRV_RX_BUF_SIZE;
-	enable_usart_drv_ints(uart, USART_STATUS_RXNEIE | USART_STATUS_IDLEIE);
+//	drv_data->rx_remaining = USART_DRV_RX_BUF_SIZE;
+#if USE_UART_DMA_DRIVER
+	if(drv_data->rx_dma_hnd.res < RES_CLOSED)
+	{
+		drv_data->rx_dma_hnd.drv_read_write(drv_data->rx_buf, (void*)&get_usart_rdr(uart), USART_DRV_RX_BUF_SIZE);
+		ints = USART_STATUS_IDLEIE;
+	}
+#endif
+	enable_usart_drv_ints(uart, ints);
 }
 
 static inline void START_RX_HND(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data, HANDLE hnd)
 {
-	drv_data->rx_remaining = hnd->len;
+//	drv_data->rx_remaining = hnd->len;
 	drv_data->rx_wrptr = hnd->dst.as_byteptr;
+	drv_data->rx_ptr = drv_data->rx_wrptr + hnd->len;
 	enable_usart_drv_ints(uart, USART_STATUS_RXNEIE | USART_STATUS_IDLEIE);
 }
 
@@ -45,8 +91,16 @@ static inline void STOP_TX(USART_TypeDef* uart)
 	uart->USART_CR1 &= ~USART_CR1_TXEIE;
 }
 
-static inline void START_TX_HND(USART_TypeDef* uart, HANDLE hnd)
+static inline void START_TX_HND(USART_DRIVER_INFO * drv_info, USART_TypeDef* uart, HANDLE hnd)
 {
+#if USE_UART_DMA_DRIVER
+	if(drv_info->tx_dma_mode.dma_index < INALID_DRV_INDX)
+	{
+		drv_info->drv_data->tx_dma_hnd.drv_read_write((void*)&get_usart_rdr(uart),
+				hnd->src.as_charptr, hnd->len);
+		return;
+	}
+#endif
 	if( get_usart_sr(uart) & USART_STATUS_TXE )
 	{
 //		TRACE_BUF(hnd->src.as_charptr, 1, TC_BG_MAGENTA);
@@ -58,10 +112,16 @@ static inline void START_TX_HND(USART_TypeDef* uart, HANDLE hnd)
 
 static inline void STOP_RX_HND(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data, HANDLE hnd, RES_CODE res)
 {
+	uint32_t remaining;
+
 	// STOP_RX(Uart);
 	drv_data->hnd_rcv = hnd->next;
-	hnd->dst.as_int += hnd->len - drv_data->rx_remaining;
-	hnd->len = drv_data->rx_remaining;
+	remaining = drv_data->rx_ptr - drv_data->rx_wrptr;
+	if(remaining < hnd->len)
+	{
+		hnd->dst.as_int += hnd->len - remaining;
+		hnd->len = remaining;
+	}
 	usr_HND_SET_STATUS(hnd, res);
   	if( (hnd=drv_data->hnd_rcv) )
       	START_RX_HND(uart, drv_data, hnd);
@@ -69,38 +129,39 @@ static inline void STOP_RX_HND(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data,
 		START_RX_BUF(uart, drv_data);
 }
 
-static inline void RESUME_RX(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data)
+static bool FLUSH_RX_BUF(USART_DRIVER_DATA *drv_data, HANDLE hnd)
 {
-	unsigned int free_space;
+	unsigned char *ptr;
+	signed int size;
 
-	//	update wr ptr
-	if (drv_data->rx_wrptr == &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
-		drv_data->rx_wrptr = drv_data->rx_buf;
+  	ptr = drv_data->rx_wrptr;
+  	if( ptr != drv_data->rx_ptr )
+  	{
+  		if(ptr < drv_data->rx_ptr)
+  		{
+  			size =min(hnd->len, (&drv_data->rx_buf[USART_DRV_RX_BUF_SIZE]) - drv_data->rx_ptr);
+  			memcpy(hnd->dst.as_byteptr, drv_data->rx_ptr, size);
+  			hnd->len -= size;
+  			hnd->dst.as_int += size;
+  			drv_data->rx_ptr += size;
+  			if(drv_data->rx_ptr >= &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
+  				drv_data->rx_ptr = drv_data->rx_buf;
+  		}
 
-	// get free space
-	if (drv_data->rx_wrptr < drv_data->rx_ptr)
-	{
-		free_space = (drv_data->rx_ptr - drv_data->rx_wrptr)-1;
-		drv_data->rx_remaining = free_space;
-	}
-	else
-	{
-		free_space = &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE-1] - drv_data->rx_wrptr;
-		if( drv_data->rx_buf != drv_data->rx_ptr)
-			free_space ++;
-		drv_data->rx_remaining = free_space;
-	}
+      	if( hnd->len && (ptr!= drv_data->rx_ptr) )
+  		{
+  			size =min(hnd->len, ptr - drv_data->rx_ptr);
+  			memcpy(hnd->dst.as_byteptr, drv_data->rx_ptr, size);
+  			hnd->len -= size;
+  			hnd->dst.as_int += size;
+  			drv_data->rx_ptr += size;
+  			if(drv_data->rx_ptr >= &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
+  				drv_data->rx_ptr = drv_data->rx_buf;
+  		}
 
-	// enable or disable the receiver...
-	if(free_space == 0)
-	{
-		disable_usart_drv_ints(uart, USART_STATUS_RXNEIE | USART_STATUS_IDLEIE);
-	}
-	else
-	{
-		enable_usart_drv_ints(uart, USART_STATUS_RXNEIE | USART_STATUS_IDLEIE);
-	}
-
+  		return true;
+  	}
+  	return false;
 }
 
 static void dcr_cancel_handle(USART_DRIVER_INFO* drv_info,
@@ -114,24 +175,41 @@ static void dcr_cancel_handle(USART_DRIVER_INFO* drv_info,
 	    {
 			if(hnd == drv_data->hnd_rcv)
 			{
-				RES_CODE res;
+				uint32_t remaining;
 
-				//STOP_RX(Uart);
-	      		drv_data->hnd_rcv = hnd->next;
+				drv_data->hnd_rcv = hnd->next;
 
-	      		res  = hnd->res ^ (FLG_SIGNALED | FLG_BUSY);
-	      		if(hnd->len > drv_data->rx_remaining  )
-	      		{
-	      			hnd->len = drv_data->rx_remaining;
-	      			res = RES_SIG_OK;
-	      		}
+#if USE_UART_DMA_DRIVER
+				if(drv_info->rx_dma_mode.dma_index < INALID_DRV_INDX)
+				{
+			      	//refresh buffer
+			      	UPDATE_RX_WRPTR(drv_info, drv_data);
 
-	      		svc_HND_SET_STATUS(hnd, res);
+			      	if (FLUSH_RX_BUF(drv_data, hnd))
+			      	{
+			      		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+			      	} else
+			      	{
+			      		svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
+			      	}
 
-		      	if( (hnd=drv_data->hnd_rcv) )
-		          	START_RX_HND(uart, drv_data, hnd);
-		      	else
-					START_RX_BUF(uart, drv_data);
+				} else
+#endif
+				{
+					// STOP_RX(Uart);
+					remaining = drv_data->rx_ptr - drv_data->rx_wrptr;
+					if(remaining < hnd->len)
+					{
+						hnd->dst.as_int += hnd->len - remaining;
+						hnd->len = remaining;
+			      		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+					} else
+						svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
+					if( (hnd=drv_data->hnd_rcv) )
+						START_RX_HND(uart, drv_data, hnd);
+					else
+						START_RX_BUF(uart, drv_data);
+				}
 			}
 			else
 			{
@@ -147,7 +225,7 @@ static void dcr_cancel_handle(USART_DRIVER_INFO* drv_info,
 				drv_data->hnd_snd = hnd->next;
 	      		svc_HND_SET_STATUS(hnd, RES_SIG_IDLE);
 				if( (hnd=drv_data->hnd_snd) )
-					START_TX_HND(uart, hnd);
+					START_TX_HND(drv_info, uart, hnd);
 			}
 			else
 			{
@@ -169,6 +247,10 @@ void USART_DCR(USART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 		case DCR_RESET:
 			RCCPeripheralReset(drv_info->info.peripheral_indx);
 			RCCPeripheralDisable(drv_info->info.peripheral_indx); // ??? turn off
+#if USE_UART_DMA_DRIVER
+        	drv_data->rx_dma_hnd.client.drv_index = drv_info->info.drv_index;
+        	drv_data->tx_dma_hnd.client.drv_index = drv_info->info.drv_index;
+#endif
 			break;
 
 		case DCR_OPEN:
@@ -194,6 +276,21 @@ void USART_DCR(USART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 					RCCPeripheralReset(drv_info->info.peripheral_indx);
 					PIO_Cfg_List(drv_info->uart_pins);
 					ConfigureUsart(drv_info, drv_data, usart_mode);
+#if USE_UART_DMA_DRIVER
+					if(drv_info->rx_dma_mode.dma_index < INALID_DRV_INDX)
+						if((drv_data->rx_dma_hnd.res >= RES_CLOSED) && !drv_data->rx_dma_hnd.drv_open(
+								drv_info->rx_dma_mode.dma_index,
+								&drv_info->rx_dma_mode))
+							break;
+					if(drv_info->tx_dma_mode.dma_index < INALID_DRV_INDX)
+						if(!drv_data->tx_dma_hnd.drv_open(
+								drv_info->tx_dma_mode.dma_index,
+								&drv_info->tx_dma_mode))
+						{
+							break;
+						}
+#endif
+
 					START_RX_BUF(drv_info->hw_base, drv_data);
 				}
 				drv_data->cnt++;
@@ -208,6 +305,11 @@ void USART_DCR(USART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 			if(!drv_data->cnt)
 			{
 				//Disable ?
+#if USE_UART_DMA_DRIVER
+//				drv_data->rx_dma_hnd.close();
+				drv_data->tx_dma_hnd.close();
+#endif
+
 				NVIC_DisableIRQ(drv_info->info.drv_index);
 				//	Uart->UARTDisable();
 				//	STOP_RX(Uart);
@@ -224,13 +326,60 @@ void USART_DCR(USART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 
         case DCR_CLOCK:
         	break;
+
+#if USE_UART_DMA_DRIVER
+		case DCR_SIGNAL:
+			//signal tx/dma complete
+			if(hnd == &drv_data->tx_dma_hnd)
+			{
+
+				hnd = drv_data->hnd_snd;
+				if(hnd)
+				{
+					if(hnd->len > drv_data->tx_dma_hnd.len)
+					{
+						hnd->src.as_byteptr += hnd->len - drv_data->tx_dma_hnd.len;
+						hnd->len = drv_data->tx_dma_hnd.len;
+					}
+				}
+				drv_info->hw_base->USART_CR1 |= USART_CR1_TCIE;
+			} else
+			{
+				if(hnd == &drv_data->rx_dma_hnd)
+				{
+					uint32_t remaining;
+
+					drv_data->rx_wrptr = drv_data->rx_buf + USART_DRV_RX_BUF_SIZE - drv_data->rx_dma_hnd.len;
+
+					hnd = drv_data->hnd_rcv;
+					if(hnd)
+					{
+
+						if(FLUSH_RX_BUF(drv_data, hnd))
+						{
+							drv_data->hnd_rcv = hnd->next;
+							svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+						}
+
+					}
+					if(!drv_data->rx_dma_hnd.len)
+					{
+						drv_data->rx_wrptr = drv_data->rx_buf;
+						remaining = USART_DRV_RX_BUF_SIZE;
+					} else
+						remaining = drv_data->rx_dma_hnd.len;
+					drv_data->rx_dma_hnd.drv_read_write(drv_data->rx_wrptr,
+							(void*)&get_usart_rdr(drv_info->hw_base), remaining);
+				}
+			}
+			break;
+#endif
+
 	}
 }
 
 void USART_DSR(USART_DRIVER_INFO* drv_info, HANDLE hnd)
 {
-	unsigned char *ptr;
-	signed int size;
 	USART_DRIVER_DATA* drv_data = drv_info->drv_data;
 	USART_TypeDef* uart = drv_info->hw_base;
 
@@ -258,39 +407,23 @@ void USART_DSR(USART_DRIVER_INFO* drv_info, HANDLE hnd)
       		return;
       	}
 
-		// STOP_RX(uart);
-		//try to read from buffer
-      	ptr = drv_data->rx_wrptr;
-      	if( ptr != drv_data->rx_ptr )
+      	//refresh buffer
+      	UPDATE_RX_WRPTR(drv_info, drv_data);
+
+      	if (FLUSH_RX_BUF(drv_data, hnd))
       	{
-      		if(ptr < drv_data->rx_ptr)
-      		{
-      			size =min(hnd->len, (&drv_data->rx_buf[USART_DRV_RX_BUF_SIZE]) - drv_data->rx_ptr);
-      			memcpy(hnd->dst.as_byteptr, drv_data->rx_ptr, size);
-      			hnd->len -= size;
-      			hnd->dst.as_int += size;
-      			drv_data->rx_ptr += size;
-      			if(drv_data->rx_ptr == &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
-      				drv_data->rx_ptr = drv_data->rx_buf;
-      		}
-
-          	if( hnd->len && (ptr!= drv_data->rx_ptr) )
-      		{
-      			size =min(hnd->len, ptr - drv_data->rx_ptr);
-      			memcpy(hnd->dst.as_byteptr, drv_data->rx_ptr, size);
-      			hnd->len -= size;
-      			hnd->dst.as_int += size;
-      			drv_data->rx_ptr += size;
-      		}
-
-      		RESUME_RX(uart, drv_data);
       		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
-      		return;
+      	} else
+      	{
+          	//receive directly
+          	drv_data->hnd_rcv = hnd;
+#if USE_UART_DMA_DRIVER
+    		if(drv_info->rx_dma_mode.dma_index >= INALID_DRV_INDX)
+#endif
+    		{
+    			START_RX_HND(uart, drv_data, hnd);
+    		}
       	}
-
-      	//receive directly
-      	drv_data->hnd_rcv = hnd;
-      	START_RX_HND(uart, drv_data, hnd);
 		return;
     }
 
@@ -305,7 +438,7 @@ void USART_DSR(USART_DRIVER_INFO* drv_info, HANDLE hnd)
 			}
 			hnd->res = RES_BUSY;
 			drv_data->hnd_snd = hnd;
-			START_TX_HND(uart, hnd);
+			START_TX_HND(drv_info, uart, hnd);
 		}
 		else
 			svc_HND_SET_STATUS(hnd, RES_SIG_OK);
@@ -327,6 +460,89 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 	status = get_usart_sr(uart);
 	status &= get_usart_imr(uart);
 
+	//check the receiver
+	if (status & USART_STATUS_ORE)
+	{
+		TRACELN("over");
+		clr_usart_over(uart); //clear overrun flag
+    	if( (hnd=drv_data->hnd_rcv) )
+    	{
+#if USE_UART_DMA_DRIVER
+    		if(drv_info->rx_dma_mode.dma_index < INALID_DRV_INDX)
+    		{
+    	      	UPDATE_RX_WRPTR(drv_info, drv_data);
+				FLUSH_RX_BUF(drv_data, hnd);
+				drv_data->hnd_rcv = hnd->next;
+				usr_HND_SET_STATUS(hnd, RES_SIG_ERROR);
+    		} else
+#endif
+    		{
+    			STOP_RX_HND(uart, drv_data, hnd, RES_SIG_ERROR);
+    		}
+    	} else
+    	{
+    		//disable ovr interrupt
+    		drv_data->usart_err = status;
+    	}
+	}
+	if (status & USART_STATUS_RXNE)
+    {
+#if USE_UART_DMA_DRIVER
+		if(drv_info->rx_dma_mode.dma_index >= INALID_DRV_INDX) // ignore fake interrupts
+#endif
+		{
+			*drv_data->rx_wrptr = get_usart_rdr(uart);
+			if(drv_info->info.drv_index == USART3_IRQn)
+				TRACE_BUF(drv_data->rx_wrptr, 1, TC_TXT_CYAN);
+			drv_data->rx_wrptr++;
+			if(drv_data->rx_wrptr == drv_data->rx_ptr && (hnd = drv_data->hnd_rcv))
+			{
+				STOP_RX_HND(uart, drv_data, hnd, RES_SIG_OK);
+			} else
+			{
+				if (drv_data->rx_wrptr == &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
+					drv_data->rx_wrptr = drv_data->rx_buf;
+				if(drv_data->rx_wrptr == drv_data->rx_ptr)
+				{
+					if(++drv_data->rx_ptr >= &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
+						drv_data->rx_ptr = drv_data->rx_buf;
+				}
+			}
+		}
+	} else
+	{
+		if (status & USART_STATUS_IDLE)
+		{
+			clr_usart_idle(uart); //clear idle flag
+	    	if( (hnd=drv_data->hnd_rcv) )
+	    	{
+#if USE_UART_DMA_DRIVER
+	    		if(drv_info->rx_dma_mode.dma_index < INALID_DRV_INDX)
+	    		{
+	    			do
+	    			{
+						UPDATE_RX_WRPTR(drv_info, drv_data);
+						if (FLUSH_RX_BUF(drv_data, hnd))
+						{
+							drv_data->hnd_rcv = hnd->next;
+							usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+						} else
+							break;
+	    			} while ((hnd=drv_data->hnd_rcv));
+	    		} else
+#endif
+	    		{
+					if((drv_data->rx_ptr - drv_data->rx_wrptr) != hnd->len)
+					{
+//	  		  			TRACELN("idle");
+						STOP_RX_HND(uart, drv_data, hnd, RES_SIG_OK);
+					}
+	    		}
+	    	}
+		}
+	}
+
+	// check transmitter
 	if( status & USART_STATUS_TC )
 	{
 		if((hnd=drv_data->hnd_snd))
@@ -334,6 +550,11 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 			drv_data->hnd_snd = hnd->next;
 			usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 		}
+#if USE_UART_DMA_DRIVER
+		if(drv_info->tx_dma_mode.dma_index < INALID_DRV_INDX)
+			uart->USART_CR1 &= ~(USART_CR1_TCIE | USART_CR1_TXEIE);
+		else
+#endif
 		uart->USART_CR1 = (uart->USART_CR1 &~USART_CR1_TCIE) | USART_CR1_TXEIE;
 	}
 	if( status & USART_STATUS_TXE )
@@ -364,112 +585,6 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 		}
 	}
 
-	//check the receiver
-	if (status & USART_STATUS_ORE)
-	{
-//		TRACELN("over");
-		get_usart_rdr(uart); //clear overrun flag
-    	if( (hnd=drv_data->hnd_rcv) )
-    	{
-			STOP_RX_HND(uart, drv_data, hnd, RES_SIG_ERROR);
-    	} else
-    	{
-    		//disable ovr interrupt
-    		drv_data->usart_err = status;
-    	}
-	}
-	if (status & USART_STATUS_RXNE)
-    {
-		*drv_data->rx_wrptr = get_usart_rdr(uart);
-//		TRACE_BUF(drv_data->rx_wrptr, 1, TC_TXT_CYAN);
-		drv_data->rx_wrptr++;
-		if(drv_data->rx_remaining)
-		{
-			if(!--drv_data->rx_remaining )
-			{
-				if( (hnd=drv_data->hnd_rcv) )
-					STOP_RX_HND(uart, drv_data, hnd, RES_SIG_OK);
-				else
-					RESUME_RX(uart,drv_data);
-
-			}
-		}
-		else
-		{
-			if (drv_data->rx_wrptr == &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
-				drv_data->rx_wrptr = drv_data->rx_buf;
-			if(drv_data->rx_wrptr == drv_data->rx_ptr)
-			{
-				if(++drv_data->rx_ptr >= &drv_data->rx_buf[USART_DRV_RX_BUF_SIZE])
-					drv_data->rx_ptr = drv_data->rx_buf;
-				drv_data->rx_remaining = 1;
-			}
-		}
-	} else
-	{
-		if (status & USART_STATUS_IDLE)
-		{
-			clr_usart_idle(uart); //clear idle flag
-	    	if( (hnd=drv_data->hnd_rcv) )
-	    	{
-	    		if(drv_data->rx_remaining != hnd->len)
-	    		{
-//	    			TRACELN("idle");
-	    			STOP_RX_HND(uart, drv_data, hnd, RES_SIG_OK);
-	    		}
-	    	}
-		}
-	}
-
 }
 
-/*
- * 	DMA Goals:
- * 		1) autonomous mode (no need to serve fast interrupts)
- * 		2) less cpu usage
- *
- * 	Memcopy variant:
- * 		goal 1 -> OK
- * 		goal 2  ok?
- *
- * 		problems
- * 		- how to signal the client??? (e.g. client waits for 3 bytes, DMA started for 256)
- *
- * 	DMA switch
- * 		goal 1 -> no way...
- * 		goal 2 -> OK
- *
- *
- *
- *
- *	1) copy as much as avail...
- *
- *	2) if remain < 8
- *		enable rx int (continue with memcpy(..1) ISR for each byte)
- *
- *	3) if remain >= 8
- *		stop DMA
- *		DMA1 = hnd.dst
- *		DMA2 = buf
- *		dma_len >= 8...
- *			usr_Send_Signal..
- *			update dma_len...
- *
- *
- *		8888888888888
- *		8888888888888
- *
- *		CCCCCCCCCCCCC
- *		CCCCCCCCCCCCC
- *		CCCCCCCCCCCCC
- *		CCCCCCCCCCCCC
- *
- *
- *
- *
- *
- *
- *
- *
- */
 
