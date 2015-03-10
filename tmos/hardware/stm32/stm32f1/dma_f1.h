@@ -102,6 +102,7 @@ typedef struct
 #define STM32_DMA_ERRORS (DMA_ISR_TEIFx )	//!< errors for F1
 
 #define STM32_DMA_COMPLETE (DMA_ISR_TCIFx)	//!< complete for F1
+#define STM32_DMA_HALF (DMA_IFCR_CHTIFx)	//!< half transfer for F1
 
 /** DMA Driver mode structure **/
 struct DMA_DRIVER_MODE
@@ -124,6 +125,16 @@ static inline uint32_t stm32_get_ints(DMA_TypeDef* dmac, uint32_t indx)
 	dmac->DMA_IFCR = status;
 
 	return status >> indx;
+}
+
+static inline uint32_t stm32_dma_ndtr(DMA_TypeDef* dmac, uint32_t indx)
+{
+	return dmac->DMA_Chx[indx].DMA_CNDTRx;
+}
+
+static inline uint32_t stm32_dma_is_en(DMA_TypeDef* dmac, uint32_t indx)
+{
+	return dmac->DMA_Chx[indx].DMA_CCRx & DMA_CCRx_EN;
 }
 
 void stm32_dis_ints(DMA_TypeDef* dmac, uint32_t indx);

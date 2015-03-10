@@ -121,6 +121,7 @@ typedef struct
 #define DMA_SxFCR_FTH_12            0x00000001 //!<  1/2 full FIFO
 #define DMA_SxFCR_FTH_34            0x00000002 //!<  3/4 full FIFO
 #define DMA_SxFCR_FTH_full          0x00000003 //!   full FIFO
+#define DMA_SxFCR_DMODE             0x00000000 //!< Direct mode
 /** @} */
 
 /** @defgroup DMA_ISR[2]:	(dma Offset: 0x00) DMA low/high DMA_LISR/DMA_LISR interrupt status register */
@@ -144,6 +145,7 @@ typedef struct
 #define STM32_DMA_ERRORS (DMA_ISR_TEIFx | DMA_ISR_DMEIFx )	//!< errors for F2 (DMA_ISR_FEIFx is fake???)
 
 #define STM32_DMA_COMPLETE (DMA_ISR_TCIFx)	//!< complete for F2
+#define STM32_DMA_HALF (DMA_IFCR_CHTIFx)	//!< half transfer for F2
 
 /** DMA Driver mode structure **/
 struct DMA_DRIVER_MODE
@@ -218,6 +220,18 @@ static inline uint32_t stm32_get_ints(DMA_TypeDef* dmac, uint32_t indx)
 
 	return status;
 }
+
+static inline uint32_t stm32_dma_ndtr(DMA_TypeDef* dmac, uint32_t indx)
+{
+	return dmac->DMA_Chx[indx].DMA_SxNDTR;
+}
+
+static inline uint32_t stm32_dma_is_en(DMA_TypeDef* dmac, uint32_t indx)
+{
+	return dmac->DMA_Chx[indx].DMA_SxCR & DMA_SxCR_EN;
+}
+
+
 
 void stm32_dis_ints(DMA_TypeDef* dmac, uint32_t indx);
 
