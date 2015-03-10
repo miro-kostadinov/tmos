@@ -8,6 +8,22 @@
 #include <tmos.h>
 #include <dma_drv.h>
 
+extern 	 char* const DRV_TABLE[INALID_DRV_INDX+1];
+
+uint32_t dma_drv_get_ndtr(DRIVER_INDEX drv_index)
+{
+	unsigned int ndtr = 0;
+
+	if(drv_index < INALID_DRV_INDX)
+	{
+		DMA_DRIVER_INFO* drv_info;
+
+		drv_info = (DMA_DRIVER_INFO*)(void*)(DRV_TABLE[drv_index]-1);
+		ndtr = stm32_dma_ndtr(drv_info->hw_base, drv_info->ch_indx);
+	}
+
+	return ndtr;
+}
 
 //*----------------------------------------------------------------------------
 //*			DCR function
@@ -98,17 +114,23 @@ void DMA_DSR(DMA_DRIVER_INFO* drv_info, HANDLE hnd)
 	    	hnd->list_add(ch_data->waiting);
 		} else
 		{
-			mode = (DMA_DRIVER_MODE *)hnd->mode.as_voidptr;
-
-			if(mode != ch_data->last_mode)
+			if(stm32_dma_is_en(drv_info->hw_base, drv_info->ch_indx))
 			{
-				ch_data->last_mode = mode;
-				// configure the channel
-				stm32_dma_ch_cfg(drv_info->hw_base, drv_info->ch_indx, mode);
-			}
+				// do nothing if already enabled
+			} else
+			{
+				mode = (DMA_DRIVER_MODE *)hnd->mode.as_voidptr;
 
-			// start transfer...
-			stm32_dma_start(drv_info->hw_base, drv_info->ch_indx, hnd);
+				if(mode != ch_data->last_mode)
+				{
+					ch_data->last_mode = mode;
+					// configure the channel
+					stm32_dma_ch_cfg(drv_info->hw_base, drv_info->ch_indx, mode);
+				}
+
+				// start transfer...
+				stm32_dma_start(drv_info->hw_base, drv_info->ch_indx, hnd);
+			}
 			hnd->res  = RES_BUSY;
 			ch_data->pending = hnd;
 
@@ -148,8 +170,15 @@ void DMA_ISR(DMA_DRIVER_INFO* drv_info)
 			if(status & STM32_DMA_COMPLETE)
 			{
 				hnd->len = 0;
+			} else
+			{
+				hnd->len = stm32_dma_ndtr(drv_info->hw_base, drv_info->ch_indx);
 			}
 			usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+			if(status & STM32_DMA_HALF)
+			{
+				return;	// leave it working...
+			}
 		}
 
 		// start waiting...
