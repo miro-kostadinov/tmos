@@ -16,6 +16,11 @@
 #define USART_DRV_RX_BUF_SIZE	(256)
 #endif
 
+#ifndef USE_UART_DMA_DRIVER
+#define USE_UART_DMA_DRIVER 1		//Enable DMA by default
+#endif
+
+
 /** UART Driver mode structure **/
 struct USART_DRIVER_MODE
 {
@@ -33,10 +38,14 @@ struct USART_DRIVER_DATA
 	HANDLE hnd_snd;						//!< doc!
 	unsigned char * rx_ptr;				//!< doc!
 	unsigned char * rx_wrptr;			//!< doc!
-	unsigned int rx_remaining;			//!< doc!
+//	unsigned int rx_remaining;			//!< doc!
 	unsigned int usart_err;
 	unsigned char rx_buf[USART_DRV_RX_BUF_SIZE];	//!< doc!
 	struct USART_DRIVER_MODE mode;		//!< copy of the current USART mode
+#if USE_UART_DMA_DRIVER
+	CHandle		rx_dma_hnd;
+	CHandle		tx_dma_hnd;
+#endif
 };
 
 /** UART Driver Info structure **/
@@ -46,6 +55,10 @@ struct USART_DRIVER_INFO
 	USART_TypeDef* 	   hw_base;			//!< USART Hardware registers
 	PIN_DESC	 	   uart_pins[5]; 	//!< pins: Rx, Tx, RTS, CTS, 0
 	USART_DRIVER_DATA* drv_data;		//!< driver data
+#if USE_UART_DMA_DRIVER
+	DMA_DRIVER_MODE		rx_dma_mode;
+	DMA_DRIVER_MODE		tx_dma_mode;
+#endif
 };
 
 void USART_DCR(USART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd);

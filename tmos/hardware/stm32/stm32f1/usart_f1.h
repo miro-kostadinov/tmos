@@ -157,6 +157,7 @@ unsigned int set_usart_baudrate(USART_TypeDef* usart, uint32_t periph_id, uint32
 #define get_usart_tdr(uart) (uart->USART_DR)	//!< transmit data register for F1
 #define get_usart_rdr(uart) (uart->USART_DR)	//!< receive data register for F1
 #define clr_usart_idle(uart) (uart->USART_DR)	//!< clear IDLE flag
+#define clr_usart_over(uart) (uart->USART_DR)	//!< Overrun error clear
 
 #define enable_usart_drv_ints(uart, f) (uart->USART_CR1 |= (f))		//!< enable usart interrupts
 #define disable_usart_drv_ints(uart, f) (uart->USART_CR1 &= ~(f)) 	//!< disable usart interrupts
