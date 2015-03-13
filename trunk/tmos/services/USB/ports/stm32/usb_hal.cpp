@@ -833,6 +833,7 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
 
 #endif // USB_ENABLE_DEVICE
 
+#if USB_ENABLE_OTG
 /**
  * USB starts with USB_CMD_DEVICE_CONFIG or USB_CMD_OTG_CONFIG and we get here
  *
@@ -913,6 +914,7 @@ RES_CODE usb_hal_start(USB_DRV_INFO drv_info, uint32_t mode)
 
 	return res;
 }
+#endif //USB_ENABLE_OTG
 
 
 //------------------------------------------------------------------------------
@@ -1486,10 +1488,12 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
 	} else
 	{
+#if USB_ENABLE_OTG
 	    if (endpoint->epd_out.epd_state == ENDPOINT_STATE_DISABLED)
 	    {
 			svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
 	    } else
+#endif
 	    {
 			HANDLE prev;
 
@@ -1767,7 +1771,9 @@ void usb_hal_host_resume(USB_DRV_INFO drv_info)
 	drv_info->hw_base->HPRT = reg & ~OTG_HPRT_PRES;	// stop driving
 
 }
+#endif // USB_ENABLE_HOST
 
+#if USB_ENABLE_OTG
 void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 {
     USB_DRIVER_DATA* drv_data = drv_info->drv_data;
@@ -1794,10 +1800,13 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 		}
 	}
 
+#if USB_ENABLE_HOST
 	if(flags & USB_OTG_FLG_HOST)
 		flags |= USB_OTG_FLG_HOST_CON | USB_OTG_FLG_HOST_PWR
 				| USB_OTG_FLG_HOST_RST | USB_OTG_FLG_HOST_OK | USB_OTG_FLG_WKUP
 				| USB_OTG_FLG_SUSPEND;
+#endif // USB_ENABLE_HOST
+
 	if(flags & USB_OTG_FLG_DEV)
 		flags |= USB_OTG_FLG_DEV_CON | USB_OTG_FLG_DEV_OK | USB_OTG_FLG_WKUP
 				| USB_OTG_FLG_SUSPEND;
@@ -1805,6 +1814,7 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 	flags &= drv_data->otg_flags;
 	drv_data->otg_flags &= ~flags;
 
+#if USB_ENABLE_HOST
 	// host power
 	if(flags & USB_OTG_FLG_HOST_PWR)
 	{
@@ -1812,6 +1822,7 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 				OTG_GINTMSK_RXFLVLM | OTG_GINTMSK_OTGINT | OTG_GINTMSK_SRQIM;
 		usb_hal_host_power(drv_info, false);
 	}
+#endif // USB_ENABLE_HOST
 
 	// device con
 	if(flags & USB_OTG_FLG_DEV_CON)
@@ -1833,6 +1844,7 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 	flags &= ~drv_data->otg_flags;
 	if(flags)
 	{
+#if USB_ENABLE_HOST
 		if(flags >= USB_OTG_FLG_HOST )
 		{
 			// host flags
@@ -1882,6 +1894,7 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 				__enable_irq();
 			}
 		} else
+#endif // USB_ENABLE_HOST
 		{
 			//device flags
 			if(drv_info->drv_data->otg_flags )
@@ -1910,7 +1923,8 @@ void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags)
 
 }
 
-#endif
+#endif // USB_ENABLE_OTG
+
 
 
 //------------------------------------------------------------------------------
@@ -2195,8 +2209,8 @@ static void usb_b_gint_usbsusp(USB_DRV_INFO drv_info)
 			usb_hal_ept_reset(drv_info, i | 0x80);
 			usb_hal_ept_reset(drv_info, i);
 		}
-		/* Turn off forced host/peripheral mode  */
-		otg->core_regs.GUSBCFG &= ~(OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_FHMOD);
+//		/* Turn off forced host/peripheral mode  */
+//		otg->core_regs.GUSBCFG &= ~(OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_FHMOD);
 
 		usb_drv_event(drv_info, e_disconnect);
 		usb_drv_event(drv_info, e_susppend);
@@ -2204,22 +2218,6 @@ static void usb_b_gint_usbsusp(USB_DRV_INFO drv_info)
 		usb_otg_clr_flags(drv_info, USB_OTG_FLG_DEV_OK);
 #endif
 	}
-}
-
-/**
- * Handles the SOF Interrupts
- * (DCD_HandleSof_ISR)
- * @param drv_info
- */
-static void usb_b_gint_sof(USB_DRV_INFO drv_info)
-{
-	/* Inform upper layer ??? */
-	TRACE1_USB(" sofint");
-	// disable for now...
-	drv_info->hw_base->core_regs.GINTMSK &= ~OTG_GINTMSK_SOFM;
-
-  	/* Clear interrupt */
-	drv_info->hw_base->core_regs.GINTSTS = OTG_GINTSTS_SOF;
 }
 
 
@@ -2274,9 +2272,10 @@ static void usb_b_gint_usbrst(USB_DRV_INFO drv_info)
   	/* Clear interrupt */
 	drv_info->hw_base->core_regs.GINTSTS = OTG_GINTSTS_USBRST;
 
+#if USB_ENABLE_OTG
+
 	usb_otg_set_flags(drv_info, USB_OTG_FLG_DEV_CON);
 
-#if USB_ENABLE_OTG
 	//Step 3. Wakeup clients..
 	usb_otg_set_flags(drv_info, USB_OTG_FLG_DEV_OK);
 	if(drv_data->pending)
@@ -2764,6 +2763,7 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		locked_dec_int(&drv_data->otg_sleep_flag);
 	}
 #endif
+#endif //USB_ENABLE_HOST
 
 	if(status & OTG_GINTSTS_CIDSCHG)	// Connector ID status change
     {
@@ -2775,21 +2775,34 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		{
 			//devive mode now
 			TRACE1_USB(" ->dev");
+#if USB_ENABLE_HOST
 			usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST);
+#endif //USB_ENABLE_HOST
 
 		} else
 		{
 			//host mode now
 			TRACE1_USB(" ->host");
+#if USB_ENABLE_HOST
 			usb_otg_clr_flags(drv_info, USB_OTG_FLG_DEV);
 			if(drv_data->otg_flags & USB_OTG_FLG_HOST)
 			{
 				if(drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
 					usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_RST);
 			}
+#endif //USB_ENABLE_HOST
 		}
     }
-#endif //USB_ENABLE_HOST
+
+    /* Handle Host SOF Interrupts */
+    if(status & OTG_GINTSTS_SOF)
+    {
+		TRACE1_USB(" SOF?");
+		otg->core_regs.GINTSTS = OTG_GINTSTS_SOF;
+		otg->core_regs.GINTMSK &= ~OTG_GINTMSK_SOFM;
+
+    }
+
 
 #if USB_ENABLE_DEVICE
 	/* ensure that we are in device mode */
@@ -2824,11 +2837,6 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 			{
 				TRACE1_USB(" suspint");
 				usb_b_gint_usbsusp(drv_info);
-			}
-
-			if (status & OTG_GINTSTS_SOF)		// Start of frame
-			{
-				usb_b_gint_sof(drv_info);
 			}
 
 			if (status & OTG_GINTSTS_RXFLVL)	// RxFIFO non-empty
@@ -2975,16 +2983,6 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		    {
 				TRACE1_USB(" RXFLVL");
 				usb_a_gint_rxflvl(drv_info);
-		    }
-
-		    /* Handle Host SOF Interrupts */
-		    if(status & OTG_GINTSTS_SOF)
-		    {
-				TRACE1_USB(" SOF?");
-//		      HAL_HCD_SOF_Callback(hhcd);
-//		      otg->core_regs.GINTSTS = OTG_GINTSTS_SOF;
-				otg->core_regs.GINTMSK &= ~OTG_GINTMSK_SOFM;
-
 		    }
 
 		    if(status & OTG_GINTSTS_OTGINT)		// OTG interrupt
