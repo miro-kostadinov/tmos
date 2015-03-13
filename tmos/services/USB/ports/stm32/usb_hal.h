@@ -51,7 +51,7 @@ void USB_EP1_IN_ISR(USB_DRV_INFO drv_info);
 void USB_EP1_OUT_ISR(USB_DRV_INFO drv_info);
 #endif
 
-#if USB_ENABLE_HOST
+#if USB_ENABLE_OTG
 void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags);
 void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags);
 #endif

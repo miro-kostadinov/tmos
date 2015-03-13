@@ -25,7 +25,9 @@ static void proc_client(USB_DRIVER_DATA* drv_data, HANDLE client, RES_CODE res)
 
 #if USE_CPU_SLEEP_MODE
 		locked_dec_int(&cpu_sleep_counter);			//enable sleep
+#if USB_ENABLE_HOST
 		locked_inc_int(&drv_data->otg_sleep_flag);	// till next irq
+#endif
 #endif
 
 	}

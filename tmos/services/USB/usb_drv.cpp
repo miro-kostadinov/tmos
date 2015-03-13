@@ -73,6 +73,7 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 #endif
 			{
 				TRACE_USB(" res %x", req_hnd.res);
+				tsk_sleep(5);
 			}
 			requested = false;
 		}
