@@ -25,6 +25,21 @@ uint32_t dma_drv_get_ndtr(DRIVER_INDEX drv_index)
 	return ndtr;
 }
 
+uint32_t dma_drv_is_en(DRIVER_INDEX drv_index)
+{
+	unsigned int is_en = 0;
+
+	if(drv_index < INALID_DRV_INDX)
+	{
+		DMA_DRIVER_INFO* drv_info;
+
+		drv_info = (DMA_DRIVER_INFO*)(void*)(DRV_TABLE[drv_index]-1);
+		is_en = stm32_dma_is_en(drv_info->hw_base, drv_info->ch_indx);
+	}
+
+	return is_en;
+}
+
 //*----------------------------------------------------------------------------
 //*			DCR function
 //*----------------------------------------------------------------------------
@@ -114,13 +129,13 @@ void DMA_DSR(DMA_DRIVER_INFO* drv_info, HANDLE hnd)
 	    	hnd->list_add(ch_data->waiting);
 		} else
 		{
+			mode = (DMA_DRIVER_MODE *)hnd->mode.as_voidptr;
+
 			if(stm32_dma_is_en(drv_info->hw_base, drv_info->ch_indx))
 			{
 				// do nothing if already enabled
 			} else
 			{
-				mode = (DMA_DRIVER_MODE *)hnd->mode.as_voidptr;
-
 				if(mode != ch_data->last_mode)
 				{
 					ch_data->last_mode = mode;
@@ -133,6 +148,7 @@ void DMA_DSR(DMA_DRIVER_INFO* drv_info, HANDLE hnd)
 			}
 			hnd->res  = RES_BUSY;
 			ch_data->pending = hnd;
+			stm32_en_ints(drv_info->hw_base, drv_info->ch_indx, mode);
 
 		}
 	} else
