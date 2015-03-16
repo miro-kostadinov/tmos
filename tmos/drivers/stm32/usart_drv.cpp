@@ -64,17 +64,37 @@ void UPDATE_RX_WRPTR(USART_DRIVER_INFO * drv_info, USART_DRIVER_DATA* drv_data)
 static inline void START_RX_BUF(USART_TypeDef* uart, USART_DRIVER_DATA* drv_data)
 {
 	uint32_t ints = USART_STATUS_RXNEIE | USART_STATUS_IDLEIE;
+	unsigned char* buf_reset = drv_data->rx_buf;
 
-	drv_data->rx_ptr = drv_data->rx_buf;
-	drv_data->rx_wrptr = drv_data->rx_buf;
 //	drv_data->rx_remaining = USART_DRV_RX_BUF_SIZE;
 #if USE_UART_DMA_DRIVER
 	if(drv_data->rx_dma_hnd.res < RES_CLOSED)
 	{
-		drv_data->rx_dma_hnd.drv_read_write(drv_data->rx_buf, (void*)&get_usart_rdr(uart), USART_DRV_RX_BUF_SIZE);
+		uint32_t remaining;
+		DRIVER_INDEX drv_indx;
+
+		drv_indx = ((DMA_DRIVER_MODE*)(drv_data->rx_dma_hnd.mode.as_voidptr))->dma_index;
+		if(dma_drv_is_en(drv_indx))
+		{
+			remaining = dma_drv_get_ndtr(drv_indx);
+			if(remaining)
+			{
+				if(remaining < USART_DRV_RX_BUF_SIZE)
+					remaining = USART_DRV_RX_BUF_SIZE - remaining;
+				else
+					remaining = 0;
+			}
+
+			buf_reset += remaining;
+		} else
+		{
+			drv_data->rx_dma_hnd.drv_read_write(drv_data->rx_buf, (void*)&get_usart_rdr(uart), USART_DRV_RX_BUF_SIZE);
+		}
 		ints = USART_STATUS_IDLEIE;
 	}
 #endif
+	drv_data->rx_ptr = buf_reset;
+	drv_data->rx_wrptr = buf_reset;
 	enable_usart_drv_ints(uart, ints);
 }
 

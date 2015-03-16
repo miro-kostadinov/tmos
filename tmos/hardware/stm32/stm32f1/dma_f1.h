@@ -137,6 +137,7 @@ static inline uint32_t stm32_dma_is_en(DMA_TypeDef* dmac, uint32_t indx)
 	return dmac->DMA_Chx[indx].DMA_CCRx & DMA_CCRx_EN;
 }
 
+void stm32_en_ints(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode);
 void stm32_dis_ints(DMA_TypeDef* dmac, uint32_t indx);
 
 
