@@ -463,7 +463,7 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 	//check the receiver
 	if (status & USART_STATUS_ORE)
 	{
-		TRACELN("over");
+//		TRACELN("over");
 		clr_usart_over(uart); //clear overrun flag
     	if( (hnd=drv_data->hnd_rcv) )
     	{
@@ -492,8 +492,6 @@ void USART_ISR(USART_DRIVER_INFO* drv_info)
 #endif
 		{
 			*drv_data->rx_wrptr = get_usart_rdr(uart);
-			if(drv_info->info.drv_index == USART3_IRQn)
-				TRACE_BUF(drv_data->rx_wrptr, 1, TC_TXT_CYAN);
 			drv_data->rx_wrptr++;
 			if(drv_data->rx_wrptr == drv_data->rx_ptr && (hnd = drv_data->hnd_rcv))
 			{
