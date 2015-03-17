@@ -39,5 +39,6 @@
 
 #define USE_ADC_DMA_DRIVER 0		//Enable ADC DMA
 #define USE_SDIO_DMA_DRIVER 0
+#define USE_UART_DMA_DRIVER 0
 
 #endif /* BRD_CFG_H_ */
