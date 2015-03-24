@@ -21,7 +21,11 @@ unsigned int GContainer::initialize (GMessage& msg)								//sets the client rec
 		tmp->initialize(msg);
 	}
 	if((flags & GO_FLG_SELECTED) && is_available() && parent)
+	{
+		if(parent->focus != this && parent->focus)
+			send_message(WM_KILLFOCUS, parent->focus->id, 0LL, parent->focus);
 		parent->focus = this;
+	}
 	return 0;
 }
 
