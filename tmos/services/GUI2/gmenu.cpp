@@ -181,6 +181,7 @@ bool GMenu::SetReplaceItem(int item_id, const CSTRING& item_name, short unsigned
 	}
 	return	AppendMenu(0, item_id, item_name, flg);
 }
+
 bool GMenu::RemoveItem(int item_id)
 {
 	menu_template_t * new_base;
@@ -258,6 +259,64 @@ bool GMenu::RemoveItem(int item_id)
 	menu = GetMenu(item->parent);
 	set_scroll();
 	return true;
+}
+
+bool GMenu::InsertItem(int item_id, int new_item_id, const CSTRING& new_item_name, short unsigned int new_flg)
+{
+	menu_template_t * new_base;
+	menu_template_t* ptr;
+	int item_pos;
+
+	ptr = FindItem(item_id);
+	if(item)
+		item_id = item->item;
+	else
+		item_id = -1;
+	if(!ptr )
+	{
+		// not found, insert at top
+		if(!base)
+		{ // empty menu
+			return add_item(0, new_item_id, new_item_name, new_flg);
+		}
+		item_pos = 0;
+	}
+	else
+	{
+		if(ptr->item == new_item_id)
+			return false;
+		item_pos = ptr - base;
+		if(item_pos)
+			item_pos /= sizeof(menu_template_t);
+	}
+
+	new_base = (menu_template_t *)tsk_malloc_clear((size +2)*sizeof(menu_template_t));
+	if(!new_base)
+		return false;
+	for(int i=0, j=0; i<size; i++, j++)
+	{
+		if(item_pos == j)
+		{
+			// insert new item
+			new_base[j].parent = (ptr)?ptr->parent:0;
+			new_base[j].item = new_item_id;
+			new_base[j].item_name =new_item_name;
+			new_base[j].flags = new_flg;
+			j++;
+		}
+		new_base[j].parent = base[i].parent;
+		new_base[j].item = base[i].item;
+		new_base[j].item_name = base[i].item_name;
+		new_base[j].flags = base[i].flags;
+		base[i].item_name.free();
+	}
+	tsk_free(base);
+	base = new_base;
+	size++;
+	if(item_id != -1)
+		Select(item_id);
+	return true;
+
 }
 
 bool GMenu::Select(int item_id)
@@ -401,7 +460,7 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 			rows--;
 
 		sy = get_item_pos(item);
-		if(sy >= rows/2)
+		if(sy >= rows/2 && rows < size )
 		{
 			sy -= rows/2;
 			if(sy + rows >= size && size >= rows )
@@ -415,46 +474,52 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 
 
 		tmp = menu;
-		lcd->allign = TA_LEFT;
-		lcd->pos_x = client_rect.x0;
-		lcd->pos_y = client_rect.y0 + (2*text_font->vdistance) + (menu_height - (rows*row_height))/2;
 
-		while(tmp)
+		GClientLcd dc(this);
+		if(dc.CreateLcd(client_rect, lcd))
 		{
-			int y = get_item_pos(tmp);
-			if( y >= sy && y < ey )
+			lcd->allign = TA_LEFT;
+			lcd->pos_x = dc.client_rect.x0;
+			lcd->pos_y = dc.client_rect.y0 + (2*text_font->vdistance) + (menu_height - (rows*row_height))/2;
+
+			while(tmp)
 			{
-				str = tmp->item_name;
-				rows = remove_amp(str);
-				if(str.length())
+				int y = get_item_pos(tmp);
+				if( y >= sy && y < ey )
 				{
-					if(tmp->flags & GMENU_FLG_CHECK_ITEM)
+					str = tmp->item_name;
+					rows = remove_amp(str);
+					if(str.length())
 					{
-						if (tmp->flags & GO_FLG_CHECKED)
-							lcd->draw_icon(GICON_CHECKED_SQUARE);
-						else
-							lcd->draw_icon(GICON_SQUARE);
-						lcd->pos_x = /*(client_rect.y1 - client_rect.y0) +*/
-								client_rect.x0 + ((lcd->font->hspacing * 4)/3);
+						if(tmp->flags & GMENU_FLG_CHECK_ITEM)
+						{
+							if (tmp->flags & GO_FLG_CHECKED)
+								lcd->draw_icon(GICON_CHECKED_SQUARE);
+							else
+								lcd->draw_icon(GICON_SQUARE);
+							lcd->pos_x = /*(client_rect.y1 - client_rect.y0) +*/
+									dc.client_rect.x0 + ((lcd->font->hspacing * 4)/3);
+						}
+						dc.draw_text_line(lcd, str.c_str(), str.length());
+						lcd->pos_x = dc.client_rect.x0;
 					}
-					draw_text_line(lcd, str.c_str(), str.length());
-					lcd->pos_x = client_rect.x0;
+					else
+						lcd->pos_y += text_font->vspacing;
+					if(tmp==item && (flags & GO_FLG_SELECTED))
+					{
+						for (int i = lcd->pos_y - row_height; i < lcd->pos_y; i++)
+							dc.invert_hline (client_rect.x0, client_rect.x1, i);
+					}
+					if(rows)
+					{
+						rows = lcd->pos_x + (rows-1)*text_font->hspacing;
+						dc.draw_hline(rows, rows + text_font->hspacing, lcd->pos_y- text_font->vdistance);
+					}
+					lcd->pos_y += text_font->vdistance;
 				}
-				else
-					lcd->pos_y += text_font->vspacing;
-				if(tmp==item && (flags & GO_FLG_SELECTED))
-				{
-					for (int i = lcd->pos_y - row_height; i < lcd->pos_y; i++)
-						invert_hline (client_rect.x0, client_rect.x1, i);
-				}
-				if(rows)
-				{
-					rows = lcd->pos_x + (rows-1)*text_font->hspacing;
-					draw_hline(rows, rows + text_font->hspacing, lcd->pos_y- text_font->vdistance);
-				}
-				lcd->pos_y += text_font->vdistance;
+				tmp = GetMenu(tmp->parent, tmp+1);
 			}
-			tmp = GetMenu(tmp->parent, tmp+1);
+			dc.RelaseLcd();
 		}
 	}
 }
