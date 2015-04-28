@@ -32,7 +32,7 @@ extern "C" char __BUILD_VERSION;
 #define DRV_PRIORITY_EXTI4		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_EXTI5		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_EXTI10		NVIC_PIORITY(0x03)
-#define DRV_PRIORITY_SPI0		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_SPI1		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_USB		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_TIMER		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_WDT		NVIC_PIORITY(0x04)
@@ -63,6 +63,16 @@ extern const USART_DRIVER_MODE uart_default_mode;
 #define TEST_UART 1
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 SPI DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#include <spi_drv.h>
+
+#define USE_RFM73 1
+#define RFM73_SPI_DRIVER SPI1_IRQn
+
+extern const SPI_DRIVER_MODE g_rfm73_mode;
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 GPIO DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #include <gpio_stm32.h>
@@ -75,11 +85,11 @@ extern const USART_DRIVER_MODE uart_default_mode;
 #define PIN_UART2_RX	(PD_PA3  | PD_AF_USART2)								//!< CN9.1	CN10.37	USART2_RX
 #define PIN_SPI1_NSS	(PD_PA4  | PD_OUT | PD_ACTIVE_LOW)						//!< CN8.3	CN7.32	ADC_IN4
 #define PIN_LED			(PD_PA5  | PD_OUT | PD_ACTIVE_HIGH)						//!< CN5.6	CN10.11	SPI1_SCK
-#define PIN_SPI1_MISO	(PD_PA6  | PD_AF)										//!< CN5.5	CN10.13	SPI1_MISO
-#define PIN_SPI1_MOSI	(PD_PA7  | PD_AF)										//!< CN5.4	CN10.15	TIM17_CH1 or SPI1_MOSI
-#define PIN_PA8			(PD_PA8  | PD_IN)										//!< CN9.8	CN10.23
-#define PIN_A9			(PD_PA9  | PD_AF)										//!< CN5.1	CN10.21
-#define PIN_A10			(PD_PA10 | PD_AF)										//!< CN9.3
+#define PIN_A6			(PD_PA6  | PD_IN)										//!< CN5.5	CN10.13	SPI1_MISO
+#define PIN_A7			(PD_PA7  | PD_IN)										//!< CN5.4	CN10.15	TIM17_CH1 or SPI1_MOSI
+#define PIN_RFM_IRQ		(PD_PA8  | PD_IN | PD_INT_BE)							//!< CN9.8	CN10.23
+#define PIN_UART1_TX	(PD_PA9  | PD_AF1)										//!< CN5.1	CN10.21
+#define PIN_UART1_RX	(PD_PA10 | PD_AF1)										//!< CN9.3
 #define PIN_A11			(PD_PA11 | PD_AF)										//!< CN10.14
 #define PIN_A12			(PD_PA12 | PD_AF)										//!< CN10.12
 #define PIN_TMS			(PD_PA13 | PD_AF)										//!< CN7.13			TMS
@@ -90,14 +100,14 @@ extern const USART_DRIVER_MODE uart_default_mode;
 #define PIN_PB0			(PD_PB0  | PD_IN)										//!< CN8.4	CN7.34	ADC_IN8
 #define PIN_PB1			(PD_PB1  | PD_IN)										//!< 		CN10.24
 #define PIN_PB2 		(PD_PB2  | PD_IN)										//!< 		CN10.22
-#define PIN_TDO			(PD_PB3  | PD_AF)										//!< CN9.4	CN10.31
-#define PIN_TSRT		(PD_PB4  | PD_AF)										//!< CN9.6	CN10.27	TIM3_CH1
-#define PIN_PB5			(PD_PB5  | PD_IN)										//!< CN9.5	CN10.29
+#define PIN_SPI1_SCK	(PD_PB3  | PD_AF_SPI1)									//!< CN9.4	CN10.31
+#define PIN_SPI1_MISO	(PD_PB4  | PD_AF_SPI1)									//!< CN9.6	CN10.27	TIM3_CH1
+#define PIN_SPI1_MOSI	(PD_PB5  | PD_AF_SPI1)									//!< CN9.5	CN10.29
 #define PIN_I2C1_SCL	(PD_PB6  | PD_AF)										//!< CN5.3	CN10.17	TIM16_CH1N or SPI1_CS
 #define PIN_I2C1_SDA	(PD_PB7  | PD_AF) 										//!< CN7.21
 #define PIN_CAN_RX		(PD_PB8  | PD_AF)										//!< CN5.10	CN10.3	I2C1_SCL
 #define PIN_CAN_TX		(PD_PB9  | PD_AF)										//!< CN5.9	CN10.5	I2C1_SDA
-#define PIN_PB10		(PD_PB10 | PD_IN)										//!< CN9.7	CN10.25
+#define PIN_RFM_CS		(PD_PB10 | PD_OUT | PD_ACTIVE_LOW)						//!< CN9.7	CN10.25
 #define PIN_PB11		(PD_PB11 | PD_IN)										//!< CN10.18
 #define PIN_SPI2_NSS	(PD_PB12 | PD_OUT | PD_ACTIVE_LOW)						//!< CN10.16
 #define PIN_SPI2_SCK	(PD_PB13 | PD_AF)										//!< 		CN10.30
@@ -112,7 +122,7 @@ extern const USART_DRIVER_MODE uart_default_mode;
 #define PIN_USB_P 		(PD_PC4  | PD_IN)										//!< CN10.34
 #define PIN_PC5			(PD_PC5  | PD_IN)										//!< CN10.6
 #define PIN_SD_WP		(PD_PC6  | PD_IN)										//!< CN10.4
-#define PIN_SD_CP		(PD_PC7  | PD_IN)						 				//!< CN5.2	CN10.19	TIM3_CH2
+#define PIN_RFM_CE		(PD_PA10 | PD_OUT | PD_ACTIVE_HIGH)		 				//!< CN5.2	CN10.19	TIM3_CH2
 #define PIN_PC8			(PD_PC8  | PD_OUT | PD_ACTIVE_HIGH)                     //!< CN10.2
 #define PIN_PC9			(PD_PC9  | PD_IN)                                       //!< CN10.1
 #define PIN_CAN_CNTRL	(PD_PC10 | PD_IN)                                       //!< CN7.1
