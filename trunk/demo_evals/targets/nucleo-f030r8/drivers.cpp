@@ -177,6 +177,36 @@ const EXTI_DRIVER_INFO exti4_driver =
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 UART 1 DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+const USART_DRIVER_MODE uart1_mode =
+{
+	115200,									//!< baudrate e.g. 9600
+	USART_CR1_RE | USART_CR1_TE | USART_CR1_IDLEIE | USART_CR1_RXNEIE |
+		USART_CR1_TXEIE | USART_CR1_UE,		//!< USART_CR1 register value
+	USART_CR2_STOP_1b,						//!< USART_CR2 register value
+	0										//!< USART_CR3 register value
+};
+
+USART_DRIVER_DATA uart1_drv_data;
+const USART_DRIVER_INFO uart1_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)USART_ISR,
+			(DRV_DCR)USART_DCR,
+			(DRV_DSR)USART_DSR,
+			USART1_IRQn,
+			DRV_PRIORITY_UART1,
+			ID_PERIPH_USART1
+		},
+		USART1,
+		{PIN_UART1_RX, PIN_UART1_TX, 0, 0, 0},      // pin Rx , pin Tx, pin RTS, pin CTS
+		&uart1_drv_data
+};
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 UART 2 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -231,8 +261,42 @@ const USART_DRIVER_INFO uart2_driver =
 //};
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// 		 SPIO DRIVER
+// 		 SPI 1-2 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SPI_DRIVER_DATA spi1_drv_data;
+const SPI_DRIVER_INFO spi1_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			(DRV_ISR)SPI_ISR,
+			(DRV_DCR)SPI_DCR,
+			(DRV_DSR)SPI_DSR,
+			SPI1_IRQn,
+			DRV_PRIORITY_SPI1,
+			ID_PERIPH_SPI1
+		},
+		SPI1,
+		&spi1_drv_data,
+		{
+			PIN_SPI1_SCK,
+			PIN_SPI1_MISO,
+			PIN_SPI1_MOSI,
+			0
+		}
+};
+
+const SPI_DRIVER_MODE g_rfm73_mode =
+{
+		PIN_RFM_CS,		//CS
+		// SPI_CR1 register value
+		SPI_CR1_BR_DIV16 | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSBFIRST |
+		SPI_CR1_MSTR | SPI_CR1_CPHA | SPI_CR1_CPOL,
+		// SPI_CR2 register value (FRF and SSOE only)
+		SPI_CR2_DS_8bit | SPI_CR2_FRF_MOTO
+};
+
+
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -271,9 +335,9 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
 	1+ (char * const)&DefaultDriver,    /*!< 22 TIM17 global Interrupt                                          */
 	1+ (char * const)&DefaultDriver,    /*!< 23 I2C1 Event Interrupt                                            */
 	1+ (char * const)&DefaultDriver,    /*!< 24 I2C2 Event Interrupt                                            */
-	1+ (char * const)&DefaultDriver,    /*!< 25 SPI1 global Interrupt                                           */
+	1+ (char * const)&spi1_driver,      /*!< 25 SPI1 global Interrupt                                           */
 	1+ (char * const)&DefaultDriver,    /*!< 26 SPI2 global Interrupt                                           */
-	1+ (char * const)&DefaultDriver,    /*!< 27 USART1 global Interrupt                                         */
+	1+ (char * const)&uart1_driver,     /*!< 27 USART1 global Interrupt                                         */
 	1+ (char * const)&uart2_driver,     /*!< 28 USART2 global Interrupt   */
 
     NULL				//null terminated list
