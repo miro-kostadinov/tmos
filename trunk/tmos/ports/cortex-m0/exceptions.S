@@ -139,7 +139,7 @@ FUNC(	sys_call_static_ctors	)
 				cmp			r4,r5
 				beq			2f
 
-				ldm			r5!, {r2}
+				ldm			r4!, {r2}
 				blx			r2
 				b			1b
 2:
