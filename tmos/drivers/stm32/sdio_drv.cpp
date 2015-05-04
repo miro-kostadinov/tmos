@@ -330,7 +330,7 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 		case DCR_CLOCK:
 			//patch for low speed cards
 			drv_info->hw_base->SDIO_CLKCR  = (drv_info->hw_base->SDIO_CLKCR &
-					~SDIO_CLKCR_CLKDIV) | SDIO_CLKCR_CLKDIV_Set(48000/16000 -2);
+					~SDIO_CLKCR_CLKDIV) | SDIO_CLKCR_CLKDIV_Set(/*48000/16000 -2*/0);
 
 			break;
 
