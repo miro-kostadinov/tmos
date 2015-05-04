@@ -61,7 +61,7 @@ extern "C" void LowLevelInit( void )
 	RCC->RCC_CFGR |= RCC_CFGR_PLLMUL_Set(12-2);
 
 	//--enable the PLL
-	RCC->RCC_CR = RCC_CR_PLLON;
+	RCC->RCC_CR |= RCC_CR_PLLON;
 	while(!(RCC->RCC_CR & RCC_CR_PLLRDY))
 	{
 	}
