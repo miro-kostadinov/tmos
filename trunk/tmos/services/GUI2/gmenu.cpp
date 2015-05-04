@@ -151,7 +151,7 @@ bool GMenu::add_item(int parent_id, int item_id, const CSTRING& name, short unsi
 	base[size].flags = flg;
 
 	size++;
-	item = menu = base;
+//	item = menu = base;
 	return true;
 }
 
@@ -277,7 +277,10 @@ bool GMenu::InsertItem(int item_id, int new_item_id, const CSTRING& new_item_nam
 		// not found, insert at top
 		if(!base)
 		{ // empty menu
-			return add_item(0, new_item_id, new_item_name, new_flg);
+			if(!add_item(0, new_item_id, new_item_name, new_flg))
+				return false;
+			item = menu = base;
+			return true;
 		}
 		item_pos = 0;
 	}
@@ -348,6 +351,7 @@ bool GMenu::AppendMenu( int parent_id, int item_id, const CSTRING& item_name, sh
 			if(!add_item(parent_id, item_id, item_name, flg))
 				return false;
 		}
+		item = menu = base; // set at last
 		return true;
 	}
 	else
@@ -355,7 +359,10 @@ bool GMenu::AppendMenu( int parent_id, int item_id, const CSTRING& item_name, sh
 		if(!menu ||GetItem(parent_id, item_id))
 			return false;
 		if(add_item(parent_id, item_id, item_name, flg))
+		{
+			item = menu = base;
 			return true;
+		}
 	}
 	return false;
 }
@@ -644,29 +651,32 @@ unsigned int GMenu::process_key (GMessage& msg)
 bool GMenu::set_scroll(void)
 {
 	bool res = false;
-	int rows =	(client_rect.height() -
-				((title)?(text_font->vspacing+2*text_font->vdistance):0)) /
-				(text_font->vspacing + text_font->vdistance);
-
-	if( !(rows & 1) && rows > size )
-		rows--;
-
-	if(rows < size && !scroll)
+	if(client_rect)
 	{
-		scroll = new GScroll(this);
-	}
-	if(scroll)
-	{
-		scroll->SetScrollRange(GO_FLG_VSCROLL, size);
-		if(rows < size)
+		int rows =	(client_rect.height() -
+					((title)?(text_font->vspacing+2*text_font->vdistance):0)) /
+					(text_font->vspacing + text_font->vdistance);
+
+		if( !(rows & 1) && rows > size )
+			rows--;
+
+		if(rows < size && !scroll)
 		{
-			int tmp = get_item_pos(item);
-			scroll->SetScrollPos(GO_FLG_VSCROLL, tmp);
-			res = scroll->ShowScroll(GO_FLG_VSCROLL, true);
+			scroll = new GScroll(this);
 		}
-		else
-			res = scroll->ShowScroll(GO_FLG_VSCROLL, false);
+		if(scroll)
+		{
+			scroll->SetScrollRange(GO_FLG_VSCROLL, size);
+			if(rows < size)
+			{
+				int tmp = get_item_pos(item);
+				scroll->SetScrollPos(GO_FLG_VSCROLL, tmp);
+				res = scroll->ShowScroll(GO_FLG_VSCROLL, true);
+			}
+			else
+				res = scroll->ShowScroll(GO_FLG_VSCROLL, false);
+		}
+		adjust_item_names();
 	}
-	adjust_item_names();
 	return res;
 }

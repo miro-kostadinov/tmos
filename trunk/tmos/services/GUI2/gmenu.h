@@ -96,7 +96,7 @@ struct GMenu: GObject
 		size=0;
 	}
 
-	bool AppendMenu(int parent_id, int menu_id, const CSTRING& menu_name, short unsigned int flg =0);
+	virtual bool AppendMenu(int parent_id, int menu_id, const CSTRING& menu_name, short unsigned int flg =0);
 	bool LoadMenu(const MENUTEMPLATE* pat);
 
 	menu_template_t* GetItem(int parent_id, int menu_id);
@@ -105,7 +105,7 @@ struct GMenu: GObject
 	int GetMenuSize(int menu_id);
 	bool SetReplaceItem(int item_id, const CSTRING& item_name, short unsigned int flg =0);
 	bool Select(int item_id);
-	bool RemoveItem(int item_id);
+	virtual bool RemoveItem(int item_id);
 	bool InsertItem(int item_id, int new_item_id, const CSTRING& new_item_name, short unsigned int new_flg =0);
 
 protected:
@@ -119,8 +119,8 @@ protected:
 	}
 	bool process_selected();
 	int get_item_pos(menu_template_t* ptr);
-private:
-	bool set_scroll(void);
+//private:
+	virtual bool set_scroll(void);
 	bool add_item(int parent_id, int item_id, const CSTRING& name, short unsigned int flg =0);
 	void adjust_item_names();
 };
