@@ -42,5 +42,7 @@
 
 #define USE_UART_DMA_DRIVER 0
 
+#define USE_WIFI 			1
+#define USB_WIFI_ESP8266	1
 
 #endif /* BRD_CFG_H_ */

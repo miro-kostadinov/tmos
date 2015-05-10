@@ -1,10 +1,9 @@
 ##########################################################################
 #
-#	Make include for services/net
+#	Make include for services/WiFi
 #	
 #   Platform: MPOS rev.2.3
 #
-#   www.thumbos.com
 #
 ##########################################################################
 
@@ -14,10 +13,9 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= csocket.cpp url.cpp
+local_cpp_src-y	+= wifi_drv.cpp wifi_core.cpp
 
-local_h_src-y 	+= csocket.h url.h net_err.h
-
+local_h_src-y 	+= wifi_drv.h wifi_opt.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -30,9 +28,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 inc_dirs += $(subdirectory) 
 
 #submodules
-local_modules-y := 
-
-local_modules-$(USE_LWIP_1_4_)	+= lwip-1.4.0.1
+local_modules-$(USB_WIFI_ESP8266) += esp8266
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)

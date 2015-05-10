@@ -82,8 +82,11 @@ USE_AES_TMOS	?=n
 USE_GPIO_EXPANDER ?=n
 
 #net
-USE_NET			?=n
+USE_NET			?=y
 
+# WiFi
+USE_WIFI			?=y
+USB_WIFI_ESP8266 	?=y
 
 ################################################################################
 
