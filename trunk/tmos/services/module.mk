@@ -43,6 +43,7 @@ local_modules-$(USE_LWIP_1_4)	+= lwip-1.4.0.rc1
 local_modules-$(USE_NET)		+= net
 local_modules-$(USE_TMOS_TL_V1)	+= tmos_tl_v1
 local_modules-$(USE_TMOS_TL_V2)	+= tmos_tl_v2 
+local_modules-$(USE_WIFI)		+= WiFi 
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
