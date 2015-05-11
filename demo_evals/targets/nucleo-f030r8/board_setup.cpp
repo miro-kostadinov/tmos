@@ -7,6 +7,7 @@
 #include <tmos.h>
 #include <drivers.h>
 #include <hardware_cpp.h>
+#include <mqueue.h>
 
 /*!< Uncomment the line corresponding to the desired System clock (SYSCLK)
    frequency (after reset the HSI is used as SYSCLK source)
@@ -105,5 +106,64 @@ extern "C" void app_init(void)
 	TRACELN1("App init");
 }
 
+volatile HANDLE trace_hnd;
+fmqueue<char, 1023> trace_que;
 
+
+extern "C" void usr_trace_str(const char *buf)
+{
+	if(trace_hnd)
+	{
+		while(*buf)
+		{
+			if ( (__get_CONTROL() & 2) && trace_que.full() &&
+				trace_hnd->client.task != CURRENT_TASK )
+			{
+				unsigned int time;
+
+				time = CURRENT_TASK->time;
+				tsk_sleep(50);
+				CURRENT_TASK->time = time;
+			}
+			__disable_irq();
+			trace_que.push(*buf++);
+			__enable_irq();
+		}
+	}
+}
+
+extern "C" void usr_trace_char(unsigned c)
+{
+	if(trace_hnd)
+	{
+		__disable_irq();
+		trace_que.push(c);
+		__enable_irq();
+	}
+}
+
+void trace_uart( void )
+{
+	CHandle uart;
+	char ch;
+
+	if(uart.tsk_open(USART2_IRQn, &uart_default_mode))
+	{
+		trace_hnd = &uart;
+		while(1)
+		{
+			while(trace_que.pop(ch))
+			{
+				trace_hnd->tsk_write(&ch, 1);
+			}
+			tsk_sleep(100);
+		}
+	}
+}
+TASK_DECLARE_STATIC(TRACE_UART_task, "TRACE", trace_uart, 20, 50);
+
+void start_trace()
+{
+    usr_task_init_static(&TRACE_UART_task_desc, true);
+}
 
