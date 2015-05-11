@@ -319,9 +319,17 @@ static unsigned int get_clocks_per200ms(void)
 void test();
 void start_rftest();
 
+#if TRACE_IS == TRACE_DBGU
+extern void start_trace();
+#endif
+
 int main(void)
 {
 	unsigned int clock_freq;
+
+#if TRACE_IS == TRACE_DBGU
+	start_trace();
+#endif
 
 	test();
 
