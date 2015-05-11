@@ -61,7 +61,7 @@ struct esp8266_module: public wifi_module_type
     virtual NET_CODE wifi_reset(bool force);
     NET_CODE wifi_drv_level();
 
-
+    NET_CODE wifi_esp8266_init_net(CSocket * sock);
     NET_CODE wifi_esp8266_socket_open(CSocket* sock);
     void wifi_esp8266_socket_close(unsigned int sid);
     void wifi_driver_socket_close(unsigned int sid, unsigned int reason);
