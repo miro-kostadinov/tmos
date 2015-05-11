@@ -152,7 +152,7 @@ struct xml_table: base_xml_tag
 
 void table_process(tree<base_xml>::iterator pos)
 {
-	xml_table& table = static_cast<xml_table&>(*pos);
+//	xml_table& table = static_cast<xml_table&>(*pos);
 
 
 }
