@@ -13,14 +13,14 @@
 
 struct WIFI_DRIVER_INFO;
 
-struct apn_stru_t
+struct wifi_AP_t
 {
 	CSTRING name;		// APN name
 	CSTRING user;		// APN user login name
 	CSTRING pass;		// APN user pass
 	uint8_t indx;		// APN index 0=default
 
-	apn_stru_t():
+	wifi_AP_t():
 		indx(0) {};
 };
 
@@ -83,6 +83,8 @@ struct wifi_module_type
     virtual void wifi_cancelation();
 
 
+    char* get_str_cmd(const char *cmd, unsigned int time);
+    char* get_str_prm(char *row, unsigned int param);
     virtual WIFI_CMD_STATE wifi_process_row(const char *cmd);
     virtual WIFI_CMD_STATE wifi_send_cmd(const char *cmd, unsigned int time);
     virtual RES_CODE process_cmd(HANDLE client);
@@ -129,7 +131,7 @@ RES_CODE wifi_drv_off(wifi_module_type* module, HANDLE hnd);
 
 extern "C" NET_CODE wifi_on_deregister(wifi_module_type* mod);
 
-extern "C" NET_CODE wifi_on_get_APN(wifi_module_type* mod, CSocket* sock, apn_stru_t* apn);
+extern "C" NET_CODE wifi_on_get_AP(wifi_module_type* mod, CSocket* sock, wifi_AP_t* apn);
 extern "C" void wifi_on_disconnect(wifi_module_type* mod);
 extern "C" void wifi_on_blink_transfer(wifi_module_type* mod, int reason);
 

@@ -11,7 +11,20 @@
 #include <wifi_core.h>
 #include <csocket.h>
 
+WEAK_C NET_CODE wifi_on_get_AP(wifi_module_type* mod, CSocket* sock, wifi_AP_t* apn)
+{
+	return NET_ERR_WIFI_NET_NAME;
+}
 
+WEAK_C void wifi_on_disconnect(wifi_module_type* mod)
+{
+
+}
+
+WEAK_C void wifi_on_blink_transfer(wifi_module_type* mod, int reason)
+{
+
+}
 
 WEAK_C NET_CODE wifi_on_register(wifi_module_type* mod)
 {
@@ -275,6 +288,51 @@ void wifi_module_type::wifi_sleep(unsigned int time)
     }
 }
 
+char* wifi_module_type::get_str_cmd(const char *cmd, unsigned int time)
+{
+
+	if(wifi_send_cmd(cmd, time) == WIFI_CMD_STATE_ROK)
+	{
+		char* ptr = strchr(buf, '"');
+		if(ptr)
+		{
+			char *end = strchr(++ptr, '"');
+			if(end)
+			{
+				*end = 0;
+				return ptr;
+			}
+		}
+	}
+	return NULL;
+}
+
+char* wifi_module_type::get_str_prm(char *row, unsigned int param)
+{
+	char* end;
+
+	while (param >1)
+	{
+		row = strchr(row, '"');
+		if(!row)
+			return NULL;
+		row = strchr(row +1, '"');
+		if(!row)
+			return NULL;
+		row++;
+		param--;
+	}
+
+	row = strchr(row, '"');
+	if(!row)
+		return NULL;
+	end = strchr(++row, '"');
+	if(!end)
+		return NULL;
+	*end =0;
+	return row;
+}
+
 RES_CODE wifi_module_type::wifi_error(int err)
 {
 	drv_info->drv_data->wifi_error = err;
@@ -298,11 +356,11 @@ NET_CODE wifi_module_type::wifi_get_network_name(CSTRING& name)
 	if(wifi_send_cmd("+COPS=3,1", 50) & WIFI_CMD_STATE_OK) //short format alphanumeric <oper>
 	{
 //		char* ptr = get_str_cmd("+COPS?", 180);
-		if(ptr)
-		{
-			name = ptr;
-			return NET_OK;
-		}
+//		if(ptr)
+//		{
+//			name = ptr;
+//			return NET_OK;
+//		}
 	}
 	return wifi_net_error(NET_ERR_WIFI_NET_NAME);
 }
