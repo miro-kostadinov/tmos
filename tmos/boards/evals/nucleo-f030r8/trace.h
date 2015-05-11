@@ -29,7 +29,7 @@
 #define TRACE_DBGU				3 //enable trace over DBGU uart
 
 //select one from the above
-#define TRACE_IS				TRACE_PEEDI
+#define TRACE_IS				TRACE_DBGU
 
 //--- stack size required to use trace with parameters
 #define TRACE_SIZE		128
@@ -46,7 +46,7 @@
 # define TRACELN(...)
 # define TRACE1(str)
 # define TRACELN1(str)
-#elif TRACE_IS == TRACE_PEEDI
+#else
 
 # define TRACE_CHAR( ch)						\
 	do {usr_trace_char(ch);}while(0)
