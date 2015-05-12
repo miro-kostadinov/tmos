@@ -95,6 +95,7 @@
 #define TRACE_FOCUS_LEVEL				TRACE_LEVEL_DEBUG
 #define TRACE_FILE_SYSTEM_LEVEL			TRACE_LEVEL_DEBUG
 #define TRACE_PRN_LEVEL					TRACE_LEVEL_DEBUG
+#define TRACE_WIFI_LEVEL				TRACE_LEVEL_TRACE
 // trace functions with levels:
 
 #define TRACE_CHAR_LEVEL(level, ch) do{ if (level >= TRACE_DEFAULT_LEVEL) TRACE_CHAR(ch); }while(0)

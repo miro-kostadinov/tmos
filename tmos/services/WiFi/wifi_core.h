@@ -48,7 +48,7 @@ typedef unsigned int WIFI_CMD_STATE;
 
 struct wifi_module_type
 {
-	WIFI_DRIVER_INFO* drv_info;
+	const WIFI_DRIVER_INFO* drv_info;
 
     unsigned short row_start;
     unsigned short row_end;
@@ -61,7 +61,7 @@ struct wifi_module_type
 
     char buf[WIFI_BUF_SIZE];
 
-    wifi_module_type(WIFI_DRIVER_INFO* pinfo):drv_info(pinfo), row_start(0),
+    wifi_module_type(const WIFI_DRIVER_INFO* pinfo):drv_info(pinfo), row_start(0),
     		row_end(0), cmd_state(0), received_ch(0), wifi_watchdog_cnt(0)
     {
     }

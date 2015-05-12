@@ -401,3 +401,41 @@ RES_CODE esp8266_module::wifi_sock_close(CSocket* sock) // NET_ERROR OK
 	return RES_SIG_ERROR;
 
 }
+
+unsigned int esp8266_module::get_socket_state(unsigned int sock_id)
+{
+	return 0;
+}
+
+void esp8266_module::wifi_driver_socket_close(unsigned int sid, unsigned int reason)
+{
+
+}
+
+RES_CODE esp8266_module::process_read(CSocket* sock)
+{
+	return RES_OK;
+}
+
+RES_CODE esp8266_module::process_write(CSocket* sock)
+{
+	return RES_OK;
+}
+
+RES_CODE esp8266_module::wifi_sock_connect_adr(CSocket* sock)
+{
+	return RES_OK;
+}
+
+RES_CODE esp8266_module::wifi_sock_connect_url(CSocket* sock)
+{
+	return RES_OK;
+}
+
+RES_CODE esp8266_module::wifi_gethostbyname(CSocket* sock)
+{
+	return RES_OK;
+}
+
+
+
