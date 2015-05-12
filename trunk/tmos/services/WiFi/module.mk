@@ -15,7 +15,7 @@ local_h_src-y 	:=
 
 local_cpp_src-y	+= wifi_drv.cpp wifi_core.cpp
 
-local_h_src-y 	+= wifi_drv.h wifi_opt.h
+local_h_src-y 	+= wifi_drv.h wifi_opt.h wifi_core.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

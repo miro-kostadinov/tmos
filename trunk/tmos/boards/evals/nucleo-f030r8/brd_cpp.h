@@ -52,7 +52,7 @@ enum DRIVER_INDEX : signed char
 	SPI2_IRQn                   = 26,     /*!< SPI2 global Interrupt                                           */
 	USART1_IRQn                 = 27,     /*!< USART1 global Interrupt                                         */
 	USART2_IRQn                 = 28,     /*!< USART2 global Interrupt                                         */
-
+	WIFI_DRV_INDX				= 29,	  //!< WiFi 														   */
 	INALID_DRV_INDX	                /*!<  invalid	                         */
 };
 
