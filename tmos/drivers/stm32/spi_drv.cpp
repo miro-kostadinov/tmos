@@ -209,6 +209,7 @@ void SPI_DCR(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 			}
         	break;
 
+#if USE_SPI_DMA_DRIVER
 		case DCR_SIGNAL:
 			//signal rx/dma complete
 			if(hnd == &drv_data->rx_dma_hnd)
@@ -231,6 +232,7 @@ void SPI_DCR(SPI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 				}
 			}
 			break;
+#endif
 
 
         case DCR_PARAMS:
