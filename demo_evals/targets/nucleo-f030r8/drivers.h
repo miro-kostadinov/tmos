@@ -67,7 +67,7 @@ extern const USART_DRIVER_MODE uart_default_mode;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #include <spi_drv.h>
 
-#define USE_RFM73 1
+#define USE_RFM73 0
 #define RFM73_SPI_DRIVER SPI1_IRQn
 
 extern const SPI_DRIVER_MODE g_rfm73_mode;
