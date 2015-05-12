@@ -7,7 +7,7 @@
 #include <tmos.h>
 #include <drivers.h>
 #include <hardware_cpp.h>
-#include <mqueue.h>
+#include <csocket.h>
 
 /*!< Uncomment the line corresponding to the desired System clock (SYSCLK)
    frequency (after reset the HSI is used as SYSCLK source)
@@ -158,12 +158,38 @@ void trace_uart( void )
 		}
 	}
 }
-TASK_DECLARE_STATIC(TRACE_UART_task, "TRACE", trace_uart, 20, 50);
+TASK_DECLARE_STATIC(TRACE_UART_task, "TRACE", trace_uart, 20, 55);
+
+
+const sock_mode_t g_wifi_mode =
+{
+	WIFI_DRV_INDX, 			//!< driver to be used for this socket
+	1,						//!< driver interface index (e.g. apn index)
+	80, 					//!< optional port (e.g. for UDP)
+	IP_SOCKET_TCP			//!< IP_SOCKET_TCP or IP_SOCKET_UDP
+
+};
+
+void wifi_test(void)
+{
+	CSocket sock;
+
+	if(sock.open(&g_wifi_mode) == RES_OK)
+	{
+		TRACELN1("wifi open");
+	}
+
+	TRACELN1("wifi done");
+}
+TASK_DECLARE_STATIC(wifi_client_task, "FWCT", wifi_test, 2, 55);
 
 extern "C" void app_init(void)
 {
     usr_task_init_static(&TRACE_UART_task_desc, true);
+    usr_task_init_static(&wifi_client_task_desc, true);
 	TRACELN1("App init");
 }
+
+
 
 

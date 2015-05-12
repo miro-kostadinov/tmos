@@ -9,6 +9,7 @@
 #include <systick_drv.h>
 #include <tim_drv.h>
 #include <wifi_drv.h>
+#include <esp8266.h>
 
 const char restart_on_exception =1;
 
@@ -321,6 +322,14 @@ const WIFI_DRIVER_INFO wifi_driver =
 		USART1_IRQn,
 		&uart_default_mode
 };
+
+esp8266_module g_esp8266(&wifi_driver);
+
+extern "C" wifi_module_type* wifi_detect(WIFI_DRIVER_INFO* drv_info)
+{
+	return &g_esp8266;
+}
+
 
 //=================== DRV_TABLE ==========================================
 // All drivers in the system must be listed in this table
