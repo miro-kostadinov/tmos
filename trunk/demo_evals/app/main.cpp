@@ -128,7 +128,7 @@ void led_thread(void)
 		tsk_sleep(500);
 	}
 }
-TASK_DECLARE_STATIC(led_task, "LEDT", led_thread, 0, 20+TRACE_SIZE);
+TASK_DECLARE_STATIC(led_task, "LEDT", led_thread, 0, 20);
 
 
 #ifndef TEST_BUTTON
@@ -377,4 +377,4 @@ int main(void)
     //codan!
     return 0;
 }
-TASK_DECLARE_STATIC(main_task, "MAIN", (void (*)(void))main, 0, 20+TRACE_SIZE);
+TASK_DECLARE_STATIC(main_task, "MAIN", (void (*)(void))main, 0, 25);
