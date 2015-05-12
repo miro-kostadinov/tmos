@@ -101,69 +101,69 @@ extern "C" void LowLevelInit( void )
 
 
 
-extern "C" void app_init(void)
-{
-	TRACELN1("App init");
-}
-
-volatile HANDLE trace_hnd;
-fmqueue<char, 1023> trace_que;
-
-
-extern "C" void usr_trace_str(const char *buf)
-{
-	if(trace_hnd)
-	{
-		while(*buf)
-		{
-			if ( (__get_CONTROL() & 2) && trace_que.full() &&
-				trace_hnd->client.task != CURRENT_TASK )
-			{
-				unsigned int time;
-
-				time = CURRENT_TASK->time;
-				tsk_sleep(50);
-				CURRENT_TASK->time = time;
-			}
-			__disable_irq();
-			trace_que.push(*buf++);
-			__enable_irq();
-		}
-	}
-}
+char trace_que[100];
+volatile uint8_t trace_queue_in;
+volatile uint8_t trace_queue_out;
+volatile uint8_t trace_queue_in2=1;
 
 extern "C" void usr_trace_char(unsigned c)
 {
-	if(trace_hnd)
+	if ( trace_queue_in2 != trace_queue_out)
 	{
 		__disable_irq();
-		trace_que.push(c);
+		trace_que[trace_queue_in] = c;
+		trace_queue_in = trace_queue_in2++;
+		if(trace_queue_in2 == sizeof(trace_que))
+			trace_queue_in2=0;
 		__enable_irq();
 	}
 }
 
+extern "C" void usr_trace_str(const char *buf)
+{
+	while(*buf)
+	{
+		if ( (__get_CONTROL() & 2) && (trace_queue_in2 == trace_queue_out))
+		{
+			unsigned int time;
+
+			time = CURRENT_TASK->time;
+			tsk_sleep(5);
+			CURRENT_TASK->time = time;
+		}
+		usr_trace_char(*buf++);
+	}
+}
+
+
 void trace_uart( void )
 {
 	CHandle uart;
-	char ch;
 
 	if(uart.tsk_open(USART2_IRQn, &uart_default_mode))
 	{
-		trace_hnd = &uart;
 		while(1)
 		{
-			while(trace_que.pop(ch))
+			while(trace_queue_in != trace_queue_out)
 			{
-				trace_hnd->tsk_write(&ch, 1);
+				unsigned out2;
+				uart.tsk_write(&trace_que[trace_queue_out], 1);
+				out2 = trace_queue_out +1;
+				if(out2 ==  sizeof(trace_que))
+					out2=0;
+				trace_queue_out = out2;
 			}
-			tsk_sleep(100);
+
+			tsk_sleep(5);
 		}
 	}
 }
 TASK_DECLARE_STATIC(TRACE_UART_task, "TRACE", trace_uart, 20, 50);
 
-void start_trace()
+extern "C" void app_init(void)
 {
     usr_task_init_static(&TRACE_UART_task_desc, true);
+	TRACELN1("App init");
 }
+
 

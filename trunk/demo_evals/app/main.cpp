@@ -316,22 +316,19 @@ static unsigned int get_clocks_per200ms(void)
 	return res;
 }
 
-void test();
 void start_rftest();
+#ifndef USE_RFM73
+#define USE_RFM73 0
+#endif
 
-#if TRACE_IS == TRACE_DBGU
-extern void start_trace();
+#if USE_RFM73
+void start_rfm73();
 #endif
 
 int main(void)
 {
 	unsigned int clock_freq;
 
-#if TRACE_IS == TRACE_DBGU
-	start_trace();
-#endif
-
-	test();
 
 	//start other tasks
     usr_task_init_static(&led_task_desc, true);
@@ -353,6 +350,9 @@ int main(void)
 #endif
 #ifdef RF_TEST
     start_rftest();
+#endif
+#if USE_RFM73
+    start_rfm73();
 #endif
 
     //clocks in 250mS
