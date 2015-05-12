@@ -38,7 +38,7 @@ struct esp8266_module: public wifi_module_type
     unsigned short accept_id[WIFI_ESP8266_MAX_SOCKETS];
     static unsigned short local_port;
 #endif
-	esp8266_module(WIFI_DRIVER_INFO* pinfo):wifi_module_type(pinfo)
+	esp8266_module(const WIFI_DRIVER_INFO* pinfo):wifi_module_type(pinfo)
 		{
 				used_sockets = 0;
 				wifi_tout = 0;
@@ -81,7 +81,7 @@ struct esp8266_module: public wifi_module_type
     virtual RES_CODE wifi_sock_addr(CSocket* sock);
 #endif
     virtual int wifi_notification(const char* row);
-    virtual void wifi_process_tout();
+//    virtual void wifi_process_tout();
     virtual void wifi_cancelation(bool all);
 
     bool unacknowledged_data(unsigned int sock_id, unsigned int& size);
