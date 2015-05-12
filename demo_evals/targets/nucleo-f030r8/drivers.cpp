@@ -8,6 +8,7 @@
 #include <drivers.h>
 #include <systick_drv.h>
 #include <tim_drv.h>
+#include <wifi_drv.h>
 
 const char restart_on_exception =1;
 
@@ -300,9 +301,26 @@ const SPI_DRIVER_MODE g_rfm73_mode =
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// 		 USB DRIVER
+// 		 WIFI DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+WIFI_DRIVER_DATA wifi_drv_data;
+
+const WIFI_DRIVER_INFO wifi_driver =
+{
+		{
+			DRIVER_INFO_STUB,
+			DEFAULT_DRIVER_ISR,
+			(DRV_DCR)WIFI_DCR,
+			(DRV_DSR)WIFI_DSR,
+			WIFI_DRV_INDX,
+			DRV_PRIORITY_WIFI,
+			ID_NO_PERIPH
+		},
+		&wifi_drv_data,
+		USART1_IRQn,
+		&uart_default_mode
+};
 
 //=================== DRV_TABLE ==========================================
 // All drivers in the system must be listed in this table
@@ -338,7 +356,8 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
 	1+ (char * const)&spi1_driver,      /*!< 25 SPI1 global Interrupt                                           */
 	1+ (char * const)&DefaultDriver,    /*!< 26 SPI2 global Interrupt                                           */
 	1+ (char * const)&uart1_driver,     /*!< 27 USART1 global Interrupt                                         */
-	1+ (char * const)&uart2_driver,     /*!< 28 USART2 global Interrupt   */
+	1+ (char * const)&uart2_driver,     /*!< 28 USART2 global Interrupt										    */
+	1+ (char * const)&wifi_driver,      /*!< 29 WiFi Driver													    */
 
     NULL				//null terminated list
 };

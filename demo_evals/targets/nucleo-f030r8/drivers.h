@@ -35,6 +35,7 @@ extern "C" char __BUILD_VERSION;
 #define DRV_PRIORITY_SPI1		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_USB		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_TIMER		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_WIFI		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_WDT		NVIC_PIORITY(0x04)
 
 
@@ -60,7 +61,6 @@ typedef void (*DRV_ISR)(DRIVER_INFO drv_info);
 extern const USART_DRIVER_MODE uart_default_mode;
 
 #define UART_TEST_DRIVER USART2_IRQn
-#define TEST_UART 1
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 SPI DRIVER
