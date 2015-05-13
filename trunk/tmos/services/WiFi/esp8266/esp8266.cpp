@@ -15,21 +15,11 @@ WEAK_C void wifi_on_pwron(wifi_module_type* mod)
 	mod->wifi_watchdog_cnt = WIFI_WDT_PERIOD;
 }
 
-RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
+RES_CODE esp8266_module::wifi_echo_off(bool lowlevel, uint32_t indx)
 {
 	RES_CODE res;
 
-	if(drv_info->drv_data->wifi_flags_bad & WIFI_FLAG_SHUTDOWN)
-		return wifi_error(NET_ERR_WIFI_SHUTDOWN);
-	if( drv_info->drv_data->wifi_flags_ok & WIFI_FLAG_ON)
-		return RES_OK;
-
-	WIFI_DRIVER_DATA * drv_data = drv_info->drv_data;
 	res = RES_ERROR;
-
-	TRACE1_WIFI_DEBUG("\r\nWIFI power");
-	drv_data->wifi_flags_ok = WIFI_STATE_OFF;
-
 	for(int i=0; i < 3; i++)
 	{
 		rcv_hnd.close();
@@ -37,8 +27,8 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 		if(lowlevel)
 			return RES_OK;
 		tsk_sleep(50);
-		if(rcv_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru) &&
-			snd_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru)	)
+		if(rcv_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[indx]) &&
+			snd_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[indx])	)
 		{
 			//wait until rx signals get stable
 			tsk_sleep(50);
@@ -46,13 +36,50 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 			//turn off echo
 			if(wifi_send_cmd("E0", 1) & WIFI_CMD_STATE_OK)
 			{
-				drv_data->wifi_flags_ok = WIFI_FLAG_ON;
-				drv_data->wifi_flags_bad &= ~WIFI_FLAG_ON;
 				res = RES_OK;
 				break;
 			}
 		}
 	}
+	return res;
+}
+
+RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
+{
+	RES_CODE res;
+	WIFI_DRIVER_DATA * drv_data = drv_info->drv_data;
+	bool changed = false;
+
+	if(drv_data->wifi_flags_bad & WIFI_FLAG_SHUTDOWN)
+		return wifi_error(NET_ERR_WIFI_SHUTDOWN);
+	if( drv_data->wifi_flags_ok & WIFI_FLAG_ON)
+		return RES_OK;
+
+
+	TRACE1_WIFI_DEBUG("\r\nWIFI power");
+	drv_data->wifi_flags_ok = WIFI_STATE_OFF;
+
+	do
+	{
+		res = wifi_echo_off(lowlevel, 0);
+		if(lowlevel)
+			return res;
+		if(res != RES_OK)
+		{
+			res = wifi_echo_off(lowlevel, 1);
+			if(res == RES_OK && !changed)
+			{
+				//try to switch baudrate
+				CSTRING cmd;
+
+				cmd.format("+CIOBAUD=%u", *(const uint32_t*)drv_info->iface_mode_stru[0]);
+				if(wifi_send_cmd(cmd.c_str(), 2) & WIFI_CMD_STATE_OK)
+					changed = true;
+			}
+		}
+	} while(changed);
+
+
 	if(res != RES_OK)
 	{
 		drv_data->wifi_error = NET_ERR_WIFI_ON;
@@ -60,7 +87,8 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 	} else
 	{
 		//Reset (reset MT with resetting the SIM)
-		drv_info->drv_data->wifi_flags_ok &= ~(WIFI_FLAG_REGISTERED);
+		drv_data->wifi_flags_ok = WIFI_FLAG_ON;
+		drv_data->wifi_flags_bad &= ~WIFI_FLAG_ON;
 		wifi_on_pwron(this);
 		return res;
 	}

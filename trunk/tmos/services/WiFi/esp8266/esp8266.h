@@ -55,7 +55,7 @@ struct esp8266_module: public wifi_module_type
 				}
 		};
 
-
+	RES_CODE wifi_echo_off(bool lowlevel, uint32_t indx);
     virtual RES_CODE wifi_drv_pwron(bool lowlevel = false);
     virtual RES_CODE wifi_drv_off();
     virtual NET_CODE wifi_reset(bool force);

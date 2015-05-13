@@ -70,7 +70,7 @@ struct WIFI_DRIVER_INFO
     WIFI_DRIVER_DATA*	drv_data;			//!< pointer to the driver data (RAM) structure
 
 	DRIVER_INDEX		iface_driver_index;	//!< Index of the interface driver
-	const void*			iface_mode_stru;	//!< mode for the interface handle
+	const void*			iface_mode_stru[2];	//!< mode for the interface handle
 };
 
 
