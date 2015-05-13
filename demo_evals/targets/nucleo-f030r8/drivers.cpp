@@ -221,6 +221,15 @@ const USART_DRIVER_MODE uart_default_mode =
 	0										//!< USART_CR3 register value
 };
 
+const USART_DRIVER_MODE uart_9600_mode =
+{
+	9600,									//!< baudrate e.g. 9600
+	USART_CR1_RE | USART_CR1_TE | USART_CR1_IDLEIE | USART_CR1_RXNEIE |
+		USART_CR1_TXEIE | USART_CR1_UE,		//!< USART_CR1 register value
+	USART_CR2_STOP_1b,						//!< USART_CR2 register value
+	0										//!< USART_CR3 register value
+};
+
 USART_DRIVER_DATA uart2_drv_data;
 const USART_DRIVER_INFO uart2_driver =
 {
@@ -320,7 +329,10 @@ const WIFI_DRIVER_INFO wifi_driver =
 		},
 		&wifi_drv_data,
 		USART1_IRQn,
-		&uart_default_mode
+		{
+			&uart_default_mode,
+			&uart_9600_mode
+		}
 };
 
 esp8266_module g_esp8266(&wifi_driver);
