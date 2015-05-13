@@ -243,7 +243,7 @@ WIFI_CMD_STATE wifi_module_type::wifi_send_cmd(const char *cmd, unsigned int tim
     {
         if(snd_hnd.tsk_write(cmd, strlen(cmd), WIFI_WRITE_TOT) == RES_OK)
         {
-            if(snd_hnd.tsk_write("\r", 1, WIFI_WRITE_TOT) == RES_OK)
+            if(snd_hnd.tsk_write("\r\n", 2, WIFI_WRITE_TOT) == RES_OK)
             {
         		sig = tsk_wait_signal( rcv_hnd.signal, time << 10);
         		if(sig && (cmd_state & WIFI_CMD_STATE_HND))
