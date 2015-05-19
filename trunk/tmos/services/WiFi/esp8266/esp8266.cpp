@@ -77,6 +77,8 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 					changed = true;
 			}
 		}
+		else
+			break;
 	} while(changed);
 
 
@@ -133,6 +135,7 @@ NET_CODE esp8266_module::wifi_drv_level()
 	if( (drv_data->wifi_flags_ok & WIFI_FLAG_ON ) )
 	{
 		//TODO: get signal strength
+		res = RES_OK;
 	}
 	drv_data->signal_level = level;
 	return res;
@@ -187,6 +190,17 @@ NET_CODE esp8266_module::wifi_esp8266_init_net(CSocket * sock)
 	CSTRING cmd;
 	wifi_AP_t AP;
 
+	// 1. Enable the module to act as both a “Station” and an “Access Point”
+	res = wifi_send_cmd("+CWMODE=3", 5);
+	if(WIFI_CMD_STATE_OK == res)
+	{
+		for(int i =0; i < 5; i++)
+		{
+			res = wifi_send_cmd("+CWLAP", 50);
+			if(res != WIFI_CMD_STATE_ROK)
+				break;
+		}
+	}
 	res = wifi_on_get_AP(this, sock, &AP);
 	if (res != NET_OK)
 		return wifi_error(res);
