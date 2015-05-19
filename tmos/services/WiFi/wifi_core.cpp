@@ -157,7 +157,9 @@ WIFI_CMD_STATE wifi_module_type::wifi_process_row(const char *cmd)
 		// OK
 		if(cmd_submatch("OK", row))
 			return WIFI_CMD_STATE_OK;
-
+		// no change
+		if(cmd_submatch("no change", row))
+			return WIFI_CMD_STATE_OK;
 		// ERROR
 		if(find_in_list(row, SZ(ERROR) SZ(+CME ERROR) SZ(+CMS ERROR), NULL ))
 			return WIFI_CMD_STATE_CMES;
@@ -440,7 +442,6 @@ NET_CODE wifi_module_type::wifi_check_reg() // NET_ERROR: OK
 			break;
 		}
 	}
-
     return wifi_net_error(res);
 }
 
