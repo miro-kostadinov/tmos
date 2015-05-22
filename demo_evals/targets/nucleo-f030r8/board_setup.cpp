@@ -105,6 +105,123 @@ char trace_que[100];
 volatile uint8_t trace_queue_in;
 volatile uint8_t trace_queue_out;
 volatile uint8_t trace_queue_in2=1;
+#define TRACE_SIGNAL 1
+
+static void wait_trace_char()
+{
+	while(trace_queue_in == trace_queue_out)
+		tsk_wait_signal(TRACE_SIGNAL, 500);
+}
+
+static void get_trace_char()
+{
+	unsigned out2;
+
+	out2 = trace_queue_out +1;
+	if(out2 ==  sizeof(trace_que))
+		out2=0;
+	trace_queue_out = out2;
+}
+
+void trace_uart( void )
+{
+	CHandle uart;
+	uint32_t txt_color = TC_TXT_WHITE;
+	uint32_t bg_color = TC_BG_BLACK;
+	char buf[8];
+	bool def_col = false;
+
+	ALLOCATE_SIGNAL(TRACE_SIGNAL);
+	if(uart.tsk_open(USART2_IRQn, &uart_default_mode))
+	{
+		while(1)
+		{
+			wait_trace_char();
+			while(trace_queue_in != trace_queue_out)
+			{
+				if(trace_que[trace_queue_out] == '\e')
+				{
+					uint32_t pos =0;
+					uint32_t col, bg;
+
+					for(; pos< sizeof(buf); )
+					{
+						buf[pos++] = trace_que[trace_queue_out];
+						if(trace_que[trace_queue_out] == 'm')
+						{
+							if(buf[1] == '[')
+							{
+								if(IS_DIGIT(buf[2]))
+								{
+									uint32_t i = 3;
+									col = buf[2] - '0';
+
+									if(IS_DIGIT(buf[i]))
+									{
+										col *= 10;
+										col += buf[i++] - '0';
+									}
+									bg = bg_color;
+									if(buf[i] == ';')
+									{
+										if(IS_DIGIT(buf[++i]))
+										{
+											bg = buf[i++] - '0';
+
+											if(IS_DIGIT(buf[i]))
+											{
+												bg *= 10;
+												bg += buf[i++] - '0';
+											}
+										}
+									}
+									if(buf[i] == 'm')
+									{
+										if(col == txt_color && bg == bg_color)
+										{
+											pos = 0;
+											def_col = false;
+										} else
+										{
+											txt_color = col;
+											bg_color = bg;
+										}
+									}
+								} else
+									if(buf[2] == 'm')
+									{
+										def_col = true;
+										pos = 0;
+									}
+							}
+							break;
+						}
+						get_trace_char();
+						wait_trace_char();
+					}
+					if(pos)
+					{
+						uart.tsk_write(buf, pos);
+					}
+
+				} else
+				{
+					if(def_col)
+					{
+						uart.tsk_write("\e[m", 3);
+						def_col = false;
+						txt_color = TC_TXT_WHITE;
+						bg_color = TC_BG_BLACK;
+					}
+					uart.tsk_write(&trace_que[trace_queue_out], 1);
+				}
+				get_trace_char();
+			}
+
+		}
+	}
+}
+TASK_DECLARE_STATIC(TRACE_UART_task, "TRACE", trace_uart, 20, 55);
 
 extern "C" void usr_trace_char(unsigned c)
 {
@@ -116,6 +233,8 @@ extern "C" void usr_trace_char(unsigned c)
 		if(trace_queue_in2 == sizeof(trace_que))
 			trace_queue_in2=0;
 		__enable_irq();
+		if(__get_CONTROL() & 2)
+			tsk_send_signal(&TRACE_UART_task, TRACE_SIGNAL);
 	}
 }
 
@@ -134,32 +253,6 @@ extern "C" void usr_trace_str(const char *buf)
 		usr_trace_char(*buf++);
 	}
 }
-
-
-void trace_uart( void )
-{
-	CHandle uart;
-
-	if(uart.tsk_open(USART2_IRQn, &uart_default_mode))
-	{
-		while(1)
-		{
-			while(trace_queue_in != trace_queue_out)
-			{
-				unsigned out2;
-				uart.tsk_write(&trace_que[trace_queue_out], 1);
-				out2 = trace_queue_out +1;
-				if(out2 ==  sizeof(trace_que))
-					out2=0;
-				trace_queue_out = out2;
-			}
-
-			tsk_sleep(5);
-		}
-	}
-}
-TASK_DECLARE_STATIC(TRACE_UART_task, "TRACE", trace_uart, 20, 55);
-
 
 const sock_mode_t g_wifi_mode =
 {
