@@ -330,8 +330,8 @@ const WIFI_DRIVER_INFO wifi_driver =
 		&wifi_drv_data,
 		USART1_IRQn,
 		{
-			&uart_default_mode,
-			&uart_9600_mode
+			&uart_9600_mode,
+			&uart_default_mode
 		}
 };
 
