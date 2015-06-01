@@ -196,7 +196,7 @@ typedef struct
 /** @} */
 
 /** @defgroup SYSCFG_PMC:       (syscfg Offset: 0x04) SYSCFG peripheral mode configuration register */
-#define SYSCFG_PMC_MII_RMII         	0x0080 //!< Ethernet PHY interface selection
+#define SYSCFG_PMC_MII_RMII         	0x00800000 //!< Ethernet PHY interface selection
 /** @} */
 
 /** @defgroup SYSCFG_EXTICR[4]: (syscfg Offset: 0x08) SYSCFG external interrupt configuration registers */

@@ -71,6 +71,7 @@
 #define TIM14       CAST(TIM_TypeDef    , BASE_TIM14)   //!< TIM14
 #define SDIO        CAST(SDIO_TypeDef	, BASE_SDIO)	//!< SDIO
 #define CRC         CAST(CRC_TypeDef	, BASE_CRC)		//!< CRC
+#define ETH_MAC1    CAST(ETH_TypeDef	, BASE_ETH)		//!< Ethernet MAC
 /** @} */
 
 /* RCC registers */

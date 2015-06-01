@@ -30,6 +30,7 @@ typedef unsigned int  NET_CODE;
 #define NET_ERR_SOCK_ABORT			0x96	//!< User disconnect socket
 #define NET_ERR_SOCK_READ			0x97	//!< Failed to read from socket
 #define NET_ERR_SOCK_WRITE			0x98 	//!< Failed to write into socket
+#define NET_ERR_NO_LINK				0x99	//!< Link Layer failed
 
 //-----------------		URL error codes						 -----------------//
 #define NET_ERR_URL_SCHEME			0xA0	//!< BAD or unsupported URL scheme
