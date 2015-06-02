@@ -599,7 +599,16 @@ uint32_t HAL_ETH_GetReceivedFrame_IT(const eth_mac_cfg_t* cfg)
 			if(cfg->ETH_MACCR & ETH_MACCR_IPCO) // IPv4 Checksum offload
 			{
 				if( (status & ETH_DMARXDESC_FT) && (status & (ETH_DMARXDESC_IPHCE | ETH_DMARXDESC_PCE)))
-					break; //check sum error
+				{
+					if((status & 0x1FF) == (ETH_DMARXDESC_LS | ETH_DMARXDESC_FT | ETH_DMARXDESC_PCE))
+					{
+						// extended status available, check it
+						if (!(DmaRxDesc->ExtendedStatus & ETH_DMAPTPRXDESC_IPCB) && (DmaRxDesc->ExtendedStatus & (ETH_DMAPTPRXDESC_IPPE | ETH_DMAPTPRXDESC_IPHE)))
+							break;
+
+					} else
+						break; //check sum error
+				}
 			}
 
 			if(descriptor_count == 1 && !(status & ETH_DMARXDESC_FS))
