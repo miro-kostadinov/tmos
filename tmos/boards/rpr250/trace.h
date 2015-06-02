@@ -50,12 +50,29 @@
 
 # define TRACE_CHAR( ch)						\
 	do {usr_trace_char(ch);}while(0)
+/*
 # define TRACE(...)								\
 	do											\
 	{											\
 		char tr_buf[80];						\
 		tmos_sprintf(tr_buf, __VA_ARGS__);		\
 		usr_trace_str(tr_buf);					\
+	}while(0)
+*/
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+int tmos_dbgprintf( uint32_t zero, const char *format, ... );
+#ifdef __cplusplus
+}
+#endif
+
+# define TRACE(...)						\
+	do											\
+	{											\
+		tmos_dbgprintf(0, __VA_ARGS__);		\
 	}while(0)
 # define TRACELN(str,...) TRACE("\r\n" str, ##__VA_ARGS__)
 # define TRACE1(str) usr_trace_str(str)
