@@ -532,12 +532,11 @@ _print_left_minus:                           // dst fmt pre ___ wdt len buf flg 
 ENDF(   tmos_vsprintf        )
 
 FUNC(   tmos_dbg_char       )
-        push        {r0, r1, r2, lr}
+        adds        r0, #1
+        push        {r0, r1, r2, r3, lr}
         mov         r0, r3
         bl          usr_trace_char
-        pop         {r0, r1, r2, r3}
-        adds        r0, #1
-        bx          r3
+        pop         {r0, r1, r2, r3, pc}
 ENDF(   tmos_dbg_char       )
 
 // int tmos_dbgprintf( uint32_t zero, const char *format, va_list arg );
