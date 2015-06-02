@@ -311,6 +311,7 @@ RES_CODE HAL_ETH_Init(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg)
 			tmpreg = 0;
 			do
 			{
+				tsk_sleep(10);
 				if (++tmpreg >= PHY_READ_TOT)
 				{
 					res = NET_ERR_NO_LINK;
