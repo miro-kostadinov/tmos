@@ -32,7 +32,7 @@
 #define TRACE_IS				TRACE_PEEDI
 
 //--- stack size required to use trace with parameters
-#define TRACE_SIZE		128
+#define TRACE_SIZE		20
 
 
 
