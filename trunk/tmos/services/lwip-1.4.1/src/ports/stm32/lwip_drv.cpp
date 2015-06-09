@@ -6,7 +6,6 @@
  */
 
 #include <tmos.h>
-#include <hardware_cpp.h>
 #include "lwip/opt.h"
 #include "lwip/sys.h"
 #include <lwip_drv.h>
@@ -1026,11 +1025,11 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
         // 2) get waiting clients
 		if(sig & helper.signal)
         {
-			tcp_handle* client;
+			CSocket* client;
 
         	helper.res &= ~FLG_SIGNALED;
 
-			while( (client = (tcp_handle*)helper.dst.as_voidptr) )
+			while( (client = (CSocket*)helper.dst.as_voidptr) )
 			{
 				RES_CODE res  = RES_SIG_ERROR;
 
@@ -1038,10 +1037,7 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 
 			    if(client->cmd & FLAG_COMMAND)
 			    {
-			    	if((client->cmd>>4) <= MAX_LWIPCALLBACK)
-			    	{
-			    		res = lwip_api_functions[client->cmd>>4](client, &drv_data->lwip_netif);
-			    	}
+			    	res = lwip_process_cmd(client, &drv_data->lwip_netif);
 			    } else
 			    {
 				    if(client->cmd & FLAG_WRITE)
@@ -1116,15 +1112,6 @@ void LWIP_DCR(LWIP_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
         case DCR_OPEN:
         	param->mode0 = 1;	// mark the handle as client
         						// helper must clear this field
-
-        	if(param->mode.as_byteptr)
-        	{
-        		lwip_tcp_setup((tcp_handle*) param, (struct tcp_pcb*)param->mode.as_voidptr);
-        		param->mode1 = TCPHS_ESTABLISHED;
-        	} else
-        	{
-            	param->mode1 = TCPHS_UNKNOWN;
-        	}
 
 			param->res = RES_OK;
         	break;
