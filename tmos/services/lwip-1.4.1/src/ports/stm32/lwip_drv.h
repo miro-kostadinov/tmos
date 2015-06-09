@@ -9,10 +9,11 @@
 #define LWIP_DRV_H_
 
 #include <tmos.h>
-
+#include <hardware_cpp.h>
 #include "lwip/opt.h"
 #include "lwip/netif.h"
 #include "lwip/netif.h"
+#include <csocket.h>
 
 
 //*****************************************************************************
@@ -49,6 +50,10 @@ extern "C" void lwIPHostTimerHandler(void);
 /* Define those to better describe your network interface. */
 #define IFNAME0 'l'
 #define IFNAME1 'm'
+
+RES_CODE lwip_api_read(CSocket* client);
+RES_CODE lwip_api_write(CSocket* client, struct netif *netif);
+RES_CODE lwip_process_cmd(CSocket* client, struct netif *netif);
 
 //*****************************************************************************
 //

@@ -8,9 +8,14 @@
 #ifndef LWIP_API_H_
 #define LWIP_API_H_
 
-#include <lwip/netif.h>
-#include <lwip/tcp.h>
-#include <mqueue.h>
+#include <tmos.h>
+#include <csocket.h>
+
+struct lwip_mode_t
+{
+	sock_mode_t mode;
+	uint8_t	 lwip_priority;
+};
 
 #define LWIP_CMD_TCP_NEW		(( 0 <<4)+CMD_COMMAND)
 #define LWIP_CMD_TCP_BIND		(( 1 <<4)+CMD_COMMAND)
@@ -20,7 +25,6 @@
 #define LWIP_CMD_TCP_CLOSE		(( 5 <<4)+CMD_COMMAND)
 #define LWIP_CMD_TCP_DNS		(( 6 <<4)+CMD_COMMAND)
 
-#define MAX_LWIPCALLBACK 		7
 
 #ifndef LWIP_DRV_MAX_API_QUEUE
 #define LWIP_DRV_MAX_API_QUEUE 	3
@@ -54,67 +58,7 @@
 #define LWIP_SHUT_RD		2
 #define LWIP_SHUT_RDWR		3
 
-/**
- * Handle for lwIP stack operations
- *
- *  Timeouts:
- *  	read operations supports timeouts
- *  	accept supports timeout
- *  	write operations will ignore the timeouts (can block for long period?)
- */
-class tcp_handle: public CHandle
-{
-public:
-	tcp_handle(): recv_pos(0) {};
-
-	unsigned int recv_pos;
-	fmqueue< struct tcp_pcb*, LWIP_DRV_MAX_API_QUEUE >	accept_que;
-	fmqueue< struct pbuf*, LWIP_DRV_MAX_API_QUEUE >	recv_que;
 
 
-	//--- not blocking functions
-
-#ifdef LWIP_CMD_TCP_NEW
-	RES_CODE lwip_tcp_new(unsigned int priority = TCP_PRIO_NORMAL);
-#endif
-
-#ifdef LWIP_CMD_TCP_BIND
-	RES_CODE lwip_tcp_bind(ip_addr_t *ipaddr, u16_t port);
-#endif
-
-#ifdef LWIP_CMD_TCP_LISTEN
-	RES_CODE lwip_tcp_listen();
-#endif
-
-	//--- blocking functions
-#ifdef LWIP_CMD_TCP_ACCEPT
-	//waits until connection
-	RES_CODE lwip_tcp_accept(struct tcp_pcb*& newpcb, unsigned int time = 1024*1024);
-#endif
-
-#ifdef LWIP_CMD_TCP_CONNECT
-	RES_CODE lwip_tcp_connect(ip_addr_t *addr, u16_t port);
-#endif
-
-#ifdef LWIP_CMD_TCP_CLOSE
-RES_CODE lwip_tcp_close(unsigned int rxtx=LWIP_SHUT_RDWR);
-#endif
-
-#ifdef LWIP_CMD_TCP_DELETE
-RES_CODE lwip_tcp_delete();
-#endif
-
-#ifdef LWIP_CMD_TCP_DNS
-RES_CODE lwip_tcp_dns(const char* url, ip_addr_t *addr);
-#endif
-
-};
-
-RES_CODE lwip_api_read(tcp_handle* client);
-RES_CODE lwip_api_write(tcp_handle* client, struct netif *netif);
-void lwip_tcp_setup(tcp_handle* client, struct tcp_pcb *pcb);
-
-typedef RES_CODE (*LWIP_API_FUNC)(tcp_handle* client, struct netif *netif);
-EXTERN_C const LWIP_API_FUNC lwip_api_functions[MAX_LWIPCALLBACK+1];
 
 #endif /* LWIP_API_H_ */
