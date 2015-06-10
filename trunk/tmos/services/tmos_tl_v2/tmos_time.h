@@ -103,6 +103,7 @@ struct time_t
 
 };
 
+extern const uint8_t month_lengths[];
 
 #endif /* TMOS_TIME_H_ */
 /** @} defgroup lib_tmos_time  */
