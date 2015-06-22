@@ -1821,6 +1821,10 @@ void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags)
 		drv_info->hw_base->core_regs.GINTMSK = OTG_GINTMSK_WUIM | OTG_GINTMSK_CIDSCHGM |
 				OTG_GINTMSK_RXFLVLM | OTG_GINTMSK_OTGINT | OTG_GINTMSK_SRQIM;
 		usb_hal_host_power(drv_info, false);
+
+		//disable isrs
+	    NVIC->NVIC_ICER[drv_info->info.drv_index >> 5] = 1 << (drv_info->info.drv_index & 0x1F);
+
 	}
 #endif // USB_ENABLE_HOST
 
