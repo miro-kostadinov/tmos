@@ -27,6 +27,7 @@ local_h_src-y 	+= gui_drv.h lcd.h fonts.h stdgui.h lcd_EM6125.h lcd_SPFD5414D.h 
 local_h_src-y 	+= lcd_ST7565S.h gwindow.h gobject.h gcontainer.h gbutton.h gtext.h message.h lcd_ST7565S_RS.h
 local_h_src-y 	+= gdialog.h gradio.h gedit.h lcd_multiplex.h gfloating_text.h
 local_h_src-y 	+= gfloating_button.h gmenu.h gscroll.h gmsgbox.h glistbox.h gdowait.h
+local_h_src-y 	+= lcd_ST7565S_cmd.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
