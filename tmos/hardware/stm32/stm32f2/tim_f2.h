@@ -100,6 +100,14 @@ typedef struct
 #define TIM_CR2_OIS1                0x0100 //!< Output Idle state 1 (OC1 output)
 #define TIM_CR2_TI1S                0x0080 //!< TI1 Selection
 #define TIM_CR2_MMS                 0x0070 //!< MMS[2:0] bits (Master Mode Selection)
+#define TIM_CR2_MMS_RESET           0x0000 //!<  Reset - the UG bit from the TIMx_EGR register is used as trigger output (TRGO)
+#define TIM_CR2_MMS_ENABLE          0x0010 //!<  Enable - the Counter Enable signal CNT_EN is used as trigger output (TRGO)
+#define TIM_CR2_MMS_UPDATE          0x0020 //!<  Update - The update event is selected as trigger output (TRGO)
+#define TIM_CR2_MMS_CC1IF           0x0030 //!<  Compare Pulse - The trigger output send a positive pulse when the CC1IF flag is to be set (even if it was already high)
+#define TIM_CR2_MMS_OC1REF          0x0040 //!<  Compare - OC1REF signal is used as trigger output (TRGO)
+#define TIM_CR2_MMS_OC2REF          0x0050 //!<  Compare - OC2REF signal is used as trigger output (TRGO)
+#define TIM_CR2_MMS_OC3REF          0x0060 //!<  Compare - OC3REF signal is used as trigger output (TRGO)
+#define TIM_CR2_MMS_OC4REF          0x0070 //!<  Compare - OC4REF signal is used as trigger output (TRGO)
 #define TIM_CR2_CCDS                0x0008 //!< Capture/Compare DMA Selection
 #define TIM_CR2_CCUS                0x0004 //!< Capture/Compare Control Update Selection
 #define TIM_CR2_CCPC                0x0001 //!< Capture/Compare Preloaded Control
@@ -179,6 +187,14 @@ typedef struct
 #define TIM_CCMR1_CC2S              0x0300 //!< CC2S[1:0] bits (Capture/Compare 2 Selection)
 #define TIM_CCMR1_OC1CE             0x0080 //!< Output Compare 1Clear Enable
 #define TIM_CCMR1_OC1M              0x0070 //!< OC1M[2:0] bits (Output Compare 1 Mode)
+#define TIM_CCMR1_OC1M_FROZEN       0x0000 //!<  Frozen - The comparison between the output compare register TIMx_CCR1 and the counter TIMx_CNT has no effect on the outputs.
+#define TIM_CCMR1_OC1M_SMATCH       0x0010 //!<  Set channel 1 to active level on match.
+#define TIM_CCMR1_OC1M_RMATCH       0x0020 //!<  Set channel 1 to inactive level on match.
+#define TIM_CCMR1_OC1M_TOGGLE       0x0030 //!<  Toggle - OC1REF toggles when TIMx_CNT=TIMx_CCR1
+#define TIM_CCMR1_OC1M_RESET        0x0040 //!<  Force inactive level - OC1REF is forced low
+#define TIM_CCMR1_OC1M_SET  	    0x0050 //!<  Force active level - OC1REF is forced high.
+#define TIM_CCMR1_OC1M_PWM1  	    0x0060 //!<  PWM mode 1
+#define TIM_CCMR1_OC1M_PWM2  	    0x0060 //!<  PWM mode 2
 #define TIM_CCMR1_OC1PE             0x0008 //!< Output Compare 1 Preload enable
 #define TIM_CCMR1_OC1FE             0x0004 //!< Output Compare 1 Fast enable
 #define TIM_CCMR1_CC1S              0x0003 //!< CC1S[1:0] bits (Capture/Compare 1 Selection)

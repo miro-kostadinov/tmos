@@ -161,7 +161,7 @@ void PIO_Free(PIN_DESC cfg)
  * Free resources for a list of pin descriptions
  * @param list
  */
-void PIO_Free_List(PIN_DESC* list)
+void PIO_Free_List(const PIN_DESC* list)
 {
 	while (*list)
 	{
