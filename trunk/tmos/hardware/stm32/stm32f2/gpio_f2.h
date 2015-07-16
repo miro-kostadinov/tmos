@@ -238,7 +238,7 @@ void PIO_CfgInput(PIN_DESC pins);
 void PIO_Cfg_List(const PIN_DESC* list);
 void PIO_CfgInput_List(PIN_DESC * list);
 void PIO_Free(PIN_DESC cfg);
-void PIO_Free_List(PIN_DESC* list);
+void PIO_Free_List(const PIN_DESC* list);
 
 pio_set PIO_Read(PIN_DESC pins);
 void PIO_Write(PIN_DESC pins, unsigned int val);
