@@ -88,6 +88,7 @@ typedef struct
 #define DMA_SxCR_CHSEL_5            0x0A000000 //!<  channel 5 selected
 #define DMA_SxCR_CHSEL_6            0x0C000000 //!<  channel 6 selected
 #define DMA_SxCR_CHSEL_7            0x0E000000 //!<  channel 7 selected
+#define DMA_SxCR_RESERVED_NOINTS    0x80000000 //!< DISABLE interrupts
 /** @} */
 
 /** @defgroup DMA_SxNDTR:   (dmas Offset: 0x04) DMA stream x number of data register */

@@ -126,7 +126,7 @@ void stm32_dma_ch_cfg(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode)
 
 	ch = &dmac->DMA_Chx[indx];
 
-	ch->DMA_SxCR = mode->dma_ch_cr;
+	ch->DMA_SxCR = (mode->dma_ch_cr & ~DMA_SxCR_RESERVED_NOINTS);
 	ch->DMA_SxFCR = mode->dma_ch_fr;
 
 	// Enable DMA interrupts
@@ -140,9 +140,12 @@ void stm32_dma_ch_cfg(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode)
 void stm32_en_ints(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode)
 {
 	DMA_Stream_TypeDef* ch;
+	uint32_t reg;
 
 	ch = &dmac->DMA_Chx[indx];
-	ch->DMA_SxCR |= (mode->dma_ch_cr & DMA_SxCR_HTIE) |  DMA_SxCR_DMEIE |
+	reg = mode->dma_ch_cr;
+	if( !(reg & DMA_SxCR_RESERVED_NOINTS))
+		ch->DMA_SxCR |= (reg & DMA_SxCR_HTIE) |  DMA_SxCR_DMEIE |
 			DMA_SxCR_TEIE | DMA_SxCR_TCIE;
 
 }
