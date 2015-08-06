@@ -17,7 +17,7 @@ struct GWindow: GContainer
 #if GUI_DISPLAYS > 1
 	unsigned char displays;
 #endif
-private:
+protected:
 	CHandle hnd;
 	mqueue<GMessage, MAX_MESSAGES> Queue;
 public:
