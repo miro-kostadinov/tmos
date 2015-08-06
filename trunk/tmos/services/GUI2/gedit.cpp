@@ -185,17 +185,23 @@ void GEdit::pos_change(int val, bool modified_text)
 	show_cursor();
 	if(val > 0)
 	{
-		++pos;
+		pos += val;
 		if(!(align & ES_AUTO_SCROLL))
 		{
 			if((int)pos > client_rect.width() / text_font->hspacing)
-				--pos;
+				pos -= val;
 		}
 		if(pos > max_len)
 			pos = max_len;
 	}
 	if(val < 0 && pos)
-		--pos;
+	{
+		val = -val;
+		if((unsigned int)val > pos)
+			pos = 0;
+		else
+			pos -= val;
+	}
 
 	if(!(align & ES_HIDE_CURSOR))
 	{
