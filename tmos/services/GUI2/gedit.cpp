@@ -173,9 +173,19 @@ void GEdit::move(int x, int y)
 
 void GEdit::text_change()
 {
+	RECT_T r(client_rect.as_int);
+
 	text_size = SetTextAlign(align);		//redraws the whole text
+	if(r.x0 > client_rect.x0)
+		r.x0 = client_rect.x0;
+	if(r.y0 > client_rect.y0)
+		r.y0 = client_rect.y0;
+	if(r.x1 < client_rect.x1)
+		r.x1 = client_rect.x1;
+	if(r.y1 < client_rect.y1)
+		r.y1 = client_rect.y1;
 	set_cursor_on_char();
-	send_message(WM_DRAW, 0, client_rect.as_int, this);
+	send_message(WM_DRAW, 0, r.as_int, this);
 }
 
 void GEdit::pos_change(int val, bool modified_text)
