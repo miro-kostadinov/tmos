@@ -501,6 +501,10 @@ static void stm_start_tx(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptnum, ep_
 		reg = hnd->len;
 		reg |= OTG_DIEPTSIZ_PKTCNT((hnd->len + epdir->epd_fifo_sz -1)/epdir->epd_fifo_sz);
 
+		// set FLG_OK if we need to send ZLP packet
+		if( (hnd->len % epdir->epd_fifo_sz) == 0)
+			hnd->res |= FLG_OK;
+
 		if (epdir->epd_type == ENDPOINT_TYPE_ISOCHRONOUS)
 		{
 			reg |= OTG_DIEPTSIZ_MCNT(1);
@@ -2063,9 +2067,16 @@ static void usb_b_ept_tx_handler(USB_DRV_INFO drv_info)
 					if(hnd->len == 0)
 					{
 				    	TRACE1_USB(" Wr!");
-						epdir->epd_pending = hnd->next;
-						usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-						hnd = epdir->epd_pending;
+				    	if(hnd->res & FLG_OK)
+				    	{
+				    		hnd->res &= ~FLG_OK;
+				    		// continue with ZLP packet
+				    	} else
+				    	{
+							epdir->epd_pending = hnd->next;
+							usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+							hnd = epdir->epd_pending;
+				    	}
 					}
 				}
 				if(hnd)
