@@ -18,8 +18,8 @@
 
 #include <core_map.h>
 
-#define RAM_SIZE 			(96*1024) 	 //!< 96K RAM size
-#define SRAM1_SIZE 			(80*1024) 	 //!< 80K SRAM1 size
+#define RAM_SIZE 			(112*1024) 	 //!< 112K RAM size
+#define SRAM1_SIZE 			(96*1024) 	 //!< 96K SRAM1 size
 #define SRAM2_SIZE 			(16*1024) 	 //!< 16K SRAM2 size
 #define FLASH_SIZE 			((*(unsigned short*)0x1FFF7A22) *1024) 	 //!< FLASH size see Device Electronic signature
 #define FLASH_PAGE_SIZE		0x4000		 //!< 4*16K sectors, 1*64K, 1(-7)*128K
