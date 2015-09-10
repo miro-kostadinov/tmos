@@ -28,6 +28,7 @@
 #include "adc_f0.h"
 #include "tim_f0.h"
 #include "crc_f0.h"
+#include "dac_f0.h"
 
 #endif /* SERIES_CPP_H_ */
 /** @} ingroup hardware_stm32f0 */

@@ -28,6 +28,7 @@ static void ConfigureDacChannel(DAC_TypeDef* dac, const DAC_DRIVER_MODE* mode)
 		}
 	} else
 	{
+#ifdef DAC_SWTRIGR_SWTRIG2
 		//chanel 1
 		dac->DAC_CR =  (dac->DAC_CR & 0xFFFF) | (mode->dac_cr << 16);
 		if((mode->dac_cr & DAC_CR_TSEL1) == DAC_CR_TSEL1)
@@ -38,6 +39,7 @@ static void ConfigureDacChannel(DAC_TypeDef* dac, const DAC_DRIVER_MODE* mode)
 		{
 			dac->DAC_SWTRIGR &= ~DAC_SWTRIGR_SWTRIG2;
 		}
+#endif
 	}
 }
 
@@ -211,6 +213,7 @@ void DAC_DSR(DAC_DRIVER_INFO* drv_info, HANDLE hnd)
 	svc_HND_SET_STATUS(hnd, RES_SIG_ERROR);
 }
 
+#if USE_DAC_INTERRUPRT
 void DAC_ISR(DAC_DRIVER_INFO* drv_info)
 {
 	DAC_DRIVER_DATA* drv_data = drv_info->drv_data;
@@ -218,7 +221,11 @@ void DAC_ISR(DAC_DRIVER_INFO* drv_info)
 	uint32_t status;
 	HANDLE hnd;
 
+#ifdef DAC_SWTRIGR_SWTRIG2
 	status = dac->DAC_SR & (DAC_SR_DMAUDR1 | DAC_SR_DMAUDR2);
+#else
+	status = dac->DAC_SR & (DAC_SR_DMAUDR1);
+#endif
 	TRACELN("DAC isr %x", status);
 	if(status)//reset peripheral
 	{
@@ -251,5 +258,6 @@ void DAC_ISR(DAC_DRIVER_INFO* drv_info)
 			ConfigureDacChannel(dac, drv_data->dac_mode[1]);
 	}
 }
+#endif //USE_DAC_INTERRUPRT
 
 

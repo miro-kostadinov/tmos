@@ -13,7 +13,11 @@
 #include <mcu_cpp.h>
 
 #ifndef USE_DAC_DMA_DRIVER
-#define USE_DAC_DMA_DRIVER 1		//Disable DMA by default
+#define USE_DAC_DMA_DRIVER 1		//Enable DMA by default
+#endif
+
+#ifndef USE_DAC_INTERRUPRT
+#define USE_DAC_INTERRUPRT 	1		//Enable ISR by default
 #endif
 
 /** DAC Driver mode structure **/
@@ -49,8 +53,9 @@ struct DAC_DRIVER_INFO
 
 void DAC_DCR(DAC_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd);
 void DAC_DSR(DAC_DRIVER_INFO* drv_info, HANDLE hnd);
+#if USE_DAC_INTERRUPRT
 void DAC_ISR(DAC_DRIVER_INFO* drv_info);
-
+#endif
 
 
 #endif /* DRIVERS_STM32_DAC_DRV_H_ */
