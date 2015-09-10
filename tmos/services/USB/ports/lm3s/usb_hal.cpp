@@ -704,7 +704,7 @@ void usb_hal_stall_clear(USB_Type* hw_base, unsigned int ept_num)
 	}
 }
 
-static void usb_hal_start(USB_DRV_INFO drv_info, unsigned int ie)
+static void lm3s_otg_core_init1(USB_DRV_INFO drv_info, unsigned int ie)
 {
 	USB_Type* hw_base = drv_info->hw_base;
 
@@ -740,7 +740,7 @@ static void usb_hal_start(USB_DRV_INFO drv_info, unsigned int ie)
  */
 void usb_hal_device_start(USB_DRV_INFO drv_info)
 {
-	usb_hal_start(drv_info, USB_USBIE_SESREQ
+	lm3s_otg_core_init1(drv_info, USB_USBIE_SESREQ
 			| USB_USBIE_DISCON | USB_USBIE_CONN | USB_USBIE_RESET
 			| USB_USBIE_RESUME | USB_USBIE_SUSPND);
 
@@ -988,7 +988,7 @@ void usb_hal_config_fifo(USB_DRV_INFO drv_info)
 #if USB_ENABLE_HOST
 RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info)
 {
-	usb_hal_start(drv_info, USB_USBIE_VBUSERR | USB_USBIE_SESREQ
+	lm3s_otg_core_init1(drv_info, USB_USBIE_VBUSERR | USB_USBIE_SESREQ
 			| USB_USBIE_DISCON | USB_USBIE_CONN | USB_USBIE_RESET
 			| USB_USBIE_RESUME | USB_USBIE_SUSPND);
 
@@ -1049,6 +1049,76 @@ void usb_hal_host_resume(USB_DRV_INFO drv_info)
 }
 
 #endif  // USB_ENABLE_HOST
+
+#if USB_ENABLE_OTG
+/**
+ * USB starts with USB_CMD_DEVICE_CONFIG or USB_CMD_OTG_CONFIG and we get here
+ *
+ * Common low level initialization is called and then if the current mode does
+ * not match the requested RES_IDLE is returned and the client will wait for
+ * (CIDSCHGM, ...)
+ *
+ * Device:
+ *  - on bus reset
+ *  	reset endpoints
+ *  	cfg endpoints
+ *  	|= USB_OTG_FLG_DEV_CON | USB_OTG_FLG_DEV_OK
+ *  	restart pending
+ *
+ * Host:
+ *
+ *
+ * @param drv_info
+ * @param mode
+ * @return
+ */
+RES_CODE usb_hal_start(USB_DRV_INFO drv_info, uint32_t mode)
+{
+	RES_CODE res;
+	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+
+	if( drv_data->otg_flags & mode )
+	{
+		res = RES_SIG_OK;
+	} else
+	{
+		// The mode we need is not active
+		res = RES_IDLE;
+		if ( !(drv_data->otg_flags & (USB_OTG_FLG_DEV | USB_OTG_FLG_HOST)) )
+		{
+			// otg peripheral is idle
+
+			// low level reset now
+			TRACE_USB_NAME(drv_info);
+			TRACE1_USB(" Init");
+
+
+			// check if the mode matches
+#if USB_ENABLE_DEVICE
+			if(mode == USB_OTG_FLG_DEV)
+			{
+				// check if we can continue as device ???
+				usb_hal_device_start(drv_info);
+				drv_data->otg_flags |= USB_OTG_FLG_DEV;
+				res = RES_SIG_OK;
+			} else
+#endif
+			{
+#if USB_ENABLE_HOST
+				// check if we can continue as host ??
+				drv_data->otg_flags |= USB_OTG_FLG_HOST;
+				res = usb_hal_host_start(drv_info);
+#endif
+			}
+			TRACE_USB_NAME(drv_info);
+			TRACE1_USB(" Init done");
+
+		}
+	}
+
+	return res;
+}
+#endif //USB_ENABLE_OTG
 
 #if USB_ENABLE_DEVICE
 /** Handle USB bus reset

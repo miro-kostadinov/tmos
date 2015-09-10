@@ -37,6 +37,7 @@ void usb_hal_host_resume(USB_DRV_INFO drv_info);
 void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pDescriptor);
 #endif
 
+RES_CODE usb_hal_start(USB_DRV_INFO drv_info, uint32_t mode);
 void usb_otg_set_flags(USB_DRV_INFO drv_info, uint32_t flags);
 void usb_otg_clr_flags(USB_DRV_INFO drv_info, uint32_t flags);
 
