@@ -751,7 +751,7 @@ static void usb_b_ept_handler(Udp* pUDP, Endpoint *endpoint, uint32_t ept_indx)
 	    		size = usb_read_payload(&pUDP->UDP_FDR[ept_indx], hnd, size);
 				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 	    	}
-    		if(request && request->GetDirection() == USB_REQUEST_DIR_IN)
+    		if(request && request->GetDirection() == USB_REQ_DIR_IN)
     			endpoint->bank = 2;
 	    	if(size)
 			{

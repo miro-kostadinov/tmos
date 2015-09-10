@@ -35,7 +35,14 @@
 #define USE_TIME			0
 #define USE_TMOS_STDIO		1
 #define USE_GUI				0
+
 #define USE_USB				1
+#define USB_ENABLE_DEVICE	1
+#define USB_ENABLE_HOST 	0
+#define USB_ENABLE_OTG 		0
+#define USB_ENABLE_CDC		1
+#define USB_ENABLE_PRN		0
+#define USB_ENABLE_HID		0
 
 
 /*----------------------------------------------------------------------------*/

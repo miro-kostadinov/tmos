@@ -6,7 +6,7 @@
  */
 
 #include <tmos.h>
-#include <cdc_descriptors.h>
+#include <usb_descriptors.h>
 
 extern const USBDDriverDescriptors ron200_descriptors;
 

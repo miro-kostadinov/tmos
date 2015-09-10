@@ -65,6 +65,12 @@ USE_GUI			?=n
 
 # USB
 USE_USB			?=y
+USB_ENABLE_DEVICE	?=y
+USB_ENABLE_HOST 	?=n
+USB_ENABLE_OTG	 	?=n
+USB_ENABLE_CDC	 	?=y
+USB_ENABLE_PRN	 	?=n
+USB_ENABLE_HID	 	?=n
 
 ##########################################################################
 
