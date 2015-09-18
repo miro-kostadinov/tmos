@@ -35,9 +35,9 @@ extern "C" char __BUILD_VERSION;
 #define DRV_PRIORITY_SPI1		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_USB		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_TIMER		NVIC_PIORITY(0x03)
+#define DRV_PRIORITY_ADC		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_WIFI		NVIC_PIORITY(0x03)
 #define DRV_PRIORITY_WDT		NVIC_PIORITY(0x04)
-
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -146,6 +146,15 @@ extern const SPI_DRIVER_MODE g_rfm73_mode;
 #define PIN_PF7			(PD_PF7 | PD_IN)                                        //!< CN7.11
 
 #define PIN_BUTTON PIN_WAKE_UP
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 ADC DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define TEST_ADC	1
+#define ADC_TEST_DRV ADC1_IRQn
+#include <adc1_drv.h>
+extern const ADC_DRIVER_MODE adc_test_mode;
+
 
 extern "C" char* const DRV_TABLE[INALID_DRV_INDX+1];
 

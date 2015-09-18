@@ -280,6 +280,25 @@ void usb_thread()
 TASK_DECLARE_STATIC(usb_task, "USBT", usb_thread, 5, 100+TRACE_SIZE);
 #endif
 
+#if TEST_ADC
+void adc_thread()
+{
+	uint16_t buf;
+	CHandle adc_hnd;
+	RES_CODE res=RES_FATAL;
+
+	adc_hnd.tsk_open(ADC_TEST_DRV, &adc_test_mode);
+
+	while(1)
+	{
+		res = adc_hnd.tsk_read(&buf, 2);
+		TRACELN("adc tsk rcv %x %u", res, buf);
+		tsk_sleep(100);
+	}
+}
+TASK_DECLARE_STATIC(adc_task, "ADCT", adc_thread, 5, 100+TRACE_SIZE);
+#endif
+
 volatile unsigned int cpu_usage;
 
 static unsigned int get_clocks_per200ms(void)
@@ -353,6 +372,9 @@ int main(void)
 #endif
 #if USE_RFM73
     start_rfm73();
+#endif
+#if TEST_ADC
+    usr_task_init_static(&adc_task_desc, true);
 #endif
 
     //clocks in 250mS

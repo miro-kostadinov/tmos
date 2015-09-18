@@ -311,6 +311,44 @@ const SPI_DRIVER_MODE g_rfm73_mode =
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 ADC DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ADC_DRIVER_DATA adc_drv_data;
+
+const PIN_DESC adc_pins[] =
+{
+		NULL
+};
+const ADC_DRIVER_MODE adc_test_mode =
+{
+	ADC_CFGR1_AUTOFF | ADC_CFGR1_WAIT ,	//!< ADC Configuration register 1 value
+	ADC_SMPR1_SMPR_239_5, 							    //!< ADC Sampling time register value
+	0,												    //!< ADC watchdog threshold register value
+	ADC_CHSELR_CHSEL16,								    //!< ADC channel selection register value
+	ADC_CCR_TSEN,									    //!< ADC common configuration register value
+	adc_pins											//!< List of adc pin configurations
+};
+
+const ADC_DRIVER_INFO adc_driver =
+{
+	{
+		DRIVER_INFO_STUB,
+		(DRV_ISR)ADC_ISR,
+		(DRV_DCR)ADC_DCR,
+		(DRV_DSR)ADC_DSR,
+		ADC1_IRQn,
+		DRV_PRIORITY_ADC,
+		ID_PERIPH_ADC
+	},
+	ADC, 		//!< ADC peripheral
+	&adc_drv_data,		//!< driver data
+	RCC_ADC_CLK_HSI14,		//!< ADC clock configuration
+#if USE_ADC_DMA_DRIVER
+	DMA_DRIVER_MODE		dma_mode;
+#endif
+};
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 WIFI DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -361,7 +399,7 @@ extern "C" char * const DRV_TABLE[INALID_DRV_INDX+1] __attribute__ ((section (".
 	1+ (char * const)&DefaultDriver,    /*!< 9 DMA1 Channel 1 Interrupt                                        */
 	1+ (char * const)&DefaultDriver,    /*!< 10 DMA1 Channel 2 and Channel 3 Interrupts                         */
 	1+ (char * const)&DefaultDriver,    /*!< 11 DMA1 Channel 4 and Channel 5 Interrupts                         */
-	1+ (char * const)&DefaultDriver,    /*!< 12 ADC1 global Interrupt                                           */
+	1+ (char * const)&adc_driver,  		/*!< 12 ADC1 global Interrupt                                           */
 	1+ (char * const)&DefaultDriver,    /*!< 13 TIM1 Break, Update, Trigger and Commutation Interrupts          */
 	1+ (char * const)&DefaultDriver,    /*!< 14 TIM1 Capture Compare Interrupt */
 	1+ (char * const)&DefaultDriver, 	/*!< 15 Empty */
