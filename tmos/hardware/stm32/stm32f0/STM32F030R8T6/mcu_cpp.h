@@ -39,7 +39,7 @@
 #define SPI2        CAST(SPI_TypeDef 	, BASE_SPI2)	//!< SPI 2
 #define RTC			CAST(RTC_TypeDef 	, BASE_RTC)		//!< RTC
 #define PWR			CAST(PWR_TypeDef 	, BASE_PWR)		//!< Power control
-#define ADC         CAST(ADC_TypeDef 	, BASE_ADC1)	//!< ADC
+#define ADC         CAST(ADC_TypeDef 	, BASE_ADC)		//!< ADC
 #define TIM1        CAST(TIM_TypeDef    , BASE_TIM1)    //!< TIM1
 #define TIM3        CAST(TIM_TypeDef    , BASE_TIM3)    //!< TIM3
 #define TIM6        CAST(TIM_TypeDef    , BASE_TIM6)    //!< TIM6

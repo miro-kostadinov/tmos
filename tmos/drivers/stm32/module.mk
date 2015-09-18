@@ -25,6 +25,9 @@ local_cpp_src-y	+= adc2_drv.cpp
 local_h_src-y 	+= adc2_drv.h
 local_cpp_src-$(USE_TIME)	+= rtc2_drv.cpp 
 local_h_src-$(USE_TIME) 	+= rtc2_drv.h 
+else
+local_cpp_src-y	+= adc1_drv.cpp
+local_h_src-y 	+= adc1_drv.h
 endif
 
 #updating global variables
