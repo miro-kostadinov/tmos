@@ -63,6 +63,7 @@ typedef struct
 #define ADC_CR_ADSTART              0x00000004 //!< ADC start of conversion
 #define ADC_CR_ADDIS                0x00000002 //!< ADC disable command
 #define ADC_CR_ADEN                 0x00000001 //!< ADC enable control
+#define ADC_CR_BUSY					(ADC_CR_ADCAL | ADC_CR_ADSTP | ADC_CR_ADDIS)
 /** @} */
 
 /** @defgroup ADC_CFGR1:    (adc Offset: 0x00C) ADC Configuration register 1   */
@@ -84,10 +85,10 @@ typedef struct
 #define ADC_CFGR1_EXTSEL_Set(x)     ((x)<<6)   //!<  EXTSEL set macro
 #define ADC_CFGR1_ALIGN             0x00000020 //!< Data Alignment
 #define ADC_CFGR1_RES               0x00000018 //!< RES[1:0] bits (Resolution)
-#define ADC_CFGR1_RES_12            0x00000008 //!<  12 bits
-#define ADC_CFGR1_RES_10            0x00000010 //!<  10 bits
+#define ADC_CFGR1_RES_12            0x00000000 //!<  12 bits
+#define ADC_CFGR1_RES_10            0x00000008 //!<  10 bits
 #define ADC_CFGR1_RES_8             0x00000010 //!<  8 bits
-#define ADC_CFGR1_RES_6             0x00000010 //!<  6 bits
+#define ADC_CFGR1_RES_6             0x00000018 //!<  6 bits
 #define ADC_CFGR1_SCANDIR           0x00000004 //!< Sequence scan direction
 #define ADC_CFGR1_DMACFG            0x00000002 //!< Direct memory access configuration
 #define ADC_CFGR1_DMAEN             0x00000001 //!< Direct memory access enable

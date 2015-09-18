@@ -231,4 +231,45 @@ void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks)
 }
 
 
+void rcc_cfg_adc_clock(uint32_t adc_clk)
+{
+
+	if(adc_clk & RCC_ADC_CLK_HSI14)
+	{
+		// HSI14 selected automatically or manually
+		if(adc_clk & RCC_ADC_CLK_HSI_GATE)
+			RCC->RCC_CR2 &= ~RCC_CR2_HSI14DIS;
+		else
+		{
+			RCC->RCC_CR2 |= RCC_CR2_HSI14DIS;
+
+			//enable HSI14
+			if(!(RCC->RCC_CR2 & RCC_CR2_HSI14ON))
+			{
+				uint32_t tout;
+
+				// start HSI14
+				RCC->RCC_CR2 |= RCC_CR2_HSI14ON;
+
+				// wait for ready
+				tout = 0x100;
+				while(tout && !(RCC->RCC_CR2 & RCC_CR2_HSI14RDY))
+				{
+					tout--;
+				}
+			}
+		}
+		RCC->RCC_CFGR3 &= ~RCC_CFGR3_ADCSW;
+	} else
+	{
+		if(adc_clk & RCC_ADC_CLK_PCLK_PRE)
+		{
+			RCC->RCC_CFGR |= RCC_CFGR_ADCPRE;
+		} else
+		{
+			RCC->RCC_CFGR &= !RCC_CFGR_ADCPRE;
+		}
+		RCC->RCC_CFGR3 |= RCC_CFGR3_ADCSW;
+	}
+}
 

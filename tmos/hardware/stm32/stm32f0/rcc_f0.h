@@ -313,6 +313,12 @@ void RCCPeripheralDisable(unsigned int periph_id);
 void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks);
 
 
+// Settings to configure the ADC clock
+#define RCC_ADC_CLK_HSI14		0x01		//!< Select HSI14 for ADC clock
+#define RCC_ADC_CLK_HSI_GATE	0x02		//!< Enable ADC control of HSE14 (when RCC_ADC_CLK_HSI14)
+#define RCC_ADC_CLK_PCLK_PRE	0x02		//!< PCLK prescaller (when not RCC_ADC_CLK_HSI14)
+
+void rcc_cfg_adc_clock(uint32_t adc_clk);
 
 
 #endif /* RCC_F0_H_ */
