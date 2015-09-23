@@ -629,6 +629,477 @@ ENDF(   tmos_vsprintf        )
 
 
 
+//-----------------------------------------------------------------------------
+FUNC(   tmos_dbg_char       )
+        adds        r0, #1
+        push        {r0, r1, r2, r3, lr}
+        mov         r0, r3
+        bl          usr_trace_char
+        pop         {r0, r1, r2, r3, pc}
+ENDF(   tmos_dbg_char       )
+
+//-----------------------------------------------------------------------------
+// int tmos_dbgprintf( uint32_t zero, const char *format, va_list arg );
+// stack usage 32 bytes
+
+
+FUNC(   tmos_dbgprintf        )               // r0  r1  r2  r3  r4  r5  r6  r7  r12     0
+        push        {r0, r4, r5, r6, r7}     // dst fmt arg ___ ___ ___ ___ ___ ___     [dst0 xxxxxx buf12-24
+        sub         sp, #VSPRINTF_BUF_SIZE
+        mov         r12, r2                  // dst fmt ___ ___ ___ ___ ___ ___ ar0
+_dbg_loop:
+        ldrb        r3, [r1]                 // dst fmt arg  c  ___ ___ ___ ___ ar0
+        adds        r1, #1
+        cmp         r3, #0
+        beq         _dbg_end_loop
+        cmp         r3, #'%'
+        beq         _dbg_check_flags
+
+_dbg_copy_format_char:                       // dst fmt arg  c  ___ ___ ___ ___ ar0
+        bl          tmos_dbg_char
+        ldrb        r3, [r1]
+        adds        r1, #1
+        cmp         r3, #0
+        beq         _dbg_end_loop
+        cmp         r3, #'%'
+        bne         _dbg_copy_format_char
+
+_dbg_check_flags:                            // dst fmt arg '%' ___ ___ ___ ___ ar0
+        ldrb        r3, [r1]
+        adds        r1, #1
+        cmp         r3, #'%'
+        beq         _dbg_copy_format_char
+
+
+
+        //--- process flags [-] [0] [n]      // dst fmt arg  c  ___ ___ ___ ___ ar0
+        cmp         r3, #'-'
+        beq         _dbg_get_flag_left
+        movs        r7, #0                   // dst fmt arg  c  ___ ___ ___ flg ar0
+
+_dbg_check_flag_zero:
+        cmp         r3, #'0'
+        beq         _dbg_get_flag_zero
+
+_dbg_check_width:
+        movs        r4, #0                   // dst fmt arg  c  wdt ___ ___ flg ar0
+        movs        r6, #0                   // dst fmt arg  c  wdt ___ pre flg ar0
+        cmp         r3, #'9'
+        bhi         _dbg_check_type
+
+_dbg_get_width:                              // dst fmt arg  c  wdt ___ pre flg ar0
+        //--- (<=9) process [*] [*n$]
+        movs        r5, r3
+        subs        r5, #'0'
+        blo         _dbg_check_param_width
+
+_dbg_get_width_loop:
+        lsls        r3, r4, #3
+        lsls        r4, #1
+        adds        r4, r3
+        adds        r4, r5
+        ldrb        r3, [r1]                 // dst fmt arg  c  wdt ___ pre flg ar0 arg*
+        adds        r1, #1
+        cmp         r3, #'9'
+        bhi         _dbg_check_type
+        movs        r5, r3
+        subs        r5, #'0'
+        bhs         _dbg_get_width_loop
+        cmp         r3, #'$'
+        bne         _dbg_check_precision
+        cmp         r7, #0
+        bne         _dbg_check_precision
+        subs        r4, #1
+        blo         _dbg_unk_format
+        lsls        r2, r4, #2
+        add         r2, r12
+        b           _dbg_check_flags
+
+_dbg_check_param_width:     // (<0)
+        cmp         r3,  #'*'
+        bne         _dbg_check_precision
+        ldrb        r3, [r1]
+        adds        r1, #1
+        cmp         r3, #'9'
+        bhi         _dbg_get_param_width
+        movs        r5, r3
+        subs        r5, #'0'
+        blo         _dbg_get_param_width
+_dbg_get_param_width_loop:
+        lsls        r3, r4, #3
+        lsls        r4, #1
+        adds        r4, r3
+        adds        r4, r5
+        ldrb        r3, [r1]                 // dst fmt arg  c  wdt ___ pre flg ar0
+        adds        r1, #1
+        cmp         r3, #'9'
+        bhi         _dbg_unk_format
+        movs        r5, r3
+        subs        r5, #'0'
+        bhs         _dbg_get_param_width_loop
+        cmp         r3, #'$'
+        bne         _dbg_unk_format
+        subs        r4, #1
+        blo         _dbg_unk_format
+        lsls        r5, r4, #2
+        add         r5, r12
+        ldr         r4, [r5]
+        ldrb        r3, [r1]
+        adds        r1, #1
+        b           _dbg_check_precision
+
+_dbg_get_flag_left:
+        movs        r7, #PF_LEFT
+        ldrb        r3, [r1]
+        adds        r1, #1
+        b           _dbg_check_flag_zero
+
+_dbg_get_flag_zero:
+        adds        r7, #PF_ZERO
+        ldrb        r3, [r1]                 // dst fmt arg  c   0  ___ pre flg
+        adds        r1, #1
+        b           _dbg_check_width
+
+_dbg_get_param_precision:                    // dst fmt arg  c  wdt ___ pre flg ar0
+        ldmia       r2!, {r6}
+
+        //--- process type [d] [i] [u] [x] [X] [c] [s]
+_dbg_check_type:
+        ldmia       r2!, {r5}                // dst fmt arg  c  wdt arg pre flg ar0
+        cmp         r3, #'c'
+        beq         _dbg_print_c
+        cmp         r3, #'s'
+        beq         _dbg_print_s
+#if USE_TMOS_LLONG
+        cmp         r3, #'l'
+        bne         _dbg_check_long_done
+        adds        r7, #PF_LONG
+        mov         r3, r12
+        eors        r3, r2
+        lsrs        r3, #3
+        bcs         1f
+        ldmia       r2!, {r5}     // for stack alignment
+1:
+        ldrb        r3, [r1]
+        adds        r1, #1
+_dbg_check_long_done:
+#endif
+        push        {r4, r6}
+        add         r6, sp, #8               // dst fmt arg  c  wdt arg buf flg ar0    wdt pre flg
+        cmp         r3, #'d'
+        beq         _dbg_print_d
+        cmp         r3, #'i'
+        beq         _dbg_print_d
+        cmp         r3, #'u'
+        beq         _dbg_print_u
+        b           _dbg_check_hex
+
+_dbg_unk_format:
+        movs        r3, #'?'
+        bl          tmos_dbg_char
+_dbg_end_loop:
+        add         sp, #VSPRINTF_BUF_SIZE
+        pop         {r1, r4, r5, r6, r7}
+        subs        r0, r1
+        bx          lr
+
+
+
+_dbg_get_param_width:
+        ldmia       r2!, {r4}
+_dbg_check_precision:                        // dst fmt arg  c  wdt ___ pre flg ar0
+        cmp         r3, #'.'
+        bne         _dbg_check_type
+//get_precision:                             // r0  r1  r2  r3  r4  r5  r6  r7  r12
+        ldrb        r3, [r1]
+        adds        r1, #1
+        cmp         r3, #'*'
+        bne         _dbg_get_precision_val
+
+        ldrb        r3, [r1]
+        adds        r1, #1
+        cmp         r3, #'9'
+        bhi         _dbg_get_param_precision
+        movs        r5, r3
+        subs        r5, #'0'
+        blo         _dbg_get_param_precision
+_dbg_get_param_precision_loop:
+        lsls        r3, r6, #3
+        lsls        r6, #1
+        adds        r6, r3
+        adds        r6, r5
+        ldrb        r3, [r1]
+        adds        r1, #1
+        cmp         r3, #'9'
+        bhi         _dbg_unk_format
+        movs        r5, r3
+        subs        r5, #'0'
+        bhs         _dbg_get_param_precision_loop
+        cmp         r3, #'$'
+        bne         _dbg_unk_format
+        subs        r6, #1
+        blo         _dbg_unk_format
+        lsls        r5, r6, #2
+        add         r5, r12
+        ldr         r6, [r5]
+        ldrb        r3, [r1]
+        adds        r1, #1
+        b           _dbg_check_type
+
+
+_dbg_get_precision_val:
+        cmp         r3, #'9'
+        bhi         _dbg_check_type
+        subs        r3, #'0'
+        blo         _dbg_unk_format
+        lsls        r5, r6, #3
+        lsls        r6, #1
+        adds        r6, r3
+        adds        r6, r5
+        ldrb        r3, [r1]
+        adds        r1, #1
+        b           _dbg_get_precision_val
+
+
+_dbg_print_c:                                // dst fmt arg 'c' wdt arg pre flg ar0
+        cmp         r5, #0
+        beq         _dbg_prints_left_pad
+        uxtb        r3, r5
+        add         r5, sp, #4
+        str         r3, [r5]
+
+_dbg_print_s:                                // dst fmt arg 's' wdt arg pre flg ar0
+        cmp         r5, #0
+        beq         _dbg_prints_left_pad
+        adds        r3, r6, r4
+        bne         _dbg_print_s_get_len
+        subs        r5, r0
+1:
+        ldrb        r3, [r0, r5]
+        cmp         r3, #0
+        beq         _dbg_j_loop
+        bl          tmos_dbg_char
+        b           1b
+
+_dbg_print_s_get_len:
+2:      // get length/precision
+        ldrb        r3, [r5]
+        cmp         r3, #0
+        beq         _dbg_prints_left_pad
+        str         r7, [sp]
+        movs        r7, #1
+3:
+        ldrb        r3, [r5, r7]
+        cmp         r3, #0
+        beq         4f
+        adds        r7, #1
+        cmp         r7, r6
+        bne         3b
+4:
+        subs        r4, r7                   // dst fmt arg ___ w-l str ___ len ar0
+        bls         _dbg_prints_copy
+        ldr         r3, [sp]
+        lsrs        r3, #1
+        bcs         _dbg_prints_copy
+        movs        r3, #' '
+_dbg_prints_right_pad:                       // dst fmt str ' ' w-l len ___ ___ ar0 arg*
+        bl          tmos_dbg_char
+        subs        r4, #1
+        bne         _dbg_prints_right_pad
+_dbg_prints_copy:                            // dst fmt str ' ' 0   len ___ ___ ar0 arg*
+        subs        r5, r0
+1:
+        ldrb        r3, [r5, r0]
+        bl          tmos_dbg_char
+        subs        r7, #1
+        bne         1b
+_dbg_prints_left_pad:                        // dst fmt ___ ___ w-l ___ ___ ___ ar0 arg*
+        subs        r4, #1
+        bge         2f
+_dbg_j_loop:
+        b           _dbg_loop
+2:
+        movs        r3, #' '
+        bl          tmos_dbg_char
+        b           _dbg_prints_left_pad
+
+
+
+
+#if USE_TMOS_LLONG
+_dbg_print_u:                                // dst fmt 10  ___ wdt arg buf flg ar0 arg*   pre
+        lsrs        r3, r7, #3
+        bcc         _dbg_print_u32
+        ldmia       r2!, {r3}
+        b          _dbg_print_u64
+
+_dbg_print_d:                                // dst fmt arg ___ wdt?arg buf?flg?ar0     wdt pre
+        lsrs        r3, r7, #3
+        bcc         _dbg_print_d32
+        ldmia       r2!, {r3}
+        cmp         r3, #0
+        bge         _dbg_print_u64
+        lsls        r1, r3, #1
+        negs        r5, r5                      // n < 0
+        sbcs        r3, r1
+        adds        r7, #PF_NEG
+
+_dbg_print_u64:                              // dst fmt arg  hi ___ low buf flg ar0     wdt pre
+        subs        r7, #PF_LONG
+        cmp         r3, #0
+        beq         _dbg_print_u32
+        push        {r0, r1}                 // r0  r1  r2  r3  r4  r5  r6  r7
+        lsrs        r1, r5, #16              // n0  n1  arg hi  ___ ___ buf flg
+        uxth        r5, r5
+
+_dbg_print_top_u64:
+        m_udiv10    r3, r0, r4  //num_rem, res, tmp
+        lsls        r3, #16
+        adds        r3, r1
+        m_udiv10    r3, r1, r4  //num_rem, res, tmp
+        lsls        r3, #16
+        adds        r3, r5
+        m_udiv10    r3, r5, r4  //num_rem, res, tmp
+        adds        r3, #'0'
+        adds        r6, #1
+        strb        r3, [r6]
+        movs        r3, r0
+        bne         _dbg_print_top_u64
+        lsls        r1, #16
+        adds        r5, r0
+        pop         {r0, r1}
+        b           _dbg_print_u32
+
+_dbg_print_d32:
+        cmp         r5, #0
+        bge         _dbg_print_u32
+        adds        r7, #PF_NEG
+        rsbs        r5, r5, #0
+
+_dbg_print_u32:
+
+#else
+_dbg_print_d:                                // dst fmt 10  ___ wdt arg buf flg ar0 arg*   pre
+        cmp         r5, #0
+        bge         _dbg_print_u
+        adds        r7, #PF_NEG
+        rsbs        r5, r5, #0
+_dbg_print_u:                                // dst fmt arg ___ ___ arg buf flg ar0    pre
+#endif
+        m_udiv10    r5, r3, r4  //num_rem, res, tmp
+        adds        r5, #'0'
+        adds        r6, #1
+        strb        r5, [r6]
+        movs        r5, r3
+        bne         _dbg_print_u
+_dbg_print_numeric:                          // dst fmt arg ___ ___ ___ buf flg ar0    wdt pre
+        add         r3, sp, #8
+        subs        r5, r6, r3
+        pop         {r4, r6}                 // dst fmt arg ___ wdt len pre flg ar0
+        movs        r3, r6
+        cmp         r3, r5
+        bhi         1f
+        movs        r3, r5
+1:
+        subs        r4, r3                   // dst fmt arg max w-m len pre flg ar0
+        bls         _dbg_print_left_align
+        lsrs        r3, r7, #1        //c=FL_LEFT
+        bcs         _dbg_print_left_align
+        //right with W>0
+        lsrs        r3, r7, #2        //c=FL_NEG, r3=zero>>2
+        bls         _dbg_print_right_pad
+        //PF_ZERO && PF_NEG
+//_print_right_minus:
+        subs        r7, #PF_NEG
+        movs        r3, #'-'
+        bl          tmos_dbg_char
+        subs        r6, #1
+        subs        r4, #1
+        bls         _dbg_print_precision
+        lsrs        r3, r7, #2
+
+_dbg_print_right_pad:
+        adds        r3, #' '
+1:
+        bl          tmos_dbg_char
+        subs        r4, #1
+        bne         1b
+_dbg_print_left_align:
+        lsrs        r3, r7, #2        //c=FL_NEG
+        bcc         _dbg_print_precision
+//_print_left_minus:                         // dst fmt arg ___ wdt len pre ___ ar0 *
+        movs        r3, #'-'
+        subs        r6, #1
+        bl          tmos_dbg_char
+        subs        r4, #1
+_dbg_print_precision:                        // dst fmt arg ___ wdt len pre __g ar0
+        subs        r6, r5
+        ble         _dbg_print_digits
+        movs        r3, #'0'
+_dbg_print_precision_loop:                   // dst fmt arg ___ wdt len pre ___ ar0 arg*
+        bl          tmos_dbg_char
+        subs        r6, #1
+        bne         _dbg_print_precision_loop
+_dbg_print_digits:                           // dst fmt arg ___ wdt len ___ ___ ar0
+        add         r6, sp, #0
+1:
+        ldrb        r3, [r6, r5]
+        bl          tmos_dbg_char
+        subs        r5, #1
+        bne         1b
+        b           _dbg_prints_left_pad     // dst fmt arg ___ w-l ___ ___ ___ ar0
+
+_dbg_check_hex:
+        cmp         r3, #'p'
+        beq         _dbg_print_ptr
+        cmp         r3, #'x'
+        beq         _dbg_print_hex
+        cmp         r3, #'X'
+        beq         _dbg_print_hex
+        add         sp, #8
+        b           _dbg_unk_format
+
+
+_dbg_print_ptr:
+        movs        r3, #'X'
+                                             // r0  r1  r2  r3  r4  r5  r6  r7  r12
+_dbg_print_hex:                              // dst fmt arg 'x' ___ arg buf flg ar0    wdt pre
+        subs        r3, #'x'-'a'-'0'+10
+_dbg_print_hex_loop:
+        lsls        r4, r5, #28
+        lsrs        r4, #28
+        cmp         r4, #9
+        bls         1f
+        adds        r4, r3
+1:
+        adds        r4, #'0'
+        adds        r6, #1
+        strb        r4, [r6]
+        lsrs        r5, #4
+        bne         _dbg_print_hex_loop
+
+#if USE_TMOS_LLONG
+        lsrs        r5, r7, #3
+        bcc         _dbg_print_numeric
+        subs        r7, #PF_LONG
+        ldmia       r2!, {r5}                // dst fmt arg 'x' ___ arg buf flg ar0    wdt pre
+        cmp         r5, #0
+        beq         _dbg_print_numeric
+1:
+        add         r4, sp, #8+8
+        cmp         r6, r4
+        bhs         _dbg_print_hex_loop
+        movs        r4, #'0'
+        adds        r6, #1
+        strb        r4, [r6]
+        b           1b
+#else
+        b           _dbg_print_numeric       // dst fmt ___ ___ wdt  0  buf flg ar0 arg*   pre
+#endif
+
+
+
+ENDF(   tmos_dbgprintf        )
 
 
 
