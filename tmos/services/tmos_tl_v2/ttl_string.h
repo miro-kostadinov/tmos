@@ -278,7 +278,7 @@ protected:
   			string_header* head = string_head();
 
 			if ( head->m_refcount != 1
-					|| res > ((head->alloc_size - 2) * 4) / sizeof(CharT))
+					|| res >= ((head->alloc_size - 2) * 4) / sizeof(CharT))
   			{
   	  			new_data = m_allocate(res, old_len);
   	  			if(new_data)
