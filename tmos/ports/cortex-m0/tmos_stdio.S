@@ -644,6 +644,8 @@ ENDF(   tmos_dbg_char       )
 
 
 FUNC(   tmos_dbgprintf        )               // r0  r1  r2  r3  r4  r5  r6  r7  r12     0
+        push        {r2, r3}        // push all params in stack
+        mov         r2, sp          // r2 = va_list
         push        {r0, r4, r5, r6, r7, lr} // dst fmt arg ___ ___ ___ ___ ___ ___     [dst0 xxxxxx buf12-24
         sub         sp, #VSPRINTF_BUF_SIZE
         mov         r12, r2                  // dst fmt ___ ___ ___ ___ ___ ___ ar0
@@ -801,7 +803,9 @@ _dbg_end_loop:
         add         sp, #VSPRINTF_BUF_SIZE
         pop         {r1, r4, r5, r6, r7}
         subs        r0, r1
-        pop         {pc}
+        pop         {r1}
+        add         sp, #8
+        bx          r1
 
 
 
