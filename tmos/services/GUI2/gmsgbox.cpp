@@ -139,8 +139,16 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 			}
 		}
 		if(dec > msg_size.width + 3*font->hdistance)
+		{
 			message_rect.x1 -= dec - msg_size.width - 3*font->hdistance;
-
+			text_metrics_t new_msg_size;
+			new_msg_size = get_text_metrics(body.c_str(), message_rect.width(), font);
+			while(new_msg_size.height != msg_size.height )
+			{
+				message_rect.x1 += 3*font->hdistance;
+				new_msg_size = get_text_metrics(body.c_str(), message_rect.width(), font);
+			}
+		}
 		width = message_rect.width();
 		if( title_rect.width() > width)
 			width = title_rect.width();
