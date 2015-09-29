@@ -37,6 +37,8 @@ typedef unsigned int WIFI_CMD_STATE;
 #define WIFI_CMD_STATE_OK		0x20	//!< OK answer received
 #define WIFI_CMD_STATE_CMES		0x40	//!< CMEE or CMES answer received
 #define WIFI_CMD_STATE_FATAL	0x80	//!< failed to send command
+#define WIFI_CMD_STATE_CRLF		0x100	//!< CRLF received first
+#define WIFI_CMD_STATE_CRLFOK	0x200	//!< CRLF OK CRLF received
 
 
 #define WIFI_CMD_STATE_RETURN	(WIFI_CMD_STATE_RETURNED | WIFI_CMD_STATE_HND)
@@ -52,9 +54,9 @@ struct wifi_module_type
 
     unsigned short row_start;
     unsigned short row_end;
-    unsigned char cmd_state;  // WIFI_CMD_STATE_XXX
+    unsigned short cmd_state;  // WIFI_CMD_STATE_XXX
     unsigned char received_ch;
-    unsigned short wifi_watchdog_cnt;
+    unsigned char wifi_watchdog_cnt;
 
     CHandle rcv_hnd;
     CHandle snd_hnd;
@@ -80,8 +82,9 @@ struct wifi_module_type
     		unsigned char hnd_start=0);
     virtual int  wifi_notification(const char* row);
     virtual void wifi_process_tout();
-    virtual void wifi_cancelation();
-
+    virtual void wifi_cancelation(bool all);
+    virtual void wifi_data_received(const char* row)
+    {;}
 
     char* get_str_cmd(const char *cmd, unsigned int time);
     char* get_str_prm(char *row, unsigned int param);
@@ -94,6 +97,7 @@ struct wifi_module_type
     virtual RES_CODE wifi_sock_open(CSocket* sock)=0;
     virtual RES_CODE wifi_sock_connect_adr(CSocket* sock)=0;
     virtual RES_CODE wifi_sock_connect_url(CSocket* sock)=0;
+    virtual RES_CODE wifi_sock_disconect(CSocket* sock)=0;
     virtual RES_CODE wifi_sock_close(CSocket* sock)=0;
     virtual RES_CODE wifi_gethostbyname(CSocket* sock)=0;
 #if USE_GPRS_LISTEN
@@ -106,7 +110,7 @@ struct wifi_module_type
 
 
     NET_CODE wifi_drv_on();
-    NET_CODE wifi_get_network_name(CSTRING& name);
+    virtual NET_CODE wifi_get_network_name(CSTRING& name);
 
     friend RES_CODE wifi_drv_off(wifi_module_type *module, HANDLE hnd);
     friend void wifi_thread(WIFI_DRIVER_INFO* drv_info);

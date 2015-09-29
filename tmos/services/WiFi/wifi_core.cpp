@@ -91,53 +91,77 @@ void wifi_module_type::process_input(unsigned int signals, const char* cmd,
 
 		ch = received_ch; //accept this symbol
 
-		if(IS_ALPHANUM(ch) || IS_PUNC(ch)  || ch =='\r' || ch == '\n'|| ch == ' ')
+		if (ch != '\n')
 		{
-
-			if( ch < ' ')
-			{ // \r \n ...
-				if(cmd_state & WIFI_CMD_STATE_STARTED)
-				{	// има прочетени символи, край на реда
-					cmd_state ^= WIFI_CMD_STATE_STARTED;
-					buf[row_end++] = 0;
-					TRACE1_WIFI_DEBUG(" | ");
-					//debug_buffer(drv_data, '^');
-
-					cmd_state |= wifi_process_row(cmd);
-				}
-				// process_row() changes row_start if the row must stay
-				// otherwise the row will be dumped
-				row_end = row_start;
-			}
-			else
+			if(IS_ALPHANUM(ch) || IS_PUNC(ch)  || ch =='\r' || ch == '\n'|| ch == ' ')
 			{
-				buf[row_end++] = ch;
-			    TRACE1_WIFI("\e[33m");
-				TRACE_CHAR_WIFI(ch);
-			    TRACE1_WIFI("\e[m");
-				cmd_state |= WIFI_CMD_STATE_STARTED;
-				if( hnd_start == ch )
+
+				if( ch < ' ')
+				{ // \r \n ...
+					if(cmd_state & WIFI_CMD_STATE_STARTED)
+					{	// има прочетени символи, край на реда
+//						if(ch != '\n' || !(cmd_state & (WIFI_CMD_STATE_CRLF | WIFI_CMD_STATE_CRLFOK)))
+						{
+							cmd_state ^= WIFI_CMD_STATE_STARTED;
+							buf[row_end++] = 0;
+							TRACE1_WIFI_DEBUG(" | ");
+							//debug_buffer(drv_data, '^');
+
+							cmd_state |= wifi_process_row(cmd);
+						}
+
+					} else
+					{
+						TRACE1_WIFI_DEBUG(" I ");
+//						cmd_state |= WIFI_CMD_STATE_CRLF | WIFI_CMD_STATE_STARTED;
+						// if LF
+						//   if OK
+						//    if xxx  CRLF
+						///     process not(xxx)
+
+					}
+					// process_row() changes row_start if the row must stay
+					// otherwise the row will be dumped
+					row_end = row_start;
+				}
+				else
 				{
-					cmd_state ^= WIFI_CMD_STATE_STARTED;
-					buf[row_end] = 0;
-					row_end--; // remove it // +SORD 4,123 "........." OK
-					cmd_state |= WIFI_CMD_STATE_HND;
-					TRACE1_WIFI("^hnd^");
-					return;
+					buf[row_end++] = ch;
+					TRACE1_WIFI("\e[33m");
+					TRACE_CHAR_WIFI(ch);
+					TRACE1_WIFI("\e[m");
+					cmd_state |= WIFI_CMD_STATE_STARTED;
+					if( hnd_start == ch )
+					{
+						cmd_state ^= WIFI_CMD_STATE_STARTED;
+						buf[row_end] = 0;
+						row_end--; // remove it // +SORD 4,123 "........." OK
+						cmd_state |= WIFI_CMD_STATE_HND;
+						TRACE1_WIFI("^hnd^");
+						return;
+					}
+					if(cmd_submatch("+IPD,", &buf[row_start]) && ch == ':')
+					{
+						cmd_state ^= WIFI_CMD_STATE_STARTED;
+						buf[--row_end] = 0;
+						TRACELN1("WIFI:Receive");
+						wifi_data_received(&buf[row_start]);
+						row_end = row_start = 0;
+					}
 				}
-			}
-			if(row_end >= WIFI_BUF_SIZE-1)
-			{
-				TRACE1_WIFI_ERROR("Dumping: ");
-				TRACE1_WIFI_ERROR(buf);
+				if(row_end >= WIFI_BUF_SIZE-1)
+				{
+					TRACE1_WIFI_ERROR("Dumping: ");
+					TRACE1_WIFI_ERROR(buf);
 
-				row_end = 0;
-				row_start = 0;
-				cmd_state = WIFI_CMD_STATE_FATAL;
+					row_end = 0;
+					row_start = 0;
+					cmd_state = WIFI_CMD_STATE_FATAL;
+				}
+			} else
+			{
+				TRACE_WIFI_ERROR("!!!(%02.2x)\r\n", ch);
 			}
-		} else
-		{
-			TRACE_WIFI_ERROR("!!!(%02.2x)\r\n", ch);
 		}
 
 		rcv_hnd.tsk_start_read(&received_ch, 1);
@@ -151,17 +175,33 @@ WIFI_CMD_STATE wifi_module_type::wifi_process_row(const char *cmd)
 
 	row = buf + row_start;
 
+/*
+	if (cmd_state & WIFI_CMD_STATE_CRLFOK)
+	{
+		cmd_state ^= WIFI_CMD_STATE_CRLFOK;
+		wifi_notification(row);
+		return WIFI_CMD_STATE_STARTED;
+	}
+
+	if(!strcmp(row, "OK"))
+	{
+		if (cmd_state & WIFI_CMD_STATE_CRLF)
+		{
+			cmd_state ^= WIFI_CMD_STATE_CRLF | WIFI_CMD_STATE_CRLFOK;
+			return WIFI_CMD_STATE_STARTED;
+		}
+	}
+*/
+
 	//------- command matching --------//
 	if(cmd)
 	{
 		// OK
-		if(cmd_submatch("OK", row))
+		if(find_in_list(row, SZ(OK) SZ(no change) SZ(SEND OK), NULL ))
 			return WIFI_CMD_STATE_OK;
-		// no change
-		if(cmd_submatch("no change", row))
-			return WIFI_CMD_STATE_OK;
+
 		// ERROR
-		if(find_in_list(row, SZ(ERROR) SZ(+CME ERROR) SZ(+CMS ERROR), NULL ))
+		if(find_in_list(row, SZ(ERROR) SZ(+CME ERROR) SZ(+CMS ERROR) SZ(FAIL) SZ(ready), NULL ))
 			return WIFI_CMD_STATE_CMES;
 
 		if( cmd[0] && cmd_match(cmd, row))
@@ -492,6 +532,10 @@ RES_CODE wifi_module_type::process_cmd(HANDLE client)
 			res = wifi_sock_connect_url((CSocket*) client);
 			break;
 
+		case SOCK_CMD_DISCONNECT:
+			res = wifi_sock_disconect((CSocket*) client);
+			break;
+
 		case SOCK_CMD_CLOSE:
 			res = wifi_sock_close((CSocket*) client);
 			break;
@@ -516,7 +560,7 @@ int wifi_module_type::wifi_notification(const char* row)
 	return 0; // we do not recognize this row
 }
 
-void wifi_module_type::wifi_cancelation()
+void wifi_module_type::wifi_cancelation(bool all)
 {
 }
 

@@ -121,11 +121,11 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
         // step 4 - cancelation
         if(signals & WIFI_CANCEL_SIGNAL)
         {
-        	wifi_module->wifi_cancelation();
+        	wifi_module->wifi_cancelation(false);
         }
     }
 }
-TASK_DECLARE_STATIC(wifi_task, "WIFIT", (void(*)())wifi_thread, 85, 256+TRACE_SIZE);
+TASK_DECLARE_STATIC(wifi_task, "WIFIT", (void(*)())wifi_thread, 85, 200+TRACE_SIZE);
 
 //*----------------------------------------------------------------------------
 //*			DCR function

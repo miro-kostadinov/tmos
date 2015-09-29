@@ -31,8 +31,11 @@ struct esp8266_module: public wifi_module_type
     unsigned int wifi_tout;
     unsigned int sleep_tout;
     HANDLE		 waiting_open;
+    CSTRING		 connected_network_name;
+    CSocket*	 pending_socket;
     CSocket*	 alloc_sockets[WIFI_ESP8266_MAX_SOCKETS];
     unsigned int received_size[WIFI_ESP8266_MAX_SOCKETS];
+    char* 		 received_data[WIFI_ESP8266_MAX_SOCKETS];
 #if USE_WIFI_LISTEN
     unsigned short listen_ports[WIFI_ESP8266_MAX_SOCKETS];
     unsigned short accept_id[WIFI_ESP8266_MAX_SOCKETS];
@@ -44,9 +47,11 @@ struct esp8266_module: public wifi_module_type
 				wifi_tout = 0;
 				waiting_open = NULL;
 				sleep_tout = 0;
+				pending_socket = NULL;
 				for(int i=0; i<WIFI_ESP8266_MAX_SOCKETS; i++)
 				{
 					alloc_sockets[i] = NULL;
+					received_data[i] = NULL;
 					received_size[i] = 0;
 #if USE_WIFI_LISTEN
 					listen_ports[i] = 0;
@@ -60,6 +65,8 @@ struct esp8266_module: public wifi_module_type
     virtual RES_CODE wifi_drv_off();
     virtual NET_CODE wifi_reset(bool force);
     NET_CODE wifi_drv_level();
+    RES_CODE wifi_receive_check(char sym);
+    virtual void wifi_data_received(const char* row);
 
     NET_CODE wifi_esp8266_init_net(CSocket * sock);
     NET_CODE wifi_esp8266_socket_open(CSocket* sock);
@@ -71,6 +78,7 @@ struct esp8266_module: public wifi_module_type
     virtual RES_CODE wifi_sock_open(CSocket* sock);
     virtual RES_CODE wifi_sock_connect_adr(CSocket* sock);
     virtual RES_CODE wifi_sock_connect_url(CSocket* sock);
+    virtual RES_CODE wifi_sock_disconect(CSocket* sock);
     virtual RES_CODE wifi_sock_close(CSocket* sock);
     virtual RES_CODE wifi_gethostbyname(CSocket* sock);
 #if USE_WIFI_LISTEN
@@ -81,8 +89,10 @@ struct esp8266_module: public wifi_module_type
     virtual RES_CODE wifi_sock_addr(CSocket* sock);
 #endif
     virtual int wifi_notification(const char* row);
-//    virtual void wifi_process_tout();
+    virtual void wifi_process_tout();
     virtual void wifi_cancelation(bool all);
+
+    NET_CODE wifi_get_network_name(CSTRING& name);
 
     bool unacknowledged_data(unsigned int sock_id, unsigned int& size);
     unsigned int get_socket_state(unsigned int sock_id);
