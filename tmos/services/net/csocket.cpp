@@ -170,6 +170,26 @@ NET_CODE CSocket::connect(const char* url)
 }
 
 /**
+ * Disconnect a connection from a remote url.
+ * @return
+ */
+NET_CODE CSocket::disconnect(void)
+{
+	NET_CODE result = NET_IDLE;
+
+	if(complete())
+	{
+		set_res_cmd(SOCK_CMD_DISCONNECT);
+		tsk_start_and_wait();
+		if(res == RES_OK)
+			result = NET_OK;
+		else
+			result = error;
+	}
+	return (result);
+}
+
+/**
  * Accept a connection request.
  * @param timeout
  * @return
