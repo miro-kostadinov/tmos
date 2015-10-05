@@ -51,6 +51,6 @@
 #define USB_ENABLE_HID		0
 
 /// Ethernet
-#define USE_LWIP_1_4_1		1
+#define USE_LWIP_1_4_1		0
 
 #endif /* BRD_CFG_H_ */
