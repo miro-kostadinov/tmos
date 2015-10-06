@@ -532,7 +532,7 @@ unsigned int GMsgBox::process_key (GMessage& msg)
 	return res;
 }
 
-int MessageBox(const char* Text, const char* Caption, unsigned int Style, unsigned int def_button)
+int _MessageBox(const char* Text, const char* Caption, unsigned int Style, unsigned int def_button)
 {
 	GMsgBox box;
 	box.displays = 1;
@@ -541,6 +541,25 @@ int MessageBox(const char* Text, const char* Caption, unsigned int Style, unsign
 	box.title = Caption;
 	box.default_button = def_button;
 	return box.DoModal();
+}
+
+int MessageBox(const char* Text, const char* Caption, unsigned int Style, unsigned int def_button)
+{
+	GMsgBox* box = new GMsgBox;
+	unsigned int res = 0;
+	if(box)
+	{
+		box->displays = 1;
+		box->type = Style;
+		box->body =  Text;
+		box->title = Caption;
+		box->default_button = def_button;
+		res = box->DoModal();
+		delete box;
+	}
+	else
+		res = _MessageBox(Text, Caption, Style, def_button);
+	return res;
 }
 
 int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style, text_metrics_t size)
