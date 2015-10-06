@@ -138,7 +138,6 @@ unsigned int GDialog::process_key (GMessage& msg)
 		return 0;
 	}
 
-	move(0,0);
 	return res;
 }
 

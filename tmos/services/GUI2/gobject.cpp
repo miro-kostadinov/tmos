@@ -620,6 +620,7 @@ bool GObject::get_focus(bool notify_msg)
 				parent->focus = this;
 				if(notify_msg)
 					send_message(WM_SETFOCUS, id, 0L, this);
+				parent->move(0,0);
 			}
 			set_flag(GO_FLG_SELECTED);
 			return true;
