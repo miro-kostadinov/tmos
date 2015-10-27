@@ -28,9 +28,13 @@ struct usb_cdc_acm_interface: usb_interface
 	const USBInterfaceDescriptor* descriptor;
 
 	usb_cdc_acm_interface(unsigned char bAS):	usb_interface(bAS),
-			bControlLineState(), wSerialState(), descriptor(NULL)
+			bControlLineState(0), wSerialState(0), descriptor(NULL)
 
 	{
+		lineCoding.dwDTERate = 9600;
+		lineCoding.bCharFormat = 1;
+		lineCoding.bParityType = CDCLineCoding_NOPARITY;
+		lineCoding.bDataBits = 8;
 	}
 	;
 
