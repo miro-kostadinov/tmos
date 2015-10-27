@@ -1013,13 +1013,16 @@ static void stm_otg_core_init_host(USB_DRV_INFO drv_info)
 	TRACE1_USB(" init host");
 
 	// enable host specific interrupts
-	otg->core_regs.GINTMSK |= OTG_GINTMSK_WUIM | OTG_GINTMSK_SRQIM | OTG_GINTMSK_DISCINT
+	otg->core_regs.GINTMSK |= OTG_GINTMSK_WUIM | OTG_GINTMSK_SRQIM /*| OTG_GINTMSK_DISCINT*/
 		| OTG_GINTMSK_CIDSCHGM | OTG_GINTMSK_HCIM | OTG_GINTMSK_PRTIM |	OTG_GINTMSK_IPXFRM
 		| OTG_GINTMSK_RXFLVLM | OTG_GINTMSK_SOFM | OTG_GINTMSK_OTGINT | OTG_GINTMSK_MMISM;
 
 	/* Enable VBUS driving */
 	usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_PWR);
 
+	tsk_sleep(200);
+	otg->core_regs.GINTSTS = OTG_GINTMSK_DISCINT;
+	otg->core_regs.GINTMSK |= OTG_GINTMSK_DISCINT;
 
 	// Enable VBUS sensing
 	port_config = drv_info->cfg->stm32_otg;
