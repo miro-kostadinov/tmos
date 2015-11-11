@@ -11,6 +11,8 @@
 #include <ttl_config.h>
 #include <ttl_iterator.h>
 #include <ttl_algo.h>
+#include <ttl_memory.h>
+#include <ttl_move.h>
 
 
 namespace ttl
@@ -148,7 +150,7 @@ inline size_t vector<T>::reserve(size_type n)
     		{
         		if(m_size)
         			memcpy(new_data, p_data, m_size * sizeof(T));
-    			free(p_data);
+    			tsk_free(p_data);
     		}
     		p_data = new_data;
     	    m_capacity = n;
