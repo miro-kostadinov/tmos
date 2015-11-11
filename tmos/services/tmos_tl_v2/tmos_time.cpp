@@ -165,20 +165,32 @@ int time_t::sscanf(const char* buf, const char* format, ... )
 						break;
 					case 'M':
 						mon = tmp;
+						if(tmp <1 || tmp > 12)
+							stop = true;
 						break;
 					case 'D':
 						mday = tmp;
+						if(tmp <1 || tmp > 31)
+							stop = true;
 						break;
 					case 'h':
 						hour = tmp;
+						if(tmp < 0 || tmp >= 24 )
+							stop = true;
 						break;
 					case 'm':
 						minute = tmp;
+						if(tmp < 0 || tmp > 59)
+							stop = true;
 						break;
 					case 's':
 						second = tmp;
+						if(tmp < 0 || tmp > 59)
+							stop = true;
 						break;
 					}
+					if(stop)
+						continue;
 					break;
 
 				case 'n':
