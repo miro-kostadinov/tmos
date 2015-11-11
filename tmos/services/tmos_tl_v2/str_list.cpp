@@ -1280,6 +1280,33 @@ unsigned int CSTRING::find_in_list(STR_LIST sl, unsigned int* dwRead) const
 	return (::find_in_list(buf, sl, dwRead));
 }
 
+size_t CSTRING::find_first_not_of(const char* s, size_t pos) const
+{
+	size_t sz = length();
+	const char *ptr = RAM_ADR(storage.adr)?storage.ram->buf: storage.rom;
+
+    while(pos < sz)
+    {
+		if(!strchr(s,ptr[pos]))
+			return pos;
+		++pos;
+    }
+    return -1u;
+}
+
+size_t CSTRING::find_first_of(const char* s, size_t pos) const
+{
+	size_t sz = length();
+	const char *ptr = RAM_ADR(storage.adr)?storage.ram->buf: storage.rom;
+    while(pos < sz)
+    {
+		if(strchr(s,ptr[pos]))
+			return pos;
+		++pos;
+    }
+    return -1u;
+}
+
 /**
  * [] operator
  * @param index

@@ -256,6 +256,8 @@ public:
 	unsigned int atoi() const;
 	long long atoll() const;
 	unsigned int find_in_list(STR_LIST sl, unsigned int* dwRead) const;
+	size_t find_first_not_of(const char* s, size_t pos = 0) const;
+	size_t find_first_of(const char* s, size_t pos = 0) const;
 	int format(const char *fmt, ...);
 	int appendf(const char *fmt, ...);
 
