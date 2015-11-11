@@ -11,6 +11,8 @@
 #include <ttl_config.h>
 #include <ttl_iterator.h>
 #include <ttl_algo.h>
+#include <ttl_memory.h>
+#include <ttl_move.h>
 
 
 namespace ttl
@@ -44,7 +46,7 @@ public:
     inline bool		operator== (const pair& v)const	{ return (first == v.first && second == v.second); };
     inline bool		operator< (const pair& v) const	{ return (first < v.first || (first == v.first && second < v.second)); };
 
-    inline void		swap (pair& v)	{ ::ttl::swap(first,v.first); ::ttl::(second,v.second); };
+    inline void		swap (pair& v)	{ ::ttl::swap(first,v.first); ::ttl::swap(second,v.second); };
 };
 
 
