@@ -69,7 +69,7 @@ struct pair_vector : public vector<pair<K,V> >
     inline void			assign (const_iterator i1, const_iterator i2)	{ base_class::assign(i1, i2); }
     inline iterator		push_back (const_reference v)	{ return base_class::push_back(v); }
     inline void			clear (void)		{ base_class::clear(); }
-    inline void			swap (map& v)		{ base_class::swap (v); }
+    inline void			swap (pair_vector<K,V>& v)		{ base_class::swap (v); }
     iterator			insert (const_reference v);
     inline iterator		insert (const_iterator ip, const_reference v) {return base_class::insert(ip, v);};
     inline iterator		insert (const_iterator ip, const_iterator i1, const_iterator i2) {return base_class::insert(ip, i1, i2);};
@@ -92,7 +92,7 @@ struct pair_vector : public vector<pair<K,V> >
 
 template <typename K, typename V>
 inline typename pair_vector<K,V>::size_type	pair_vector<K,V>::count(
-		const_key_ref k, const_iterator i1=begin(), const_iterator i2=end()) const
+		const_key_ref k, const_iterator i1, const_iterator i2) const
 {
 	size_type n=0;
     for(; i1 != i2; ++i1)
