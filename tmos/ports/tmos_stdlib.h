@@ -49,6 +49,9 @@ void* tsk_malloc_clear(unsigned int size);
  * @return
  */
 int atoi(const char *ptr );
+#if USE_TMOS_LLONG
+long long atoll(const char *ptr);
+#endif
 
 /** Convert hes string to integer
  *

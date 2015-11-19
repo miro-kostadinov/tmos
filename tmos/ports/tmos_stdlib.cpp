@@ -258,6 +258,16 @@ int atoi(const char *ptr )
 	return (res);
 }
 
+#if USE_TMOS_LLONG
+long long atoll(const char *ptr)
+{
+	long long res=0;
+	if(ptr)
+		tmos_sscanf(ptr, "%ld", &res);
+	return (res);
+}
+#endif
+
 unsigned int ahextoi(const char *ptr )
 {
 	unsigned int res=0;

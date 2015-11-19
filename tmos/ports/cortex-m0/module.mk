@@ -20,9 +20,8 @@ local_as_src-$(USE_TMOS_STDIO)	+= tmos_stdio.S
 local_as_src-$(USE_TMOS_LLONG)	+= tmos_llong.S 
 
 local_cpp_src-y	+= kernel.cpp handle.cpp services.cpp  
-local_cpp_src-$(USE_TMOS_STDLIB)+= tmos_stdlib.cpp
 
-local_h_src-y 	+= port_cpp.h port_inc.h tmos_string.h tmos_stdlib.h tasks.h 
+local_h_src-y 	+= port_cpp.h port_inc.h tmos_string.h tasks.h 
 local_h_src-y 	+= services.h tmos_swi.h handle.h tmos_stdio.h port_asm.h
 local_h_src-y	+= tmos_atomic.h
 local_h_src-$(USE_TMOS_LLONG)	+= tmos_llong.h
