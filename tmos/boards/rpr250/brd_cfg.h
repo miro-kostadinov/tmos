@@ -13,7 +13,6 @@
 
 #define USE_TMOS_TL_V2		1
 #define USE_CSTRING			1
-#define USE_TTL_STRING 		0	//use old CSTRING
 
 
 #define USE_TMOS_STRING		1

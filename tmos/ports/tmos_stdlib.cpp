@@ -275,3 +275,40 @@ unsigned int ahextoi(const char *ptr )
 	return (res);
 }
 
+unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead)
+{
+	unsigned int pos;
+	unsigned int index=1;
+
+
+	while(*sl)
+	{
+		pos=0;
+		while(1)
+		{
+			if(!sl[pos])
+			{
+				if(dwRead)
+					*dwRead += pos;
+				return (index);
+			}
+			if(sl[pos] != str[pos])
+				break;
+			pos++;
+		}
+		while(sl[pos])
+			pos++;
+		sl+= pos+1;
+		index++;
+	}
+	return (0);
+}
+
+const char* szlist_at(STR_LIST sl, unsigned int pos)
+{
+	while(*sl && pos--)
+	{
+		while(*sl++);
+	}
+	return sl;
+}

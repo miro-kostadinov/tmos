@@ -13,94 +13,8 @@
 #define STR_LIST_H_
 
 #include <brd_cfg.h>
-
-#ifndef USE_TTL_STRING
-#define USE_TTL_STRING 1
-#endif
-
-#if USE_TTL_STRING
-
-/**
- * @brief String list
- *	The string list is a list of non-empty strings terminated by empty string.
- *
- *	Examples:
- *	 -	0, 0  - empty list ("")
- *	 -	'h', 'e', 'l', 'l', 'o', 0, 0 - list with one element ("hello", "")
- */
-typedef const char* STR_LIST;
-
-
-/**
- * Macro to create STR_LIST item
- *
- * Examples:
- * @code
- * 	STR_LIST my_list = SZ(first) SZ(second);
- *  //This is equivalent to:
- * const char * my_list = "first\0second\0";
- * @endcode
- */
-#define SZ(item) # item "\0"
-
-/**
- * Search a string with list of options to match
- * @param str string to scan
- * @param sl list of possible matches
- * @param dwRead matched symbols (position in the string)
- * @return index of the matched item or 0
- */
-unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead);
-
-#include <ttl_string.h>
-typedef ttl::basic_string<char> CSTRING;
-
-
-#else
-
-#include <tmos.h>
 #include <trace.h>
-
-/**
- * @brief String list
- *	The string list is a list of non-empty strings terminated by empty string.
- *
- *	Examples:
- *	 -	0, 0  - empty list ("")
- *	 -	'h', 'e', 'l', 'l', 'o', 0, 0 - list with one element ("hello", "")
- */
-typedef const char* STR_LIST;
-
-
-/**
- * Macro to create STR_LIST item
- *
- * Examples:
- * @code
- * 	STR_LIST my_list = SZ(first) SZ(second);
- *  //This is equivalent to:
- * const char * my_list = "first\0second\0";
- * @endcode
- */
-#define SZ(item) # item "\0"
-
-/**
- * Search a string with list of options to match
- * @param str string to scan
- * @param sl list of possible matches
- * @param dwRead matched symbols (position in the string)
- * @return index of the matched item or 0
- */
-unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead);
-
-/**
- * Return the position of the list item at specific position
- * @param sl string list
- * @param pos position
- * @return
- */
-const char* szlist_at(STR_LIST sl, unsigned int pos);
-
+#include <tmos_stdlib.h>
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 					 CString
@@ -457,8 +371,6 @@ inline bool operator>=(const char* s1, const CSTRING& s2) {
 	return (s2.compare(s1) < 0);
 }
 
-
-#endif /* USE_TTL_STRING */
 
 #endif /* STR_LIST_H_ */
 /** @} defgroup lib_cstring  */
