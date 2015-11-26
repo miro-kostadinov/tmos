@@ -107,7 +107,7 @@ template <typename K, typename V>
 typename pair_vector<K,V>::iterator	pair_vector<K,V>::insert (const_reference v)
 {
 	iterator d;
-	d = find(v.first);
+	d = find(v.first, begin(), end());
 	if(d == end())
 		d = push_back(v);
 	else
