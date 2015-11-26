@@ -87,10 +87,14 @@ text_metrics_t GText::SetTextAlign(unsigned int new_align )
 		txt_size = get_text_metrics(txt.c_str(), client_rect.width(), text_font);
 		if(vscroll)
 		{
-			client_rect.Inflate(0,1);
-			vscroll->SetScrollRange(GO_FLG_VSCROLL, txt_size.height - client_rect.height());// /text_font->vspacing);
-			vscroll->SetScrollPos(GO_FLG_VSCROLL, 0 , false);
-			client_rect.Deflate(0,1);
+			if(client_rect.height() && txt_size.height > client_rect.height())
+			{
+				txt_size = get_text_metrics(txt.c_str(), client_rect.width()- GO_SCROLL_WIDTH, text_font);
+				client_rect.Inflate(0, 1);
+				vscroll->SetScrollRange(GO_FLG_VSCROLL, txt_size.height/text_font->vspacing);// /text_font->vspacing);
+				vscroll->SetScrollPos(GO_FLG_VSCROLL, 0 , false);
+				client_rect.Deflate(0, 1);
+			}
 		}
 	}
 	else
