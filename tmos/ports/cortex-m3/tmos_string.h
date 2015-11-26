@@ -22,6 +22,7 @@ char* strncpy(char *dst, const char *src, unsigned int len);
 char* strchr(const char *dst, int i);
 char* strrchr(const char *dst, int i);
 const char* strpbrk(const char * str1, const char * str2);
+unsigned int strcspn(const char * str1, const char * str2);
 int memcmp(const void * ptr1, const void * ptr2, unsigned int num);
 int strcmp(const void *dst, const void *src);
 int strncmp(const void *dst, const void *src, unsigned int len);

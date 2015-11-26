@@ -276,7 +276,33 @@ FUNC(	strpbrk		)
 
 ENDF(	strpbrk		)
 
+//*----------------------------------------------------------------------------
+//*     unsigned int strcspn(const char * str1, const char * str2);
+//*----------------------------------------------------------------------------
+FUNC(   strcspn     )
 
+                cbz             r0, 4f
+                push            {r0}
+1:
+                ldrb            r2, [r0]
+                cbz             r2, 3f
+                mov             r12, r1
+2:
+                ldrb            r3, [r12], #1
+                cmp             r2, r3
+                beq             3f
+                cmp             r3, #0
+                bne             2b
+                adds            r0, #1
+                b               1b
+
+3:
+                pop             {r1}
+                subs            r0, r1
+4:
+                bx              lr
+
+ENDF(   strcspn     )
 
 //*----------------------------------------------------------------------------
 //*		int islower(unsigned int c)
