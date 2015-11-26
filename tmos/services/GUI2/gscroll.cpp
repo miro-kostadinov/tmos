@@ -117,8 +117,10 @@ void GScroll::SetScrollPos(GFlags sb, unsigned short p, bool redraw)
 
 	if(sb & (GO_FLG_HSCROLL|GO_FLG_VSCROLL))
 	{
-		view_size -=2;
-		pos = 2 + ((p * ratio)>>10) + ((((p*ratio)&0x3FF) >= 512)?1:0);
+		view_size -=2;  //size of bottom/right cover
+		//pos = 2 + ((p * ratio)>>10) + ((((p*ratio)&0x3FF) >= 512)?1:0);
+		p = p * ratio;
+		pos = 2 + p/1000 + ((p%500) >= 500 ? 1: 0);
 		if( pos + page  > view_size )
 			pos = view_size - page;
 	}
@@ -129,10 +131,11 @@ void GScroll::SetScrollPos(GFlags sb, unsigned short p, bool redraw)
 
 void GScroll::SetScrollRange(GFlags sb, unsigned int p)
 {
-	if(p > 1)
+	unsigned int view_size=0;
+	ratio = 0;
+
+	if(p)
 	{
-		p--;
-		unsigned int view_size=0;
 		if(sb & GO_FLG_HSCROLL)
 			view_size = object->client_rect.width();
 		if(sb & GO_FLG_VSCROLL)
@@ -142,14 +145,25 @@ void GScroll::SetScrollRange(GFlags sb, unsigned int p)
 			view_size -=4;
 			if(sb &(GO_FLG_HSCROLL|GO_FLG_VSCROLL))
 			{
-				ratio = (view_size * 1024)/p;
-				page = ratio/1024 + (((ratio%1024) >= 512)?1:0);
-				if(!page)
-					page = 3;
-				ratio = ((view_size - page)*1024)/p;
+
+				if(--p)
+				{
+					if(p == 1)
+						p++;
+					ratio = (view_size * 1000)/p;
+					page = ratio/1000 + (((ratio%1000) >= 500)?1:0);
+					if(!page)
+						page = 3;
+					ratio = ((view_size - page)*1000)/p;
+				}
+				else
+				{
+					ratio = (view_size * 1000)/2;
+					page = ratio/1000 + (((ratio%1000) >= 500)?1:0);
+					if(!page)
+						page = 3;
+				}
 			}
 		}
 	}
-	else
-		ratio = 0;
 }
