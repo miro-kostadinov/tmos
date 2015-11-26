@@ -144,7 +144,11 @@ void GEdit::draw_this(LCD_MODULE* lcd)
 	}
 
 	if(vscroll)
+	{
+		client_rect.Inflate(0, 1);
 		vscroll->draw_scroll(lcd);
+		client_rect.Deflate(0, 1);
+	}
 	if(hscroll)
 		hscroll->draw_scroll(lcd);
 
@@ -637,11 +641,16 @@ bool GEdit::set_cursor_y_char(void)
 		break;
 	}
 
-	cursor.x1 = cursor.x0 + text_font->hspacing;								//sets the width of the cursor according to the spacing of the font
-	cursor.y0--;																//makes the cursor a little bit longer that the font height
 
 	if(vscroll && res)
-		vscroll->SetScrollPos(GO_FLG_VSCROLL, y/text_font->vspacing , true);
+	{
+		client_rect.Inflate(0, 1);
+		vscroll->SetScrollPos(GO_FLG_VSCROLL, (cursor.y0 - scroll_rect.y0)/text_font->vspacing/*y/text_font->vspacing*/ , true);
+		client_rect.Deflate(0, 1);
+	}
+
+	cursor.x1 = cursor.x0 + text_font->hspacing;								//sets the width of the cursor according to the spacing of the font
+	cursor.y0--;																//makes the cursor a little bit longer that the font height
 	return res;
 }
 
