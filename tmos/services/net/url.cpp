@@ -533,7 +533,6 @@ const char* CURL::url_get_userinfo (const char *url)
 
 	if(url != p)
 	{
-		CSTRING s;
 		const char* pp = url;
 
 		while( (pp != p) && (*pp != ':') )
@@ -953,7 +952,7 @@ void CURL::url_print(CSTRING& str)
 		break;
 	default:
 		i = 0;
-
+		break;
 	}
 
 	if(port != i)
