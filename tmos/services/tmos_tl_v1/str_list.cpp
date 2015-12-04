@@ -1161,6 +1161,7 @@ long long CSTRING::atoll() const
 	return (res);
 }
 
+/*
 unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead)
 {
 	unsigned int pos;
@@ -1198,6 +1199,7 @@ const char* szlist_at(STR_LIST sl, unsigned int pos)
 	}
 	return sl;
 }
+*/
 /**
  * Search for word from list
  *
