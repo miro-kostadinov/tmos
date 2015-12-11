@@ -1192,6 +1192,11 @@ long long CSTRING::atoll() const
 	return (res);
 }
 
+int CSTRING::itoa(int num)
+{
+	return format("%d", num);
+}
+
 /**
  * Search for word from list
  *
