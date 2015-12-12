@@ -475,7 +475,7 @@ RES_CODE CHandle::tsk_write(const void * buf, unsigned int l, unsigned int time)
     return (res);
 }
 
-#if USE_CSTRING
+#if USE_CSTRING || USE_TMOS_TL_V2
 RES_CODE CHandle::tsk_read(CSTRING& str, unsigned int size)
 {
 	char * buf;

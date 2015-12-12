@@ -11,6 +11,7 @@
 #include <tmos.h>
 #include <tmos_string.h>
 #include <tmos_stdio.h>
+#include <tmos_stdlib.h>
 #include <stdarg.h>
 
 #include <ttl_config.h>

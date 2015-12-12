@@ -298,9 +298,21 @@ void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 			times_pressed = 0;
 			last_key = pressed_key;
 			if(shift == KT_BG_CAPS || shift == KT_EN_CAPS)
+			{
+#if USE_CSTRING
 				txt.insert(toupper(key_val[times_pressed]), pos);								//inserts the new character from the key array into the string
+#else
+				txt.insert(pos, 1, toupper(key_val[times_pressed]));			//inserts the new character from the key array into the string
+#endif				
+			}
 			else
+			{
+#if USE_CSTRING
 				txt.insert(key_val[times_pressed], pos);								//inserts the new character from the key array into the string
+#else
+				txt.insert(pos, 1, key_val[times_pressed]);						//inserts the new character from the key array into the string
+#endif				
+			}	
 			text_change();															//redraws the whole text
 		}
 		else
@@ -308,7 +320,11 @@ void GEdit::process_alpha_key(char pressed_key, const char* key_val)
 			StopTimer(EDIT_TIMER_INPUT);
 			last_key = 0;
 			times_pressed = 0;
+#if USE_CSTRING
 			txt.insert(key_val[0], pos);								//inserts the new character from the key array into the string
+#else
+			txt.insert(pos, 1, key_val[0]);										//inserts the new character from the key array into the string
+#endif				
 			if((align & ES_AUTO_SCROLL))
 			{
 				if((int)txt.length() >= client_rect.width() / text_font->hspacing)
@@ -505,7 +521,11 @@ bool GEdit::process_char(unsigned int ch)
 			StopTimer(EDIT_TIMER_INPUT);
 			last_key = 0;
 			times_pressed = 0;
+#if USE_CSTRING
 			txt.insert(ch, pos);								//inserts the new character from the key array into the string
+#else
+			txt.insert(pos, 1, ch);								//inserts the new character from the key array into the string
+#endif				
 			if((align & ES_AUTO_SCROLL))
 			{
 				if((int)txt.length() >= client_rect.width() / text_font->hspacing)

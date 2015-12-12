@@ -41,7 +41,6 @@
 #define SHA_1_H_
 
 #include <tmos.h>
-#include <str_list.h>
 
 class SHA1
 {

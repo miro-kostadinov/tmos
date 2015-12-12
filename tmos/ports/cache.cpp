@@ -6,7 +6,6 @@
  */
 
 #include <tmos.h>
-#include <str_list.h>
 #include <cache.h>
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

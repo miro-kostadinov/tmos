@@ -9,7 +9,6 @@
 #define HMAC_SHA1_H_
 
 #include <tmos.h>
-#include <str_list.h>
 #include "sha_1.h"
 
 #define SHA1_BLOCK_SIZE		64

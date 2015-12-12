@@ -47,6 +47,11 @@
 #ifdef __cplusplus
 #	if USE_CSTRING
 #		include <str_list.h>
+#   else
+#		if USE_TMOS_TL_V2
+#			include <ttl_string.h>
+			typedef string CSTRING;
+#		endif
 #	endif
 #endif
 

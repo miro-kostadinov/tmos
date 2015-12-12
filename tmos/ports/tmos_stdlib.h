@@ -8,6 +8,8 @@
 #ifndef TMOS_STDLIB_H_
 #define TMOS_STDLIB_H_
 
+#include <trace.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

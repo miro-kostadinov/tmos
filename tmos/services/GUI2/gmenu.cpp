@@ -116,8 +116,13 @@ void GMenu::adjust_item_names()
 					max_chars--;
 				}
 				l_str += r_str;
+#if USE_CSTRING
 				if(pos)
 					l_str.insert('&', pos-1);
+#else
+				if(pos != string::npos)
+					l_str.insert(pos, 1, '&');
+#endif				
 				tmp->item_name = l_str;
 			}
 		}
@@ -386,6 +391,8 @@ bool GMenu::LoadMenu(const MENUTEMPLATE* pat)
 unsigned int remove_amp(CSTRING& str)
 {
 	unsigned int pos;
+
+#if USE_CSTRING
 	if(str.find(pos, '&'))
 	{
 		str.erase(pos, 1);
@@ -393,6 +400,13 @@ unsigned int remove_amp(CSTRING& str)
 	}
 	else
 		pos = 0;
+#else
+	pos = str.find('&');
+	if(pos != string::npos)
+	{
+		str.erase(pos, 1);
+	}
+#endif				
 	return pos;
 }
 

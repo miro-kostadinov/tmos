@@ -158,7 +158,7 @@ struct CHandle {
 	{
 		return (tsk_write(buf, strlen(buf)));
 	}
-#if USE_CSTRING
+#if USE_CSTRING || USE_TMOS_TL_V2
 	RES_CODE tsk_write(const CSTRING& str)
 	{
 		return (tsk_write(str.c_str(), str.length()));
