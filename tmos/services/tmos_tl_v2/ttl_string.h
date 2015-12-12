@@ -940,6 +940,7 @@ public:
 
 	int atoi() const;
 	long long atoll() const;
+	int itoa(int num);
 
 	size_type find_in_list(STR_LIST sl, size_type* dwRead) const;
 
@@ -1718,6 +1719,12 @@ long long basic_string<CharT>::atoll() const
 		tmos_sscanf(m_data, "%ld", &res);
 	}
 	return (res);
+}
+
+template<typename CharT>
+int basic_string<CharT>::itoa(int num)
+{
+	return format("%d", num);
 }
 
 template<typename CharT>
