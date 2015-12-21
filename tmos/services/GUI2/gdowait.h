@@ -21,7 +21,7 @@ struct GWaitOwner
 	GWaitOwner*			next;
 	GFlags				flags;
 
-	GWaitOwner(GObject* win) : owner(win), next(NULL), flags(0)
+	GWaitOwner(GObject* win) : owner(win), next(nullptr), flags(0)
 	{
 	}
 
@@ -39,7 +39,7 @@ struct GWait : GWindow
 	GWaitOwner*			owners;
 public:
 	GWait() : GWindow(),
-	new_state(3), last_state(0), R(15), owners(NULL)
+	new_state(3), last_state(0), R(15), owners(nullptr)
 	{
 	}
 

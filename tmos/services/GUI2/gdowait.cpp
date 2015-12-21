@@ -8,9 +8,9 @@
 #include <gdowait.h>
 #include <lcd_multiplex.h>
 
-GWait* GWait::dowait_win =NULL;
+GWait* GWait::dowait_win =nullptr;
 int32_t GWait::dowait_cnt = 0;
-void * GWait::dowait_locker = NULL;
+void * GWait::dowait_locker = nullptr;
 
 POINT_T PolarToDevXY(int deg, int r, LCD_MODULE* lcd);
 
@@ -142,7 +142,7 @@ void GWait::GUIDoWait(int code)
 	dowait_cnt += code;
 	if(dowait_cnt > 0)
 	{
-		if(code > 0 && dowait_cnt == 1 && NULL == dowait_win)
+		if(code > 0 && dowait_cnt == 1 && nullptr == dowait_win)
 		{
 			dowait_win = new GWait();
 			if(dowait_win)
@@ -173,11 +173,11 @@ void GWait::GUIDoWait(int code)
 			GMessage msg;
 			dowait_win->process_destroy(msg);
 			delete dowait_win;
-			dowait_win = NULL;
+			dowait_win = nullptr;
 		}
 		dowait_cnt = 0; // prevent underflow
 	}
-	dowait_locker = NULL;
+	dowait_locker = nullptr;
 }
 
 void DoWait(int code)

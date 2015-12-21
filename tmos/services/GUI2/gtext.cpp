@@ -36,7 +36,7 @@ void GText::alloc_scrollbars( void )
 		if(hscroll)
 		{
 			delete hscroll;
-			hscroll = NULL;
+			hscroll = nullptr;
 		}
 	}
 	if(flags & GO_FLG_VSCROLL)
@@ -49,7 +49,7 @@ void GText::alloc_scrollbars( void )
 		if(vscroll)
 		{
 			delete vscroll;
-			vscroll = NULL;
+			vscroll = nullptr;
 		}
 	}
 }

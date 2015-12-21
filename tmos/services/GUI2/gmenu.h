@@ -48,12 +48,12 @@ struct GMenu: GObject
 
 	GMenu (GId id_t, RECT_T rect_t, const char* title_t, GFlags flags_t = GO_FLG_DEFAULT)
 		:GObject (id_t, rect_t, flags_t),
-		 base(NULL), menu(NULL), item(NULL), title(title_t),
-		 size(0), scroll(NULL), text_font(&FNT5x7)
+		 base(nullptr), menu(nullptr), item(nullptr), title(title_t),
+		 size(0), scroll(nullptr), text_font(&FNT5x7)
 	{}
 
-	GMenu(): base(NULL), menu(NULL), item(NULL), title(NULL), size(0),
-			scroll(NULL), text_font(&FNT5x7)
+	GMenu(): base(nullptr), menu(nullptr), item(nullptr), title(nullptr), size(0),
+			scroll(nullptr), text_font(&FNT5x7)
 	{}
 
 	~GMenu()
@@ -61,7 +61,7 @@ struct GMenu: GObject
 		if(scroll)
 		{
 			delete scroll;
-			scroll = NULL;
+			scroll = nullptr;
 		}
 		if(base)
 		{
@@ -71,7 +71,7 @@ struct GMenu: GObject
 				base[size++].item_name.free();
 			}
 			delete base;
-			base = NULL;
+			base = nullptr;
 		}
 	}
 
@@ -80,7 +80,7 @@ struct GMenu: GObject
 		if(scroll)
 		{
 			delete scroll;
-			scroll = NULL;
+			scroll = nullptr;
 		}
 		if(base)
 		{
@@ -90,9 +90,9 @@ struct GMenu: GObject
 				base[size++].item_name.free();
 			}
 			delete base;
-			base = NULL;
+			base = nullptr;
 		}
-		item = menu = NULL;
+		item = menu = nullptr;
 		size=0;
 	}
 
@@ -101,7 +101,7 @@ struct GMenu: GObject
 
 	menu_template_t* GetItem(int parent_id, int menu_id);
 	menu_template_t* FindItem(int item_id);
-	menu_template_t* GetMenu(int parent_id, menu_template_t* start = NULL);
+	menu_template_t* GetMenu(int parent_id, menu_template_t* start = nullptr);
 	int GetMenuSize(int menu_id);
 	bool SetReplaceItem(int item_id, const CSTRING& item_name, short unsigned int flg =0);
 	bool Select(int item_id);

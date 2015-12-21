@@ -178,7 +178,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
     	GFlags flg = GO_FLG_SHOW|GO_FLG_TRANSPARENT;
     	if(message_rect.height() >= client_rect.height())
     		flg |= GO_FLG_ENABLED;
-    	title_box = new GTitle(	ID_MB_TITLE, title_rect, title, NULL,
+    	title_box = new GTitle(	ID_MB_TITLE, title_rect, title, nullptr,
     							flg, SS_CENTER|SS_TOP);
     	addChild(title_box);
     }
@@ -188,7 +188,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 
     if(type & MBF_EDIT)
     {
-    	edit_box = new GEdit(ID_MB_TEXT_BOX, message_rect, body, NULL,
+    	edit_box = new GEdit(ID_MB_TEXT_BOX, message_rect, body, nullptr,
     			((bnum)?0:GO_FLG_SELECTED)|
 				 GO_FLG_BORDER|GO_FLG_VSCROLL|GO_FLG_TRANSPARENT|GO_FLG_DEFAULT,
 				 GET_MBF_EDIT_FLAGS(type),
@@ -201,7 +201,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
     }
     else
     {
-    	text_box = new GText(ID_MB_TEXT_BOX, message_rect, body, NULL,
+    	text_box = new GText(ID_MB_TEXT_BOX, message_rect, body, nullptr,
  				GO_FLG_VSCROLL|GO_FLG_TRANSPARENT|GO_FLG_SHOW,SS_DEFAULT,font);
 		if(addChild( text_box ))
 		{

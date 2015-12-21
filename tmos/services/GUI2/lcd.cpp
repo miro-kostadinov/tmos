@@ -184,13 +184,13 @@ const char* LCD_MODULE::get_next_txt_row(const char *txt)
 		if(txt[0])
 		    return (txt);
 	}
-	return NULL;
+	return nullptr;
 }
 
 const char* LCD_MODULE::draw_text (const char* txt)
 {
 	if(!txt)
-		return NULL;
+		return nullptr;
 	while(*txt == ' ' || *txt =='\r' || *txt == '\n')
 		txt++;
 	return draw_text_no_space (txt);
@@ -202,7 +202,7 @@ const char* LCD_MODULE::draw_text_no_space (const char *txt)
 	unsigned int c;
 
 	if(!txt)
-		return NULL;
+		return nullptr;
 
     pos = pos_x + font->hdistance;
     len = 0;
@@ -268,9 +268,9 @@ const char* LCD_MODULE::draw_row(const char *txt)
 	unsigned int c;
 
 //	if( (pos_y + font->hight) < offset_y0)
-//		return (NULL);
+//		return (nullptr);
 	if(!txt)
-		return NULL;
+		return nullptr;
 
 	while(*txt == ' ')
 		txt++;

@@ -14,10 +14,10 @@
 struct GRadio: GContainer
 {
 	GObject* checked;
-	GRadio (): checked(NULL) {};
+	GRadio (): checked(nullptr) {};
 	GRadio (GId id_t, const RECT_T& rect_t,
 			GFlags flags_t = GO_FLG_DEFAULT)
-	:GContainer (id_t, rect_t, flags_t), checked(NULL) {};
+	:GContainer (id_t, rect_t, flags_t), checked(nullptr) {};
 
 	virtual GObject* addChild (GObject* child);
 	virtual unsigned int process_key (GMessage& msg);

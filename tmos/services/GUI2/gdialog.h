@@ -17,10 +17,10 @@ struct GDialog : GWindow
 	GScroll* 	vscroll;
 	int			vpos;
 
-	GDialog():GWindow(), vscroll(NULL),vpos(0) {};
+	GDialog():GWindow(), vscroll(nullptr),vpos(0) {};
 	GDialog(GId id_t, const RECT_T& rect_t,
 			unsigned char displays_t, GFlags flags_t = GO_FLG_DEFAULT)
-	:GWindow (id_t, rect_t, displays_t, flags_t), vscroll(NULL), vpos(0)
+	:GWindow (id_t, rect_t, displays_t, flags_t), vscroll(nullptr), vpos(0)
 	{
 	};
 
@@ -29,7 +29,7 @@ struct GDialog : GWindow
 		if(vscroll)
 		{
 			delete vscroll;
-			vscroll = NULL;
+			vscroll = nullptr;
 		}
 	}
 

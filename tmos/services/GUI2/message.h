@@ -21,7 +21,7 @@ struct GMessage
 	unsigned long long lparam;
 	GObject* dst;
 
-	GMessage () : code(WM_QUIT), param(0), lparam(0), dst(NULL) {};
+	GMessage () : code(WM_QUIT), param(0), lparam(0), dst(nullptr) {};
 	GMessage (WM_MESSAGE code_t, unsigned int param_t, unsigned long long lparam_t, GObject* destination):
 		code (code_t), param (param_t), lparam (lparam_t), dst (destination){};
 	GMessage (WM_MESSAGE code_t, unsigned int param_t, GObject* destination):

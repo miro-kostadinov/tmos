@@ -48,11 +48,11 @@ public:
 	// client methods
 	virtual bool DefWinProc(GMessage& msg);
 	unsigned int DoModal();
-	void PostMessage(WM_MESSAGE code, unsigned int param, GObject* dst = NULL);
+	void PostMessage(WM_MESSAGE code, unsigned int param, GObject* dst = nullptr);
 	bool GetMessage(GMessage& msg, uint32_t tout = 0);
 	bool Create();
 	bool Destroy();
-	void notify_message(WM_MESSAGE code, unsigned int param, GObject* dst = NULL);
+	void notify_message(WM_MESSAGE code, unsigned int param, GObject* dst = nullptr);
 };
 
 

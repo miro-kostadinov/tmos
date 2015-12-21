@@ -152,7 +152,7 @@ unsigned int GDialog::process_command (GMessage& msg)
 		notify_message(WM_CLOSE, GO_IDCANCEL, this);							//closes the window
 		return 1;
 	default:
-		notify_message(WM_COMMAND, msg.param, NULL);
+		notify_message(WM_COMMAND, msg.param, nullptr);
 		return 0;
 	}
 	return 0;

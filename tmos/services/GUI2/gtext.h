@@ -23,21 +23,21 @@ struct GText: GObject
 	GScroll* hscroll;
 	RECT_T scroll_rect;
 	const char* caption;
-	GText (GId id_t, const RECT_T& rect_t, CSTRING txt_t, const char* caption_t=NULL,
+	GText (GId id_t, const RECT_T& rect_t, CSTRING txt_t, const char* caption_t=nullptr,
 			GFlags flags_t = GO_FLG_DEFAULT, unsigned short align_t = SS_DEFAULT, const RENDER_MODE* font_t = &FNT5x7)
 		:GObject (id_t, rect_t, flags_t), txt (txt_t), align(align_t), text_font (font_t),
-		 vscroll(NULL), hscroll(NULL), caption(caption_t)
+		 vscroll(nullptr), hscroll(nullptr), caption(caption_t)
 	{;}
-/*
+
 	GText (GId id_t, const RECT_T& rect_t, const char* txt_t,
 			GFlags flags_t = GO_FLG_DEFAULT, unsigned short align_t = SS_DEFAULT, const RENDER_MODE* font_t = &FNT5x7)
 		:GObject (id_t, rect_t, flags_t), txt (txt_t), align(align_t), text_font (font_t),
-		 vscroll(NULL), hscroll(NULL), caption(NULL)
+		 vscroll(nullptr), hscroll(nullptr), caption(nullptr)
 	{;}
-*/
+
 
 	GText () : GObject(),txt (), align(0), text_font (0),
-			 vscroll(NULL), hscroll(NULL), caption(NULL)
+			 vscroll(nullptr), hscroll(nullptr), caption(nullptr)
 	{;}
 
 	~GText()
@@ -45,12 +45,12 @@ struct GText: GObject
 		if(vscroll)
 		{
 			delete vscroll;
-			vscroll = NULL;
+			vscroll = nullptr;
 		}
 		if(hscroll)
 		{
 			delete hscroll;
-			hscroll = NULL;
+			hscroll = nullptr;
 		}
 	}
 
@@ -68,7 +68,7 @@ protected:
 
 struct GTitle: GText
 {
-	GTitle (GId id_t, const RECT_T& rect_t, CSTRING txt_t, const char* caption_t=NULL,
+	GTitle (GId id_t, const RECT_T& rect_t, CSTRING txt_t, const char* caption_t=nullptr,
 			GFlags flags_t = GO_FLG_DEFAULT, unsigned short align_t = SS_DEFAULT, const RENDER_MODE* font_t = &FNT5x7)
 		:GText (id_t, rect_t, txt_t, caption_t,
 				flags_t, align_t, font_t)

@@ -25,7 +25,7 @@ struct GTimer
 	GTimer* next;
 
 	GTimer(GId id, GObject* obj) :
-			object(obj), timer_id(id), time_out(0), next(NULL)
+			object(obj), timer_id(id), time_out(0), next(nullptr)
 	{
 		;
 	}
@@ -73,22 +73,22 @@ struct GObject
 
 	static void* lastAllocated;
 	GObject() :
-			parent(NULL), nextObj(NULL), id(0), flags(0), ref_cnt(1)
+			parent(nullptr), nextObj(nullptr), id(0), flags(0), ref_cnt(1)
 	{
 		if(lastAllocated && lastAllocated == this)
 		{
 			ref_cnt = 0;
-			lastAllocated = NULL;
+			lastAllocated = nullptr;
 		}
 	}
 	GObject(GId id_t, const RECT_T& rect_t, GFlags flags_t = GO_FLG_DEFAULT) :
-			rect(rect_t), parent(NULL), nextObj(NULL), id(id_t), flags(flags_t),
+			rect(rect_t), parent(nullptr), nextObj(nullptr), id(id_t), flags(flags_t),
 			ref_cnt(1)
 	{
 		if(lastAllocated && lastAllocated == this)
 		{
 			ref_cnt = 0;
-			lastAllocated = NULL;
+			lastAllocated = nullptr;
 		}
 	}
 

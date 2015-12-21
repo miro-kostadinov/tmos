@@ -28,7 +28,7 @@ void processes_all_messages(void)
 		if(msg.code == WM_DELETED || !Gdesktop)
 			continue;
 
-		if (msg.dst == NULL )
+		if (msg.dst == nullptr )
 			msg.dst = Gdesktop->parent;	// lcd message
 
 		if(GWait::dowait_win && msg.code == WN_DESTROY && msg.dst && msg.dst != GWait::dowait_win)

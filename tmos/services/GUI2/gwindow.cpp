@@ -98,7 +98,7 @@ void GWindow::PostMessage(WM_MESSAGE code, unsigned int param, GObject* dst)
 		}
 		hnd.tsk_cancel();
 		hnd.tsk_write(&msg, 0);
-//		hnd.tsk_start_read(NULL,0);
+//		hnd.tsk_start_read(nullptr,0);
 #if GUI_DEBUG
 		TRACELN1("\e[4;1;36m");
 		TRACE("%X[%d] ( %s %X )\e[m", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param);
@@ -128,7 +128,7 @@ bool GWindow::GetMessage(GMessage& msg, uint32_t tout)
 		#endif
 				return true;
 			}
-			hnd.tsk_start_read(NULL, 0);
+			hnd.tsk_start_read(nullptr, 0);
 		}
 		old_sig = CURRENT_TASK->signals;
 		if(tout)
@@ -175,7 +175,7 @@ bool GWindow::GetMessage(GMessage& msg)
 	if(hnd.res != RES_CLOSED)
 	{
 		if(Queue.empty() && !(hnd.res & FLG_BUSY))
-			hnd.tsk_start_read(NULL, 0);
+			hnd.tsk_start_read(nullptr, 0);
 		if( Queue.pop(msg) )
 		{
 #if GUI_DEBUG
@@ -189,7 +189,7 @@ bool GWindow::GetMessage(GMessage& msg)
 				hnd.res &=~FLG_SIGNALED;
 			}
 			if(!(hnd.res & FLG_BUSY))
-				hnd.tsk_start_read(NULL, 0);
+				hnd.tsk_start_read(nullptr, 0);
 			return true;
 		}
 	}
@@ -240,7 +240,7 @@ bool GWindow::Create()
 	if(hnd.res == RES_CLOSED)
 	{
 		if(hnd.tsk_open(GUI_DRV_INDX, this))
-			return (hnd.tsk_write(NULL,0)== RES_OK);
+			return (hnd.tsk_write(nullptr,0)== RES_OK);
 	}
 	else
 	{
@@ -308,7 +308,7 @@ bool GWindow::Destroy()
 #endif
 			hnd.tsk_write(&msg, 0);
 
-		}while(hnd.tsk_read(NULL,0)== RES_OK);
+		}while(hnd.tsk_read(nullptr,0)== RES_OK);
 	}
 	return false;
 }

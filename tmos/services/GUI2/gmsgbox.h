@@ -75,8 +75,8 @@ struct GMsgBox : GDialog
 	GEdit* edit_box;
 	GTitle* title_box;
 	GText*	text_box;
-	GMsgBox() : title(NULL), body(), font(&FNT5x7), type(MB_OK), default_button(0),
-			edit_box(NULL), title_box(NULL), text_box(NULL)
+	GMsgBox() : title(nullptr), body(), font(&FNT5x7), type(MB_OK), default_button(0),
+			edit_box(nullptr), title_box(nullptr), text_box(nullptr)
 	 {};
 
 protected:
@@ -95,7 +95,7 @@ private:
 
 };
 
-int MessageBox(const char* Text, const char* Caption = NULL, unsigned int Style=MB_OK, unsigned int def_button=0);
+int MessageBox(const char* Text, const char* Caption = nullptr, unsigned int Style=MB_OK, unsigned int def_button=0);
 void StatusMessageBox(const char* Text, const char* Caption, unsigned int Style=0, unsigned int time=5000);
 
 #define NEB_PASSWORD (MBF_EDIT_FLAGS(ES_PASSWORD|ES_CENTER|ES_MIDDLE|ES_HIDE_CURSOR))

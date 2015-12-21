@@ -17,9 +17,9 @@ struct GContainer:GObject {
 	GObject* focus;
 	GObject* children;
 
-	GContainer (): focus(NULL), children(NULL) {};
+	GContainer (): focus(nullptr), children(nullptr) {};
 	GContainer (GId id_t, const RECT_T& rect_t, GFlags flags_t= GO_FLG_DEFAULT)
-		:GObject (id_t, rect_t, flags_t), focus(NULL), children(NULL) {};
+		:GObject (id_t, rect_t, flags_t), focus(nullptr), children(nullptr) {};
 	~GContainer();
 
 	virtual GObject* addChild (GObject* child);

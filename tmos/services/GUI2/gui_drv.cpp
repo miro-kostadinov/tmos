@@ -30,7 +30,7 @@ WEAK_C GWindow* gui_desktop ()
 {
 	GWindow* win;
 	win = new GWindow(1, RECT_T (0, 0, 132, 64), 0x3, GO_FLG_DEFAULT|GO_FLG_SELECTED);
-	win->addChild(new GText (1, RECT_T (0,0,132,30), "A600C", NULL, GO_FLG_DEFAULT, SS_DEFAULT, &FNT10x21));
+	win->addChild(new GText (1, RECT_T (0,0,132,30), "A600C", nullptr, GO_FLG_DEFAULT, SS_DEFAULT, &FNT10x21));
 	return win;
 }
 
@@ -110,7 +110,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	{
 		tsk_sleep(10);
 	}
-	//desktop->nextObj = NULL;
+	//desktop->nextObj = nullptr;
 #if GUI_DISPLAYS > 1
 	LCD_MULT mult;
 	for(int i=0; i<GUI_DISPLAYS; i++)
@@ -149,7 +149,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 
     // start gui handle
 	gui_hnd.tsk_safe_open(GUI_DRV_INDX, 0);			//mode = 1 - control handle
-	gui_hnd.tsk_start_read(NULL, 0);
+	gui_hnd.tsk_start_read(nullptr, 0);
 
 	Gdesktop->initialize(msg);
 	Gdesktop->invalidate(Gdesktop, Gdesktop->rect);
@@ -222,7 +222,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     			if(hnd_ret & FLG_SIGNALED)
     				usr_HND_SET_STATUS(&win->hnd, hnd_ret);
         	}
-			gui_hnd.tsk_start_read(NULL, 0);
+			gui_hnd.tsk_start_read(nullptr, 0);
         }
 
 		if(sig & SIG_GUI_TASK)
@@ -285,7 +285,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			if(msg.code == WM_DELETED)
 				continue;
 
-			if (msg.dst == NULL)
+			if (msg.dst == nullptr)
 				msg.dst = desktop->parent;	// lcd message
 			res = msg.dst->message(msg);
 
@@ -355,8 +355,8 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 	    		if(param == drv_data->helper)
 	    		{
 					//the helper task is waiting for object...
-					drv_data->helper = NULL;
-					param->dst.as_voidptr = NULL;
+					drv_data->helper = nullptr;
+					param->dst.as_voidptr = nullptr;
 					svc_HND_SET_STATUS(param, RES_SIG_OK);
 	    		}
 	    	}
@@ -382,8 +382,8 @@ void GUI_DSR(GUI_DRIVER_INFO* drv_info, HANDLE hnd)
 		if( (tmp=drv_data->helper) )
 		{
 			//the helper task is waiting for object...
-			hnd->next = NULL;
-			drv_data->helper = NULL;
+			hnd->next = nullptr;
+			drv_data->helper = nullptr;
 			tmp->dst.as_voidptr = hnd;
 			svc_HND_SET_STATUS(tmp, RES_SIG_OK);
 		} else
@@ -398,7 +398,7 @@ void GUI_DSR(GUI_DRIVER_INFO* drv_info, HANDLE hnd)
 		// this should be the helper task reading the waiting WINDOW objects
 		if( (tmp=drv_data->waiting) )
 		{
-			drv_data->waiting = NULL;
+			drv_data->waiting = nullptr;
 			hnd->dst.as_voidptr = tmp;
 			svc_HND_SET_STATUS(hnd, RES_SIG_OK);
 		} else

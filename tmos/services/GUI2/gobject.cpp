@@ -2,9 +2,9 @@
 #include <gobject.h>
 #include <lcd.h>
 
-GTimer* GTimer::base_timer = NULL;
+GTimer* GTimer::base_timer = nullptr;
 
-void* GObject::lastAllocated = NULL;
+void* GObject::lastAllocated = nullptr;
 
 GObject::~GObject()
 {
@@ -699,7 +699,7 @@ GObject* GObject::get_object(GId xid)
 		if(parent)
 			return parent->get_object(xid);
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool GObject::is_available()

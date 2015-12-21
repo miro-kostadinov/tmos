@@ -28,7 +28,7 @@
 void ST7565S::lcd_command(unsigned int cmd)
 {
 	//lock
-	lcd_hnd->tsk_read_locked(NULL, 0);
+	lcd_hnd->tsk_read_locked(nullptr, 0);
 
 	// A0=0 (cmds)
 	PIO_CfgOutput0(pins[A0_PIN_INDX]);
@@ -40,7 +40,7 @@ void ST7565S::lcd_command(unsigned int cmd)
 	PIO_Cfg(pins[A0_PIN_INDX]);
 
 	//unlock
-	lcd_hnd->tsk_read(NULL, 0);
+	lcd_hnd->tsk_read(nullptr, 0);
 }
 
 void ST7565S::lcd_reset()
@@ -213,7 +213,7 @@ void ST7565S::update_screen()
 			(CMD_COLUMN_ADR_HI(((lcd_mode>>20)&0xF) + (frame.x0 & 0xF0)) << 16) + (CMD_READ_WRITE_START << 24);
 
 	//lock
-	lcd_hnd->tsk_read_locked(NULL, 0);
+	lcd_hnd->tsk_read_locked(nullptr, 0);
 
 	// A0=0
    	PIO_CfgOutput0(pins[A0_PIN_INDX]);
@@ -231,7 +231,7 @@ void ST7565S::update_screen()
    	PIO_Cfg(pins[A0_PIN_INDX]);
 
 	//unlock
-	lcd_hnd->tsk_read(NULL, 0);
+	lcd_hnd->tsk_read(nullptr, 0);
 
 }
 

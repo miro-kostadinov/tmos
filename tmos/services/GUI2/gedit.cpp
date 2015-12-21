@@ -63,7 +63,7 @@ const MENUTEMPLATE keyboard_menu[] =
 	{ 0, KT_EN_CAPS, 0, "&3.ABC"},
 	{ 0, KT_EN, 0, "&4.abc"},
 	{ 0, KT_DIGIT, 0, "&5.123"},
-	{ 0, 0, 0, NULL}
+	{ 0, 0, 0, nullptr}
 };
 
 unsigned int GEdit::initialize (GMessage& msg)
@@ -393,7 +393,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 		edit_menu->remove(); //close();
 		send_message(WM_DRAW, 0, edit_menu->rect.as_int, parent);
 		delete edit_menu;
-		edit_menu = NULL;
+		edit_menu = nullptr;
 		return 1;
 	}
 
@@ -417,7 +417,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 		//changes the shift status
 		if(!edit_menu)
 		{
-			edit_menu = new GMenu(10, rect, NULL, GO_FLG_DEFAULT|GO_FLG_BORDER);
+			edit_menu = new GMenu(10, rect, nullptr, GO_FLG_DEFAULT|GO_FLG_BORDER);
 			if(edit_menu)
 			{
 				POINT_T bs = get_border_size();

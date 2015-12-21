@@ -11,10 +11,10 @@
 
 GListBox::~GListBox()
 {
-	if(list && list->parent == NULL)
+	if(list && list->parent == nullptr)
 	{
 		delete list;
-		list = NULL;
+		list = nullptr;
 	}
 }
 
@@ -122,7 +122,7 @@ unsigned int GListBox::initialize (GMessage& msg)
 		if( !sx || !sy )
 		{
 			delete list;
-			list = NULL;
+			list = nullptr;
 			return 1;
 		}
 		if(client_rect.height() > 0 && client_rect.width() > 0)
@@ -182,7 +182,7 @@ unsigned int GListBox::initialize (GMessage& msg)
 		{
 			list->id = id+100;
 			list->rect = rc;
-			list->title = NULL;//txt.c_str();
+			list->title = nullptr;//txt.c_str();
 			list->flags = GO_FLG_ENABLED|GO_FLG_BORDER;
 			if(align & LBS_DROPDOWN)
 			{

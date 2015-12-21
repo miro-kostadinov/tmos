@@ -34,12 +34,12 @@ private:
 	GListBoxMenu*	list;
 public:
 	GListBox (GId id_t, const RECT_T& rect_t,
-			CSTRING txt_t, const char* caption_t=NULL,
+			CSTRING txt_t, const char* caption_t=nullptr,
 			GFlags flags_t = GO_FLG_DEFAULT,
 			unsigned short align_t = LBS_DEFAULT,
 			const RENDER_MODE* font_t = &FNT5x7):
 			GText (id_t, rect_t, txt_t, caption_t, flags_t, align_t, font_t),
-			list(NULL)
+			list(nullptr)
 	{;}
 	~GListBox();
 

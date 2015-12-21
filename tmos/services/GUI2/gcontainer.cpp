@@ -199,7 +199,7 @@ GObject* GContainer::first_available()
 GObject* GContainer::last_available()
 {
 	GObject* tmp = first_available();
-	GObject* last = NULL;
+	GObject* last = nullptr;
 	while (tmp)
 	{
 		if(tmp->is_available())

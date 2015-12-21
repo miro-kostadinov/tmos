@@ -34,24 +34,24 @@ struct GEdit:GText
 	key_mode shift;
 	GMenu* edit_menu;
 
-	GEdit (	GId id_t, const RECT_T& rect_t, CSTRING txt_t, const char* caption_t = NULL,
+	GEdit (	GId id_t, const RECT_T& rect_t, CSTRING txt_t, const char* caption_t = nullptr,
 			GFlags flags_t = GO_FLG_DEFAULT, unsigned short edit_flags_t = ES_DEFAULT,
 			const RENDER_MODE* font_t = &FNT5x7)
 		:GText (id_t, rect_t, txt_t, caption_t, flags_t, edit_flags_t, font_t),
 		 text_size (0), cursor_on(false), pos (txt.length()), last_key (0),
-		 times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(NULL)
+		 times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(nullptr)
 	{;}
 	GEdit ()
 		:GText (),
 		 text_size (0), cursor_on(false), pos (0), last_key (0),
-		 times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(NULL)
+		 times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(nullptr)
 	{;}
 	virtual ~GEdit()
 	{
 		if(edit_menu)
 		{
 			delete edit_menu;
-			edit_menu = NULL;
+			edit_menu = nullptr;
 		}
 	}
 	virtual unsigned int initialize (GMessage& msg);

@@ -22,7 +22,7 @@ menu_template_t* GMenu::GetItem(int parent_id, int item_id)
 			tmp++;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 menu_template_t* GMenu::FindItem(int item_id)
@@ -37,7 +37,7 @@ menu_template_t* GMenu::FindItem(int item_id)
 			tmp++;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 menu_template_t* GMenu::GetMenu(int parent_id, menu_template_t* start)
@@ -54,7 +54,7 @@ menu_template_t* GMenu::GetMenu(int parent_id, menu_template_t* start)
 			tmp++;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 int GMenu::GetMenuSize(int menu_id)
