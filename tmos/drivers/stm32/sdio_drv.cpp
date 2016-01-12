@@ -12,7 +12,56 @@
 #define DEBUG_SDIO_DRV 0
 #endif
 
-static void ConfigureSDIO(SDIO_INFO drv_info)
+#if USE_SDIO_MULTIPLE_SLOTS
+WEAK void SDIO_SELECT_SLOT(SDIO_INFO drv_info, HANDLE hnd)
+{
+#if DEBUG_SDIO_DRV
+	TRACELN1("SDIO SLOT SELECT not implemented!");
+#endif
+}
+WEAK void SDIO_DESELECT_SLOT(SDIO_INFO drv_info, HANDLE hnd)
+{
+#if DEBUG_SDIO_DRV
+	TRACELN1("SDIO DESLOT SELECT not implemented!");
+#endif
+}
+#endif
+
+WEAK void SDIO_POWERON_SLOT(SDIO_INFO drv_info, HANDLE hnd)
+{
+	const SDIO_DRIVER_MODE* mode = (const SDIO_DRIVER_MODE*)hnd->mode.as_cvoidptr;
+
+	if(mode && mode->sdio_pwr_en)
+	{
+		PIO_Cfg(mode->sdio_pwr_en);
+		PIO_Assert(mode->sdio_pwr_en);
+	}
+}
+
+WEAK void SDIO_POWEROFF_SLOT(SDIO_INFO drv_info, HANDLE hnd)
+{
+	const SDIO_DRIVER_MODE* mode = (const SDIO_DRIVER_MODE*)hnd->mode.as_cvoidptr;
+
+#if USE_SDIO_MULTIPLE_SLOTS
+	SDIO_DESELECT_SLOT(drv_info, hnd);
+#endif
+	if(mode && mode->sdio_pwr_en)
+			PIO_Deassert(mode->sdio_pwr_en);
+}
+
+static void ResetSDIO(SDIO_INFO drv_info)
+{
+#if USE_SDIO_DMA_DRIVER
+	drv_info->drv_data->rx_dma_hnd.close();
+	drv_info->drv_data->tx_dma_hnd.close();
+#endif
+	NVIC_DisableIRQ(drv_info->info.drv_index);
+	RCCPeripheralReset(drv_info->info.peripheral_indx);
+	RCCPeripheralDisable(drv_info->info.peripheral_indx);
+
+}
+
+static bool ConfigureSDIO(SDIO_INFO drv_info, HANDLE hnd)
 {
 	SDIO_TypeDef* hw_base = drv_info->hw_base;
 
@@ -21,8 +70,7 @@ static void ConfigureSDIO(SDIO_INFO drv_info)
 
 	PIO_Cfg_List(drv_info->sdio_pins);
 
-	if(drv_info->sdio_pwr_en)
-		PIO_Assert(drv_info->sdio_pwr_en);
+	SDIO_POWERON_SLOT(drv_info, hnd);
 
 	hw_base->SDIO_CLKCR  = SDIO_CLKCR_WIDBUS_1b | SDIO_CLKCR_CLKEN |
 			SDIO_CLKCR_CLKDIV_Set(48000/400 -2);
@@ -42,6 +90,13 @@ static void ConfigureSDIO(SDIO_INFO drv_info)
 		tx_flags = SDIO_STA_TX_FLAGS;
 	hw_base->SDIO_MASK = SDIO_STA_DONE_FLAGS | SDIO_STA_ERROR_FLAGS
 			| SDIO_STA_CCRCFAIL | rx_flags | tx_flags;
+
+	if(!drv_info->drv_data->rx_dma_hnd.drv_open(drv_info->rx_dma_mode.dma_index,
+			&drv_info->rx_dma_mode))
+		return false;
+	if(!drv_info->drv_data->tx_dma_hnd.drv_open(drv_info->tx_dma_mode.dma_index,
+			&drv_info->tx_dma_mode))
+		return false;
 #else
 	hw_base->SDIO_MASK = SDIO_STA_DONE_FLAGS | SDIO_STA_ERROR_FLAGS
 			| SDIO_STA_CCRCFAIL | SDIO_STA_RX_FLAGS | SDIO_STA_TX_FLAGS;
@@ -49,6 +104,8 @@ static void ConfigureSDIO(SDIO_INFO drv_info)
 	hw_base->SDIO_DTIMER = 0xFFFFFFFF;
 
 	drv_enable_isr(&drv_info->info);
+
+	return true;
 }
 
 static void sdio_stop_transfer(SDIO_DRIVER_DATA *drv_data, SDIO_TypeDef* hw_base)
@@ -82,6 +139,26 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 		drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
 #endif
 
+#if USE_SDIO_MULTIPLE_SLOTS
+	if(hnd != drv_data->last_slot)
+	{
+		if(drv_data->last_slot)
+		{
+			SDIO_DESELECT_SLOT(drv_info, drv_data->last_slot);
+		} else
+		{
+			ResetSDIO(drv_info);
+			ConfigureSDIO(drv_info, hnd);
+		}
+		//change clock
+		hw_base->SDIO_CLKCR  = (hw_base->SDIO_CLKCR &~SDIO_CLKCR_CLKDIV) |
+				SDIO_CLKCR_CLKDIV_Set(hnd->mode0);
+
+		SDIO_SELECT_SLOT(drv_info, hnd);
+		drv_data->last_slot = hnd;
+	}
+#endif
+
 	if( (hnd->cmd & FLAG_READ) && hnd->len)
 	{
 #if DEBUG_SDIO_DRV
@@ -92,10 +169,7 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 		hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_512b | SDIO_DCTRL_DTDIR
 				| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
 
-		uint32_t adr = hnd->src.as_int;
-		if(!(IS_SD_HIGH_CAPACITY(drv_data->card_type )))
-				adr *= 256;
-		hw_base->SDIO_ARG = adr;
+		hw_base->SDIO_ARG = hnd->src.as_int;
 		hw_base->SDIO_CMD = SD_CMD17_READ_SINGLE_BLOCK | SDIO_CMD_WAITRESP_short | SDIO_CMD_CPSMEN;
 		//wait for cmdend (R1) or error
 		drv_data->sdio_op = SDIO_OP_READ | SDIO_OP_R1;
@@ -107,10 +181,7 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 			TRACE("[w %u]", hnd->len);
 #endif
 			//write block or multiple block command
-			uint32_t adr = hnd->dst.as_int;
-			if(!(IS_SD_HIGH_CAPACITY(drv_data->card_type )))
-					adr *= 256;
-			hw_base->SDIO_ARG = adr;
+			hw_base->SDIO_ARG = hnd->dst.as_int;
 			hw_base->SDIO_CMD = SD_CMD24_WRITE_BLOCK | SDIO_CMD_WAITRESP_short | SDIO_CMD_CPSMEN;
 
 			//wait for cmdend (R1) or error
@@ -283,24 +354,19 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 		case DCR_RESET:
 			RCCPeripheralReset(drv_info->info.peripheral_indx);
 			RCCPeripheralDisable(drv_info->info.peripheral_indx); // ??? turn off
-			if(drv_info->sdio_pwr_en)
-				PIO_Cfg(drv_info->sdio_pwr_en);
 			break;
 
 		case DCR_OPEN:
 		{
+#if USE_SDIO_MULTIPLE_SLOTS
+			hnd->mode0 = 48000/400 -2; //default clock 400Khz
+#endif
 			if(!drv_data->cnt)
 			{
-				ConfigureSDIO(drv_info);
-#if USE_SDIO_DMA_DRIVER
-				if(!drv_data->rx_dma_hnd.drv_open(
-						drv_info->rx_dma_mode.dma_index,
-						&drv_info->rx_dma_mode))
+				if(!ConfigureSDIO(drv_info, hnd))
 					break;
-				if(!drv_data->tx_dma_hnd.drv_open(
-						drv_info->tx_dma_mode.dma_index,
-						&drv_info->tx_dma_mode))
-					break;
+#if USE_SDIO_MULTIPLE_SLOTS
+				drv_data->last_slot = hnd;
 #endif
 			}
 			drv_data->cnt++;
@@ -314,23 +380,23 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 				drv_data->cnt--;
 			if(!drv_data->cnt)
 			{
-#if USE_SDIO_DMA_DRIVER
-				drv_data->rx_dma_hnd.close();
-				drv_data->tx_dma_hnd.close();
-#endif
-				NVIC_DisableIRQ(drv_info->info.drv_index);
-				RCCPeripheralReset(drv_info->info.peripheral_indx);
-				RCCPeripheralDisable(drv_info->info.peripheral_indx);
-				if(drv_info->sdio_pwr_en)
-					PIO_Deassert(drv_info->sdio_pwr_en);
+				ResetSDIO(drv_info);
 			}
+			SDIO_POWEROFF_SLOT(drv_info, hnd);
+#if USE_SDIO_MULTIPLE_SLOTS
+			drv_data->last_slot = nullptr;
+#endif
 			break;
 		}
 
 		case DCR_CLOCK:
 			//patch for low speed cards
-			drv_info->hw_base->SDIO_CLKCR  = (drv_info->hw_base->SDIO_CLKCR &
-					~SDIO_CLKCR_CLKDIV) | SDIO_CLKCR_CLKDIV_Set(/*48000/16000 -2*/0);
+			hnd->mode0 = 0;  /*48000/16000 -2*/
+#if USE_SDIO_MULTIPLE_SLOTS
+			if(drv_data->last_slot == hnd)
+#endif
+				drv_info->hw_base->SDIO_CLKCR  = (drv_info->hw_base->SDIO_CLKCR &
+					~SDIO_CLKCR_CLKDIV) | SDIO_CLKCR_CLKDIV_Set(hnd->mode0);
 
 			break;
 
@@ -519,14 +585,6 @@ void SDIO_ISR(SDIO_INFO drv_info)
 		}
 	} else
 	{
-//		if( status & SDIO_STA_RX_FLAGS )
-//		{
-//			// no handle?
-//#if DEBUG_SDIO_DRV
-//			TRACELN("SD dump %08X", hw_base->SDIO_FIFO);
-//#endif
-//		}
-//		sdio_stop_transfer(drv_data, hw_base);
 		if(status & SDIO_STA_TR_FLAGS)
 		{
 			hw_base->SDIO_MASK &= ~SDIO_STA_TR_FLAGS;

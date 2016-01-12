@@ -15,6 +15,10 @@
 #define USE_SDIO_DMA_DRIVER 1		//Enable DMA by defaulr
 #endif
 
+#ifndef USE_SDIO_MULTIPLE_SLOTS
+#define USE_SDIO_MULTIPLE_SLOTS 0
+#endif
+
 #define SDIO_OP_IDLE		0	//!< no operations
 #define SDIO_OP_R3			1	//!< Response 3 must ignore CRC FAIL
 #define SDIO_OP_R1			2	//!< Check R1 response for errors
@@ -25,6 +29,7 @@
 /** SDIO Driver Mode structure **/
 struct SDIO_DRIVER_MODE
 {
+	const PIN_DESC	   sdio_pwr_en;	//!< card power
 };
 
 /** SDIO Driver Data structure **/
@@ -33,8 +38,10 @@ struct SDIO_DRIVER_DATA
 	HANDLE locker;			//!< Handle locked the driver
 	HANDLE pending;			//!< Handle in progress
 	HANDLE waiting;			//!< waiting for operation
+#if USE_SDIO_MULTIPLE_SLOTS
+	HANDLE last_slot;		//!< Handle used for the last slot
+#endif
 	unsigned int cnt;		//!< number of open handles
-	unsigned int card_type;
 	unsigned int sdio_op;	//!< SDIO operations
 #if USE_SDIO_DMA_DRIVER
 	CHandle		rx_dma_hnd;
@@ -49,7 +56,6 @@ struct SDIO_DRIVER_INFO
 	SDIO_TypeDef* 	   hw_base;		//!< SDIO Hardware registers for control
 	SDIO_DRIVER_DATA*  drv_data;	//!< driver data
 	const PIN_DESC*	   sdio_pins;	//!< zero terminated PIN_DESC list
-	const PIN_DESC	   sdio_pwr_en;	//!< card power
 #if USE_SDIO_DMA_DRIVER
 	DMA_DRIVER_MODE		rx_dma_mode;
 	DMA_DRIVER_MODE		tx_dma_mode;
