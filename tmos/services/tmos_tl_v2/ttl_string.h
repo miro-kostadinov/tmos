@@ -1837,17 +1837,19 @@ template<typename CharT>
     CharT* p = __string_type::m_allocate(sz, sz);
 	if(p)
 	{
+		CharT* pp = p;
+
 		sz -= l1;
 		while(l1)
 		{
-			*p++ = *lhs++;
+			*pp++ = *lhs++;
 			--l1;
 		}
 
 		lhs = rhs.c_str();
 		while(sz--)
 		{
-			*p++ = *lhs++;
+			*pp++ = *lhs++;
 		}
 	}
     return static_cast<__string_type>(p);
@@ -1859,23 +1861,20 @@ template<typename CharT>
   {
     typedef basic_string<CharT> __string_type;
     typedef typename __string_type::size_type	  __size_type;
-    const __size_type sz = 1 + rhs.size();
+    __size_type sz = 1 + rhs.size();
 
-    __string_type str;
+    CharT* p = __string_type::m_allocate(sz, sz);
 
-  	str.m_data = str.m_allocate(sz, sz);
-  	if(str.m_data)
+  	if(p)
   	{
-  		__string_type p = str.m_data;
-  		__size_type pos = 0;
-		*p++ = *lhs;
+		*p = lhs;
 
   		while(--sz)
   		{
-  			*p++ = rhs.m_data[++pos];
+  			p[sz] = rhs[sz-1];
   		}
   	}
-    return str;
+    return static_cast<__string_type>(p);
   }
 
 template<typename CharT>
