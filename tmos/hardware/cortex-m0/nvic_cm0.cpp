@@ -94,7 +94,7 @@ EXTERN_C void NVIC_SetPriority(int32_t IRQn, uint32_t priority)
 	if (IRQn < 0)
 	{
 		/* set Priority for Cortex-M0 System Interrupts */
-		reg = &SCB->SCB_SHPR[(((uint32_t) IRQn & 0x0F) - 8) >> 2];
+		reg = &SCB->SCB_SHPR[( IRQn  + 12) >> 2];
 	}
 	else
 	{
@@ -128,7 +128,7 @@ EXTERN_C uint32_t NVIC_GetPriority(int32_t IRQn)
 	if (IRQn < 0)
 	{
 		/* get Priority for Cortex-M0 System Interrupts */
-		reg = &SCB->SCB_SHPR[(((uint32_t) IRQn & 0x0F) - 8) >> 2];
+		reg = &SCB->SCB_SHPR[( IRQn +12 ) >> 2];
 	}
 	else
 	{
