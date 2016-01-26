@@ -37,7 +37,7 @@
 #ifndef __NVIC_PRIO_BITS
   #define __NVIC_PRIO_BITS    3               /*!< standard definition for NVIC Priority Bits */
 #endif
-#define NVIC_PIORITY(priority) ((priority) << (8 - __NVIC_PRIO_BITS))
+#define NVIC_PIORITY(priority) (((priority) << (8 - __NVIC_PRIO_BITS)) &0xFF)
 
 /**	 @} end of addtogroup CMSIS_CM4_core_definitions	*/
 

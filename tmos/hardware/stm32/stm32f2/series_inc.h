@@ -35,7 +35,7 @@
 
 #define __MPU_PRESENT             1 		//!< STM32F2XX provide an MPU */
 #define __NVIC_PRIO_BITS          4 //!< STM32F2XX uses 4 Bits for the Priority Levels
-#define NVIC_PIORITY(priority) ((priority) << (8 - __NVIC_PRIO_BITS))
+#define NVIC_PIORITY(priority) (((priority) << (8 - __NVIC_PRIO_BITS)) &0xFF)
 
 /**	 @} end of addtogroup CMSIS_CM3_core_definitions	*/
 

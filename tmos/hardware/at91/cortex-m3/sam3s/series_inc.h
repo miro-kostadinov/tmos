@@ -35,7 +35,7 @@
 
 #define __MPU_PRESENT  		1 //!< SAM3S provides a MPU
 #define __NVIC_PRIO_BITS    4 //!< SAM3S uses 4 Bits for the Priority Levels
-#define NVIC_PIORITY(priority) ((priority) << (8 - __NVIC_PRIO_BITS))
+#define NVIC_PIORITY(priority) (((priority) << (8 - __NVIC_PRIO_BITS)) &0xFF)
 /**	 @} end of addtogroup CMSIS_CM3_core_definitions	*/
 
 /** The IAP function entry address for SAM3S*/
