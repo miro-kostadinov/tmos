@@ -318,10 +318,10 @@ ENDF(	strpbrk		)
 //*----------------------------------------------------------------------------
 //*		int islower(unsigned int c)
 //*----------------------------------------------------------------------------
-FUNC_SECT(	islower,	.text.casecmp	)
+FUNC(	islower )
 
 				uxtb			r2, r0
-				adr				r1, _char_2_type_
+				ldr				r1, =G_char_2_type_
 				ldrb			r0, [r2, r1]
 				lsls			r0, #31
 				bx				lr
@@ -331,10 +331,10 @@ ENDF(	islower		)
 //*----------------------------------------------------------------------------
 //*		int isupper(unsigned int c)
 //*----------------------------------------------------------------------------
-FUNC_SECT(	isupper,	.text.casecmp	)
+FUNC(	isupper	)
 
 				uxtb			r2, r0
-				adr				r1, _char_2_type_
+				ldr				r1, =G_char_2_type_
 				ldrb			r0, [r2, r1]
 				lsrs			r0, #7
 				bx				lr
@@ -456,10 +456,10 @@ ENDF(   strstr     )
 //*----------------------------------------------------------------------------
 //*	return:
 //*----------------------------------------------------------------------------
-FUNC_SECT(	strcasecmp, .text.casecmp	)
+FUNC(	strcasecmp	)
 
 				push			{r4, r5}
-				adr				r2, _char_2_type_
+				ldr				r2, =G_char_2_type_
 				subs			r0, r1
 1:
 				ldrb			r3, [r0, r1]
@@ -489,11 +489,11 @@ ENDF(	strcasecmp		)
 //*----------------------------------------------------------------------------
 //*	return:
 //*----------------------------------------------------------------------------
-FUNC_SECT(	strncasecmp,	.text.casecmp	)
+FUNC(	strncasecmp	)
 
 				rsbs			r2, #0
 				beq				3f
-				adr				r3, _char_2_type_
+				ldr				r3, =G_char_2_type_
 				push			{r4, r5, r6}
 				subs			r0, r2
 				subs			r1, r2
@@ -529,9 +529,9 @@ ENDF(	strncasecmp		)
 //*----------------------------------------------------------------------------
 //* return:
 //*----------------------------------------------------------------------------
-FUNC_SECT(  toupper, .text.casecmp      )
+FUNC(  toupper      )
 
-                adr             r2, _char_2_type_
+                ldr             r2, =G_char_2_type_
                 ldrb            r1, [r0, r2]
                 lsls            r1, r1, #31             //islower
                 lsrs			r1, #31-5
@@ -545,9 +545,9 @@ ENDF(   toupper     )
 //*----------------------------------------------------------------------------
 //*	return:
 //*----------------------------------------------------------------------------
-FUNC_SECT(	tolower, .text.casecmp		)
+FUNC(	tolower		)
 
-				adr				r2, _char_2_type_
+				ldr				r2, =G_char_2_type_
 				ldrb			r1, [r0, r2]
 				lsrs			r1, #7					//isupper
 				lsls			r1, #5
@@ -572,10 +572,10 @@ ENDF(	tolower		)
 #define _X			0x40
 #define	_B			0x02
 
-				.global G_char_2_type_
+                .section .text.char_2_type
+//				.global G_char_2_type_
 .align 2
 G_char_2_type_:
-_char_2_type_:
 	.byte	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C									//00
 	.byte	_C,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C,	_C				//08
 	.byte	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C									//10
