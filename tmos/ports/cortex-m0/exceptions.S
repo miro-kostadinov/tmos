@@ -249,6 +249,24 @@ FUNC(	sys_pendsv_handler	)
 ENDF(	sys_pendsv_handler	)
 
 //*----------------------------------------------------------------------------
+//*         Helpers for compact switch
+//*     r0: the table index
+//*     lr: the table base address
+//*----------------------------------------------------------------------------
+FUNC_SECT(  __gnu_thumb1_case_uqi, gnu_thumb1_case_uqi    )
+                mov         r12, r1
+                mov         r1, lr
+                lsrs        r1, r1, #1
+                lsls        r1, r1, #1
+                ldrb        r1, [r1, r0]
+                lsls        r1, r1, #1
+                add         lr, lr, r1
+                mov         r1, r12
+                bx          lr
+ENDF(   __gnu_thumb1_case_uqi     )
+
+
+//*----------------------------------------------------------------------------
 //*         EABI Unwind
 //*----------------------------------------------------------------------------
 .text
