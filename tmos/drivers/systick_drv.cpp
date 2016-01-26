@@ -45,8 +45,8 @@ void SYSTICK_DCR(SYSTICK_INFO drv_info, unsigned int reason, void* param)
 		SYST->SYST_CSR = SYST_CSR_CLKSOURCE | SYST_CSR_TICKINT | SYST_CSR_ENABLE;
 
 		// SYSTICK MUST HAVE THE HIGHEST PRIORITY (0) !!!!
-	    SCB->SCB_SHPR[((uint32_t)(SysTick_IRQn) & 0xF)-4] = 0;
-	    SCB->SCB_SHPR[((uint32_t)(PendSV_IRQn) & 0xF)-4] = -1;
+		NVIC_SetPriority(SysTick_IRQn, 0);
+		NVIC_SetPriority(PendSV_IRQn, 255);
 		break;
 	}
 }
