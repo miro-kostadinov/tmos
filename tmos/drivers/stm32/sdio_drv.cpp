@@ -291,11 +291,11 @@ static void SDIO_CMD_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA *drv_d
 				*hnd->dst.as_intptr++ = hw_base->SDIO_FIFO;
 				hnd->len -= 4;
 			}
-			if(hnd->len <= 3)
-			{
-				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-				drv_data->pending = NULL;
-			}
+//			if(hnd->len <= 3)
+//			{
+//				usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+//				drv_data->pending = NULL;
+//			}
 		}
 	} else
 	{
@@ -320,11 +320,11 @@ static void SDIO_CMD_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA *drv_d
 					hw_base->SDIO_FIFO = *hnd->src.as_intptr++;
 					hnd->len -= 4;
 				}
-				if(hnd->len <= 3)
-				{
-					usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-					drv_data->pending = NULL;
-				}
+//				if(hnd->len <= 3)
+//				{
+//					usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+//					drv_data->pending = NULL;
+//				}
 			}
 		} else
 		{
@@ -390,15 +390,20 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 		}
 
 		case DCR_CLOCK:
+		{
 			//patch for low speed cards
-			hnd->mode0 = 0;  /*48000/16000 -2*/
+			const SDIO_DRIVER_MODE* mode = (const SDIO_DRIVER_MODE*)hnd->mode.as_cvoidptr;
+			if(mode)
+			{
 #if USE_SDIO_MULTIPLE_SLOTS
 			if(drv_data->last_slot == hnd)
 #endif
 				drv_info->hw_base->SDIO_CLKCR  = (drv_info->hw_base->SDIO_CLKCR &
-					~SDIO_CLKCR_CLKDIV) | SDIO_CLKCR_CLKDIV_Set(hnd->mode0);
-
+					~(SDIO_CLKCR_CLKDIV|SDIO_CLKCR_BYPASS))
+					| SDIO_CLKCR_CLKDIV_Set(mode->sdio_clk_div)|(mode->sdio_clk_div & SDIO_CLKCR_BYPASS);
+			}
 			break;
+		}
 
 		case DCR_SIGNAL:
 			//signal rx/dma complete

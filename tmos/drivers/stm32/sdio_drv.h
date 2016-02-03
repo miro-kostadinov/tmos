@@ -29,7 +29,8 @@
 /** SDIO Driver Mode structure **/
 struct SDIO_DRIVER_MODE
 {
-	const PIN_DESC	   sdio_pwr_en;	//!< card power
+	const PIN_DESC	   sdio_pwr_en;	 //!< card power
+	const uint16_t	   sdio_clk_div; //!< SDIO_CK high speed
 };
 
 /** SDIO Driver Data structure **/
