@@ -1686,12 +1686,12 @@ void usb_hal_config_fifo(USB_DRV_INFO drv_info)
 	otg->core_regs.DIEPTXF0_HNPTXFSIZ = adr + OTG_DIEPTXF0_TX0FD(size);
 
 	/* EP1 - EP5 TX*/
-	for(uint32_t i=0; i<USB_NUMENDPOINTS; i++)
+	for(uint32_t i=1; i<USB_NUMENDPOINTS; i++)
 	{
 		adr += size;
-		size = drv_data->endpoints[i+1].epd_in.epd_fifo_sz;
-		TRACELN_USB("%u:%x -> %x", i+1, otg->core_regs.DIEPTXF[i], adr + OTG_DIEPTXF0_TX0FD(size));
-		otg->core_regs.DIEPTXF[i] = adr + OTG_DIEPTXF0_TX0FD(size);
+		size = drv_data->endpoints[i].epd_in.epd_fifo_sz;
+		TRACELN_USB("%u:%x -> %x", i, otg->core_regs.DIEPTXF[i-1], adr + OTG_DIEPTXF0_TX0FD(size));
+		otg->core_regs.DIEPTXF[i-1] = adr + OTG_DIEPTXF0_TX0FD(size);
 	}
 
 }
