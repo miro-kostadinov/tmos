@@ -1004,8 +1004,8 @@ basic_string<CharT>::m_replace_aux(size_type pos, size_type n1, size_type n2, Ch
 
   	  				if(sz)
   	  					memcpy(p+pos+n2, m_data+pos+n1, sz*sizeof(CharT));
-  					m_memset(c, n2, pos);
-
+					while(n2--)
+						p[pos+n2] = c;
   	  			}
   			    m_dispose();
   			    m_data = p;
