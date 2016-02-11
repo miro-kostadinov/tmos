@@ -14,6 +14,7 @@ local_cpp_src-y	:=
 local_h_src-y 	:=
 
 local_as_src-y	+= exceptions.S services.S 
+local_as_src-$(USE_CRC16)		+= crc16.S
 local_as_src-$(USE_TMOS_STRING)	+= tmos_string.S 
 local_as_src-$(USE_TMOS_STDLIB)	+= tmos_stdlib.S 
 local_as_src-$(USE_TMOS_STDIO)	+= tmos_stdio.S 
@@ -24,6 +25,7 @@ local_cpp_src-y	+= kernel.cpp handle.cpp services.cpp
 local_h_src-y 	+= port_cpp.h port_inc.h tmos_string.h tasks.h services.h
 local_h_src-y 	+= tmos_swi.h handle.h tmos_stdio.h port_asm.h tmos_atomic.h
 local_h_src-$(USE_TMOS_LLONG)	+= tmos_llong.h
+local_h_src-$(USE_CRC16)		+= crc16.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
