@@ -57,6 +57,9 @@ typedef struct
 #define FLASH_SR_WRPERR            0x00000010 //!< Write protection error
 #define FLASH_SR_PGERR             0x00000008 //!< Programming error
 #define FLASH_SR_BSY               0x00000001 //!< Busy
+
+#define FLASH_SR_ERRORS 		  (FLASH_SR_WRPERR | FLASH_SR_PGERR)
+
 /** @} */
 
 /** @defgroup FLASH_CR:		(flash Offset: 0x10) Flash control register		  */
@@ -105,8 +108,8 @@ uint32_t flash_write_byte(uint32_t address, uint32_t value);
 uint32_t flash_write_hword(uint32_t address, uint32_t value);
 uint32_t flash_write_word(uint32_t address, uint32_t value);
 uint32_t flash_write(uint32_t address, const void* data, uint32_t len);
-uint32_t flash_ob_read();
-uint32_t flash_ob_write(uint32_t value);
+//uint32_t flash_ob_read();
+//uint32_t flash_ob_write(uint32_t value);
 
 
 

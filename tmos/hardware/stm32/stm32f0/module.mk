@@ -13,7 +13,7 @@ local_c_src-y 	:=
 local_cpp_src-y	:= 
 local_h_src-y 	:= 
 
-local_cpp_src-y	+= gpio_f0.cpp rcc_f0.cpp usart_f0.cpp
+local_cpp_src-y	+= gpio_f0.cpp rcc_f0.cpp usart_f0.cpp flash_f0.cpp
  
 local_h_src-y 	+= series_inc.h series_cpp.h gpio_f0.h rcc_f0.h flash_f0.h 
 local_h_src-y 	+= dbgmcu_f0.h usart_f0.h dma_f0.h pwr_f0.h rtc_f0.h adc_f0.h
