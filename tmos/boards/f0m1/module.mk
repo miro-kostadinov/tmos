@@ -10,7 +10,7 @@ OUT_NAME	?= f0m1
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].
-OPT			?= -O0
+OPT			?= -Os
 
 # Build library/binary/hex. can be [y, n]
 BUILD_LIB	?= y
@@ -42,11 +42,11 @@ DEBUG 		?= dwarf-2
 USE_TMOS_STRING	?=y
 
 # TMOS_TL_V2
-USE_TMOS_TL_V2	?=y
-USE_CSTRING		?=y
+USE_TMOS_TL_V2	?=n
+USE_CSTRING		?=n
 
 # tmos stdlib -> sys_malloc() sys_realloc() svc_free()
-USE_TMOS_STDLIB	?=y
+USE_TMOS_STDLIB	?=n
 
 # class CTime
 USE_TIME		?=n
@@ -59,7 +59,7 @@ USE_TMOS_LLONG	?=n
 
 #CalculateCRC32()
 #CalculateCRC32()
-USE_CRC16		?=n
+USE_CRC16		?=y
 USE_CRC32		?=n
 
 # class CCache
@@ -84,7 +84,7 @@ USE_AES_TMOS	?=n
 USE_GPIO_EXPANDER ?=n
 
 #net
-USE_NET			?=y
+USE_NET			?=n
 
 
 ################################################################################

@@ -20,6 +20,8 @@
 //
 //========================================================================
 
+#include <brd_cfg.h>
+
 #define usr_task_suspend_swi		1
 #define usr_send_signal_swi			2
 #define  usr_task_schedule_swi		3
@@ -35,10 +37,14 @@
 #define tsk_start_handle_swi		13
 #define usr_HND_SET_STATUS_swi		14
 #define tsk_start_and_wait_swi		15
+#if USE_TMOS_STDLIB
 #define malloc_swi					16
 #define free_swi					17
 #define realloc_swi					18
+#endif
+#if USE_CPU_SLEEP_MODE
 #define wfi_swi						19
+#endif
 
 #ifndef __ASSEMBLY__
 
