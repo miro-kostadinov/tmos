@@ -160,10 +160,11 @@ uint32_t flash_write(uint32_t address, const void* data, uint32_t len)
 		if( len==1 || (address & 1))
 		{
 			//write byte
-			value = src_inc<uint8_t>(data);
+			value = src_inc<uint8_t>(data) | 0xFF00;
 			if(address & 1)
 			{
 				value <<= 8;
+				value += 0xFF;
 				value &= reinterpret_cast<volatile uint16_t*>(address-1)[0];
 			} else
 				value &= reinterpret_cast<volatile uint16_t*>(address)[0];
