@@ -311,7 +311,7 @@ protected:
   			res += head->m_length;
 
 			if (forse_realloc || head->m_refcount != 1
-					|| res > ((head->alloc_size - 2) * 4) / sizeof(CharT))
+					|| res >= ((head->alloc_size - 2) * 4) / sizeof(CharT))
   			{
   	  			new_data = m_allocate(res, head->m_length);
   	  			if(new_data)
