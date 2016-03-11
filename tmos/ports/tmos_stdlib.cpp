@@ -48,7 +48,7 @@ void trace_sleep(void)
 
 void mm_info1( void )
 {
-	unsigned short* ptr = (unsigned short*)&end;
+	unsigned short* ptr = (unsigned short*)(void*)&end;
 
 	__disable_irq();
 	TRACE("\r\n==================================\r\n %08X %04X %04X  %04X ", ptr, ptr[0], ptr[1]>>1, ptr[2]);
@@ -68,7 +68,7 @@ void mm_info1( void )
 
 int is_dynamic_mem(void* ptr)
 {
-	unsigned short* pool = (unsigned short*) &end;
+	unsigned short* pool = (unsigned short*)(void*)&end;
 	unsigned int adr = (unsigned int) ptr;
 	int res = 0;
 	int mem_size;
