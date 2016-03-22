@@ -337,7 +337,7 @@ FUNC(	aes_tmos_de_ecb		)
 	orrs 	X3, tmp
 
 	// add round key
-    ldr     tmp, [sp, #DE_ECB_STACK_KEYC]
+    ldr     tmp, [sp, #DE_ECB_STACK_KEYC+8]
     subs    tmp, #16
     ldmia   tmp, {tmp2, tmp, X0, X2}
     eors    X3, X2                      //X3 ^= key[3]
