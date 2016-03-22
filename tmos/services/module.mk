@@ -13,8 +13,6 @@ local_c_src-y 	:=
 local_cpp_src-y	:=   
 local_h_src-y 	:=
 
-local_as_src-$(USE_AES_TMOS)+= aes_tmos.S
-
 local_cpp_src-$(USE_SHA_1) 	+= sha_1.cpp
 local_cpp_src-$(USE_SHA_1) 	+= hmac_sha1.cpp
 
@@ -22,7 +20,6 @@ local_c_src-$(USE_BASE32)	+= base32.c
 
 local_h_src-$(USE_SHA_1) 	+= sha_1.h
 local_h_src-$(USE_SHA_1) 	+= hmac_sha1.h
-local_h_src-$(USE_AES_TMOS)	+= aes_tmos.h
 local_h_src-$(USE_BASE32)	+= base32.h
 
 #updating global variables
