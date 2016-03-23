@@ -113,7 +113,7 @@ FUNC(	aes_tmos_de_ecb		)
 	orrs    tmp, tmp2
 	eors    Y0, tmp
 
-    lsrs    tmp, X3, #16                // Y0 ^= RT2[ ( X2 >>  16 ) & 0xFF ]
+    lsrs    tmp, X2, #16                // Y0 ^= RT2[ ( X2 >>  16 ) & 0xFF ]
     uxtb    tmp, tmp
     lsls    tmp, #2
 	ldr 	tmp, [lut, tmp]
@@ -129,7 +129,7 @@ FUNC(	aes_tmos_de_ecb		)
     orrs    tmp, tmp2
     eors    Y0, tmp
 
-    push    {Y0}
+    push    {Y0, X0}
 
 	// 2. column
 	uxtb 	tmp, X1 					// Y1 =  RT0[ ( X1        ) & 0xFF ]
@@ -161,7 +161,7 @@ FUNC(	aes_tmos_de_ecb		)
     orrs    tmp, tmp2
     eors    Y0, tmp
 
-    push    {Y0}
+    str     Y0, [sp, #4]
 
 
 	// 3. column
@@ -269,7 +269,7 @@ FUNC(	aes_tmos_de_ecb		)
     lsls    tmp, #24
     orrs    Y0, tmp
 
-    push    {Y0}
+    push    {Y0, X0}
 
 	// 2. column
 	uxtb 	tmp, X1 					// Y1 =  FSb[ ( X1       ) & 0xFF ]
@@ -292,7 +292,7 @@ FUNC(	aes_tmos_de_ecb		)
     lsls    tmp, #24
 	orrs 	Y0, tmp
 
-    push    {Y0}
+    str     Y0, [sp, #4]
 
 	// 3. column
 	uxtb 	tmp, X2 					// Y2 =  FSb[ ( X2       ) & 0xFF ]
