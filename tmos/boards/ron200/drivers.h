@@ -10,11 +10,11 @@
 
 
 //----- Driver Priorities ----------------//
-#define DRV_PRIORITY_KERNEL		0x01	// OS-aware ISRs  must have lower priority (higher number)
-#define DRV_PRIORITY_UART0		0x02
-#define DRV_PRIORITY_UART1		0x02
-#define DRV_PRIORITY_UART2		0x02
-#define DRV_PRIORITY_SPI0		0x02
+#define DRV_PRIORITY_KERNEL		NVIC_PIORITY(0x01)	// OS-aware ISRs  must have lower priority (higher number)
+#define DRV_PRIORITY_UART0		NVIC_PIORITY(0x02)
+#define DRV_PRIORITY_UART1		NVIC_PIORITY(0x02)
+#define DRV_PRIORITY_UART2		NVIC_PIORITY(0x02)
+#define DRV_PRIORITY_SPI0		NVIC_PIORITY(0x02)
 
 
 
