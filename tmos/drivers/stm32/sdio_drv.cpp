@@ -22,7 +22,7 @@ WEAK void SDIO_SELECT_SLOT(SDIO_INFO drv_info, HANDLE hnd)
 WEAK void SDIO_DESELECT_SLOT(SDIO_INFO drv_info, HANDLE hnd)
 {
 #if DEBUG_SDIO_DRV
-	TRACELN1("SDIO DESLOT SELECT not implemented!");
+	TRACELN1("SDIO SLOT DESELECT not implemented!");
 #endif
 }
 #endif
@@ -151,8 +151,8 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 			ConfigureSDIO(drv_info, hnd);
 		}
 		//change clock
-		hw_base->SDIO_CLKCR  = (hw_base->SDIO_CLKCR &~SDIO_CLKCR_CLKDIV) |
-				SDIO_CLKCR_CLKDIV_Set(hnd->mode0);
+		hw_base->SDIO_CLKCR  = (hw_base->SDIO_CLKCR & ~(SDIO_CLKCR_CLKDIV|SDIO_CLKCR_WIDBUS)) |
+				(SDIO_CLKCR_CLKDIV_Set(hnd->mode0) |((hnd->mode1)<<8));
 
 		SDIO_SELECT_SLOT(drv_info, hnd);
 		drv_data->last_slot = hnd;
@@ -359,14 +359,19 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 		case DCR_OPEN:
 		{
 #if USE_SDIO_MULTIPLE_SLOTS
-			hnd->mode0 = 48000/400 -2; //default clock 400Khz
+			hnd->mode0 = 48000/400 -2; 	//default clock 400Khz
+			hnd->mode1 = 0;				//default bus mode: SDIO_D0 used
 #endif
 			if(!drv_data->cnt)
 			{
 				if(!ConfigureSDIO(drv_info, hnd))
 					break;
 #if USE_SDIO_MULTIPLE_SLOTS
-				drv_data->last_slot = hnd;
+				if(drv_data->last_slot == nullptr)
+				{
+					SDIO_SELECT_SLOT(drv_info, hnd);
+//					drv_data->last_slot = hnd;
+				}
 #endif
 			}
 			drv_data->cnt++;
@@ -396,11 +401,18 @@ void SDIO_DCR(SDIO_INFO drv_info, unsigned int reason, HANDLE hnd)
 			if(mode)
 			{
 #if USE_SDIO_MULTIPLE_SLOTS
-			if(drv_data->last_slot == hnd)
-#endif
+				if(drv_data->last_slot == hnd)
+				{
+					hnd->mode0 = mode->sdio_clk_div;
+					drv_info->hw_base->SDIO_CLKCR  = (drv_info->hw_base->SDIO_CLKCR &
+						~(SDIO_CLKCR_CLKDIV|SDIO_CLKCR_BYPASS))
+						| SDIO_CLKCR_CLKDIV_Set(mode->sdio_clk_div)|(mode->sdio_clk_div & SDIO_CLKCR_BYPASS);
+				}
+#else
 				drv_info->hw_base->SDIO_CLKCR  = (drv_info->hw_base->SDIO_CLKCR &
 					~(SDIO_CLKCR_CLKDIV|SDIO_CLKCR_BYPASS))
 					| SDIO_CLKCR_CLKDIV_Set(mode->sdio_clk_div)|(mode->sdio_clk_div & SDIO_CLKCR_BYPASS);
+#endif
 			}
 			break;
 		}
@@ -543,7 +555,12 @@ void SDIO_ISR(SDIO_INFO drv_info)
 									//change bus width
 									reg = hw_base->SDIO_CLKCR & ~SDIO_CLKCR_WIDBUS;
 									if(hnd->src.as_intptr[1] == 2)
+									{
 										reg |= SDIO_CLKCR_WIDBUS_4b;
+#if USE_SDIO_MULTIPLE_SLOTS
+										hnd->mode1 = (SDIO_CLKCR_WIDBUS_4b)>>8;
+#endif
+									}
 									hw_base->SDIO_CLKCR = reg;
 								}
 								break;
