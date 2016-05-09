@@ -68,4 +68,6 @@
 #define USB_ENABLE_PRN		0
 #define USB_ENABLE_HID		1
 
+#define USE_SDIO_MULTIPLE_SLOTS	1
+
 #endif /* BRD_CFG_H_ */
