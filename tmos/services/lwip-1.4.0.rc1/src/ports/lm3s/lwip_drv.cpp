@@ -1212,7 +1212,8 @@ void LWIP_DCR(LWIP_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
     {
         case DCR_RESET:
         	drv_info->drv_data->lwip_netif.state = drv_info->hw_base;
-        	NVIC_SetPriority(drv_info->info.drv_index, drv_info->info.isr_priority);
+        	//set priority
+            NVIC->NVIC_IPR[drv_info->info.drv_index] = drv_info->info.isr_priority;
 //        	SysCtlPeripheralDisable(drv_info->info.peripheral_indx);
            	usr_task_init_static(&lwipdrv_task_desc, true);
            	lwipdrv_task.sp->r0.as_voidptr = drv_info;
