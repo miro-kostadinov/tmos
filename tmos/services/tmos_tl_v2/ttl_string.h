@@ -1055,7 +1055,7 @@ template <typename CharT>
 basic_string<CharT>::basic_string (const char* s, size_t n)
 :m_data(const_cast<pointer>(s))
 {
-	if (is_ram_ptr(m_data))
+	if (is_ram_ptr(m_data) || (strlen(s) > n))
 	{
 		m_data = m_allocate(n, n);
 		if(m_data)
