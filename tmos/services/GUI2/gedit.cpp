@@ -74,7 +74,8 @@ unsigned int GEdit::initialize (GMessage& msg)
 	alloc_scrollbars();
 	text_size = SetTextAlign(align);
 	unsigned int max_chars = client_rect.width() / text_font->hspacing;
-	txt.erase(max_len, -1u);
+	if(txt.length() > max_len)
+		txt.erase(max_len, -1u);
 	if(!(align & ES_AUTO_SCROLL))
 	{
 		if(!max_chars || txt.length() > max_chars -1)
