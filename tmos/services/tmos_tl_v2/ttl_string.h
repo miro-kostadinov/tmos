@@ -1133,12 +1133,12 @@ CharT&  basic_string<CharT>::at(size_type n)
 		}
 		if(head->m_refcount != 1 )
 		{
-			n = head->m_length;
-  			new_data = m_allocate(n, n);
+  			new_data = m_allocate(head->m_length, head->m_length);
   			if(!new_data)
   				return (dummy_char);
 
-  			memcpy(new_data, m_data, n*sizeof(CharT));
+  			if(head->m_length)
+  				memcpy(new_data, m_data, head->m_length*sizeof(CharT));
 		    m_dispose();
 		    m_data = new_data;
 		}
