@@ -841,8 +841,10 @@ err_t
 tcp_send_empty_ack(struct tcp_pcb *pcb)
 {
   struct pbuf *p;
-  struct tcp_hdr *tcphdr;
   u8_t optlen = 0;
+#if CHECKSUM_GEN_TCP || LWIP_TCP_TIMESTAMPS
+  struct tcp_hdr *tcphdr;
+#endif
 
 #if LWIP_TCP_TIMESTAMPS
   if (pcb->flags & TF_TIMESTAMP) {
@@ -855,7 +857,9 @@ tcp_send_empty_ack(struct tcp_pcb *pcb)
     LWIP_DEBUGF(TCP_OUTPUT_DEBUG, ("tcp_output: (ACK) could not allocate pbuf\n"));
     return ERR_BUF;
   }
+#if CHECKSUM_GEN_TCP || LWIP_TCP_TIMESTAMPS
   tcphdr = (struct tcp_hdr *)p->payload;
+#endif
   LWIP_DEBUGF(TCP_OUTPUT_DEBUG, 
               ("tcp_output: sending ACK for %"U32_F"\n", pcb->rcv_nxt));
   /* remove ACK flags from the PCB, as we send an empty ACK now */
