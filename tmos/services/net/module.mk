@@ -32,8 +32,6 @@ inc_dirs += $(subdirectory)
 #submodules
 local_modules-y := 
 
-local_modules-$(USE_LWIP_1_4_)	+= lwip-1.4.0.1
-
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
 
