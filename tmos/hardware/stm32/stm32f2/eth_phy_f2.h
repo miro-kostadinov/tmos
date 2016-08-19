@@ -107,6 +107,30 @@
 ///  PHY_TLK110_SWSCR1:      (phy Offset: 0x09) RW  Software Strap Control Register 1
 #define PHY_TLK110_SWSCR1_SWCFGDNE		0x8000  //!<  Software Strap Configuration Done
 
+///  PHY_TLK110_PHYSTS:      (phy Offset: 0x10) RO  PHY Status Register
+#define PHY_TLK110_PHYSTS_MDIX	 		0x4000  //!< MDI pairs swapped (Receive on TD pair, Transmit on RD pair)
+#define PHY_TLK110_PHYSTS_RXERR	 		0x2000  //!< Receive error event has occurred since last read of RXERCNT register (0x0015)
+#define PHY_TLK110_PHYSTS_POLARITY 		0x1000  //!< Inverted Polarity detected
+#define PHY_TLK110_PHYSTS_FCSL	 		0x0800  //!< False Carrier event has occurred since last read of FCSCR register (0x0014)
+#define PHY_TLK110_PHYSTS_SIGNAL 		0x0400  //!< Active high 100Base-TX unconditional Signal Detect indication from PMD
+#define PHY_TLK110_PHYSTS_DESCRAMBLER	0x0200  //!< Active high 100Base-TX Descrambler Lock indication from PMD
+#define PHY_TLK110_PHYSTS_PAGE			0x0100  //!< A new Link Code Word Page has been received. This bit is a duplicate of
+												//!<  Page Received (bit 1) in the ANER register and it is cleared on read of
+												//!<  the ANER register (0x0006).
+#define PHY_TLK110_PHYSTS_MI_INT		0x0080  //!< Indicates that an internal interrupt is pending. Interrupt source can be
+												//!<  determined by reading the MISR Register (0x0012). Reading the MISR will
+												//!<  clear this Interrupt bit indication
+#define PHY_TLK110_PHYSTS_RFAULT		0x0040  //!< Remote Fault condition detected. Fault criteria: notification from Link
+												//!<  Partner of Remote Fault via Auto-Negotiation. Cleared on read of BMSR
+												//!<  register (0x0001) or by reset
+#define PHY_TLK110_PHYSTS_JABBER		0x0020  //!< Jabber condition detected. This bit has meaning only in 10 Mb/s mode.
+												//!<  This bit is a duplicate of the Jabber Detect bit in the BMSR register (0x0001
+#define PHY_TLK110_PHYSTS_ANEG_STAT		0x0010  //!< Auto-Negotiation complete
+#define PHY_TLK110_PHYSTS_MII_LOOPBACK	0x0008  //!< MII Loopback
+#define PHY_TLK110_PHYSTS_DUPLEX		0x0004  //!< Duplex Status: 1 = Full duplex mode
+#define PHY_TLK110_PHYSTS_SPEED			0x0002  //!< Speed Status: 1 = 10 Mb/s mode 0 = 100 Mb/s mode
+#define PHY_TLK110_PHYSTS_LINK			0x0001  //!< Link Status. This bit is a duplicate of the Link Status bit in the BMSR register (0x0001)
+
 RES_CODE HAL_ETH_Init_PHY(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);
 
 RES_CODE HAL_ETH_PHY_Init_LAN8720(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);

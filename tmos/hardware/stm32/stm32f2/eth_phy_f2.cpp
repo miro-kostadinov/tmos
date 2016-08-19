@@ -149,6 +149,7 @@ WEAK RES_CODE HAL_ETH_PHY_Init_TLK110(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg
 	{
 		if(!(phyreg & PHY_TLK110_SWSCR1_SWCFGDNE))
 		{
+			// phyreg &= 0xE7FF;  // Force 10Mbit
 			phyreg |= PHY_TLK110_SWSCR1_SWCFGDNE;
 			res = HAL_ETH_WritePHYRegister(mac, cfg, PHY_TLK110_SWSCR1, phyreg);
 		}
@@ -229,19 +230,19 @@ WEAK RES_CODE HAL_ETH_PHY_Init_TLK110(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg
 				    /* Read the result of the auto-negotiation */
 					if(res == RES_OK)
 					{
-						if(HAL_ETH_ReadPHYRegister(mac, cfg, PHY_REG_SR, &phyreg) == RES_OK)
+						if(HAL_ETH_ReadPHYRegister(mac, cfg, PHY_TLK110_PHYSTS, &phyreg) == RES_OK)
 						{
 							cfg->mac_data->mac_cfg &= ~(MAC_CFG_FLG_DUPLEX_MODE | MAC_CFG_FLG_100M);
 
 						    /* Configure the MAC with the Duplex Mode fixed by the auto-negotiation process */
-						    if(phyreg & PHY_REG_SR_DUPLEX_STATUS)
+						    if(phyreg & PHY_TLK110_PHYSTS_DUPLEX)
 						    {
 						    	cfg->mac_data->mac_cfg |= MAC_CFG_FLG_DUPLEX_MODE;
 						    	TRACEPHY(mac, cfg, "ETH full");
 						    }
 
 						    /* Configure the MAC with the speed fixed by the auto-negotiation process */
-						    if( !(phyreg & PHY_REG_SR_SPEED_STATUS))
+						    if( !(phyreg & PHY_TLK110_PHYSTS_SPEED))
 						    {
 						    	cfg->mac_data->mac_cfg |= MAC_CFG_FLG_100M;
 						    	TRACEPHY(mac, cfg, "ETH 100M");
