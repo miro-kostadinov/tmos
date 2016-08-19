@@ -27,7 +27,7 @@
 
 #define SOCKET_CLOSED		0
 #define SOCKET_OPEN			1
-#define SOCKET_CONECTED		3
+#define SOCKET_CONECTED		(2 + SOCKET_OPEN)
 #define SOCKET_WRITE_FLAG	4
 #define SOCKET_LISTEN	    (8 + SOCKET_OPEN)
 
@@ -35,6 +35,7 @@
 
 #define IP_SOCKET_TCP			0
 #define IP_SOCKET_UDP			1
+#define BT_SOCKET				2
 
 struct sock_mode_t
 {
