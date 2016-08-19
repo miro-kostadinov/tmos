@@ -19,6 +19,7 @@ local_h_src-y 	+= usb_requests.h usb_std_reqs.h
 local_h_src-$(USB_ENABLE_PRN) += usb_prn_reqs.h
 local_h_src-$(USB_ENABLE_HID) += usb_hid_reqs.h
 local_h_src-$(USB_ENABLE_CDC) += usb_cdc_reqs.h
+local_h_src-$(USB_ENABLE_MSC) += usb_msc_reqs.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

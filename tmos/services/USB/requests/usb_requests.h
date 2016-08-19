@@ -25,5 +25,9 @@
 #include <usb_cdc_reqs.h>
 #endif
 
+#if USB_ENABLE_MSC
+#include <usb_msc_reqs.h>
+#endif
+
 
 #endif /* USB_REQUESTS_H_ */

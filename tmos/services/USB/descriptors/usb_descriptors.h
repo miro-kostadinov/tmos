@@ -26,6 +26,11 @@
 #include <usb_cdc_dtors.h>
 #endif
 
+#if USB_ENABLE_MSC
+#include <usb_msc_dtors.h>
+#endif
+
+
 void usb_get_class_name(CSTRING& s, USBClassCode code);
 int trace_usb_descriptor(USBGenericDescriptor* des);
 

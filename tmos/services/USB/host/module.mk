@@ -16,10 +16,12 @@ local_h_src-y 	:=
 local_cpp_src-y	+= usb_host.cpp
 local_cpp_src-$(USB_ENABLE_PRN) += usbh_prn.cpp
 local_cpp_src-$(USB_ENABLE_HID) += usbh_hid.cpp
+local_cpp_src-$(USB_ENABLE_MSC) += usbh_msc.cpp
 
 local_h_src-y 	+= usb_host.h   
 local_h_src-$(USB_ENABLE_PRN) += usbh_prn.h
 local_h_src-$(USB_ENABLE_HID) += usbh_hid.h
+local_h_src-$(USB_ENABLE_MSC) += usbh_msc.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

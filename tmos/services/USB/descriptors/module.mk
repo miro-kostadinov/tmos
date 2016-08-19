@@ -19,6 +19,7 @@ local_h_src-y 	+= usb_descriptors.h usb_std_dtors.h
 local_h_src-$(USB_ENABLE_PRN) += usb_prn_dtors.h
 local_h_src-$(USB_ENABLE_HID) += usb_hid_dtors.h
 local_h_src-$(USB_ENABLE_CDC) += usb_cdc_dtors.h
+local_h_src-$(USB_ENABLE_MSC) += usb_msc_dtors.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

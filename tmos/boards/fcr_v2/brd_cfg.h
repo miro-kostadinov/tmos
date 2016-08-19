@@ -67,6 +67,7 @@
 #define USB_ENABLE_CDC		1
 #define USB_ENABLE_PRN		0
 #define USB_ENABLE_HID		1
+#define USB_ENABLE_MSC		1
 
 #define USE_SDIO_MULTIPLE_SLOTS	1
 

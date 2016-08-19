@@ -140,6 +140,7 @@ static int trace_usb_interface_descriptor(USBInterfaceDescriptor* des)
 	TRACELN1_USB("\tSubClass=");
 	switch(des->bDeviceClass)
 	{
+#if USB_ENABLE_CDC
 	case CDC_DEVICE_CLASS:
 		switch(des->bDeviceSubClass)
 		{
@@ -173,7 +174,9 @@ static int trace_usb_interface_descriptor(USBInterfaceDescriptor* des)
 		}
 		TRACELN_USB("\tProto=", des->bDeviceProtocol);
 		break;
+#endif
 
+#if USB_ENABLE_HID
 	case HID_DEVICE_CLASS:
 		if(des->bDeviceSubClass == 1)
 			TRACE1_USB("BOOT");
@@ -192,9 +195,24 @@ static int trace_usb_interface_descriptor(USBInterfaceDescriptor* des)
 			break;
 		}
 		break;
+#endif
+
+#if USB_ENABLE_MSC
+		case MASSSTORAGE_DEVICE_CLASS:
+			if(des->bDeviceSubClass == INTERFACE_MSC_SUBCLASS_SCSI_T)
+				TRACE1_USB("SCSI");
+			else
+				TRACE_USB("%u", des->bDeviceSubClass);
+			if(des->bDeviceProtocol == INTERFACE_MSC_PROTOCOL_BBB)
+				TRACE1_USB("\tProto=BBB");
+			else
+				TRACE_USB("\tProto=%02x", des->bDeviceProtocol);
+			break;
+#endif
+
 	default:
 		TRACE_USB("%u", des->bDeviceSubClass);
-		TRACELN_USB("\tProto=", des->bDeviceProtocol);
+		TRACELN_USB("\tProto=%02x", des->bDeviceProtocol);
 		break;
 	}
 	return sizeof(USBInterfaceDescriptor);
