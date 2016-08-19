@@ -1114,7 +1114,7 @@ static void stm_host_write_payload(USB_DRV_INFO drv_info, uint32_t ept_indx)
 	hnd = epdir->epd_pending;
 	if(hnd)
 	{
-		fifo = drv_info->hw_base->DFIFO[ept_indx].DFIFO;
+		fifo = drv_info->hw_base->DFIFO[ept_indx << 1].DFIFO;
 		switch (epdir->epd_type)
 		{
 		case ENDPOINT_TYPE_CONTROL: 		// Non periodic transfer
@@ -1240,7 +1240,7 @@ static void stm_host_start_xfer(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptn
 
 static void stm_host_start_tx(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptnum, ep_dir_state_t* epdir)
 {
-	stm_host_start_xfer(drv_info, hnd, eptnum, epdir);
+	stm_host_start_xfer(drv_info, hnd, eptnum*2, epdir);
 
 	// Write some data
 	stm_host_write_payload(drv_info, eptnum);
@@ -2539,6 +2539,10 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 		    	TRACE1_USB(" Wr!");
 		    	epdir->epd_pending = hnd->next;
 		    	usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
+
+		    	//toggle data
+		    	if(epdir->epd_type == ENDPOINT_TYPE_BULK)
+		    		epdir->epd_flags ^= EPD_FLAG_DATA1;
 			}
 
 			//check if we have more to write
