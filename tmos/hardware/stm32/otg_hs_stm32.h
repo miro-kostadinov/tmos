@@ -338,10 +338,10 @@ typedef struct
 /** @} */
 
 /** @defgroup GNPTXSTS; (otg Offset: 0x002C) Non Periodic Tx FIFO/Queue Sts reg	*/
-#define OTG_GNPTXSTS_NPTXQTOP_Msk   (0x7Fu<<24) //!< Top of the nonperiodic transmit request queue mask
-#define OTG_GNPTXSTS_NPTXQTOP(n)    ((n)<<24)   //!< Top of the nonperiodic transmit request queue value
+#define OTG_GNPTXSTS_NPTXQTOP_Get(x) (((x)>>24) & 0x7Fu) //!< Top of the nonperiodic transmit request queue get
+#define OTG_GNPTXSTS_NPTXQTOP_CH_Get(x) (((x)>>27) & 0xFu) //!< Top of the nonperiodic transmit request queue channel get
 #define OTG_GNPTXSTS_NPTQXSAV_Msk   (0xFFu<<16) //!< Nonperiodic transmit request queue space available mask
-#define OTG_GNPTXSTS_NPTQXSAV(n)    ((n)<<16)   //!< Nonperiodic transmit request queue space available value
+#define OTG_GNPTXSTS_NPTQXSAV_Get(x) (((x)>>16) & 0xFFu) //!< Nonperiodic transmit request queue space available get
 #define OTG_GNPTXSTS_NPTXFSAV_Msk   (0xFFFF)	//!< Nonperiodic TxFIFO space available mask
 #define OTG_GNPTXSTS_NPTXFSAV(n)    (n)			//!< Nonperiodic TxFIFO space available value
 /** @} */

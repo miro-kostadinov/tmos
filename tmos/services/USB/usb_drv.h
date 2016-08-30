@@ -159,7 +159,8 @@ struct USB_DRIVER_INFO
 
 typedef const USB_DRIVER_INFO* USB_DRV_INFO;
 
-#define USB_DRIVER_SIG	1
+#define USB_DRIVER_SIG		1
+#define USB_DRIVER_SIG_TOUT	2
 
 void usbdrv_thread(USB_DRV_INFO drv_info);
 

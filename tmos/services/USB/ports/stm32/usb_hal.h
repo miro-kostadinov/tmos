@@ -41,6 +41,7 @@ RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info);
 RES_CODE usb_hal_host_bus_reset(USB_DRV_INFO drv_info);
 void usb_hal_host_resume(USB_DRV_INFO drv_info);
 void usb_hal_host_ept_cfg(USB_DRV_INFO drv_info, const USBEndpointDescriptor* pDescriptor);
+void usb_hal_host_nak_tout(USB_DRV_INFO drv_info);
 #endif
 RES_CODE usb_hal_start(USB_DRV_INFO drv_info, uint32_t mode);
 

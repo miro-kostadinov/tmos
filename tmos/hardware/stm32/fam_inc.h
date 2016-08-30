@@ -17,4 +17,6 @@
 
 #include <series_inc.h>
 
+#define CFG_FAMILY_STM32 	1
+
 #endif /* FAM_INC_H_ */

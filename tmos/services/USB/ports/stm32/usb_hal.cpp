@@ -1107,64 +1107,32 @@ static void stm_host_write_payload(USB_DRV_INFO drv_info, uint32_t ept_indx)
 {
     ep_dir_state_t* epdir;
     HANDLE hnd;
-	uint32_t len, len32b, txsize;
+	uint32_t len, i;
     __IO uint32_t *fifo;
 
 	epdir = &(drv_info->drv_data->endpoints[ept_indx].epd_in);
 	hnd = epdir->epd_pending;
 	if(hnd)
 	{
-		fifo = drv_info->hw_base->DFIFO[ept_indx << 1].DFIFO;
-		switch (epdir->epd_type)
+		len = hnd->len;
+		if(len)
 		{
-		case ENDPOINT_TYPE_CONTROL: 		// Non periodic transfer
-		case ENDPOINT_TYPE_BULK:
-			txsize = drv_info->hw_base->core_regs.GNPTXSTS & OTG_GNPTXSTS_NPTXFSAV_Msk;
-			break;
+			fifo = drv_info->hw_base->DFIFO[ept_indx << 1].DFIFO;
 
-		case ENDPOINT_TYPE_INTERRUPT:		// Periodic transfer
-		case ENDPOINT_TYPE_ISOCHRONOUS:
-			txsize = drv_info->hw_base->host_regs.HPTXSTS & OTG_HPTXSTS_PTXFSAVL_Msk;
-			break;
-
-		default:
-			TRACELN_USB("BAD endpoint%u type", ept_indx);
-			return;
-		}
-
-		TRACE_USB(" Wr%d(%d) ", ept_indx , hnd->len);
-		while( (len = hnd->len) )
-		{
+			// For OUT transfers we will use single packets only on order to handle the NAKs properly
 			if (len > epdir->epd_fifo_sz)
 				len = epdir->epd_fifo_sz;
+			TRACE_USB(" Wr%d(%d) ", ept_indx , len);
 
 			TRACE1_USB("\e[32m");			//TC_TXT_GREEN
-			for(uint32_t i=0; i<len; i++)
+			for(i=0; i<len; i++)
 				TRACE_USB(" %02X", hnd->src.as_byteptr[i]);
 			TRACE1_USB("\e[m");
-			len32b = (len + 3) / 4;
-			if (txsize <= len32b)
-				break;
-			txsize -= len32b;
 
-			while(len32b--)
-				fifo[0] = *hnd->src.as_intptr++;
-			hnd->len -= len;
-		}
+			len = (len +3) >> 2;
+			for(i=0; i<len; i++)
+				fifo[0] = hnd->src.as_intptr[i];
 
-		if(hnd->len)
-		{
-			switch (epdir->epd_type)
-			{
-			case ENDPOINT_TYPE_CONTROL: 		// Non periodic transfer
-			case ENDPOINT_TYPE_BULK:
-				drv_info->hw_base->core_regs.GINTMSK |= OTG_GINTMSK_NPTXFEM;
-				break;
-
-			default: 							// Periodic transfer
-				drv_info->hw_base->core_regs.GINTMSK |= OTG_GINTMSK_PTXFEM;
-				break;
-			}
 		}
 
 	} else
@@ -1178,14 +1146,25 @@ static void stm_host_start_xfer(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptn
 	uint32_t reg;
 	uint32_t dpid;
 	OTG_HC_REGS* hc_regs = &drv_info->hw_base->HC_REGS[eptnum];
+	uint32_t len;
 
 	// Program the transfer size and packet count
-	if (hnd->len > epdir->epd_fifo_sz)
+	len = hnd->len;
+	if(epdir->epd_state == ENDPOINT_STATE_RECEIVING)
 	{
-		reg = (hnd->len + epdir->epd_fifo_sz - 1) / epdir->epd_fifo_sz;
+		if (len > epdir->epd_fifo_sz)
+		{
+			reg = (len + epdir->epd_fifo_sz - 1) / epdir->epd_fifo_sz;
+		} else
+		{
+			reg = 1; //PKTCNT = 1
+		}
 	} else
 	{
-		reg = 1; //PKTCNT = 1
+		// For OUT transfers we will use single packets only on order to handle the NAKs properly
+		reg = 1;
+		if (len > epdir->epd_fifo_sz)
+			len = epdir->epd_fifo_sz;
 	}
 
 	//Handle data toggle
@@ -1220,7 +1199,7 @@ static void stm_host_start_xfer(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptn
 		}
 	}
 
-	hc_regs->HCTSIZ = OTG_HCTSIZ_XFRSIZ(hnd->len) |	OTG_HCTSIZ_PKTCNT(reg) | dpid;
+	hc_regs->HCTSIZ = OTG_HCTSIZ_XFRSIZ(len) |	OTG_HCTSIZ_PKTCNT(reg) | dpid;
 
 	// Program the HCCHAR register
 	reg = hc_regs->HCCHAR;
@@ -1240,6 +1219,13 @@ static void stm_host_start_xfer(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptn
 
 static void stm_host_start_tx(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptnum, ep_dir_state_t* epdir)
 {
+	// The host uses one transmit FIFO for all non-periodic (control and bulk) OUT transactions
+	// and one transmit FIFO for all periodic (isochronous and interrupt) OUT transactions
+	// In order to handle the NAKs however we should not write more than a single packet for each channel
+	// (unless we use DMA)
+	// Therefore if the FIFO size is programmed to sustain the sum of maxpackets for all the endpoints,
+	// there will be no need to check the FIFOs
+
 	stm_host_start_xfer(drv_info, hnd, eptnum*2, epdir);
 
 	// Write some data
@@ -1352,18 +1338,25 @@ void usb_drv_cancel_hnd(USB_DRV_INFO drv_info, HANDLE hnd)
 
     if(hnd->res & FLG_BUSY)
     {
+#if USB_ENABLE_HOST
+		if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
+		{
+			hnd->cmd &= ~(FLAG_READ | FLAG_WRITE);	//request cancel
+	    	if(hnd->cmd & FLAG_WRITE)
+	    	{
+	    		TRACELN_USB("CAN! %u", hnd->mode.as_bytes[1]);
+	    	} else
+	    	{
+	    		TRACELN_USB("CAN! %u", hnd->mode.as_bytes[0]);
+	    	}
+			return;
+		}
+#endif
     	if(hnd->cmd & FLAG_WRITE)
     	{
     		epdir = &(drv_info->drv_data->endpoints[hnd->mode.as_bytes[1]].epd_in);
     	} else
     	{
-#if USB_ENABLE_HOST
-			if(drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
-			{
-				hnd->cmd &= ~FLAG_READ;	//request cancel
-				return;
-			}
-#endif
     		epdir = &(drv_info->drv_data->endpoints[hnd->mode.as_bytes[0]].epd_out);
 
     	}
@@ -1410,6 +1403,7 @@ void usb_drv_start_tx(USB_DRV_INFO drv_info, HANDLE hnd)
 	    if (epdir->epd_state != ENDPOINT_STATE_IDLE)
 	    {
 			svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+			TRACELN_USB(" Write%d fail (st=%02x) ", eptnum , epdir->epd_state);
 	    } else
 	    {
 	    	epdir->epd_state = ENDPOINT_STATE_SENDING;
@@ -1521,6 +1515,10 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 					{
 						endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING;
 						stm_host_start_xfer(drv_info, hnd, eptnum*2+1, &endpoint->epd_out);
+					} else
+					{
+						svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+						TRACELN_USB(" Read%d fail (st=%02x) ", eptnum , endpoint->epd_out.epd_state);
 					}
 				} else
 #endif
@@ -2458,6 +2456,44 @@ static void usb_b_gint_otgint(USB_DRV_INFO drv_info)
 #endif // USB_ENABLE_DEVICE
 
 #if USB_ENABLE_HOST
+void usb_hal_host_nak_tout(USB_DRV_INFO drv_info)
+{
+	//tout (nak) processing
+	for(int i=0; i<USB_NUMENDPOINTS; i++)
+	{
+		ep_dir_state_t* epdir = &drv_info->drv_data->endpoints[i].epd_in;
+		for(int j=0; j<2; j++)
+		{
+			if(epdir->epd_state > ENDPOINT_STATE_IDLE)
+				if(epdir->epd_state & ENDPOINT_STATE_IDLE)
+				{
+					OTG_HC_REGS* ch_regs = &drv_info->hw_base->HC_REGS[2*i + j];
+
+					// this channel requires a restart?
+					if(epdir->epd_pending && epdir->epd_pending->cmd & (FLAG_READ | FLAG_WRITE)) // not cancelled
+					{
+						// Restart IN & OUT
+						uint32_t reg;
+
+						epdir->epd_state ^= ENDPOINT_STATE_IDLE;
+
+
+						reg = ch_regs->HCCHAR;
+						ch_regs->HCCHAR = reg; // if CHDIS ->halt else re-enable
+						if(!j)
+						{
+							// Write some data OUT
+							stm_host_write_payload(drv_info, i);
+						}
+					} else
+						stm_host_ch_halt(drv_info, ch_regs);
+
+				}
+			epdir++;
+		}
+	}
+}
+
 static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 {
 	uint32_t ch_ints, is_in;
@@ -2530,49 +2566,62 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 	{
 		TRACE1_USB(" XFRC");
 
-		if ( (epdir->epd_state & ENDPOINT_STATE_SENDING)  )
+		if( (hnd=epdir->epd_pending) )
 		{
-			//check if we have pending write
-			while((hnd=epdir->epd_pending) && ( hnd->len == 0) && !(hnd->res & FLG_EOF))
+			if(is_in)
 			{
-		   		// End of transfer ?
-		    	TRACE1_USB(" Wr!");
-		    	epdir->epd_pending = hnd->next;
-		    	usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
-
-		    	//toggle data
-		    	if(epdir->epd_type == ENDPOINT_TYPE_BULK)
-		    		epdir->epd_flags ^= EPD_FLAG_DATA1;
-			}
-
-			//check if we have more to write
-			if(hnd)
-			{
-				// Write some data
-				stm_host_write_payload(drv_info, ch_indx >> 1);
-			} else
-			{
-				epdir->epd_state &= ~ENDPOINT_STATE_SENDING;
-				if(!epdir->epd_state)
-					epdir->epd_state = ENDPOINT_STATE_IDLE;
-			}
-
-		} else
-			if(is_in && (hnd=epdir->epd_pending))
-			{
+				// IN transfer competed
 		    	epdir->epd_pending = hnd->next;
 		    	if(!hnd->len || (hnd->res & FLG_OK))
 		    		usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
 		    	else
 		    		usr_usb_HND_SET_STATUS(hnd, RES_SIG_IDLE);
 				epdir->epd_state = ENDPOINT_STATE_IDLE;
-			}
+			} else
+			{
+				uint32_t len;
+				// OUT transfer, update
+				len = hnd->len;
+				if(len)
+				{
+					//not yet, update transfer and continue
+					if (len > epdir->epd_fifo_sz)
+						len = epdir->epd_fifo_sz;
+					hnd->src.as_byteptr += len;
+					hnd->len -= len;
+					len = hnd->len;
+				}
 
+		    	//toggle data
+		    	if(epdir->epd_type == ENDPOINT_TYPE_BULK)
+		    		epdir->epd_flags ^= EPD_FLAG_DATA1;
+
+		   		// End of transfer ?
+				if(!len)
+				{
+			    	TRACE1_USB(" Wr!");
+			    	epdir->epd_pending = hnd->next;
+			    	usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
+			    	hnd = epdir->epd_pending;
+				}
+				//check if we have more to write
+				if(hnd)
+				{
+					// start it...
+					stm_host_start_tx(drv_info, hnd, ch_indx >> 1, epdir);
+				} else
+				{
+					epdir->epd_state = ENDPOINT_STATE_IDLE;
+				}
+
+			}
+		}
 	}
 
 	if(ch_ints & OTG_HCINT_BBERR)		// Babble error
 	{
 		TRACE1_USB(" BBERR");
+		stm_host_ch_halt(drv_info, ch_regs);
 
 	}
 
@@ -2588,31 +2637,23 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 	{
 		TRACE1_USB(" NAK ");
 
-		if(!is_in)
+		// we need a timeout or halt?
+		if(epdir->epd_type == ENDPOINT_TYPE_CONTROL || epdir->epd_type == ENDPOINT_TYPE_BULK)
 		{
-			stm_host_ch_halt(drv_info, ch_regs);
-		} else
-		{
-//			epdir->epd_flags ^= EPD_FLAG_DATA1;
-			if(epdir->epd_state == ENDPOINT_STATE_RECEIVING)
+			if(epdir->epd_state > ENDPOINT_STATE_IDLE)
 			{
-				hnd = epdir->epd_pending;
-				if(hnd)
+				epdir->epd_state |= ENDPOINT_STATE_IDLE;
+				if(!is_in)
 				{
-					if(hnd->cmd & FLAG_READ) // not cancelled
-					{
-						uint32_t reg;
+					TRACE1_USB(" OD ");
+					epdir->epd_state ^= ENDPOINT_STATE_ERR;
+					ch_regs->HCCHAR = ch_regs->HCCHAR | OTG_HCCHAR_CHDIS | OTG_HCCHAR_CHENA;
+				}
+				tsk_send_signal(drv_info->drv_data->helper_task, USB_DRIVER_SIG_TOUT);
 
-						reg = ch_regs->HCCHAR ;
-						ch_regs->HCCHAR = reg; // if CHDIS ->halt else re-enable
-					} else
-					{
-						stm_host_ch_halt(drv_info, ch_regs);
-					}
-				} else
-					epdir->epd_state = ENDPOINT_STATE_IDLE;
 			}
-		}
+		} else
+			stm_host_ch_halt(drv_info, ch_regs);
 	}
 
 	if(ch_ints & OTG_HCINT_CHH)		// Channel halted
@@ -2761,7 +2802,7 @@ static void usb_a_gint_rxflvl(USB_DRV_INFO drv_info)
 
 }
 
-#endif
+#endif // USB_ENABLE_HOST
 
 void USB_OTG_ISR(USB_DRV_INFO drv_info)
 {
@@ -3005,6 +3046,12 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 		    {
 				TRACE1_USB(" RXFLVL");
 				usb_a_gint_rxflvl(drv_info);
+		    }
+
+		    if(status & OTG_GINTSTS_NPTXFE)		// Non-periodic TxFIFO empty
+		    {
+				TRACE1_USB(" NPTXFE");
+				// This should never happens
 		    }
 
 		    if(status & OTG_GINTSTS_OTGINT)		// OTG interrupt

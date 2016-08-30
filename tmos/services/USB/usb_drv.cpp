@@ -29,7 +29,7 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
     bool requested = false;
 	unsigned int sig=0;
 
-    ALLOCATE_SIGNAL(USB_DRIVER_SIG);
+    ALLOCATE_SIGNAL(USB_DRIVER_SIG | USB_DRIVER_SIG_TOUT);
 	helper.tsk_safe_open(drv_info->info.drv_index, 0);
 	helper.tsk_start_command(NULL, 0);
 	req_hnd.tsk_safe_open(drv_info->info.drv_index, USB_DRV_MODE(EPT_0, EPT_0));
@@ -77,6 +77,14 @@ void usbdrv_thread(USB_DRV_INFO drv_info)
 			}
 			requested = false;
 		}
+#if USB_ENABLE_HOST
+		if(sig & USB_DRIVER_SIG_TOUT)
+		{
+			sig ^= USB_DRIVER_SIG_TOUT;
+			tsk_sleep(20);
+			usr_drv_icontrol(drv_info->info.drv_index, DCR_SIGNAL, nullptr);
+		}
+#endif
 		if(!requested)
 		{
 #if USB_ENABLE_HOST
@@ -184,6 +192,15 @@ void USB_DCR(USB_DRV_INFO drv_info, unsigned int reason, HANDLE param)
         case DCR_OPEN:
 			param->res = RES_OK;
 			break;
+
+#ifdef CFG_FAMILY_STM32
+#if USB_ENABLE_HOST
+        case DCR_SIGNAL:
+        	//tout (nak) processing
+        	usb_hal_host_nak_tout(drv_info);
+        	break;
+#endif // USB_ENABLE_HOST
+#endif // CFG_FAMILY_STM32
     }
 }
 
