@@ -204,7 +204,7 @@ struct scsi_cmd_write_10_t
 	uint8_t flags1;
 	uint32_t lba;       		//!< Logical Block Address (MSB)
 	uint8_t group;
-	uint8_t blocks;
+	uint16_t blocks;
 	uint8_t control;
 } __attribute__ ((packed));
 
