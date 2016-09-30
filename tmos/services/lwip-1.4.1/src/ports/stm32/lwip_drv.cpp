@@ -271,7 +271,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 	 *
 	 */
 	errval = low_level_transmit(netif, p);
-	TRACELN("ETH: tx %x %u res %u", p, p->tot_len, errval);
+	TRACELN_LWIP("ETH: tx %x %u res %u", p, p->tot_len, errval);
 	if(errval != ERR_OK)
 	{
 		/* Otherwise place the pbuf on the transmit queue. */
@@ -1217,7 +1217,7 @@ void LWIP_ISR(LWIP_DRIVER_INFO* drv_info )
 	uint32_t status;
 
 	status = mac->ETH_DMASR;
-	TRACELN("ETH: irq %x", status);
+	TRACELN_LWIP("ETH: irq %x", status);
 	if(status)
 	{
 		mac->ETH_DMASR = status;

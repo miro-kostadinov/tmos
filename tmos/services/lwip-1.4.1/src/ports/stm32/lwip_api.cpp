@@ -53,7 +53,7 @@ err_t lwip_cbf_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 {
 	CSocket* client = (CSocket*)arg;
 
-	TRACELN("LWIP sent %x %x", client, len);
+	TRACELN_LWIP("LWIP sent %x %x", client, len);
 	if(client == NULL)
 		return (ERR_VAL);
 
@@ -186,10 +186,10 @@ err_t lwip_cbf_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
 	CSocket* client = (CSocket*)arg;
 
-	TRACELN("LWIP recv %x %x", client, err);
+	TRACELN_LWIP("LWIP recv %x %x", client, err);
 	if(p)
 	{
-		TRACE(" len=%d tot=%d", p->len, p->tot_len);
+		TRACE_LWIP(" len=%d tot=%d", p->len, p->tot_len);
 	}
 
 	if(client && client->sock_id < LWIP_TCP_PCBS_CNT)
@@ -314,7 +314,7 @@ void lwip_cbf_err(void *arg, err_t err)
 {
 	CSocket* client = (CSocket*)arg;
 
-	TRACELN("TCP ERR %x for %x", err, client);
+	TRACELN_LWIP("TCP ERR %x for %x", err, client);
 	if(client && client->sock_id < LWIP_TCP_PCBS_CNT)
 	{
 		//send signal
@@ -534,7 +534,7 @@ err_t lwip_cbf_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 {
 	CSocket* client = (CSocket*)arg;
 
-	TRACELN("LWIP connect %x", client);
+	TRACELN_LWIP("LWIP connect %x", client);
 	if(client == NULL)
 		return (ERR_VAL);
 
@@ -811,7 +811,7 @@ err_t lwip_cbf_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 {
 	CSocket* client = (CSocket*)arg;
 
-	TRACELN("LWIP accept %x", client);
+	TRACELN_LWIP("LWIP accept %x", client);
 	if(client == NULL)
 		return (ERR_VAL);
 

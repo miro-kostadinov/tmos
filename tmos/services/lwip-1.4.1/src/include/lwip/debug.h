@@ -91,8 +91,12 @@
                                } \
                              } while(0)
 
+#define TRACE_LWIP(...)		TRACE(__VA_ARGS__)
+#define TRACELN_LWIP(...)	TRACELN(__VA_ARGS__)
 #else  /* LWIP_DEBUG */
 #define LWIP_DEBUGF(debug, message) 
+#define TRACE_LWIP(...)
+#define TRACELN_LWIP(...)
 #endif /* LWIP_DEBUG */
 
 #endif /* __LWIP_DEBUG_H__ */
