@@ -326,7 +326,14 @@ void USART_DCR(USART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 			{
 				//Disable ?
 #if USE_UART_DMA_DRIVER
-//				drv_data->rx_dma_hnd.close();
+				if(drv_info->rx_dma_mode.dma_index < INALID_DRV_INDX)
+				{
+					// can only cancel dma transfers
+					if(drv_data->rx_dma_hnd.res & FLG_BUSY)
+						drv_data->rx_dma_hnd.hcontrol(DCR_CANCEL);
+
+					drv_data->rx_dma_hnd.close();
+				}
 				drv_data->tx_dma_hnd.close();
 #endif
 
@@ -388,7 +395,8 @@ void USART_DCR(USART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd)
 						remaining = USART_DRV_RX_BUF_SIZE;
 					} else
 						remaining = drv_data->rx_dma_hnd.len;
-					drv_data->rx_dma_hnd.drv_read_write(drv_data->rx_wrptr,
+					if(drv_data->cnt)
+						drv_data->rx_dma_hnd.drv_read_write(drv_data->rx_wrptr,
 							(void*)&get_usart_rdr(drv_info->hw_base), remaining);
 				}
 			}
