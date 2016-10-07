@@ -53,6 +53,7 @@ public:
 	bool Create();
 	bool Destroy();
 	void notify_message(WM_MESSAGE code, unsigned int param, GObject* dst = nullptr);
+	CHandle* get_handle() {return &hnd; }
 };
 
 
