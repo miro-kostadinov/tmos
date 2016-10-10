@@ -169,7 +169,11 @@ void key_drv_thread()
         keyrd_hnd.tsk_read_locked(new_keys, sizeof(new_keys));
     }
 }
-TASK_DECLARE_STATIC(keyboard_task, "KEYT", key_drv_thread, 5, 50 + TRACE_SIZE);
+
+#ifndef KEY_DRV_STACK_SIZE
+#define KEY_DRV_STACK_SIZE 50
+#endif
+TASK_DECLARE_STATIC(keyboard_task, "KEYT", key_drv_thread, 5, KEY_DRV_STACK_SIZE + TRACE_SIZE);
 
 //*----------------------------------------------------------------------------
 //*			DCR function

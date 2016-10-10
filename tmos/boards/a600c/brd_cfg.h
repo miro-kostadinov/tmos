@@ -105,6 +105,7 @@
 #define KEY_RD_COUNT		5
 #define KEY_DRV_COUNT		7
 #define KEY_FIX_COUNT		1
+#define KEY_DRV_STACK_SIZE (70)
 
 #define USE_ADC_DMA_DRIVER 1		//Enable ADC DMA
 
