@@ -29,13 +29,27 @@
 //const char *key0_vals = "0\n-_+=():;/*#@$&'\"";
 
 
-struct key_to_char_ref
+#if USE_FIXED_CPAGE
+#if USE_FIXED_CPAGE == 1250
+const key_to_char_ref_t g_key_to_char_ref[] =
 {
-	const char *bg_vals;
-	const char *en_vals;
+	{" ,?!:~^", " ,?!:~^"},						// 0
+	{"àøšœº", "pqrs"},							// 1
+	{"þùúûü", "tuv"},							// 2
+	{"ýžŸ¿", "wxyz"},							// 3
+	{"íî", "ghi"},								// 4
+	{"³¾å", "jkl"},								// 5
+	{"ñòóôõö", "mno"},							// 6
+	{"-_+=();/%", "-_+=();/%"}, 				// 7
+	{"áâãä¹æçè", "abc"},						// 8
+	{"ïðéêëì", "def"},							// 9
+	{"\n", "\n"},								// 10 key enter
+	{".", "."},									// 11 key decimal point
+	{"*#@$&'\"", "*#@$&'\""}					// 12 key 00
 };
-
-const key_to_char_ref table[] =
+#endif // USE_FIXED_CPAGE == 1250
+#if USE_FIXED_CPAGE == 1251
+const key_to_char_ref_t g_key_to_char_ref[] =
 {
 	{" ,?!:~^", " ,?!:~^"},							// 0
 	{"ôõö÷", "pqrs"},							// 1
@@ -51,12 +65,16 @@ const key_to_char_ref table[] =
 	{".", "."},									// 11 key decimal point
 	{"*#@$&'\"", "*#@$&'\""}					// 12 key 00
 };
+#endif // USE_FIXED_CPAGE == 1251
+#endif // USE_FIXED_CPAGE
 
 #define CHAR_TABLE_INDEX_ENTER		10
 #define CHAR_TABLE_INDEX_DP			11
 #define CHAR_TABLE_INDEX_00			12
 
-const MENUTEMPLATE keyboard_menu[] =
+#if USE_FIXED_CPAGE
+#if USE_FIXED_CPAGE == 1250
+const MENUTEMPLATE g_keyboard_menu[] =
 {
 	{ 0, KT_BG_CAPS, 0, "&1.ÀÁÂ"},
 	{ 0, KT_BG, 0, "&2.àáâ"},
@@ -65,6 +83,19 @@ const MENUTEMPLATE keyboard_menu[] =
 	{ 0, KT_DIGIT, 0, "&5.123"},
 	{ 0, 0, 0, nullptr}
 };
+#endif // USE_FIXED_CPAGE == 1250
+#if USE_FIXED_CPAGE == 1251
+const MENUTEMPLATE g_keyboard_menu[] =
+{
+	{ 0, KT_BG_CAPS, 0, "&1.ÁÂÃ"},
+	{ 0, KT_BG, 0, "&2.áâã"},
+	{ 0, KT_EN_CAPS, 0, "&3.ABC"},
+	{ 0, KT_EN, 0, "&4.abc"},
+	{ 0, KT_DIGIT, 0, "&5.123"},
+	{ 0, 0, 0, nullptr}
+};
+#endif // USE_FIXED_CPAGE == 1251
+#endif // USE_FIXED_CPAGE
 
 unsigned int GEdit::initialize (GMessage& msg)
 {
@@ -439,7 +470,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 				{
 					edit_menu->rect.Deflate(0, max - rect.height());
 				}
-				edit_menu->LoadMenu(keyboard_menu);
+				edit_menu->LoadMenu(g_keyboard_menu);
 				parent->addChild(edit_menu);
 				edit_menu->initialize(msg);
 				if(!(edit_menu->item = edit_menu->FindItem(shift)))
@@ -463,18 +494,18 @@ unsigned int GEdit::process_key (GMessage& msg)
 	case KEY_USER_DEFINED: // bar code
 	case KEY_OK:
 		if(align & ES_WANTRETURN)
-			 process_alpha_key(msg.param, table[CHAR_TABLE_INDEX_ENTER].bg_vals);
+			 process_alpha_key(msg.param, g_key_to_char_ref[CHAR_TABLE_INDEX_ENTER].bg_vals);
 		else
 			send_message (WM_COMMAND, id, 0L, parent);
 		return 1;
 
 	case KEY_DP:
-		process_alpha_key(msg.param, table[CHAR_TABLE_INDEX_DP].bg_vals);
+		process_alpha_key(msg.param, g_key_to_char_ref[CHAR_TABLE_INDEX_DP].bg_vals);
 		return 1;
 
 	case KEY_X:
 		if(shift != KT_DIGIT)
-			process_alpha_key(msg.param, table[CHAR_TABLE_INDEX_00].bg_vals);
+			process_alpha_key(msg.param, g_key_to_char_ref[CHAR_TABLE_INDEX_00].bg_vals);
 		else
 			process_alpha_key(msg.param, "-");
 		return 1;
@@ -488,11 +519,11 @@ unsigned int GEdit::process_key (GMessage& msg)
 				 {
 				 case KT_BG_CAPS:
 				 case KT_BG:
-					 process_alpha_key(msg.param, table[ch].bg_vals);
+					 process_alpha_key(msg.param, g_key_to_char_ref[ch].bg_vals);
 					 return 1;
 				 case KT_EN_CAPS:
 				 case KT_EN:
-					 process_alpha_key(msg.param, table[ch].en_vals);
+					 process_alpha_key(msg.param, g_key_to_char_ref[ch].en_vals);
 					 return 1;
 				 case KT_DIGIT:
 					 ch += '0';

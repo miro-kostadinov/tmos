@@ -8,11 +8,6 @@
 #ifndef TMOS_STRING_H_
 #define TMOS_STRING_H_
 
-/// By default use Fixed code page (cp1251)
-#ifndef USE_FIXED_CPAGE
-#define USE_FIXED_CPAGE 1251
-#endif
-
 #ifdef __cplusplus
  extern "C" {
 #endif

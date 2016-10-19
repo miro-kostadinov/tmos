@@ -27,6 +27,10 @@
 #define USE_CPU_SLEEP_MODE 0  	  //disabled by default
 #endif
 
+/// By default use Fixed code page (cp1251)
+#ifndef USE_FIXED_CPAGE
+#define USE_FIXED_CPAGE 1251
+#endif
 
 #endif /* TMOS_CFG_H_ */
 /** @} ingroup ports */

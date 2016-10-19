@@ -20,6 +20,14 @@
 #define EDIT_TIMER_INPUT	1
 #define EDIT_TIMER_BLINK	2
 
+struct key_to_char_ref_t
+{
+	const char *bg_vals;
+	const char *en_vals;
+};
+extern const key_to_char_ref_t g_key_to_char_ref[];
+extern const MENUTEMPLATE g_keyboard_menu[];
+
 enum key_mode:unsigned char {KT_BG_CAPS=1, KT_BG, KT_EN_CAPS, KT_EN, KT_DIGIT};
 
 struct GEdit:GText
