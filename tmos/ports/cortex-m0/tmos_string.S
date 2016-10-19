@@ -315,6 +315,7 @@ ENDF(	strpbrk		)
 
 
 
+#if USE_FIXED_CPAGE
 //*----------------------------------------------------------------------------
 //*		int islower(unsigned int c)
 //*----------------------------------------------------------------------------
@@ -340,6 +341,7 @@ FUNC(	isupper	)
 				bx				lr
 
 ENDF(	isupper		)
+#endif //USE_FIXED_CPAGE
 
 //*----------------------------------------------------------------------------
 //*		int strcmp(const char* dst, const char* src)
@@ -450,12 +452,13 @@ FUNC(  strstr      )
                 bx              lr
 ENDF(   strstr     )
 
-
+#if USE_FIXED_CPAGE
 //*----------------------------------------------------------------------------
 //*		int *strcasecmp(void *dst, void *src)
 //*----------------------------------------------------------------------------
 //*	return:
 //*----------------------------------------------------------------------------
+#if USE_FIXED_CPAGE == 1251
 FUNC(	strcasecmp	)
 
 				push			{r4, r5}
@@ -483,12 +486,14 @@ FUNC(	strcasecmp	)
   				bx				lr
 
 ENDF(	strcasecmp		)
+#endif // USE_FIXED_CPAGE == 1251
 
 //*----------------------------------------------------------------------------
 //*		int *strncasecmp(void *dst, void *src, unsigned int len)
 //*----------------------------------------------------------------------------
 //*	return:
 //*----------------------------------------------------------------------------
+#if USE_FIXED_CPAGE == 1251
 FUNC(	strncasecmp	)
 
 				rsbs			r2, #0
@@ -523,12 +528,14 @@ FUNC(	strncasecmp	)
 				bx				lr
 
 ENDF(	strncasecmp		)
+#endif // USE_FIXED_CPAGE == 1251
 
 //*----------------------------------------------------------------------------
 //*     int toupper(int c)
 //*----------------------------------------------------------------------------
 //* return:
 //*----------------------------------------------------------------------------
+#if USE_FIXED_CPAGE == 1251
 FUNC(  toupper      )
 
                 ldr             r2, =G_char_2_type_
@@ -539,12 +546,14 @@ FUNC(  toupper      )
                 bx              lr
 
 ENDF(   toupper     )
+#endif // USE_FIXED_CPAGE == 1251
 
 //*----------------------------------------------------------------------------
 //*		int tolower(int c)
 //*----------------------------------------------------------------------------
 //*	return:
 //*----------------------------------------------------------------------------
+#if USE_FIXED_CPAGE == 1251
 FUNC(	tolower		)
 
 				ldr				r2, =G_char_2_type_
@@ -555,6 +564,7 @@ FUNC(	tolower		)
 				bx				lr
 
 ENDF(	tolower		)
+#endif // USE_FIXED_CPAGE == 1251
 
 //upper
 #define	_U			0x80
@@ -575,6 +585,7 @@ ENDF(	tolower		)
                 .section .text.char_2_type
 //				.global G_char_2_type_
 .align 2
+#if USE_FIXED_CPAGE == 1251
 G_char_2_type_:
 	.byte	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C									//00
 	.byte	_C,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C,	_C				//08
@@ -608,7 +619,9 @@ G_char_2_type_:
 	.byte	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L									//E8 èéêëìíîï 232
 	.byte	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L									//F0 ðñòóôõö÷ 240
 	.byte	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L									//F8 øùúûüý6ÿ 248
+#endif // USE_FIXED_CPAGE == 1251
 
+#endif //USE_FIXED_CPAGE
 
 //*----------------------------------------------------------------------------
 //*		unsigned int XNUM_TO_DIGIT(unsigned int c)

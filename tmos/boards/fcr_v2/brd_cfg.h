@@ -25,6 +25,7 @@
 
 
 #define USE_TMOS_STRING		1
+#define USE_FIXED_CPAGE		0		// values 1250, 1251, 0-don't fix the code page
 #define USE_TMOS_STDLIB		1
 #define USE_TIME			1
 #define USE_TMOS_STDIO		1
