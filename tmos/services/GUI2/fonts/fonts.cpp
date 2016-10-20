@@ -41,9 +41,9 @@ const char icond10x21_1[243] = {
 
 #if USE_FIXED_CPAGE
 
-#define GET_CP_FONT1(size, page) "font"#size"_cp" #page
-#define GET_CP_FONT(size)  GET_CP_FONT1(size, USE_FIXED_CPAGE)
-
+#define nFONT(x, y) font##x##_cp##y
+#define FONT(x,y) nFONT(x,y)
+#define GET_CP_FONT(x) FONT(x, USE_FIXED_CPAGE )
 
 const RENDER_MODE FNT5x7 =
 {
