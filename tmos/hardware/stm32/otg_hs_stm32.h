@@ -227,6 +227,8 @@ typedef struct
 #define OTG_GINTSTS_PTXFE           (1u<<26)    //!< Periodic TxFIFO empty
 #define OTG_GINTSTS_HCINT           (1u<<25)    //!< Host channels interrupt
 #define OTG_GINTSTS_HPRTINT         (1u<<24)    //!< Host port interrupt
+#define OTG_GINTSTS_RESETDET        (1u<<23)    //!< Device Reset detected Interrupt
+#define OTG_GINTSTS_FETSUSP         (1u<<22)    //!< Data Fetch Suspended (FetSusp)
 #define OTG_GINTSTS_IPXFR           (1u<<21)    //!< Incomplete periodic transfer
 #define OTG_GINTSTS_IISOOXFR        (1u<<21)    //!< Incomplete isochronous OUT transfer
 #define OTG_GINTSTS_IISOIXFR        (1u<<20)    //!< Incomplete isochronous IN transfer
@@ -256,6 +258,8 @@ typedef struct
 #define OTG_GINTMSK_PTXFEM          (1u<<26)    //!< Periodic TxFIFO empty mask
 #define OTG_GINTMSK_HCIM            (1u<<25)    //!< Host channels interrupt mask
 #define OTG_GINTMSK_PRTIM           (1u<<24)    //!< Host port interrupt mask
+#define OTG_GINTMSK_RESETDET        (1u<<23)    //!< Device Reset detected Interrupt mask
+#define OTG_GINTMSK_FETSUSP         (1u<<22)    //!< Data Fetch Suspended (FetSusp) mask
 #define OTG_GINTMSK_IPXFRM          (1u<<21)    //!<  Host Incomplete periodic transfer mask
 #define OTG_GINTMSK_IISOOXFRM       (1u<<21)    //!<  Device Incomplete isochronous OUT transfer mask
 #define OTG_GINTMSK_IISOIXFRM       (1u<<20)    //!< Incomplete isochronous IN transfer mask

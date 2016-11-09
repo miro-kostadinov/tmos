@@ -682,7 +682,8 @@ static void stm_otg_core_init_dev(USB_TypeDef* otg, const usb_config_t* cfg)
 	otg->core_regs.GINTSTS = OTG_GINTSTS_USBRST;
 	otg->core_regs.GINTMSK |= OTG_GINTMSK_USBSUSPM | OTG_GINTMSK_USBRST	|
 			OTG_GINTMSK_ENUMDNEM |	OTG_GINTMSK_IEPINT | OTG_GINTMSK_OEPINT |
-			OTG_GINTMSK_SOFM | OTG_GINTMSK_IISOOXFRM | OTG_GINTMSK_IISOIXFRM;
+			OTG_GINTMSK_SOFM | OTG_GINTMSK_IISOOXFRM | OTG_GINTMSK_IISOIXFRM
+			| OTG_GINTMSK_RESETDET | OTG_GINTMSK_FETSUSP;
 
 	TRACELN1_USB("dev init done");
 
@@ -1290,7 +1291,7 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 
 	case e_resume:
 		if(drv_data->usb_state < USBST_DEVICE_DEFAULT)
-			drv_data->usb_state = USBST_DEVICE_DEFAULT;
+			drv_data->usb_state = drv_data->usb_previous_state;
 		break;
 
 	case e_reset:
@@ -2211,28 +2212,10 @@ static void usb_b_gint_usbsusp(USB_DRV_INFO drv_info)
 		}
 
 
-		// reset endpoints
-		uint32_t dev_endpoints;
-		if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_HS_CORE)
-		{
-			dev_endpoints    = 6-1;
-		} else
-		{
-			dev_endpoints    = 4-1;
-		}
-		for(uint32_t i= 0; i<dev_endpoints; i++)
-		{
-			usb_hal_ept_reset(drv_info, i | 0x80);
-			usb_hal_ept_reset(drv_info, i);
-		}
 //		/* Turn off forced host/peripheral mode  */
 //		otg->core_regs.GUSBCFG &= ~(OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_FHMOD);
 
-		usb_drv_event(drv_info, e_disconnect);
 		usb_drv_event(drv_info, e_susppend);
-#if USB_ENABLE_HOST
-		usb_otg_clr_flags(drv_info, USB_OTG_FLG_DEV_OK);
-#endif
 	}
 }
 
@@ -2893,6 +2876,8 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 			if (status & OTG_GINTSTS_WKUPINT)	// Resume/Remote wakeup detected interrupt
 			{
 				TRACE1_USB(" wkupint");
+				TRACELN_USB("DCFG = %08x", otg->device_regs.DCFG);
+				TRACELN_USB("DSTS = %08x", otg->device_regs.DSTS);
 				usb_b_gint_wkupint(drv_info);
 			}
 
@@ -2900,6 +2885,26 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 			{
 				TRACE1_USB(" suspint");
 				usb_b_gint_usbsusp(drv_info);
+			}
+
+			if(status & OTG_GINTSTS_RESETDET)
+			{
+				TRACELN1_USB("-----ResetDet----------");
+				TRACELN_USB("DCFG = %08x", otg->device_regs.DCFG);
+				TRACELN_USB("DCTL = %08x", otg->device_regs.DCTL);
+				TRACELN_USB("DSTS = %08x", otg->device_regs.DSTS);
+				TRACELN_USB("PCGCCTL = %08x", otg->PCGCCTL);
+				otg->core_regs.GINTSTS = OTG_GINTSTS_RESETDET;
+			}
+
+			if(status & OTG_GINTSTS_FETSUSP)
+			{
+				TRACELN1_USB("-----FetSusp----------");
+				TRACELN_USB("DCFG = %08x", otg->device_regs.DCFG);
+				TRACELN_USB("DCTL = %08x", otg->device_regs.DCTL);
+				TRACELN_USB("DSTS = %08x", otg->device_regs.DSTS);
+				TRACELN_USB("PCGCCTL = %08x", otg->PCGCCTL);
+				otg->core_regs.GINTSTS = OTG_GINTSTS_FETSUSP;
 			}
 
 			if (status & OTG_GINTSTS_RXFLVL)	// RxFIFO non-empty
