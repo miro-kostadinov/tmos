@@ -118,6 +118,48 @@ NET_CODE CSocket::connect(const char* ip_adr, unsigned int port)
 }
 
 /**
+ * Initiate a connection to a remote port and address with timeout
+ * @param ip_adr
+ * @param port
+ * @param timeout
+ * @return
+ */
+NET_CODE CSocket::connect(const char* ip_adr, unsigned int port, unsigned int timeout)
+{
+	NET_CODE result = NET_IDLE;
+
+	if(complete())
+	{
+		src.as_charptr = (char*) ip_adr;
+		dst.as_int = port;
+		set_res_cmd(SOCK_CMD_CONNECT_ADR);
+		if(timeout)
+		{
+		    tsk_start_handle();
+		    if(tsk_wait_signal(signal, timeout))
+		    {
+		        res &= ~FLG_SIGNALED;
+				if(res == RES_OK)
+					result = NET_OK;
+				else
+					result = error;
+		    }
+		    else
+		    	tsk_cancel();
+		}
+		else
+		{
+			tsk_start_and_wait();
+			if(res == RES_OK)
+				result = NET_OK;
+			else
+				result = error;
+		}
+	}
+	return (result);
+}
+
+/**
  * Initiate a connection to a remote link.
  * @param link
  * @return

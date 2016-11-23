@@ -69,6 +69,7 @@ struct CSocket: public CHandle
 	RES_CODE bind(const char* url);
 	RES_CODE listen(int backlog);
 	NET_CODE connect(const char* ip_adr, unsigned int port);
+	NET_CODE connect(const char* ip_adr, unsigned int port, unsigned int timeout);
 	NET_CODE connect(const CURL& link);
 	NET_CODE connect(const char* url);
 	RES_CODE disconnect();
