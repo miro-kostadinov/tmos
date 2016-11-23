@@ -12,6 +12,7 @@
 #include <gscroll.h>
 
 #define GMENU_FLG_CHECK_ITEM		0x0100
+#define GMENU_FLG_DISABLE_ITEM		0x0200
 
 struct MENUTEMPLATE
 {

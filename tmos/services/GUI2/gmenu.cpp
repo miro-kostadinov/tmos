@@ -459,7 +459,7 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 				remove_amp(str);
 			}
 		}
-		menu_height = client_rect.height() - (2*text_font->vdistance);
+		menu_height = client_rect.height();// - (2*text_font->vdistance);
 		if(!str.empty())
 		{
 			lcd->pos_x = client_rect.x0 - text_font->hspacing;
@@ -553,11 +553,14 @@ bool GMenu::process_selected()
 		if( !next_menu )
 		{
 			send_message(WM_DRAW, 0, client_rect.as_int, this);
-			if(item->flags & GMENU_FLG_CHECK_ITEM)
+			if(!(item->flags & GMENU_FLG_DISABLE_ITEM))
 			{
-				item->flags ^= GO_FLG_CHECKED;
+				if(item->flags & GMENU_FLG_CHECK_ITEM)
+				{
+					item->flags ^= GO_FLG_CHECKED;
+				}
+				send_message (WM_COMMAND, item->item, 0L, parent);
 			}
-			send_message (WM_COMMAND, item->item, 0L, parent);
 		}
 		else
 		{
@@ -667,8 +670,11 @@ bool GMenu::set_scroll(void)
 	bool res = false;
 	if(client_rect)
 	{
-		int rows =	(client_rect.height() -
-					((title)?(text_font->vspacing+2*text_font->vdistance):0)) /
+//		int rows =	(client_rect.height() -
+//					((title)?(text_font->vspacing+2*text_font->vdistance):0)) /
+//					(text_font->vspacing + text_font->vdistance);
+
+		int rows =	client_rect.height() /
 					(text_font->vspacing + text_font->vdistance);
 
 		if( !(rows & 1) && rows > size )
