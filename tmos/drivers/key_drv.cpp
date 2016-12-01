@@ -118,8 +118,10 @@ bool key_rd_data<size>::key_rd_scan(unsigned int drv_ndx, pio_set new_keys[], co
 void key_drv_thread()
 {
 #if KEY_DRV_COUNT
-	unsigned int drv_ndx;
-	key_rd_data<KEY_RD_COUNT> rd[KEY_DRV_COUNT];
+	unsigned int drv_ndx, drv_cnt=0;
+	while(KEY_DRV_PINS[drv_cnt])
+		drv_cnt++;
+	key_rd_data<KEY_RD_COUNT> rd[drv_cnt];
 	PIO_Cfg_List(KEY_DRV_PINS);
 #endif
 
@@ -136,7 +138,7 @@ void key_drv_thread()
     for(;;)
     {
 #if KEY_DRV_COUNT
-		for(drv_ndx = 0; drv_ndx < KEY_DRV_COUNT; drv_ndx++)
+		for(drv_ndx = 0; drv_ndx < drv_cnt; drv_ndx++)
 			PIO_Deassert(KEY_DRV_PINS[drv_ndx]);
 #endif
         // scan keyboard every 5ms while some key is pressed
@@ -149,7 +151,7 @@ void key_drv_thread()
 #endif
 #if KEY_DRV_COUNT
             drv_ndx = 0;
-            for(drv_ndx=0; drv_ndx < KEY_DRV_COUNT; drv_ndx++)
+            for(drv_ndx=0; drv_ndx < drv_cnt; drv_ndx++)
             {
            		PIO_Assert(KEY_DRV_PINS[drv_ndx]);
             	keyrd_hnd.tsk_read(new_keys, sizeof(new_keys));
@@ -163,7 +165,7 @@ void key_drv_thread()
 
 		//wait for any key...
 #if KEY_DRV_COUNT
-		for(drv_ndx = 0; drv_ndx < KEY_DRV_COUNT; drv_ndx++)
+		for(drv_ndx = 0; drv_ndx < drv_cnt; drv_ndx++)
 			PIO_Assert(KEY_DRV_PINS[drv_ndx]);
 #endif
         keyrd_hnd.tsk_read_locked(new_keys, sizeof(new_keys));
@@ -171,7 +173,7 @@ void key_drv_thread()
 }
 
 #ifndef KEY_DRV_STACK_SIZE
-#define KEY_DRV_STACK_SIZE 50
+#define KEY_DRV_STACK_SIZE 70
 #endif
 TASK_DECLARE_STATIC(keyboard_task, "KEYT", key_drv_thread, 5, KEY_DRV_STACK_SIZE + TRACE_SIZE);
 
