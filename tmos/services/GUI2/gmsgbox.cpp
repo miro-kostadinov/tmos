@@ -12,7 +12,6 @@
 #include <gbutton.h>
 #include <lcd.h>
 
-
 const char* MB_IDS[] =
 {
 	"Ok",
@@ -625,7 +624,7 @@ int EditBox(CSTRING& value, const char* Caption, unsigned int Style, text_metric
 	return 0;
 }
 
-void StatusMessageBox(const char* Text, const char* Caption, unsigned int Style, unsigned int time)
+static void static_StatusMessageBox(const char* Text, const char* Caption, unsigned int Style, unsigned int time)
 {
 	GMsgBox box;
 	GMessage msg;
@@ -655,6 +654,38 @@ void StatusMessageBox(const char* Text, const char* Caption, unsigned int Style,
 				}
 			}
 		}
-		box.Destroy();
 	}
+}
+
+void StatusMessageBox(const char* Text, const char* Caption, unsigned int Style, unsigned int time)
+{
+	GMsgBox* box = new GMsgBox;
+	if(box)
+	{
+		box->displays = 1;
+		box->type = 	Style;
+		box->body =  Text;
+		box->title = Caption;
+		if(box->Create())
+		{
+			GMessage msg;
+			unsigned int start = CURRENT_TIME;
+			while(1)
+			{
+				if(box->GetMessage(msg, 100))
+				{
+					if(box->DefWinProc(msg))
+						break;
+				}
+				else
+				{
+					if(ms_since(start) > time)
+						break;
+				}
+			}
+		}
+		delete box;
+	}
+	else
+		static_StatusMessageBox(Text, Caption, Style, time);
 }
