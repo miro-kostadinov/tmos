@@ -7,7 +7,6 @@
 
 #include <gdialog.h>
 
-unsigned int ms_since(unsigned int time);
 
 int GDialog::move_objects(int offset, int& selected_indx)
 {

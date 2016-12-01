@@ -83,7 +83,6 @@ WEAK_C int detect_displays(GUI_DRIVER_INFO* drv_info)
 //*  this is the GUI driver helper task
 //*----------------------------------------------------------------------------
 
-unsigned int ms_since(unsigned int time);
 
 void gui_thread(GUI_DRIVER_INFO* drv_info)
 {

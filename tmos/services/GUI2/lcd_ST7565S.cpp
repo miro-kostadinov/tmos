@@ -249,7 +249,6 @@ void ST7565S::adjust_for_screen (GObject** object, RECT_T& area)				//change the
 																				//*object = children;
 }
 
-unsigned int ms_since(unsigned int time);
 
 void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area of the object on the LCD by calling its draw (LCD_MODULE, RECT_T) function
 {

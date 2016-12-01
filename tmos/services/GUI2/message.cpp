@@ -14,7 +14,6 @@
 msgQueue<MAX_MESSAGES> GQueue;
 GWindow* Gdesktop;
 
-unsigned int ms_since(unsigned int time);
 
 void processes_all_messages(void)
 {
