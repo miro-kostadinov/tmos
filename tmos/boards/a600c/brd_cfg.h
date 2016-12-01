@@ -105,7 +105,6 @@
 #define KEY_RD_COUNT		5
 #define KEY_DRV_COUNT		7
 #define KEY_FIX_COUNT		1
-#define KEY_DRV_STACK_SIZE (70)
 
 #define USE_ADC_DMA_DRIVER 1		//Enable ADC DMA
 
@@ -117,5 +116,8 @@
 #define USB_ENABLE_CDC		1
 #define USB_ENABLE_PRN		0
 #define USB_ENABLE_HID		1
+
+/// Ethernet
+#define USE_LWIP_1_4_1		1
 
 #endif /* BRD_CFG_H_ */

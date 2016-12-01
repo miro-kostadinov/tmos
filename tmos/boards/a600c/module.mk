@@ -92,6 +92,9 @@ USE_GPIO_EXPANDER ?=n
 #net
 USE_NET			?=y
 
+# Ethernet
+USE_LWIP_1_4_1	?=y
+
 
 ################################################################################
 
@@ -103,7 +106,7 @@ local_h_src-y 	:=
 
 local_c_src-y 	+= swi_tab.c
  
-local_h_src-y 	+= brd_cfg.h brd_cpp.h swi_tab.h trace.h
+local_h_src-y 	+= brd_cfg.h brd_cpp.h swi_tab.h trace.h lwipopts.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
