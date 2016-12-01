@@ -312,3 +312,27 @@ const char* szlist_at(STR_LIST sl, unsigned int pos)
 	}
 	return sl;
 }
+
+unsigned int seconds_since(unsigned int time)
+{
+	unsigned int t;
+
+	t = CURRENT_TIME;
+
+	if(t < time)
+		t += 0x80000000;
+	t -= time;
+	return t/1000;
+}
+
+unsigned int ms_since(unsigned int time)
+{
+	unsigned int t;
+
+	t = CURRENT_TIME;
+
+	if(t < time)
+		t += 0x80000000;
+	t -= time;
+	return t;
+}

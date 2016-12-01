@@ -101,6 +101,9 @@ unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead);
  */
 const char* szlist_at(STR_LIST sl, unsigned int pos);
 
+unsigned int seconds_since(unsigned int time);
+unsigned int ms_since(unsigned int time);
+
 #ifdef __cplusplus
 constexpr void* operator new(size_t size, void* obj)
 {
