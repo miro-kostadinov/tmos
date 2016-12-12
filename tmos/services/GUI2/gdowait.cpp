@@ -31,8 +31,7 @@ unsigned int GWait::initialize (GMessage& msg)
 	rect.y0 += FNT5x7.vspacing + FNT5x7.vdistance;
 	base.x = rect.x0 + rect.width()/2;
 	base.y = rect.y0 + rect.height()/2;
-	LPtoDP(r);
-	client_rect  = RECT_T(base.x - r.x, base.y -r.y, base.x +r.x, base.y +r.y);//= rect;
+	client_rect  = RECT_T(base.x - R, base.y -R, base.x +R, base.y +R);
 	SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
 	dowait_win->owners = new GWaitOwner(parent->focus);
 	return 0;
@@ -64,7 +63,7 @@ unsigned int GWait::process_default (GMessage& msg)
 					tmp = tmp->next;
 				}
 			}
-			invalidate(this, rect);
+			invalidate(this, client_rect);
 		}
 	}
 	return 0;
