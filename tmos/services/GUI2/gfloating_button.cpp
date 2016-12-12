@@ -19,23 +19,42 @@ void GFloating_Button::draw_border(RECT_T& frame)
 {
 	draw_hline(frame.x0, frame.x1-1, frame.y0);
 	draw_vline(frame.y0 + 1, frame.y1 - 1, frame.x0);
-	draw_hline(frame.x0, frame.x1-1, frame.y1-1);
-	draw_vline(frame.y0 + 1, frame.y1 - 2, frame.x1-1);
+	if(flags & GO_FLG_SELECTED)
+	{
+		draw_hline(frame.x0, frame.x1, frame.y1);
+		draw_vline(frame.y0, frame.y1, frame.x1);
+	}
+	else
+	{
+		draw_hline(frame.x0, frame.x1-1, frame.y1-1);
+		draw_vline(frame.y0 + 1, frame.y1 - 2, frame.x1-1);
 
-	draw_hline(frame.x0+1, frame.x1, frame.y1);
-	draw_vline(frame.y0+1, frame.y1, frame.x1);
+		draw_hline(frame.x0+1, frame.x1, frame.y1);
+		draw_vline(frame.y0+1, frame.y1, frame.x1);
+	}
 }
 
 unsigned int GFloating_Button::initialize (GMessage& msg)
 {
-	GObject::initialize(msg);
+
+	client_rect = rect;
+	if(flags & GO_FLG_BORDER)
+		allocate_border();
 
 	if (type)
 		client_rect.x0 += (client_rect.y1 - client_rect.y0);
-	addChild (new GFloating_Text (0, client_rect, label));
+	client_rect.Inflate(0,1);
+	if(children == nullptr)
+		addChild (new GFloating_Text (0, client_rect, label, flags));
+	client_rect.Deflate(0,1);
 	if (type)
 		client_rect.x0 -= (client_rect.y1 - client_rect.y0);
-	children->initialize(msg);
+	if(children)
+		children->initialize(msg);
+
+	if((flags & GO_FLG_SELECTED) && is_available() && parent)
+		get_focus();
+
 	if(msg.param)
 		send_message(WM_DRAW, 0, 0L, this);
 	return 0;
