@@ -93,10 +93,6 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     GMessage msg;
     unsigned int idle_time = CURRENT_TIME;
 
-#if GUI_DEBUG
-    unsigned int t0;
-#endif
-
     //prevent these signals not to be used from task handles
     ALLOCATE_SIGNAL(SIG_GUI_TASK);
 
@@ -162,9 +158,14 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 		res = tsk_wait_signal(-1u, 100 - (CURRENT_TIME %100));
         if(!process_timers() && !res )	//checks for elapsed timers
         {
-        	if( IDLE_PERIOD > ms_since(idle_time))
+        	if( GUI_IDLE_MSG_PERIOD > ms_since(idle_time))
         			continue;
-        }
+            if (GQueue.empty())														//if the queue is empty sends WM_IDLE to everyone
+    		{
+    			for (tmp = Gdesktop; tmp; tmp = (GWindow*)tmp->nextObj)
+    				GQueue.push(GMessage(WM_IDLE, 0, 0L, tmp));
+    		}
+       }
         sig |= res & 0xFF;
 
         idle_time = CURRENT_TIME;
@@ -230,10 +231,8 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			{
 				if(tmp->hnd.mode0 && tmp->hnd.res == (FLG_BUSY | FLG_OK) )
 				{
-#if GUI_DEBUG
-					TRACELN1("\e[4;1;32m");
-					TRACE("%X[%d] CANCEL\e[m", tmp, tmp->id);
-#endif
+					GUI_TRACELN1("\e[4;1;32m");
+					GUI_TRACE("%X[%d] CANCEL\e[m", tmp, tmp->id);
 					usr_HND_SET_STATUS(&tmp->hnd, FLG_SIGNALED);
 				}
 			}
@@ -254,47 +253,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			}
         }
 
-        if (GQueue.empty()&& !sig )														//if the queue is empty sends WM_IDLE to everyone
-		{
-			for (tmp = Gdesktop; tmp; tmp = (GWindow*)tmp->nextObj)
-				GQueue.push(GMessage(WM_IDLE, 0, 0L, tmp));
-		}
         processes_all_messages();
-/*
-		while (GQueue.pop(msg))													//processes all messages in the queue
-		{
-#if GUI_DEBUG
-			t0 = CURRENT_TIME;
-			TRACELN1("\e[4;1;32m");
-			TRACE("%X[%d] ( %s 0x%X/%d\e[m", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param, msg.param);
-			if(msg.code == WM_DRAW)
-			{
-				if(msg.lparam)
-					RECT_T(msg.lparam).dump();
-				else
-					msg.dst->rect.dump();
-			}
-			else
-			{
-				TRACE(" %lX ", msg.lparam);
-			}
-
-			TRACE1("\e[4;1;32m)\e[m");
-#endif
-			if(msg.code == WM_DELETED)
-				continue;
-
-			if (msg.dst == nullptr)
-				msg.dst = desktop->parent;	// lcd message
-			res = msg.dst->message(msg);
-
-			if(!res && msg.code == WM_KEY)   // send message to desktop
-				desktop->message(msg);
-#if GUI_DEBUG
-			TRACE("\e[4;1;32m %d ms\e[m", ms_since(t0));
-#endif
-		}
-*/
 	}
 }
 
