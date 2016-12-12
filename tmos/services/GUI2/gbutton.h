@@ -36,6 +36,8 @@ struct GButton: GObject
 			const char* label_t, GFlags flags_t = GO_FLG_DEFAULT|GO_FLG_BORDER, unsigned char type_t = GB_TYPE_NONE )
 		:GObject (id_t, rect_t, flags_t), label (label_t), code (msg_code), type(type_t){};
 
+	GUI_GET_OBJECT_TYPE(OBJECT_BUTTON)
+
 //	virtual void allocate_border(void);
 	virtual void draw_border(RECT_T& frame);
 

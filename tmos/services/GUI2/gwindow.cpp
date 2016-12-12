@@ -70,11 +70,8 @@ void GWindow::notify_message(WM_MESSAGE code, unsigned int param, GObject* dst)
 {
 	GMessage msg(code, param, dst);
 
-#if GUI_DEBUG
-	TRACELN1("\e[4;1;34m");
-	TRACE("%s >>  Notify ", CURRENT_TASK->name);
-	TRACE("%X[%d] ( %s %X )\e[m", dst, (dst)?dst->id:-1, szlist_at(wm_dbg_str, code), param);
-#endif
+	GUI_WIN_TRACE("\r\n\e[4;1;34m%s >>  Notify ", CURRENT_TASK->name);
+	GUI_WIN_TRACE("%X[%d] ( %s %X )\e[m", dst, (dst)?dst->id:-1, szlist_at(wm_dbg_str, code), param);
 	Queue.push(msg);
 	if(hnd.res == (FLG_BUSY | FLG_OK))
 		usr_HND_SET_STATUS(&hnd, RES_SIG_OK);										//signals the window thread
@@ -87,10 +84,9 @@ void GWindow::PostMessage(WM_MESSAGE code, unsigned int param, GObject* dst)
 	GMessage msg(code, param, dst);
 	if(hnd.res != RES_CLOSED && hnd.mode1 == GUI_HND_ATTACH)
 	{
-#if GUI_DEBUG
-		TRACELN1("\e[4;1;36m");
-		TRACE("%s >>  Post, \e[m", CURRENT_TASK->name);
-#endif
+		GUI_WIN_TRACE("\r\n\e[4;1;36m%s >>  Post, \e[m", CURRENT_TASK->name);
+		GUI_WIN_TRACE("%X[%d] ( %s %X )\e[m", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param);
+
 		if(hnd.res & FLG_SIGNALED)
 		{
 			tsk_try_signal(hnd.signal);
@@ -98,11 +94,8 @@ void GWindow::PostMessage(WM_MESSAGE code, unsigned int param, GObject* dst)
 		}
 		hnd.tsk_cancel();
 		hnd.tsk_write(&msg, 0);
-//		hnd.tsk_start_read(nullptr,0);
-#if GUI_DEBUG
-		TRACELN1("\e[4;1;36m");
-		TRACE("%X[%d] ( %s %X )\e[m", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param);
-#endif
+
+		GUI_WIN_TRACE("\r\n\e[4;1;36m Post RDY\e[m");
 	}
 }
 
@@ -121,11 +114,8 @@ bool GWindow::GetMessage(GMessage& msg, uint32_t tout)
 			}
 			if( Queue.pop(msg) )
 			{
-		#if GUI_DEBUG
-				TRACELN1("\e[4;1;36m");
-				TRACE("%s <<", CURRENT_TASK->name);
-				TRACE("%X[%d] ( %s %X )\e[m ", msg.dst, (msg.dst)?msg.dst->id:-1, szlist_at(wm_dbg_str, msg.code), msg.param);
-		#endif
+				GUI_WIN_TRACE("\r\n\e[4;1;36m%s <<", CURRENT_TASK->name);
+				GUI_WIN_TRACE("%X[%d] ( %s %X )\e[m ", msg.dst, (msg.dst)?msg.dst->id:-1, szlist_at(wm_dbg_str, msg.code), msg.param);
 				return true;
 			}
 			hnd.tsk_start_read(nullptr, 0);
@@ -156,11 +146,8 @@ bool GWindow::GetMessage(GMessage& msg, uint32_t tout)
 			hnd.res &=~FLG_SIGNALED;
 			if( Queue.pop(msg) )
 			{
-#if GUI_DEBUG
-				TRACELN1("\e[4;1;36m");
-				TRACE("%s <<", CURRENT_TASK->name);
-				TRACE("%X[%d] ( %s %X )\e[m ", msg.dst, (msg.dst)?msg.dst->id:-1, szlist_at(wm_dbg_str, msg.code), msg.param);
-#endif
+				GUI_WIN_TRACE("\r\n\e[4;1;36m%s <<", CURRENT_TASK->name);
+				GUI_WIN_TRACE("%X[%d] ( %s %X )\e[m ", msg.dst, (msg.dst)?msg.dst->id:-1, szlist_at(wm_dbg_str, msg.code), msg.param);
 				return true;
 			}
 		}

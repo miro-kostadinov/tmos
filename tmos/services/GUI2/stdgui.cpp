@@ -11,16 +11,32 @@
 
 
 unsigned int current_laguage;
-#if GUI_DEBUG
+#if GUI_DEBUG_MESSAGES || GUI_DEBUG
+STR_LIST obj_type_str =
+		SZ(OBJECT_OBJECT) SZ(OBJECT_CONTAINER) SZ(OBJECT_BUTTON) SZ(OBJECT_EDIT)
+		SZ(OBJECT_FBUTTON) SZ(OBJECT_FTEXT) SZ(OBJECT_LISTBOX) SZ(OBJECT_MENU)
+		SZ(OBJECT_RADIO) SZ(OBJECT_TEXT) SZ(OBJECT_WINDOW) SZ(OBJECT_DIALOG)
+		SZ(OBJECT_MESSAGEBOX) SZ(OBJECT_DOWAIT) SZ(OBJECT_DISPLAY)
+		SZ(OBJECT_DISPLAY_MULTIPLEXER);
+#endif
+
+#if GUI_DEBUG_MESSAGES
 STR_LIST wm_dbg_str = SZ(WM_DELETED) SZ(WM_QUIT) SZ(WN_DESTROY) SZ(WM_CLOSE)
 		SZ(WM_COMMAND) SZ(WM_CHANGE) SZ(WM_IDLE) SZ(WM_SET_FLAGS)
 		SZ(WM_CLR_FLAGS) SZ(WM_SETFOCUS) SZ(WM_KILLFOCUS) SZ(WM_TIMER) SZ(WM_INIT) SZ(WM_DRAW) SZ(WM_KEY);
 
 void trace_message(const GMessage& msg)
 {
+	if(msg.code == WM_IDLE)
+		return;
+
 	TRACELN1("\e[4;1;32m");
 	if(msg.dst)
-		TRACE("%X[%d] ( %s 0x%X/%d\e[m", msg.dst, msg.dst->id, szlist_at(wm_dbg_str, msg.code), msg.param, msg.param);
+	{
+		TRACE("%X[%d]%s ( %s 0x%X/%d\e[m", msg.dst, msg.dst->id,
+				szlist_at(obj_type_str, msg.dst->get_object_type()),
+				szlist_at(wm_dbg_str, msg.code), msg.param, msg.param);
+	}
 	else
 		TRACE("%X[INVALID] ( %s 0x%X/%d\e[m", msg.dst, szlist_at(wm_dbg_str, msg.code), msg.param, msg.param);
 	if(msg.code == WM_DRAW)

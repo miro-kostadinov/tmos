@@ -20,7 +20,7 @@ void processes_all_messages(void)
 	GMessage msg;
 	while (GQueue.pop(msg))														//processes all messages in the queue
 	{
-#if GUI_DEBUG
+#if GUI_DEBUG_MESSAGES
 		unsigned int t0 = CURRENT_TIME;
 		trace_message(msg);
 #endif
@@ -80,7 +80,7 @@ void processes_all_messages(void)
 					GWait::dowait_win->hide();
 			}
 		}
-#if GUI_DEBUG
+#if GUI_DEBUG_MESSAGES
 		TRACE("\e[4;1;32m %d ms\e[m", ms_since(t0));
 #endif
 	}

@@ -22,6 +22,8 @@ struct GContainer:GObject {
 		:GObject (id_t, rect_t, flags_t), focus(nullptr), children(nullptr) {};
 	~GContainer();
 
+	GUI_GET_OBJECT_TYPE(OBJECT_CONTAINER);
+
 	virtual GObject* addChild (GObject* child);
 	virtual GObject* get_object(GId xid);
 	GObject* addChildRef(GObject* child);

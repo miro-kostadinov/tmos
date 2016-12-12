@@ -62,6 +62,9 @@ struct GEdit:GText
 			edit_menu = nullptr;
 		}
 	}
+
+	GUI_GET_OBJECT_TYPE(OBJECT_EDIT);
+
 	virtual unsigned int initialize (GMessage& msg);
 	virtual unsigned int process_key (GMessage& msg);
 	virtual unsigned int process_default(GMessage& msg);

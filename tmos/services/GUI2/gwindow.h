@@ -35,6 +35,9 @@ public:
 	{
 		Destroy();
 	}
+
+	GUI_GET_OBJECT_TYPE(OBJECT_WINDOW);
+
 protected:
 	friend void gui_thread(GUI_DRIVER_INFO* drv_info);
 

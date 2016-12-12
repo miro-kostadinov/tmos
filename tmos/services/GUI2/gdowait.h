@@ -54,6 +54,8 @@ public:
 		}
 	}
 
+	GUI_GET_OBJECT_TYPE(OBJECT_DOWAIT);
+
 static void GUIDoWait(int code);
 	void hide(void);
 protected:

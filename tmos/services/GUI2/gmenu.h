@@ -97,6 +97,8 @@ struct GMenu: GObject
 		size=0;
 	}
 
+	GUI_GET_OBJECT_TYPE(OBJECT_MENU);
+
 	virtual bool AppendMenu(int parent_id, int menu_id, const CSTRING& menu_name, short unsigned int flg =0);
 	bool LoadMenu(const MENUTEMPLATE* pat);
 

@@ -33,6 +33,8 @@ struct GDialog : GWindow
 		}
 	}
 
+	GUI_GET_OBJECT_TYPE(OBJECT_DIALOG);
+
 	virtual void move(int x, int y);
 
 protected:

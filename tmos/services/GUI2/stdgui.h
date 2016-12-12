@@ -28,7 +28,54 @@
 #define GO_OBJ_FRAME_HEIGHT	1
 #endif
 
+#ifndef GUI_DEBUG_MESSAGES
+#define GUI_DEBUG_MESSAGES  0
+#endif
+
+#ifndef GUI_DEBUG
 #define GUI_DEBUG			0
+#endif
+
+#ifndef GUI_DEBUG_WIN
+#define GUI_DEBUG_WIN		0
+#endif
+
+#if GUI_DEBUG
+#	define GUI_TRACE_CHAR(ch)	TRACE_CHAR(ch)
+#	define GUI_TRACE(...)		TRACE(__VA_ARGS__)
+#	define GUI_TRACE1(str)		TRACE1(str)
+#   define GUI_TRACELN(str,...) 	TRACE("\r\n" str, ##__VA_ARGS__)
+#   define GUI_TRACELN1(str) 		TRACE1("\r\n" str)
+#else
+#	define GUI_TRACE_CHAR(ch)
+#	define GUI_TRACE(...)
+#	define GUI_TRACE1(str)
+#   define GUI_TRACELN(str,...)
+#   define GUI_TRACELN1(str)
+#endif
+
+#if GUI_DEBUG_WIN
+#	define GUI_WIN_TRACE_CHAR(ch)	TRACE_CHAR(ch)
+#	define GUI_WIN_TRACE(...)		TRACE(__VA_ARGS__)
+#	define GUI_WIN_TRACE1(str)		TRACE1(str)
+#   define GUI_WIN_TRACELN(str,...) 	TRACE("\r\n" str, ##__VA_ARGS__)
+#   define GUI_WIN_TRACELN1(str) 		TRACE1("\r\n" str)
+#else
+#	define GUI_WIN_TRACE_CHAR(ch)
+#	define GUI_WIN_TRACE(...)
+#	define GUI_WIN_TRACE1(str)
+#   define GUI_WIN_TRACELN(str,...)
+#   define GUI_WIN_TRACELN1(str)
+#endif
+
+#if GUI_DEBUG_MESSAGES || GUI_DEBUG
+#define GUI_GET_OBJECT_TYPE(x)	virtual object_type get_object_type(void)	\
+										{									\
+											return x;						\
+										}
+#else
+#define GUI_GET_OBJECT_TYPE(X)
+#endif
 // object messages
 enum WM_MESSAGE:unsigned int
 {
@@ -57,7 +104,9 @@ void trace_message(const GMessage& msg);
 
 #define MAX_MESSAGES 10
 
-#define IDLE_PERIOD			15000 //!< period (in ms ) during which the message is sent WM_IDLE
+#ifndef GUI_IDLE_MSG_PERIOD
+#define GUI_IDLE_MSG_PERIOD	15000 //!< period (in ms ) during which the message is sent WM_IDLE
+#endif
 
 // base object flags
 #define GO_FLG_BORDER		0x01
@@ -257,6 +306,10 @@ struct RECT_T
 	void dump() {};
 #endif
 };
+
+#if GUI_DEBUG
+extern STR_LIST obj_type_str;
+#endif
 
 RES_CODE msg_error(CSTRING& msg, int err_code);
 RES_CODE msg_error(const char *msg, int err_code);

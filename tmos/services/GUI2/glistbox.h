@@ -43,6 +43,8 @@ public:
 	{;}
 	~GListBox();
 
+	GUI_GET_OBJECT_TYPE(OBJECT_LISTBOX);
+
 	bool addItem(int num, const char* name);
 	bool select(int num);
 

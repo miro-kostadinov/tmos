@@ -79,6 +79,8 @@ struct GMsgBox : GDialog
 			edit_box(nullptr), title_box(nullptr), text_box(nullptr)
 	 {};
 
+	GUI_GET_OBJECT_TYPE(OBJECT_MESSAGEBOX);
+
 protected:
 	virtual void draw_this(LCD_MODULE* lcd);
 	virtual unsigned int initialize (GMessage& msg);

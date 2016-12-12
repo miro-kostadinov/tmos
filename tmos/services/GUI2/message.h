@@ -55,7 +55,7 @@ struct msgQueue : mqueue<GMessage, size>
 		{
 			if(this->items[indx].dst == owner)
 			{
-#if GUI_DEBUG
+#if GUI_DEBUG_MESSAGES
 				TRACELN1("\e[4;1;33m");
 				TRACE("%X[%d] ( %s 0x%X ) deleted!\e[m",
 						this->items[indx].dst, this->items[indx].dst->id,
@@ -79,7 +79,7 @@ struct msgQueue : mqueue<GMessage, size>
 		{
 			if(this->items[indx].dst == owner && this->items[indx].code == code)
 			{
-#if GUI_DEBUG
+#if GUI_DEBUG_MESSAGES
 				TRACELN1("\e[4;1;33m");
 				TRACE("%X[%d] ( %s 0x%X ) deleted!\e[m",
 						this->items[indx].dst, this->items[indx].dst->id,

@@ -54,6 +54,8 @@ struct GText: GObject
 		}
 	}
 
+	GUI_GET_OBJECT_TYPE(OBJECT_TEXT);
+
 	virtual unsigned int process_default (GMessage& msg);
 	virtual unsigned int initialize (GMessage& msg);
 	virtual unsigned int process_key (GMessage& msg);

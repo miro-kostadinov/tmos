@@ -19,6 +19,8 @@ struct GRadio: GContainer
 			GFlags flags_t = GO_FLG_DEFAULT)
 	:GContainer (id_t, rect_t, flags_t), checked(nullptr) {};
 
+	GUI_GET_OBJECT_TYPE(OBJECT_RADIO);
+
 	virtual GObject* addChild (GObject* child);
 	virtual unsigned int process_key (GMessage& msg);
 	virtual unsigned int process_default(GMessage& msg);
