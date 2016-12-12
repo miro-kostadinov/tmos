@@ -8,6 +8,8 @@
 #include <gfloating_text.h>
 #include <lcd.h>
 
+#define FLOAT_TEXT_TIMER_ID		99
+
 unsigned int GFloating_Text::initialize(GMessage& msg)
 {
 /*
@@ -27,6 +29,7 @@ unsigned int GFloating_Text::initialize(GMessage& msg)
 	client_rect.y1 = text_rect.y1 = text_rect.y0 + font->vdistance + font->vspacing;
 	if(text_width > client_rect.width() )
 		text_rect.x1 = text_rect.x0 + text_width;
+	SetTimer(FLOAT_TEXT_TIMER_ID, 200);
 	if(msg.param)
 		send_message(WM_DRAW, 0, client_rect.as_int, this);
 	return 1;
@@ -48,12 +51,14 @@ void GFloating_Text::draw_this (LCD_MODULE* lcd)
 		draw_border(rect);
 }
 
-unsigned int GFloating_Text::process_idle(GMessage& msg)
+unsigned int GFloating_Text::process_default(GMessage& msg)
 {
-	if (parent->flags & GO_FLG_SELECTED)
+	if(msg.code == WM_TIMER && msg.param == FLOAT_TEXT_TIMER_ID)
 	{
-		if (text_rect.width() > client_rect.width())
-			if ((CURRENT_TIME - float_time) > 200)
+		SetTimer(FLOAT_TEXT_TIMER_ID, 200);
+		if (parent->flags & GO_FLG_SELECTED)
+		{
+			if (text_rect.width() > client_rect.width())
 			{
 				invalidate (this, client_rect);
 				if (text_rect.x1 <= client_rect.x0)
@@ -63,17 +68,18 @@ unsigned int GFloating_Text::process_idle(GMessage& msg)
 				}
 				text_rect.x0 -= 3;
 				text_rect.x1 -= 3;
-				float_time = CURRENT_TIME;
 			}
-	}
-	else
-	{
-		if (text_rect.x0 != client_rect.x0)
-		{
-			text_rect.x0 = client_rect.x0;
-			text_rect.x1 = client_rect.x0 + text_width;
-			invalidate (this, rect);
 		}
+		else
+		{
+			if (text_rect.x0 != client_rect.x0)
+			{
+				text_rect.x0 = client_rect.x0;
+				text_rect.x1 = client_rect.x0 + text_width;
+				invalidate (this, rect);
+			}
+		}
+
 	}
 	return 0;
 }
