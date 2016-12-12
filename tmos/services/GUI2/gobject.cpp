@@ -5,6 +5,7 @@
 GTimer* GTimer::base_timer = nullptr;
 
 void* GObject::lastAllocated = nullptr;
+uint8_t GObject::invalidate_cnt = 0;
 
 GObject::~GObject()
 {
@@ -268,8 +269,25 @@ void GObject::draw (LCD_MODULE* lcd, RECT_T area)
 	}
 }
 
+void GObject::redraw_screen(GObject* object, RECT_T area)
+{
+	// implemented by the LCD module
+	if(area)
+	{
+		parent->redraw_screen(this, area);
+	}
+}
+
 void GObject::invalidate(GObject* object, RECT_T area)
 {
+#if GUI_DEBUG
+	uint32_t t;
+	if(!invalidate_cnt++)
+		t = CURRENT_TIME;
+	GUI_TRACELN(">> Invalidate %u", invalidate_cnt);
+#else
+	invalidate_cnt++;
+#endif
 	if (area)
 	{
 		if(flags & GO_FLG_SHOW)
@@ -277,6 +295,20 @@ void GObject::invalidate(GObject* object, RECT_T area)
 		if(area)
 			parent->invalidate(this, area);											//calls invalidate to the parent with this as parameter
 	}
+	invalidate_cnt--;
+#if GUI_DEBUG
+	GUI_TRACELN("<< Invalidate %u", invalidate_cnt);
+	if(!invalidate_cnt && area)
+	{
+		GUI_TRACELN("Invalidate {%u,%u %u,%u} %u ms", area.x0, area.y0, area.x1, area.y1, ms_since(t));
+		parent->redraw_screen(this, area);
+	}
+#else
+	if(!invalidate_cnt && area)
+	{
+		parent->redraw_screen(this, area);
+	}
+#endif
 }
 
 
@@ -541,6 +573,98 @@ void GObject::invert_hline( int x0, int x1, int y)
 {
 	if (cut_hline (x0, x1, y))
 		parent->invert_hline(x0, x1, y);
+}
+
+int GObject::overlapped(GObject* obj, RECT_T& frame)
+{
+	int res = 0;
+	if (obj && !(obj->flags & GO_FLG_TRANSPARENT) && (obj->flags & GO_FLG_SHOW))
+	{
+		if(frame.y1 < rect.y0 || rect.y1 < frame.y0 )
+			return 0x000;
+		if(frame.x1 < rect.x0 || rect.x1 < frame.x0 )
+			return 0x000;
+		RECT_T backup(rect.as_int);
+		if(frame.x0 > rect.x0)
+			rect.x0 = frame.x0;
+		if(frame.x1 < rect.x1)
+			rect.x1 = frame.x1;
+
+		if (obj->rect.x0 > rect.x0)
+		{
+			//     |----------------|   		object
+			//                      |-----|     object
+			//    |----------------| 	 		this
+			if (obj->rect.x0 > rect.x1)
+			{
+				// does not overlap
+				res = 0x111;
+			}
+			else
+			{
+				//     |--                   		object
+				//    |---                  		this
+
+				//           |-----|				object
+				//    |-------------------|			this
+				//    |......|-----|......| 		x0 - x0  x1 << object x0
+
+				//                |----------|		object
+				//    |-------------------|			this
+				//    |...........|-------| 		x0 - x0  x1 << object x0
+				frame.x0 = rect.x0;
+				frame.x1 = obj->rect.x0;
+
+				if (obj->rect.x1 < rect.x1)
+				{
+					res = 0x010; // partially redraw left and right
+				}
+				else
+				{
+					res = 0x100; // partially redraw on left side
+				}
+			}
+		}
+		else
+		{
+			if (obj->rect.x1 < rect.x0)
+			{
+				//  |-----|                  		object
+				//         |---------|       		this
+				// does not overlap
+				res = 0x111;
+			}
+			else
+			{
+				//  |-----                   		object
+				//    |---                   		object
+				//    |---                  		this
+				if (obj->rect.x1 < rect.x1)
+				{
+					//    |-----|						object
+					//    |-------------------|			this
+					//    |-----|.............| 		x0 >> object x1  x1 - x1
+
+					//  |----------|					object
+					//    |-------------------|			this
+					//    |--------|..........| 		x0 >> object x1  x1 - x1
+					frame.x0 = obj->rect.x1;
+					frame.x1 = rect.x1;
+					res = 0x001; // partially redraw on right side
+				}
+				else
+				{
+					//  |-----------------------|		object
+					//    |-------------------|  		object
+					//    |-------------------|			this
+					//    |-------------------| 		It no need to be redrawn
+					res = 0x000;
+				}
+			}
+		}
+		rect = backup;
+	}
+	return res;
 }
 
 

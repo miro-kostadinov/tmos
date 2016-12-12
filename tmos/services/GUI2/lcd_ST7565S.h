@@ -49,8 +49,9 @@ struct ST7565S: public LCD_MODULE
 	void invert_vline( int y0,  int y1,  int x);
 	void invert_hline( int x0,  int x1,  int y);
 	virtual void update_screen();
+	virtual void redraw_screen (GObject* object, RECT_T area);
+	virtual void redraw_rect (GObject* object, RECT_T area);
 	void clear_screen();
-	void redraw_rect (GObject* object, RECT_T area);
 	void direct_write (GSplash draw_cb);
 	void adjust_for_screen (GObject** object, RECT_T &area);
 };

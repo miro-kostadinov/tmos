@@ -8,6 +8,7 @@
 #include <tmos.h>
 #include <lcd_ST7565S.h>
 #include <lcd_ST7565S_cmd.h>
+#include <gwindow.h>
 
 /* ST7565S info
  *
@@ -158,7 +159,7 @@ void ST7565S::draw_hline( int x0, int x1, int y)
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
 		y = 1 << (y&7);
-		while(x0 <= x1)
+		while(x0 <= x1 && frame.x0 <= x0 && x0 <= frame.x1)
 		{
 			disp_buf[frame.y0>>3][x0++] |= y;
 		}
@@ -170,7 +171,7 @@ void ST7565S::draw_bline( int x0, int x1, int y)
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
 		y = ~(1 << (y&7));
-		while(x0 <= x1)
+		while(x0 <= x1 && frame.x0 <= x0 && x0 <= frame.x1)
 		{
 			disp_buf[frame.y0>>3][x0++] &= y;
 		}
@@ -182,7 +183,7 @@ void ST7565S::invert_hline( int x0, int x1, int y)
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
 		y = 1 << (y&7);
-		while(x0 <= x1)
+		while(x0 <= x1 && frame.x0 <= x0 && x0 <= frame.x1)
 		{
 			disp_buf[frame.y0>>3][x0++] ^= y;
 		}
@@ -191,7 +192,7 @@ void ST7565S::invert_hline( int x0, int x1, int y)
 
 void ST7565S::draw_vline( int y0, int y1, int x)
 {
-	if( (y0<=frame.y0) && (y1>=frame.y0) )
+	if( (y0<=frame.y0) && (y1>=frame.y0) && frame.x0 <= x && x <= frame.x1)
 	{
 		disp_buf[frame.y0/8][x] |= 1 << (frame.y0&7);
 	}
@@ -199,9 +200,28 @@ void ST7565S::draw_vline( int y0, int y1, int x)
 
 void ST7565S::invert_vline( int y0, int y1, int x)
 {
-	if( (y0<=frame.y0) && (y1>=frame.y0) )
+	if( (y0<=frame.y0) && (y1>=frame.y0) && frame.x0 <= x && x <= frame.x1)
 	{
 		disp_buf[frame.y0>>3][x] ^= 1 << (frame.y0&7);
+	}
+}
+
+void ST7565S::redraw_screen (GObject* object, RECT_T area)
+{
+	if(area.normalize(rect))
+	{
+		frame = area;
+#if GUI_DEBUG
+		uint32_t t = CURRENT_TIME;
+		GUI_TRACELN("LCD%u update {%u,%u %u,%u}", display, frame.x0, area.y0, frame.x1, area.y1);
+#endif
+		for (frame.y0=(area.y0 - (area.y0&7)); frame.y0 <= area.y1; frame.y0 += 8)
+		{
+			update_screen();
+		}
+#if GUI_DEBUG
+	    GUI_TRACE(" %u ms", ms_since(t));
+#endif
 	}
 }
 
@@ -254,42 +274,95 @@ void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area 
 {
 #if GUI_DEBUG
 	unsigned int t0 = CURRENT_TIME;
-	TRACELN1("\e[4;1;31m");
+	GUI_TRACELN1("\e[4;1;31m");
 #endif
 	if( (unsigned)(CURRENT_TIME-reset_timeout) > 500 )
 	{
-#if GUI_DEBUG
-	TRACE1("RST");
-#endif
 		reset_timeout = CURRENT_TIME;
 		lcd_reset();
+		GUI_TRACE("RST %u ms\r\n", ms_since(t0));
 	}
+	GUI_TRACE("%s[%d]", szlist_at(obj_type_str,object->get_object_type()), (object)?object->id:-1);
+	//1. Try to get the bottom window that contain a redrawing object
+	GObject* initial;
+	if(object)
+	{
+		initial = children;
+		GObject* owner = object->parent;
+		// check that is window
+		if(owner && owner->parent != this)
+		{	// It is a common object, try to find its owner window
+			while(owner)
+			{
+				if(owner->parent && owner->parent->parent == this)
+					break;
+				owner = owner->parent;
+			}
+		}
+		else
+		{
+			// It is a window
+			owner = object;
+		}
+
+		if(owner)
+		{
+			while(initial)
+			{
+				if(initial == owner)
+					break;
+				initial = initial->nextObj;
+			}
+		}
+		if(!owner || !initial )
+		{
+			TRACE_ERROR("GUI Z-order exception!");
+		}
+	// 2. draw
+		frame.x0 = area.x0;
+		frame.x1 = area.x1;
+	    for(frame.y0=area.y0; frame.y0 <= area.y1; frame.y0++)
+	    {
+	    	frame.y1 = frame.y0+1;
+    		GObject* tmp = initial->nextObj;
+    		int res =0;
+    		while(1)
+    		{
+				while(tmp)
+				{
+					if(((GWindow*)tmp)->displays & 	display	)
+						res |= object->overlapped(tmp, frame);
+					tmp = tmp->nextObj;
+				}
+
+				if(!(object->flags & GO_FLG_TRANSPARENT))
+					clear_rect(area);
+				object->draw_this(this);
+
+				if(res)
+				{
+					GUI_TRACELN("LCD%u draw {%u,%u %u,%u}", display, frame.x0, area.y0, frame.x1, area.y1);
+					frame.x0 = frame.x1+1;
+					frame.x1 = area.x1;
+					tmp = initial->nextObj;
+					res =0;
+					if(frame.x0 <= frame.x1)
+						continue;
+				}
+				break;
+    		}
+	    }
+	}
+//	uint32_t t = CURRENT_TIME;
+//    for (frame.y0=(area.y0 - (area.y0&7)); frame.y0 <= area.y1; frame.y0 += 8)
+//    {
+//    	update_screen();
+//    }
+//    TRACE(" %u ms", ms_since(t));
 #if GUI_DEBUG
-	TRACE("%X[%d]", object, (object)?object->id:-1);
-#endif
-	frame.x0 = area.x0;
-	frame.x1 = area.x1;
-    for(frame.y0=area.y0; frame.y0 <= area.y1; frame.y0++)
-    {
-    	frame.y1 = frame.y0+1;
-    	if( object )
-    	{
-    		if(!(object->flags & GO_FLG_TRANSPARENT))
-    			clear_rect(area);
-    		object->draw_this(this);
-//    		if(!(object->flags & GO_FLG_ENABLED))
-//    		{
-//    			object->draw_line(object->rect.x0, object->rect.y0, object->rect.x1, object->rect.y1);
-//    			object->draw_line(object->rect.x0, object->rect.y1, object->rect.x1, object->rect.y0);
-//    		}
-    	}
-    }
-    for (frame.y0=(area.y0 - (area.y0&7)); frame.y0 <= area.y1; frame.y0 += 8)
-    {
-    	update_screen();
-    }
-#if GUI_DEBUG
-    TRACE(" %d ms\e[m", ms_since(t0));
+	if(frame.x0 <= frame.x1)
+		GUI_TRACELN("LCD%u draw {%u,%u %u,%u}", display, frame.x0, area.y0, frame.x1, area.y1);
+    GUI_TRACE(" %d ms\e[m", ms_since(t0));
 #endif
 }
 

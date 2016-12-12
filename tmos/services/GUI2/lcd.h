@@ -73,12 +73,15 @@ struct LCD_MODULE: public GContainer
 	;
 	virtual ~LCD_MODULE(){};
 
+	GUI_GET_OBJECT_TYPE(OBJECT_DISPLAY);
+
 	virtual void lcd_init(GSplash splash);
 	virtual void lcd_reset()=0;
 	virtual void backlight_signal(void);
 
 	virtual void update_screen()=0;
 	virtual void clear_screen()=0;
+	void redraw_screen(GObject* object, RECT_T area)=0;
 	void invalidate(GObject* object, RECT_T area);
 	virtual void redraw_rect (GObject* object, RECT_T area){};
 	virtual void adjust_for_screen (GObject** object, RECT_T &area){};

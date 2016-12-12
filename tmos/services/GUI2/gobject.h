@@ -15,6 +15,26 @@
 struct LCD_MODULE;
 struct GContainer;
 
+enum object_type:unsigned char
+{
+	OBJECT_OBJECT=0,
+	OBJECT_CONTAINER,
+	OBJECT_BUTTON,
+	OBJECT_EDIT,
+	OBJECT_FBUTTON,
+	OBJECT_FTEXT,
+	OBJECT_LISTBOX,
+	OBJECT_MENU,
+	OBJECT_RADIO,
+	OBJECT_TEXT,
+// window objects
+	OBJECT_WINDOW,
+	OBJECT_DIALOG,
+	OBJECT_MESSAGEBOX,
+	OBJECT_DOWAIT,
+	OBJECT_DISPLAY,
+	OBJECT_DISPLAY_MULTIPLEXER
+};
 
 struct GTimer
 {
@@ -70,8 +90,8 @@ struct GObject
 	GId id;
 	GFlags flags;
 	uint8_t ref_cnt;
-
 	static void* lastAllocated;
+	static uint8_t	invalidate_cnt;
 	GObject() :
 			parent(nullptr), nextObj(nullptr), id(0), flags(0), ref_cnt(1)
 	{
@@ -93,6 +113,8 @@ struct GObject
 	}
 
 	virtual ~GObject();
+
+	GUI_GET_OBJECT_TYPE(OBJECT_OBJECT);
 
 	void* operator new(size_t size)
 	{
@@ -166,6 +188,7 @@ struct GObject
 	{
 		;
 	}
+	virtual int overlapped(GObject* obj,  RECT_T& frame);
 	// queue message
 	unsigned int message(GMessage& msg);
 
@@ -197,7 +220,7 @@ protected:
 	}
 
 	virtual unsigned int process_destroy(GMessage& msg); //The WM_DESTROY message is sent when a window is being destroyed.
-
+	virtual void redraw_screen(GObject* object, RECT_T area);
 private:
 	// Timer methods
 	GTimer* FindTimer(GId event);

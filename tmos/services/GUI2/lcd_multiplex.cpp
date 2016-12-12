@@ -23,6 +23,20 @@ void LCD_MULT::invalidate (GObject* object, RECT_T area)
 	}
 }
 
+void LCD_MULT::redraw_screen(GObject* object, RECT_T area)
+{
+	for (int i = 0; i < GUI_DISPLAYS; i++)
+	{
+		if (lcd[i]->display & ((GWindow*)object)->displays)
+		{
+			parent = lcd[i];
+			rect = lcd[i]->rect;
+			lcd[i]->redraw_screen(object, area);
+		}
+		parent = nullptr;
+	}
+}
+
 void LCD_MULT::LPtoDP(POINT_T& size, unsigned char lcd_index)
 {
 	if(lcd_index < GUI_DISPLAYS)
