@@ -36,6 +36,7 @@ struct time_t
 	bool is_valid() const;
 	uint32_t get_week_day() const;
 	void sprintf(CSTRING& str, const char* format) const;
+	unsigned int set_from_xml_date(const char* str);
 
 	time_t& operator= (const time_t& T);
 	time_t& operator= (unsigned int seconds);

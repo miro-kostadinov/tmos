@@ -217,3 +217,81 @@ time_t::operator unsigned int() const
 }
 
 
+static unsigned int read2XX(const char* str, unsigned int& pos, bool&res)
+{
+	if(!str[pos] || !IS_DIGIT(str[pos]) || !IS_DIGIT(str[pos+1]) || !res )
+	{
+		res = false;
+		return 0;
+	}
+
+	unsigned value = (str[pos++]-'0')*10;
+	return (value + str[pos++] - '0');
+}
+
+unsigned int time_t::set_from_xml_date(const char* str)
+{
+	//YYYY-MM-DDThh:mm:ss
+	bool res=true;
+	unsigned int pos=0;
+
+	year = read2XX(str, pos, res);
+	mon = read2XX(str, pos, res);
+	year = year*100 +mon;
+	if(str[pos++] != '-')
+		return 0;
+
+	mon = read2XX(str, pos, res);
+	if(str[pos++] != '-')
+		return 5;
+
+	mday = read2XX(str, pos, res);
+	if(str[pos])
+	{
+		if(str[pos++] != 'T')
+			return 11;
+
+		hour = read2XX(str, pos, res);
+		if(str[pos] != '.' && str[pos] != ':')
+			return 14;
+
+		minute = read2XX(str, ++pos, res);
+		if(str[pos] != '.' && str[pos] != ':')
+			return 0;
+
+		second = read2XX(str, ++pos, res);
+	}else
+	{
+		hour =0;
+		minute =0;
+		second = 0;
+	}
+
+	//skip any fractional part
+	if(str[pos]=='.')
+	{
+		while(IS_DIGIT(str[++pos]))
+			;
+	}
+
+	//skip time zone
+	if(str[pos]=='Z')
+	{
+		pos++;
+	} else
+	{
+		if((str[pos]=='+') || (str[pos]=='-'))
+		{
+			pos++;
+			read2XX(str, pos, res);
+			if(str[pos] != '.' && str[pos] != ':')
+				res=false;
+			pos++;
+			read2XX(str, pos, res);
+		}
+	}
+
+	if(res && is_valid())
+		return pos;
+	return 0;
+}
