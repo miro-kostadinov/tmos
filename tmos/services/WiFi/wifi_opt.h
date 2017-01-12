@@ -42,7 +42,9 @@
 #define	WIFI_GET_NETWORK_NAME	1
 #endif
 
-
+#ifndef WIFI_SERVER_INTERFACE
+#define WIFI_SERVER_INTERFACE	0xFF
+#endif
 
 #ifndef WIFI_AT_WATCHDOG
 #define	WIFI_AT_WATCHDOG	0
@@ -53,16 +55,21 @@
 #endif
 
 #ifndef TRACE_WIFI_LEVEL
-#define TRACE_WIFI_LEVEL	TRACE_LEVEL_NONE
+#define TRACE_WIFI_LEVEL	TRACE_LEVEL_DEBUG
 #endif
 
 #ifndef TRACE_GPRS_LEVEL
-#define TRACE_GPRS_LEVEL	TRACE_LEVEL_NONE
+#define TRACE_GPRS_LEVEL	TRACE_LEVEL_DEBUG
 #endif
 
-#ifndef USE_GPRS_LISTEN
-#define USE_GPRS_LISTEN		0
+#ifndef USE_WIFI_LISTEN
+#define USE_WIFI_LISTEN		1
 #endif
+
+#ifndef USE_DEPRECATED_AT_CMD
+#define USE_DEPRECATED_AT_CMD 	0
+#endif
+
 //*----------------------------------------------------------------------------
 //*			WIFI TRACE
 //*----------------------------------------------------------------------------

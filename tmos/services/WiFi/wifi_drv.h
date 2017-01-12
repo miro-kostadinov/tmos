@@ -9,11 +9,11 @@
 #include <wifi_opt.h>
 #include <wifi_core.h>
 
-
-
+#define WIFI_CANCEL_SIGNAL 1
+#define WIFI_NOTIFY_SIGNAL 2
 
 #define WIFI_TRANSFER_INDICATOR		1
-#define WIFI_STATE_INDICATOR			2
+#define WIFI_STATE_INDICATOR		2
 
 
 //*----------------------------------------------------------------------------

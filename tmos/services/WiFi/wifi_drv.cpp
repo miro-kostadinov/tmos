@@ -14,7 +14,6 @@ WEAK_C wifi_module_type* wifi_detect(WIFI_DRIVER_INFO* drv_info)
 	return NULL;
 }
 
-#define WIFI_CANCEL_SIGNAL 1
 
 //*----------------------------------------------------------------------------
 //*			WIFI Task
@@ -30,7 +29,7 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
     RES_CODE res;
 
 
-    ALLOCATE_SIGNAL(WIFI_CANCEL_SIGNAL);
+    ALLOCATE_SIGNAL(WIFI_CANCEL_SIGNAL|WIFI_NOTIFY_SIGNAL);
 
     hlp_hnd->tsk_safe_open(drv_info->info.drv_index, 0);
     hlp_hnd->tsk_start_read(NULL, 	0);
@@ -48,6 +47,8 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
         {
         	// make sure the receiver is ON
         	wifi_module->process_input(0, NULL);
+        	if(res & WIFI_NOTIFY_SIGNAL)
+        		wifi_module->wifi_notificatoin_response();
         }
         signals = tsk_wait_signal(SIGNAL_ANY, 1000);
 

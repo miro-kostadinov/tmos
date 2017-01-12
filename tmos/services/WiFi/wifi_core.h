@@ -81,6 +81,8 @@ struct wifi_module_type
     virtual void process_input(unsigned int signals, const char* cmd,
     		unsigned char hnd_start=0);
     virtual int  wifi_notification(const char* row);
+    virtual void wifi_notificatoin_response()
+    {;}
     virtual void wifi_process_tout();
     virtual void wifi_cancelation(bool all);
     virtual void wifi_data_received(const char* row)
@@ -100,7 +102,7 @@ struct wifi_module_type
     virtual RES_CODE wifi_sock_disconect(CSocket* sock)=0;
     virtual RES_CODE wifi_sock_close(CSocket* sock)=0;
     virtual RES_CODE wifi_gethostbyname(CSocket* sock)=0;
-#if USE_GPRS_LISTEN
+#if USE_WIFI_LISTEN
     virtual RES_CODE wifi_sock_bind_adr(CSocket* sock)=0;
     virtual RES_CODE wifi_sock_bind_url(CSocket* sock)=0;
     virtual RES_CODE wifi_sock_listen(CSocket* sock)=0;
@@ -110,6 +112,9 @@ struct wifi_module_type
 
 
     NET_CODE wifi_drv_on();
+    virtual RES_CODE module_upgrade(HANDLE param)
+    	{return NET_ERR_PHY_NOT_READY;}
+
     virtual NET_CODE wifi_get_network_name(CSTRING& name);
 
     friend RES_CODE wifi_drv_off(wifi_module_type *module, HANDLE hnd);
@@ -132,6 +137,7 @@ typedef RES_CODE (*WIFI_CBF)(wifi_module_type *module, HANDLE hnd);
 RES_CODE wifi_drv_off(wifi_module_type* module, HANDLE hnd);
 
 #define WIFI_DRV_OFF_CMD 		(void *)wifi_drv_off
+#define CMD_WIFI_UPGRADE (( 0xE <<4)+CMD_COMMAND)
 
 extern "C" NET_CODE wifi_on_deregister(wifi_module_type* mod);
 

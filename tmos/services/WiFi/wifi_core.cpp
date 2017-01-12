@@ -127,9 +127,9 @@ void wifi_module_type::process_input(unsigned int signals, const char* cmd,
 				else
 				{
 					buf[row_end++] = ch;
-					TRACE1_WIFI("\e[33m");
-					TRACE_CHAR_WIFI(ch);
-					TRACE1_WIFI("\e[m");
+					TRACE1_WIFI_DEBUG("\e[33m");
+					TRACE_CHAR_WIFI_DEBUG(ch);
+					TRACE1_WIFI_DEBUG("\e[m");
 					cmd_state |= WIFI_CMD_STATE_STARTED;
 					if( hnd_start == ch )
 					{
@@ -137,7 +137,7 @@ void wifi_module_type::process_input(unsigned int signals, const char* cmd,
 						buf[row_end] = 0;
 						row_end--; // remove it // +SORD 4,123 "........." OK
 						cmd_state |= WIFI_CMD_STATE_HND;
-						TRACE1_WIFI("^hnd^");
+						TRACE1_WIFI_DEBUG("^hnd^");
 						return;
 					}
 					if(cmd_submatch("+IPD,", &buf[row_start]) && ch == ':')
@@ -174,24 +174,6 @@ WIFI_CMD_STATE wifi_module_type::wifi_process_row(const char *cmd)
 	const char * row;
 
 	row = buf + row_start;
-
-/*
-	if (cmd_state & WIFI_CMD_STATE_CRLFOK)
-	{
-		cmd_state ^= WIFI_CMD_STATE_CRLFOK;
-		wifi_notification(row);
-		return WIFI_CMD_STATE_STARTED;
-	}
-
-	if(!strcmp(row, "OK"))
-	{
-		if (cmd_state & WIFI_CMD_STATE_CRLF)
-		{
-			cmd_state ^= WIFI_CMD_STATE_CRLF | WIFI_CMD_STATE_CRLFOK;
-			return WIFI_CMD_STATE_STARTED;
-		}
-	}
-*/
 
 	//------- command matching --------//
 	if(cmd)
@@ -256,7 +238,7 @@ WIFI_CMD_STATE wifi_module_type::wifi_send_cmd(const char *cmd, unsigned int tim
 		process_input(0, NULL);
     }
 
-	wifi_sleep(20); //(the recommended value is at least 20 ms)
+	//wifi_sleep(20); //(the recommended value is at least 20 ms)
 
     // make sure no URC is coming and the buf is empty
     if( cmd_state & WIFI_CMD_STATE_STARTED)
@@ -395,15 +377,6 @@ void wifi_module_type::hnd_error(HANDLE hnd)
 
 NET_CODE wifi_module_type::wifi_get_network_name(CSTRING& name)
 {
-	if(wifi_send_cmd("+COPS=3,1", 50) & WIFI_CMD_STATE_OK) //short format alphanumeric <oper>
-	{
-//		char* ptr = get_str_cmd("+COPS?", 180);
-//		if(ptr)
-//		{
-//			name = ptr;
-//			return NET_OK;
-//		}
-	}
 	return wifi_net_error(NET_ERR_WIFI_NET_NAME);
 }
 
@@ -538,6 +511,11 @@ RES_CODE wifi_module_type::process_cmd(HANDLE client)
 
 		case SOCK_CMD_CLOSE:
 			res = wifi_sock_close((CSocket*) client);
+			break;
+
+		case CMD_WIFI_UPGRADE:
+			module_upgrade((HANDLE)client->dst.as_voidptr);
+			res = RES_SIG_OK;
 			break;
 
 		default:
