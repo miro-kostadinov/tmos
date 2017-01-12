@@ -191,7 +191,7 @@ package:
 tag: $(COUNTER_FILES)
 	@echo
 	@echo  Checking $(REP_FOLDER) repository ... 
-	@if [ -n "$(DO_TAG)" ] ; then \
+	if [ -n "$(DO_TAG)" ] ; then \
 	echo Tagging: $(F_VERSION) "->" $(REP_VERSION); \
 	echo "$(PRINT_VERSIONS)";\
 	echo "$(PRINT_TARG_VER)";\
