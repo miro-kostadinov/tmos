@@ -98,6 +98,9 @@ RES_CODE esp8266_module::wifi_echo_off(bool lowlevel, uint32_t indx)
 	{
 		rcv_hnd.close();
 		snd_hnd.close();
+		PIO_Assert(wifi_pin_rst);
+		tsk_sleep(50);
+		PIO_Deassert(wifi_pin_rst);
 		if(lowlevel)
 			return RES_OK;
 		tsk_sleep(50);
@@ -105,8 +108,7 @@ RES_CODE esp8266_module::wifi_echo_off(bool lowlevel, uint32_t indx)
 			snd_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[indx])	)
 		{
 			//wait until rx signals get stable
-			tsk_sleep(50);
-
+			wifi_sleep(1000);
 			//turn off echo
 			if(wifi_send_cmd("E0", 1) & WIFI_CMD_STATE_OK)
 			{
@@ -132,14 +134,18 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 
 	TRACE1_WIFI_DEBUG("\r\nWIFI power");
 	drv_data->wifi_flags_ok = WIFI_STATE_OFF;
-	if(wifi_pin_on)
-		PIO_Cfg(wifi_pin_on);
-	if(wifi_pin_boot)
-		PIO_Cfg(wifi_pin_boot);
-	PIO_Deassert(wifi_pin_on);
+	if(wifi_pin_pwr)
+		PIO_Cfg(wifi_pin_pwr);
+	if(wifi_pin_rst)
+		PIO_Cfg(wifi_pin_rst);
+
+	PIO_Deassert(wifi_pin_pwr);
+	PIO_Assert(wifi_pin_rst);
 	tsk_sleep(1000);
-	PIO_Assert(wifi_pin_on);
+	PIO_Assert(wifi_pin_pwr);
 	tsk_sleep(50);
+	PIO_Deassert(wifi_pin_rst);
+
 	do
 	{
 		res = wifi_echo_off(lowlevel, 0);
@@ -168,6 +174,7 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 
 	if(res == RES_OK)
 	{
+		wifi_send_cmd("+GMR", 5);
 		// configure WiFi module
 		wifi_send_cmd(WIFI_QUIT_AP, 3);
 		// 1. Enable the module to act as “Station”
@@ -539,8 +546,8 @@ NET_CODE esp8266_module::wifi_esp8266_socket_open(CSocket* sock)
 	RES_CODE res;
 	const char* cmd = WIFI_CONNECTION_STAT;
 	unsigned int sig=0;
-	CSTRING msg_list("\r\n");
-	uint32_t index=1;
+//	CSTRING msg_list("\r\n");
+//	uint32_t index=1;
 
 	cmd_state |= WIFI_CMD_STATE_ROW_STOP;
 	res = wifi_send_cmd(cmd, 15);
@@ -560,7 +567,7 @@ NET_CODE esp8266_module::wifi_esp8266_socket_open(CSocket* sock)
 		if(res & WIFI_CMD_STATE_RETURNED)
 		{
 			cmd_state = res & ~WIFI_CMD_STATE_RETURNED;
-			msg_list.appendf("%u:%s\r\n", index++, buf);
+//			msg_list.appendf("%u:%s\r\n", index++, buf);
 			row_start = 0;
 			row_end = 0;
 		}
@@ -871,7 +878,7 @@ RES_CODE esp8266_module::wifi_receive_check(char sym)
 {
 	char ch;
 
-	if( rcv_hnd.tsk_read_pkt(&ch, 1, GPRS_READ_TOT) & RES_OK)
+	if( rcv_hnd.tsk_read_pkt(&ch, 1, WIFI_READ_TOT) & RES_OK)
 	{
 		if(ch >= 0x20)
 			TRACE_CHAR(ch);
@@ -898,7 +905,7 @@ void esp8266_module::wifi_data_received(const char* row)
 				if (sock && ((sock->res & RES_BUSY_WAITING) == RES_BUSY_WAITING))
 				{
 					len = min(size, sock->len);
-					if( rcv_hnd.tsk_read_pkt(sock->dst.as_charptr, len, GPRS_READ_TOT) == RES_OK)
+					if( rcv_hnd.tsk_read_pkt(sock->dst.as_charptr, len, WIFI_READ_TOT) == RES_OK)
 					{
 						TRACE_BUF(sock->dst.as_charptr, len, TC_TXT_BLUE);
 						len -= rcv_hnd.len;
@@ -922,7 +929,7 @@ void esp8266_module::wifi_data_received(const char* row)
 					received_data[id] = (char*)tsk_realloc(received_data[id], received_size[id]+size);
 					if(received_data[id])
 					{
-						if( rcv_hnd.tsk_read_pkt(received_data[id]+received_size[id], size, GPRS_READ_TOT) == RES_OK)
+						if( rcv_hnd.tsk_read_pkt(received_data[id]+received_size[id], size, WIFI_READ_TOT) == RES_OK)
 						{
 							TRACE_BUF(received_data[id]+received_size[id], size, TC_TXT_CYAN);
 							received_size[id] += size;
@@ -945,7 +952,7 @@ void esp8266_module::wifi_data_received(const char* row)
 						received_data[id] = (char*)tsk_realloc(received_data[id], received_size[id]+size);
 						if(received_data[id])
 						{
-							if( rcv_hnd.tsk_read_pkt(received_data[id]+received_size[id], size, GPRS_READ_TOT) == RES_OK)
+							if( rcv_hnd.tsk_read_pkt(received_data[id]+received_size[id], size, WIFI_READ_TOT) == RES_OK)
 							{
 								received_size[id] += size;
 							}
@@ -1257,180 +1264,3 @@ RES_CODE esp8266_module::wifi_sock_addr(CSocket* sock)
 	return RES_SIG_ERROR;
 }
 
-#define WIFI_UPGRADE_BUF_SIZE		WIFI_BUF_SIZE
-RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
-{
-	char gsm_ack[32];
-	unsigned int sig, old_sig, total, tm, last;
-	HND_CLIENTS old_client;
-	RES_CODE res;
-	CSTRING log;
-
-    if(!wifi_pin_on || !wifi_pin_boot)
-    {
-	    hnd->tsk_write("\r\n----- Invalid hardware -----\r\n");
-    }
-
-    //change hnd client
-    old_sig = hnd->signal;
-    old_client = hnd->client;
-    sig = CURRENT_TASK->aloc_sig;
-    sig = (sig+1) & ~sig;
-    sig &= 255;
-    if( sig )
-    {
-    	hnd->signal = sig;
-	    hnd->client.task = CURRENT_TASK;
-
-//		wifi_drv_off();
-
-	    hnd->tsk_write("\r\n----- READY -----\r\n");
-
-	    PIO_Cfg(wifi_pin_on);
-	    PIO_Cfg(wifi_pin_boot);
-	    tsk_sleep(50);
-	    //gsm_drv_pwron(true);
-	    PIO_Deassert(wifi_pin_on);
-	    tsk_sleep(1000);
-	    PIO_Assert(wifi_pin_boot);
-	    tsk_sleep(200);
-	    PIO_Assert(wifi_pin_on);
-	    tsk_sleep(500);
-
-//		res = hnd->tsk_read(buf, 1, 2*25000);
-//		if(res == RES_OK)
-		{
-			// upgrade started
-			rcv_hnd.close();
-			snd_hnd.close();
-
-			if(rcv_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[0]) &&
-				snd_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[0])	)
-			{
-		    	unsigned int pc_rcv=0, gsm_rcv=0;
-
-			    TRACE1("\r\n------ GSM UPGRADE --------");
-
-//			    //flush PC
-//			    hnd->tsk_read(buf, WIFI_UPGRADE_BUF_SIZE, 2);
-//		    	pc_rcv =WIFI_UPGRADE_BUF_SIZE - hnd->len;
-//		    	if(pc_rcv)
-//		    	{
-//		    		TRACE_BUF(buf, pc_rcv, TC_TXT_RED);
-//		    	}
-
-		    	last = 0;
-		    	tm = CURRENT_TIME;
-		    	total = 0;
-
-			    while(1)
-			    {
-
-			    	//start reading from PC
-			    	if(!(hnd->res & FLG_BUSY))
-						if(!hnd->tsk_start_read(buf, WIFI_UPGRADE_BUF_SIZE))
-							break;
-
-			    	//start reading from GSM
-			    	if(!(rcv_hnd.res & FLG_BUSY))
-						if(!rcv_hnd.tsk_start_read(gsm_ack, sizeof(gsm_ack)))
-								break;
-
-			    	sig = tsk_wait_signal(hnd->signal | rcv_hnd.signal, 2*25000);
-
-			    	//process PC
-			    	if(sig & hnd->signal)
-			    	{
-			    		hnd->res &= ~FLG_SIGNALED;
-				    	pc_rcv = WIFI_UPGRADE_BUF_SIZE - hnd->len;
-			    		TRACELN(" pc%u:", pc_rcv);
-			    		if(last == 0)
-			    		{
-			    			last =1;
-			    			TRACELN1("");
-			    			log.format("GSM -> PC %u bytes %u mS", total, CURRENT_TIME - tm);
-			    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
-			    			TRACELN1("");
-			    			tm = CURRENT_TIME;
-			    			total = 0;
-			    		}
-			    		total += pc_rcv;
-				    	if(pc_rcv)
-				    	{
-//				    		TRACE_BUF(buf, pc_rcv, TC_TXT_MAGENTA);
-				    		if (snd_hnd.tsk_write(buf, pc_rcv, 10000) != RES_OK)
-				    		{
-				    			TRACELN1("TIMEOUT\r\n");
-				    		}
-				    	}
-			    	}
-
-			    	//process GSM
-			    	if(sig & rcv_hnd.signal)
-			    	{
-			    		rcv_hnd.res &= ~FLG_SIGNALED;
-				    	gsm_rcv = sizeof(gsm_ack) - rcv_hnd.len;
-			    		TRACELN(" gsm%u:", gsm_rcv);
-			    		if(last == 1)
-			    		{
-			    			last =0;
-			    			TRACELN1("");
-			    			log.format("PC -> GSM %u bytes %u mS", total, CURRENT_TIME - tm);
-			    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
-			    			TRACELN1("");
-			    			tm = CURRENT_TIME;
-			    			total = 0;
-			    		}
-			    		total += gsm_rcv;
-				    	if(gsm_rcv)
-				    	{
-//				    		TRACE_BUF(gsm_ack, gsm_rcv, TC_TXT_CYAN);
-
-				    		hnd->tsk_cancel();
-					    	pc_rcv = WIFI_UPGRADE_BUF_SIZE - hnd->len;
-				    		TRACE(" pccan%u:", pc_rcv);
-					    	if(pc_rcv)
-					    	{
-//					    		TRACE_BUF(buf, pc_rcv, TC_TXT_MAGENTA);
-					    		if(snd_hnd.tsk_write(buf, pc_rcv, 10000) != RES_OK)
-					    		{
-					    			TRACELN1("TIMEOUT\r\n");
-					    		}
-					    	}
-
-				    		hnd->tsk_write(gsm_ack, gsm_rcv);
-				    	}
-			    	}
-			    	if(!sig)
-			    	{
-			    		hnd->tsk_cancel();
-			    		rcv_hnd.tsk_cancel();
-			    		break;
-			    	}
-
-
-			    }
-			    if(last ==1)
-	    			log.format("\r\nPC -> GSM %u bytes %u mS\r\n", total, CURRENT_TIME - tm);
-			    else
-	    			log.format("\r\nGSM -> PC %u bytes %u mS\r\n", total, CURRENT_TIME - tm);
-    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
-
-			    TRACE1("\r\n------ UPGRADE END --------");
-			}
-		}// else
-		//	TRACE1("\r\nTIMEOUT\r\n");
-
-		PIO_Deassert(wifi_pin_boot);
-		PIO_Deassert(wifi_pin_on);
-	    wifi_drv_pwron();
-	    //restore hnd owner
-    	hnd->signal = old_sig;
-	    hnd->client = old_client;
-	} else
-	{
-		res = RES_ERROR;
-	}
-
-	return res;
-}

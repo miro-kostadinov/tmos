@@ -79,9 +79,9 @@ struct esp8266_module: public wifi_module_type
     static unsigned short local_port;
 #endif
     wifi_notify_t notify_state;
-    unsigned int  wifi_pin_on;
-    unsigned int  wifi_pin_boot;
-    esp8266_module(const WIFI_DRIVER_INFO* pinfo, unsigned int on =0, unsigned int boot=0 )
+    unsigned int  wifi_pin_pwr;
+    unsigned int  wifi_pin_rst;
+    esp8266_module(const WIFI_DRIVER_INFO* pinfo, unsigned int pwr_pin =0, unsigned int rst_pin=0 )
     	:wifi_module_type(pinfo)
 		{
 				used_sockets = 0;
@@ -103,8 +103,8 @@ struct esp8266_module: public wifi_module_type
 					accept_id[i] = WIFI_ESP8266_MAX_SOCKETS;
 #endif
 				}
-				wifi_pin_on = on;
-				wifi_pin_boot = boot;
+				wifi_pin_pwr = pwr_pin;
+				wifi_pin_rst = rst_pin;
 		};
 
 	RES_CODE wifi_echo_off(bool lowlevel, uint32_t indx);
@@ -112,7 +112,6 @@ struct esp8266_module: public wifi_module_type
     virtual RES_CODE wifi_drv_off();
     virtual NET_CODE wifi_reset(bool force);
     NET_CODE wifi_drv_level();
-    RES_CODE module_upgrade(HANDLE param);
     RES_CODE wifi_receive_check(char sym);
     virtual void wifi_data_received(const char* row);
 
