@@ -13,7 +13,7 @@ GObject::~GObject()
 
 bool GTimer::TimerProc(void)
 {
-	if(time_out && CURRENT_TIME > time_out)
+	if(time_out && CURRENT_TIME >= time_out)
 	{
 		send_message(WM_TIMER, timer_id, 0L, object);
 		time_out = 0;
