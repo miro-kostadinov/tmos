@@ -20,13 +20,13 @@
 #endif
 
 /** Write timeout in ms for the wifi uart **/
-#ifndef GPRS_READ_TOT
-#define GPRS_READ_TOT 2048
+#ifndef WIFI_READ_TOT
+#define WIFI_READ_TOT 2048
 #endif
 
 /** Send retries (or seconds) for a gprs packet  **/
-#ifndef GPRS_SEND_RETRIES
-#define GPRS_SEND_RETRIES 50
+#ifndef WIFI_SEND_RETRIES
+#define WIFI_SEND_RETRIES 50
 #endif
 
 /** Size of the receive buffer. It must be big enough to hold one row plus the
