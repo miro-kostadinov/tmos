@@ -11,6 +11,11 @@
 #include <wifi_core.h>
 #include <csocket.h>
 
+WEAK_C NET_CODE wifi_on_init_station(wifi_module_type* mod, CSocket* sock, wifi_AP_t* apn)
+{
+	return NET_OK;
+}
+
 WEAK_C NET_CODE wifi_on_get_AP(wifi_module_type* mod, CSocket* sock, wifi_AP_t* apn)
 {
 	return NET_ERR_WIFI_NET_NAME;
@@ -70,7 +75,25 @@ void wifi_module_type::process_input(unsigned int signals, const char* cmd,
 									unsigned char hnd_start)
 {
 	unsigned char ch;
-
+#if WIFI_FLOW_CONTROL
+	if(stop_rcv)
+	{
+		if(mem_alloc_size < WIFI_FLOW_RELEASE_SIZE)
+		{
+			while(pending_read_data && (pending_read_data->res & RES_BUSY_WAITING) == RES_BUSY_WAITING)
+			{
+				TRACELN("Resum pending %s", pending_read_data->client.task->name);
+				pending_read_data->tsk_start_handle();
+				pending_read_data = pending_read_data->next;
+			}
+			TRACELN1("RTS Start rcv!");
+			stop_rcv = false;
+			PIO_Deassert(wifi_pin_rts);
+		}
+		else
+			return;
+	}
+#endif
 	//if receiver is idle -> start
     if(rcv_hnd.res < FLG_SIGNALED)
     {
@@ -145,8 +168,10 @@ void wifi_module_type::process_input(unsigned int signals, const char* cmd,
 						cmd_state ^= WIFI_CMD_STATE_STARTED;
 						buf[--row_end] = 0;
 						TRACELN1("WIFI:Receive");
-						wifi_data_received(&buf[row_start]);
+						ch = wifi_data_received(&buf[row_start]);
 						row_end = row_start = 0;
+						if(ch)
+							return;
 					}
 				}
 				if(row_end >= WIFI_BUF_SIZE-1)
@@ -235,7 +260,14 @@ WIFI_CMD_STATE wifi_module_type::wifi_send_cmd(const char *cmd, unsigned int tim
 	// make sure the handle is working if it is open
     while(rcv_hnd.res < FLG_BUSY)
     {
-		process_input(0, NULL);
+#if WIFI_FLOW_CONTROL
+    	if(stop_rcv)
+    	{
+    	    cmd_state = WIFI_CMD_STATE_FATAL;
+    	    return cmd_state;
+    	}
+#endif
+    	process_input(0, NULL);
     }
 
 	//wifi_sleep(20); //(the recommended value is at least 20 ms)
@@ -301,6 +333,10 @@ void wifi_module_type::wifi_sleep(unsigned int time)
     while(rcv_hnd.res < FLG_BUSY)
     {
 		process_input(0, NULL);
+#if WIFI_FLOW_CONTROL
+		if(stop_rcv)
+			return;
+#endif
     }
     if (tsk_wait_signal(rcv_hnd.signal, time))
     {
@@ -444,7 +480,6 @@ NET_CODE wifi_module_type::wifi_check_reg() // NET_ERROR: OK
 
 	for(unsigned int i=0;i<30;i++)
 	{
-		wifi_sleep(2048);
 		res = wifi_drv_level();
 		if( res == NET_OK)
 			return NET_OK;
@@ -523,7 +558,8 @@ RES_CODE wifi_module_type::process_cmd(HANDLE client)
 			break;
 		}
 	}
-
+	else
+		drv_info->drv_data->wifi_error = NET_ERR_PHY_NOT_READY;
 //	if(RES_IDLE != res)
 //		hnd_error(client);
 	return res;
@@ -538,7 +574,7 @@ int wifi_module_type::wifi_notification(const char* row)
 	return 0; // we do not recognize this row
 }
 
-void wifi_module_type::wifi_cancelation(bool all)
+void wifi_module_type::wifi_cancelation(bool all_station, bool all_softAP)
 {
 }
 

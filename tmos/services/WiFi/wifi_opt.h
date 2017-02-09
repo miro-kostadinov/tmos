@@ -36,6 +36,11 @@
 #define WIFI_BUF_SIZE	300
 #endif
 
+#ifndef WIFI_FLOW_CONTROL
+#define WIFI_FLOW_CONTROL		1
+#define WIFI_FLOW_RELEASE_SIZE	750
+#define WIFI_FLOW_HOLD_SIZE		1500
+#endif
 /** WIFI Network Name
  * If enabled, drv_data.opertor_name is defined and updated **/
 #ifndef WIFI_GET_NETWORK_NAME
@@ -43,8 +48,17 @@
 #endif
 
 #ifndef WIFI_SERVER_INTERFACE
-#define WIFI_SERVER_INTERFACE	0xFF
+#define WIFI_SERVER_INTERFACE		0xFF
 #endif
+
+#ifndef WIFI_AP_LIST_INTERFACE
+#define WIFI_AP_LIST_INTERFACE		0
+#endif
+
+#ifndef WIFI_CHANGE_AP_INTERFACE
+#define WIFI_CHANGE_AP_INTERFACE	1
+#endif
+
 
 #ifndef WIFI_AT_WATCHDOG
 #define	WIFI_AT_WATCHDOG	0

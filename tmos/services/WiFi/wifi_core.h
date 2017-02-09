@@ -57,14 +57,31 @@ struct wifi_module_type
     unsigned short cmd_state;  // WIFI_CMD_STATE_XXX
     unsigned char received_ch;
     unsigned char wifi_watchdog_cnt;
+    bool		  in_command;
 
     CHandle rcv_hnd;
     CHandle snd_hnd;
-
+#if WIFI_FLOW_CONTROL
+    bool 		  stop_rcv;
+    unsigned int  mem_alloc_size;
+    HANDLE	 	 pending_read_data;
+    unsigned int  wifi_pin_rts;
+#endif
     char buf[WIFI_BUF_SIZE];
 
-    wifi_module_type(const WIFI_DRIVER_INFO* pinfo):drv_info(pinfo), row_start(0),
+    wifi_module_type
+    	(
+    		const WIFI_DRIVER_INFO* pinfo
+#if WIFI_FLOW_CONTROL
+    		,unsigned int PIN_RTS
+#endif
+    	)
+    	:drv_info(pinfo), row_start(0),
     		row_end(0), cmd_state(0), received_ch(0), wifi_watchdog_cnt(0)
+#if WIFI_FLOW_CONTROL
+    		, stop_rcv(false), mem_alloc_size(0),
+    		pending_read_data(nullptr), wifi_pin_rts(PIN_RTS)
+#endif
     {
     }
 
@@ -84,9 +101,11 @@ struct wifi_module_type
     virtual void wifi_notificatoin_response()
     {;}
     virtual void wifi_process_tout();
-    virtual void wifi_cancelation(bool all);
-    virtual void wifi_data_received(const char* row)
-    {;}
+    virtual void wifi_cancelation(bool all_station, bool all_softAP);
+    virtual bool wifi_data_received(const char* row)
+    {
+    	return false;
+    }
 
     char* get_str_cmd(const char *cmd, unsigned int time);
     char* get_str_prm(char *row, unsigned int param);
@@ -141,6 +160,7 @@ RES_CODE wifi_drv_off(wifi_module_type* module, HANDLE hnd);
 
 extern "C" NET_CODE wifi_on_deregister(wifi_module_type* mod);
 
+extern "C" NET_CODE wifi_on_init_station(wifi_module_type* mod, CSocket* sock, wifi_AP_t* apn);
 extern "C" NET_CODE wifi_on_get_AP(wifi_module_type* mod, CSocket* sock, wifi_AP_t* apn);
 extern "C" void wifi_on_disconnect(wifi_module_type* mod);
 extern "C" void wifi_on_blink_transfer(wifi_module_type* mod, int reason);

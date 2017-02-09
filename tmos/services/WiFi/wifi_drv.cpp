@@ -50,6 +50,10 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
         	if(res & WIFI_NOTIFY_SIGNAL)
         		wifi_module->wifi_notificatoin_response();
         }
+        else
+        {
+   		    wifi_module = wifi_detect(drv_info);
+        }
         signals = tsk_wait_signal(SIGNAL_ANY, 1000);
 
         // step 1 - Check the WIFI
@@ -68,10 +72,10 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
         	{
         	    client = (HANDLE)hlp_hnd->dst.as_voidptr;
 
-        		if(!wifi_module)
-        		{
-        		    wifi_module = wifi_detect(drv_info);
-        		}
+//        		if(!wifi_module)
+//        		{
+//        		    wifi_module = wifi_detect(drv_info);
+//        		}
 
     		    if(wifi_module)
     		    {
@@ -81,12 +85,16 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
 						res = wifi_module->process_read((CSocket*)client);
 					} else
 					{
+	                	wifi_module->in_command = true;
 						if(client->cmd & FLAG_WRITE)
 						{
 							res = wifi_module->process_write((CSocket*)client);
 						}
 						else
+						{
 	    			    	res = wifi_module->process_cmd(client);
+						}
+	                	wifi_module->in_command = false;
 					}
     		    }  else
     		    {
@@ -120,9 +128,9 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
         }
 
         // step 4 - cancelation
-        if(signals & WIFI_CANCEL_SIGNAL)
+        if((signals & WIFI_CANCEL_SIGNAL) && wifi_module)
         {
-        	wifi_module->wifi_cancelation(false);
+        	wifi_module->wifi_cancelation(false, false);
         }
     }
 }
