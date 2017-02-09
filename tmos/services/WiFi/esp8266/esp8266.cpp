@@ -1462,9 +1462,10 @@ RES_CODE esp8266_module::wifi_sock_accept(CSocket* sock)
 {
 	if(listen_socket)
 	{
+		listen_socket->res = RES_BUSY_WAITING;
 		get_socket_state(10);
 		if(listen_socket->res & FLG_SIGNALED)
-			return listen_socket->res;
+			return (listen_socket->res ^ FLG_SIGNALED);
 		listen_socket->res = RES_BUSY_WAITING;
 		return RES_IDLE;
 	}
