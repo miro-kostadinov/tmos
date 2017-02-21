@@ -56,6 +56,20 @@ menu_template_t* GMenu::GetMenu(int parent_id, menu_template_t* start)
 	}
 	return nullptr;
 }
+int GMenu::get_base_size()
+{
+	menu_template_t* tmp = base;
+	int res = 0;
+	if(tmp)
+	{
+		while(!IsEmpty(tmp))
+		{
+			++res;
+			++tmp;
+		}
+	}
+	return res;
+}
 
 int GMenu::GetMenuSize(int menu_id)
 {
@@ -134,6 +148,7 @@ bool GMenu::add_item(int parent_id, int item_id, const CSTRING& name, short unsi
 {
 	menu_template_t * new_base;
 
+	size = get_base_size();
 	new_base = (menu_template_t *)tsk_malloc_clear((size +2)*sizeof(menu_template_t));
 	if(!new_base)
 		return false;
@@ -197,8 +212,8 @@ bool GMenu::RemoveItem(int item_id)
 		return true;
 	if(GetMenu(ptr->item))
 		RemoveItem(ptr->item);
-//	int pos = ptr - base;
 
+	size = get_base_size();
 	new_base = (menu_template_t *)tsk_malloc_clear((size +2)*sizeof(menu_template_t));
 	if(!new_base)
 		return false;
@@ -241,13 +256,6 @@ bool GMenu::RemoveItem(int item_id)
 			base[i].item_name.free();
 			continue;
 		}
-//		if(i==pos)
-//		{
-//			if(menu == base+i || item == base+i)
-//				item=menu=new_base;
-//			base[i].item_name.free();
-//			continue;
-//		}
 		new_base[j].parent = base[i].parent;
 		new_base[j].item = base[i].item;
 		new_base[j].flags = base[i].flags;
@@ -298,6 +306,7 @@ bool GMenu::InsertItem(int item_id, int new_item_id, const CSTRING& new_item_nam
 			item_pos /= sizeof(menu_template_t);
 	}
 
+	size = get_base_size();
 	new_base = (menu_template_t *)tsk_malloc_clear((size +2)*sizeof(menu_template_t));
 	if(!new_base)
 		return false;

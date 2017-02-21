@@ -126,6 +126,7 @@ protected:
 	virtual bool set_scroll(void);
 	bool add_item(int parent_id, int item_id, const CSTRING& name, short unsigned int flg =0);
 	void adjust_item_names();
+	int get_base_size();
 };
 
 unsigned int remove_amp(CSTRING& str);
