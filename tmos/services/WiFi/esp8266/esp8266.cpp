@@ -23,6 +23,10 @@
 WEAK_C void wifi_on_pwron(wifi_module_type* mod)
 {
 	//TODO: Trace various info
+	unsigned int pwr = 50;
+	CSTRING cmd;
+	cmd.format("+RFPOWER=%u", pwr);
+	mod->wifi_send_cmd(cmd.c_str(), 5);
 	mod->wifi_watchdog_cnt = WIFI_WDT_PERIOD;
 }
 
@@ -1348,12 +1352,12 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 
 RES_CODE esp8266_module::wifi_sock_connect_adr(CSocket* sock)
 {
-	return RES_SIG_ERROR;
+	return wifi_sock_connect_url(sock);
 }
 
 RES_CODE esp8266_module::wifi_sock_connect_url(CSocket* sock)
 {
-	CSTRING cmd;;
+	CSTRING cmd;
 
 	for(int try_cnt=0; sock && try_cnt <3; try_cnt++ )
 	{
