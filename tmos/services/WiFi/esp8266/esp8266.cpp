@@ -1274,8 +1274,8 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 		    TRACELN1("WIFI: write OK");
 			return RES_SIG_OK;
 		}
-		if(size >1022)
-			size = 1022;
+		if(size > 2048)
+			size = 2048;
 
 		if(sock->sock_state != SOCKET_CONECTED)
 			break;
