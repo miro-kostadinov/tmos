@@ -886,7 +886,9 @@ ip_output_hinted(struct pbuf *p, ip_addr_t *src, ip_addr_t *dest,
 void
 ip_debug_print(struct pbuf *p)
 {
+#ifdef LWIP_DEBUG
   struct ip_hdr *iphdr = (struct ip_hdr *)p->payload;
+#endif
 
   LWIP_DEBUGF(IP_DEBUG, ("IP header:\n"));
   LWIP_DEBUGF(IP_DEBUG, ("+-------------------------------+\n"));
