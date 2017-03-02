@@ -117,8 +117,9 @@
     FILE_DRV_INDX,					//83
     GSM_DRV_INDX,					//84
     PRN_DRV_INDX,					//85
-
-    INALID_DRV_INDX	                /*!<  invalid	                         */
+    GSM_BT_DRV_INDX,				//86  Blue tooth
+	WIFI_DRV_INDX,					//87  WiFi
+	INALID_DRV_INDX	                /*!<  invalid	                         */
 };
 
 }

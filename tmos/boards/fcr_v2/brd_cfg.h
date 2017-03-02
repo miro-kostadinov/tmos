@@ -72,4 +72,14 @@
 
 #define USE_SDIO_MULTIPLE_SLOTS	1
 
+/// Ethernet
+#define USE_LWIP_1_4_1		1
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//		Wi-Fi ESP8266 DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define USE_WIFI 			1
+#define USB_WIFI_ESP8266	1
+
+
 #endif /* BRD_CFG_H_ */

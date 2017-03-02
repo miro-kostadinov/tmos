@@ -10,7 +10,7 @@ OUT_NAME	?= fcr_v2
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].
-OPT			?= -O0
+OPT			?= -O1
 
 # Build library/binary/hex. can be [y, n]
 BUILD_LIB	?= y
@@ -93,6 +93,12 @@ USE_GPIO_EXPANDER ?=n
 #net
 USE_NET			?=y
 
+# Ethernet
+USE_LWIP_1_4_1	?=y
+
+# WiFi
+USE_WIFI			?=y
+USB_WIFI_ESP8266 	?=y
 
 ################################################################################
 
@@ -104,7 +110,7 @@ local_h_src-y 	:=
 
 local_c_src-y 	+= swi_tab.c
  
-local_h_src-y 	+= brd_cfg.h brd_cpp.h swi_tab.h trace.h
+local_h_src-y 	+= brd_cfg.h brd_cpp.h swi_tab.h trace.h lwipopts.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
