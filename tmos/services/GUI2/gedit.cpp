@@ -610,9 +610,9 @@ bool GEdit::set_cursor_y_char(void)
 
 		if (len == max_chars)													//checks if the maximum number of characters has been reached
 		{
-    		if (tmp_len && text[len] && !strchr(" -\n\r", text[len]))
-    			len = tmp_len;
-			if ((signed int)(index - len) < 0 || text[len] == 0)								//if the index is higher than this number, else breaks the cycle
+			if (tmp_len && text[len] && !strchr(" -\n\r", text[len]))
+				len = tmp_len;
+			if ((signed int) (index - len) < 0 || text[len] == 0) //if the index is higher than this number, else breaks the cycle
 				break;
 			else
 				index -= len;													//subtracts it from the index

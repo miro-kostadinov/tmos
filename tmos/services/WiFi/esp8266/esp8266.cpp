@@ -41,7 +41,7 @@ bool wifi_get_param(const char*row, CSTRING& param, unsigned int num)
 	const char* start=row;
 	const char* end;
 
-	if(row && &param)
+	if(row && IS_NOT_NULL(&param))
 	{
 		param.clear();
 		if(*start == '+')

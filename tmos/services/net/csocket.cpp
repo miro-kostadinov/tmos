@@ -10,7 +10,7 @@
 
 NET_CODE CSocket::open(const sock_mode_t* smode)
 {
-	if(!this)
+	if(!IS_NOT_NULL(this))
 		return NET_ERR_OUT_OF_MEMORY;
 
 	tsk_open(smode->driver, smode);

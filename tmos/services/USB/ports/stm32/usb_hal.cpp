@@ -137,8 +137,8 @@ static void stm_otg_core_init2(USB_DRV_INFO drv_info)
 
     }
 	//--- general core configuration register (GCCFG)
-    if(!(cfg & CFG_STM32_OTG_ULPI))
-    	hw_base->core_regs.GCCFG = OTG_GCCFG_PWRDWN;
+	if (!(cfg & CFG_STM32_OTG_ULPI))
+		hw_base->core_regs.GCCFG = OTG_GCCFG_PWRDWN;
 
 	// CIDSCHG is set on powerup or after phy change, we do not need it now...
 	hw_base->core_regs.GINTSTS = OTG_GINTSTS_CIDSCHG;
@@ -160,14 +160,13 @@ static void stm_otg_core_init2(USB_DRV_INFO drv_info)
 	if (cfg & CFG_STM32_OTG_FORCE_DEVICE)
 		new_reg |= OTG_GUSBCFG_FDMOD;
 
-    if (cfg & CFG_STM32_OTG_FORCE_HOST)
-    	new_reg |= OTG_GUSBCFG_FHMOD;
+	if (cfg & CFG_STM32_OTG_FORCE_HOST)
+		new_reg |= OTG_GUSBCFG_FHMOD;
 
-
-	if(cfg & CFG_STM32_OTG_INTERNAL_VBUS)
+	if (cfg & CFG_STM32_OTG_INTERNAL_VBUS)
 		new_reg &= ~(OTG_GUSBCFG_ULPIEVBUSD | OTG_GUSBCFG_ULPIEVBUSI); /* Use internal VBUS */
 	else
-		new_reg |= OTG_GUSBCFG_ULPIEVBUSD | OTG_GUSBCFG_ULPIEVBUSI;  /* Use external VBUS */
+		new_reg |= OTG_GUSBCFG_ULPIEVBUSD | OTG_GUSBCFG_ULPIEVBUSI; /* Use external VBUS */
 
 
     hw_base->core_regs.GUSBCFG = new_reg;
@@ -2554,11 +2553,11 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 			if(is_in)
 			{
 				// IN transfer competed
-		    	epdir->epd_pending = hnd->next;
-		    	if(!hnd->len || (hnd->res & FLG_OK))
-		    		usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
-		    	else
-		    		usr_usb_HND_SET_STATUS(hnd, RES_SIG_IDLE);
+				epdir->epd_pending = hnd->next;
+				if (!hnd->len || (hnd->res & FLG_OK))
+					usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
+				else
+					usr_usb_HND_SET_STATUS(hnd, RES_SIG_IDLE);
 				epdir->epd_state = ENDPOINT_STATE_IDLE;
 			} else
 			{
@@ -2576,16 +2575,16 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 				}
 
 		    	//toggle data
-		    	if(epdir->epd_type == ENDPOINT_TYPE_BULK)
-		    		epdir->epd_flags ^= EPD_FLAG_DATA1;
+				if (epdir->epd_type == ENDPOINT_TYPE_BULK)
+					epdir->epd_flags ^= EPD_FLAG_DATA1;
 
-		   		// End of transfer ?
-				if(!len)
+				// End of transfer ?
+				if (!len)
 				{
-			    	TRACE1_USB(" Wr!");
-			    	epdir->epd_pending = hnd->next;
-			    	usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
-			    	hnd = epdir->epd_pending;
+					TRACE1_USB(" Wr!");
+					epdir->epd_pending = hnd->next;
+					usr_usb_HND_SET_STATUS(hnd, RES_SIG_OK);
+					hnd = epdir->epd_pending;
 				}
 				//check if we have more to write
 				if(hnd)

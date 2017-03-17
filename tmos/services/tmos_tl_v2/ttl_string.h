@@ -1309,10 +1309,10 @@ basic_string<CharT>& basic_string<CharT>::erase(size_type pos, size_type n)
     			dst = m_data + pos;
     			src = dst+n;
 
-    			for(n=0; n<sz; ++n)
-    				dst[n] = src[n];
+				for (n = 0; n < sz; ++n)
+					dst[n] = src[n];
 
-				m_set_size(pos+sz);
+				m_set_size(pos + sz);
     		}
     	}
 	}

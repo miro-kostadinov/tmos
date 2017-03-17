@@ -191,9 +191,9 @@ static void usb_write_payload(RwReg* dst, HANDLE hnd, unsigned int size)
 	    else
 	    {
 		    hnd->len -= size;
-		    while(size--)
-		        *dst = *src++;
-		   	hnd->src.as_byteptr = src;
+			while (size--)
+				*dst = *src++;
+			hnd->src.as_byteptr = src;
 	   		return;
 	    }
     }

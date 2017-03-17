@@ -48,7 +48,7 @@ bool hmac_sha1::Reset(const char* key, unsigned int key_len)
 
 bool hmac_sha1::Result(CSTRING& message)
 {
-	if(Result() && &message)
+	if(Result() && IS_NOT_NULL(&message))
 		return SHA1::Result(message);
 	return false;
 }

@@ -24,7 +24,7 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
     WIFI_DRIVER_DATA * drv_data = drv_info->drv_data;
     HANDLE hlp_hnd = &drv_data->helper_hnd;
     HANDLE client;
-    unsigned int signals/*, measure=0*/;
+    unsigned int signals;
     wifi_module_type* wifi_module;
     RES_CODE res;
 
@@ -36,32 +36,22 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
 
 
     wifi_module = drv_data->wifi_module;
-	if(!wifi_module)
-	{
-	    wifi_module = wifi_detect(drv_info);
-	}
 
     for(;;)
     {
-        if( wifi_module)
-        {
-        	// make sure the receiver is ON
-        	wifi_module->process_input(0, NULL);
-        	if(res & WIFI_NOTIFY_SIGNAL)
-        		wifi_module->wifi_notificatoin_response();
-        }
-        else
-        {
-   		    wifi_module = wifi_detect(drv_info);
-        }
-        signals = tsk_wait_signal(SIGNAL_ANY, 1000);
+        if (!wifi_module)
+			wifi_module = wifi_detect(drv_info);
 
-        // step 1 - Check the WIFI
-        res = signals & ~hlp_hnd->signal;
-        if( res && wifi_module)
-        {
-        	wifi_module->process_input(res, NULL);
-        }
+		signals = tsk_wait_signal(SIGNAL_ANY, 1000);
+
+		// step 1 - Check the WIFI
+		res = signals & ~hlp_hnd->signal;
+		if (wifi_module)
+		{
+			wifi_module->process_input(res & ~WIFI_NOTIFY_SIGNAL, NULL);
+			if (res & WIFI_NOTIFY_SIGNAL)
+				wifi_module->wifi_notificatoin_response();
+		}
 
         // step 2 - Check the driver
         if(signals & hlp_hnd->signal)
@@ -71,11 +61,6 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
         	if(hlp_hnd->res == RES_OK)
         	{
         	    client = (HANDLE)hlp_hnd->dst.as_voidptr;
-
-//        		if(!wifi_module)
-//        		{
-//        		    wifi_module = wifi_detect(drv_info);
-//        		}
 
     		    if(wifi_module)
     		    {

@@ -13,6 +13,8 @@
 
 #ifndef __ASSEMBLY__
 
+#define IS_NOT_NULL(x) (int(x)+0)		//!< Suppress GCC 6.X warnings
+
 #define __no_init		__attribute__ ((section (".ramnoinitsec")))
 
 #ifdef __cplusplus

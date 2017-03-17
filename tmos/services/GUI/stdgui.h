@@ -119,7 +119,7 @@ struct CMessageBox: CWindow
 
     void update(const char* str)
     {
-    	if(this)
+    	if(IS_NOT_NULL(this))
     	{
     		msg_text = str;
     		msg_start = msg_text.c_str();
@@ -127,7 +127,7 @@ struct CMessageBox: CWindow
     };
     void update(CSTRING& str)
     {
-    	if(this)
+    	if(IS_NOT_NULL(this))
     	{
     		msg_text = str;
     		msg_start = msg_text.c_str();

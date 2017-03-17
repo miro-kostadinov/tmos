@@ -25,7 +25,7 @@ bool GTimer::TimerProc(void)
 GTimer::~GTimer()
 {
 	GTimer *timer = base_timer;
-	if(this)
+	if(IS_NOT_NULL(this))
 	{
 		if(this == base_timer)
 		{

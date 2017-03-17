@@ -18,7 +18,7 @@
  */
 CHandle::CHandle(void)
 {
-	if(this)
+	if(IS_NOT_NULL(this))
 	{
 		drv_index = INALID_DRV_INDX;
 		res = RES_CLOSED;
@@ -30,7 +30,7 @@ CHandle::CHandle(void)
  */
 CHandle::CHandle(DRIVER_INDEX index, const void * m)
 {
-	if(this)
+	if(IS_NOT_NULL(this))
 	{
 		drv_index = index;
 		mode.as_voidptr = (void*)m;
@@ -54,7 +54,7 @@ CHandle::~CHandle()
  */
 void CHandle::close()
 {
-	if(this)
+	if(IS_NOT_NULL(this))
 	{
 		if(res < RES_CLOSED)
 		{
@@ -97,7 +97,7 @@ void CHandle::close()
  */
 bool CHandle::tsk_open(DRIVER_INDEX index, const void * m)
 {
-	if(this)
+	if(IS_NOT_NULL(this))
 	{
 		unsigned int sig;
 
@@ -138,7 +138,7 @@ bool CHandle::tsk_open(DRIVER_INDEX index, const void * m)
 
 bool CHandle::drv_open(DRIVER_INDEX index, const void * m)
 {
-	if (this)
+	if (IS_NOT_NULL(this) )
 	{
 		error = 0;
 		if (!(res & FLG_CLOSED))

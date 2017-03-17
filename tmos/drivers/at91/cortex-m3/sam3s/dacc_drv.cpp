@@ -109,9 +109,9 @@ void DACC_DCR(DACC_INFO drv_info, unsigned int reason, HANDLE param)
             {
             	pDacc->DACC_PTCR = DACC_PTCR_TXTDIS;
             	drv_data->pending = param->next;
-            	if(drv_data->pending)
-            		START_TX_HND(pDacc, drv_data->pending);
-		    	svc_HND_SET_STATUS(param, RES_SIG_IDLE);
+			if (drv_data->pending)
+				START_TX_HND(pDacc, drv_data->pending);
+			svc_HND_SET_STATUS(param, RES_SIG_IDLE);
 
             } else
             	param->svc_list_cancel(drv_data->pending);
@@ -162,8 +162,8 @@ void DACC_ISR(DACC_INFO drv_info )
       		hnd->len = 0;
   			hnd->src.as_int = pDacc->DACC_TPR;
       		drv_data->pending = hnd->next;
-	      	if( drv_data->pending )
-	          	START_TX_HND(pDacc, drv_data->pending);
+			if (drv_data->pending)
+				START_TX_HND(pDacc, drv_data->pending);
 			usr_HND_SET_STATUS(hnd, RES_SIG_OK);
 
 		}

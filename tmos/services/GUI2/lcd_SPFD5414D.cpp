@@ -238,10 +238,10 @@ void SPFD5414D::redraw_rect (GObject* object, RECT_T area)						//redraws an are
     for(frame.y0=area.y0; frame.y0 <= area.y1; frame.y0++)
     {
     	frame.y1 = frame.y0+1;
-    	if(object)
-    		object->draw_this(this);
+		if (object)
+			object->draw_this(this);
 
-		lcd_hnd->tsk_write(cmd_address, sizeof(cmd_address)/2);
+		lcd_hnd->tsk_write(cmd_address, sizeof(cmd_address) / 2);
 		update_screen();
 
 		cmd_address[2]++;

@@ -820,7 +820,7 @@ const char* CSTRING::c_str() const
 	/*
 	 * 	NOTE: NULL can be returned!
 	 */
-	return (this?(RAM_ADR(storage.adr)?storage.ram->buf: storage.rom): "");
+	return (IS_NOT_NULL(this)?(RAM_ADR(storage.adr)?storage.ram->buf: storage.rom): "");
 }
 
 /**
