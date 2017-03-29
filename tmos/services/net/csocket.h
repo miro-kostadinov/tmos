@@ -76,6 +76,7 @@ struct CSocket: public CHandle
 	NET_CODE accept(CSocket* new_sock, unsigned int timeout = 1024*1024);
 	RES_CODE gethostbyname(CSTRING& ip_adr, const char* url);
 	RES_CODE get_addr(unsigned int& ip_adr, unsigned short& port, int local);
+	RES_CODE get_addr(unsigned int& ip_adr, unsigned short& port, int local, unsigned int timeout);
 	RES_CODE close();
 };
 

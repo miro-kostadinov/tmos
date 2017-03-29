@@ -296,3 +296,22 @@ RES_CODE CSocket::get_addr(unsigned int& ip_adr, unsigned short& port, int local
 	}
 	return (res);
 }
+
+RES_CODE CSocket::get_addr(unsigned int& ip_adr, unsigned short& port, int local, unsigned int timeout)
+{
+	if(complete())
+	{
+		src.as_intptr = &ip_adr;
+		dst.as_shortptr = &port;
+		len = local;
+		set_res_cmd(SOCK_CMD_GET_ADDR);
+	    tsk_start_handle();
+	    if(tsk_wait_signal(signal, timeout))
+	    {
+	        res &= ~FLG_SIGNALED;
+	    }
+	    else
+	    	tsk_cancel();
+	}
+	return (res);
+}
