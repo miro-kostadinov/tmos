@@ -12,6 +12,7 @@
 #include "lwip/netif.h"
 #include <lwip/tcp.h>
 #include <lwip/tcp_impl.h>
+#include <lwip/udp.h>
 #include <mqueue.h>
 #include <lwip_drv.h>
 
@@ -24,6 +25,10 @@ extern "C"
 #define LWIP_TCP_PCBS_CNT 4
 #endif
 
+#ifndef LWIP_UDP_PCBS_CNT
+#define LWIP_UDP_PCBS_CNT 4
+#endif
+
 struct lwip_sock_data_t
 {
 	struct tcp_pcb* pcb;
@@ -33,6 +38,23 @@ struct lwip_sock_data_t
 };
 
 struct lwip_sock_data_t g_lwip_socks[LWIP_TCP_PCBS_CNT];
+
+#if LWIP_UDP_PCBS_CNT
+struct lwip_udp_rcv_data_t
+{
+	struct pbuf* p;
+	ip_addr_t 	addr;
+	u16_t 		port;
+};
+struct lwip_udp_sock_data_t
+{
+	struct udp_pcb* pcb;
+	unsigned int recv_pos;
+	fmqueue< lwip_udp_rcv_data_t, LWIP_DRV_MAX_API_QUEUE >	recv_que;
+};
+
+struct lwip_udp_sock_data_t g_lwip_udp_socks[LWIP_UDP_PCBS_CNT];
+#endif
 
 //--------------------   WRITE   ---------------------------------------------//
 /**
@@ -115,63 +137,114 @@ err_t lwip_cbf_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 RES_CODE lwip_api_write(CSocket* client, struct netif *netif)
 {
 	RES_CODE res = RES_SIG_ERROR | RES_FATAL;
+	lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
 
 	//remember the start position
 	client->dst.as_voidptr = client->src.as_voidptr;
 
-	if(client->mode1 == TCPHS_ESTABLISHED && client->sock_id < LWIP_TCP_PCBS_CNT)
+	if(sock_mode->mode.sock_type == IP_SOCKET_TCP)
 	{
-		lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
-
-		if(sock_data->pcb)
+		if(client->mode1 == TCPHS_ESTABLISHED && client->sock_id < LWIP_TCP_PCBS_CNT)
 		{
-			unsigned int len;
-			u8_t apiflags;
+			lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
 
-			len = client->len;
-			if(len)
+			if(sock_data->pcb)
 			{
+				unsigned int len;
+				u8_t apiflags;
 
-				if(client->cmd & FLAG_LOCK)
-				    apiflags = TCP_WRITE_FLAG_MORE;
-				else
-				    apiflags = 0;
-				if(len > 0xffff)
+				len = client->len;
+				if(len)
 				{
-					len = 0xffff;
-				    apiflags = TCP_WRITE_FLAG_MORE;
-				}
 
-				if ( len > tcp_sndbuf(sock_data->pcb))
-				{
-				    len = tcp_sndbuf(sock_data->pcb);
-				    apiflags = TCP_WRITE_FLAG_MORE;
-				}
-				res = tcp_write(sock_data->pcb, client->src.as_voidptr , len, apiflags);
-				//process ERR_MEM here ??
+					if(client->cmd & FLAG_LOCK)
+					    apiflags = TCP_WRITE_FLAG_MORE;
+					else
+					    apiflags = 0;
+					if(len > 0xffff)
+					{
+						len = 0xffff;
+					    apiflags = TCP_WRITE_FLAG_MORE;
+					}
 
-				if(res == ERR_OK)
-				{
-					//data was queued we will receive a callback
-					client->mode1 = TCPHS_WRITING;
+					if ( len > tcp_sndbuf(sock_data->pcb))
+					{
+					    len = tcp_sndbuf(sock_data->pcb);
+					    apiflags = TCP_WRITE_FLAG_MORE;
+					}
+					res = tcp_write(sock_data->pcb, client->src.as_voidptr , len, apiflags);
+					//process ERR_MEM here ??
 
-					client->src.as_byteptr += len;
-					client->len -= len;
-					if( !(client->cmd & FLAG_LOCK) && !client->len)
-						tcp_output(sock_data->pcb);
-					res = 0;
+					if(res == ERR_OK)
+					{
+						//data was queued we will receive a callback
+						client->mode1 = TCPHS_WRITING;
+
+						client->src.as_byteptr += len;
+						client->len -= len;
+						if( !(client->cmd & FLAG_LOCK) && !client->len)
+							tcp_output(sock_data->pcb);
+						res = 0;
+					} else
+					{
+						//some error occurred
+						client->error = res;
+						res = RES_SIG_ERROR;
+					}
 				} else
 				{
-					//some error occurred
-					client->error = res;
-					res = RES_SIG_ERROR;
+					res = RES_SIG_OK;
 				}
-			} else
-			{
-				res = RES_SIG_OK;
 			}
 		}
+	} else
+	{
+#if LWIP_UDP_PCBS_CNT
+		if(sock_mode->mode.sock_type == IP_SOCKET_UDP)
+		{
+			if(client->mode1 == TCPHS_ESTABLISHED && client->sock_id < LWIP_UDP_PCBS_CNT)
+			{
+				lwip_udp_sock_data_t* sock_data = &g_lwip_udp_socks[client->sock_id];
+
+				if(sock_data->pcb)
+				{
+					res = RES_SIG_OK;
+					while(client->len)
+					{
+						struct pbuf *p;
+						unsigned int len;
+
+						len = client->len;
+						if(len > 508)
+							len = 508;
+
+			            p = pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
+			            if(p == NULL)
+			            {
+							client->error = res;
+							res = RES_SIG_ERROR;
+							break;
+			            }
+						memcpy(p->payload, client->src.as_voidptr , len);
+						client->error = udp_send(sock_data->pcb, p);
+						pbuf_free(p);
+						if(client->error == ERR_OK)
+						{
+							client->src.as_byteptr += len;
+							client->len -= len;
+						} else
+						{
+							res = RES_SIG_ERROR;
+							break;
+						}
+
+					}
+				}
+			}
+		}
+#endif
 	}
+
 
 	return (res);
 }
@@ -227,62 +300,120 @@ RES_CODE lwip_api_read(CSocket* client)
 		res =  RES_SIG_OK;
 	} else
 	{
+		lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
+
 		res = RES_SIG_ERROR | RES_FATAL;
-		if(client->sock_id < LWIP_TCP_PCBS_CNT)
+		if(sock_mode->mode.sock_type == IP_SOCKET_TCP)
 		{
-			lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
-			struct pbuf *p;
-
-			res = RES_IDLE;
-			if(client->mode1 == TCPHS_ESTABLISHED)
+			if(client->sock_id < LWIP_TCP_PCBS_CNT)
 			{
-				while( client->len && !sock_data->recv_que.empty() )
+				lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
+				struct pbuf *p;
+
+				res = RES_IDLE;
+				if(client->mode1 == TCPHS_ESTABLISHED)
 				{
-					unsigned int to_read;
-
-					p = sock_data->recv_que.top();
-
-					to_read = pbuf_copy_partial(p, client->dst.as_byteptr, client->len,
-							sock_data->recv_pos);
-					if(to_read)
+					while( client->len && !sock_data->recv_que.empty() )
 					{
-						client->dst.as_byteptr += to_read;
-						client->len -= to_read;
-						sock_data->recv_pos += to_read;
+						unsigned int to_read;
 
-						if(sock_data->recv_pos == p->tot_len)
-						{
-							tcp_recved(sock_data->pcb, p->tot_len);
-							pbuf_free(p);
-							sock_data->recv_que.pop(p);
-							sock_data->recv_pos =0;
-						}
+						p = sock_data->recv_que.top();
 
-						res = RES_SIG_OK;
-					} else
-					{
-						// nothing was read from this buffer
-						if(p)
+						to_read = pbuf_copy_partial(p, client->dst.as_byteptr, client->len,
+								sock_data->recv_pos);
+						if(to_read)
 						{
-							to_read = p->tot_len;
-							if(sock_data->recv_pos <= to_read)
-								to_read -= sock_data->recv_pos;
-							sock_data->recv_pos =0;
-							tcp_recved(sock_data->pcb, to_read);
-							pbuf_free(p);
+							client->dst.as_byteptr += to_read;
+							client->len -= to_read;
+							sock_data->recv_pos += to_read;
+
+							if(sock_data->recv_pos == p->tot_len)
+							{
+								tcp_recved(sock_data->pcb, p->tot_len);
+								pbuf_free(p);
+								sock_data->recv_que.pop(p);
+								sock_data->recv_pos =0;
+							}
+
 							res = RES_SIG_OK;
-
 						} else
 						{
-							res = RES_SIG_ERROR | RES_FATAL;
+							// nothing was read from this buffer
+							if(p)
+							{
+								to_read = p->tot_len;
+								if(sock_data->recv_pos <= to_read)
+									to_read -= sock_data->recv_pos;
+								sock_data->recv_pos =0;
+								tcp_recved(sock_data->pcb, to_read);
+								pbuf_free(p);
+								res = RES_SIG_OK;
+
+							} else
+							{
+								res = RES_SIG_ERROR | RES_FATAL;
+							}
+
+							sock_data->recv_que.pop(p);
+
+							return res;
 						}
-
-						sock_data->recv_que.pop(p);
-
-						return res;
 					}
 				}
 			}
+		} else
+		{
+#if LWIP_UDP_PCBS_CNT
+			if(sock_mode->mode.sock_type == IP_SOCKET_TCP && client->sock_id < LWIP_UDP_PCBS_CNT)
+			{
+				lwip_udp_sock_data_t* sock_data = &g_lwip_udp_socks[client->sock_id];
+				struct lwip_udp_rcv_data_t pdata;
+
+				res = RES_IDLE;
+				if(client->mode1 == TCPHS_ESTABLISHED)
+				{
+					if( client->len && !sock_data->recv_que.empty() )
+					{
+						unsigned int to_read;
+
+						pdata = sock_data->recv_que.top();
+
+						to_read = pbuf_copy_partial(pdata.p, client->dst.as_byteptr, client->len,
+								sock_data->recv_pos);
+						if(to_read)
+						{
+							client->dst.as_byteptr += to_read;
+							client->len -= to_read;
+							sock_data->recv_pos += to_read;
+
+							res = RES_SIG_OK;
+							if(sock_data->recv_pos == pdata.p->tot_len)
+							{
+								pbuf_free(pdata.p);
+								sock_data->recv_que.pop(pdata);
+								sock_data->recv_pos =0;
+								res |= FLG_EOF;
+							}
+						} else
+						{
+							// nothing was read from this buffer
+							if(pdata.p)
+							{
+								sock_data->recv_pos =0;
+								pbuf_free(pdata.p);
+								res = RES_SIG_OK | FLG_EOF;
+
+							} else
+							{
+								res = RES_SIG_ERROR | RES_FATAL;
+							}
+
+							sock_data->recv_que.pop(pdata);
+						}
+					}
+				}
+			}
+#endif
 		}
 	}
 
@@ -293,6 +424,49 @@ RES_CODE lwip_api_read(CSocket* client)
 	}
 	return (res);
 }
+
+#if LWIP_UDP_PCBS_CNT
+void lwip_cbf_udp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
+{
+	CSocket* client = (CSocket*)arg;
+
+	TRACELN_LWIP("LWIP UDP recv %x %x", client, err);
+	if(p)
+	{
+		TRACE_LWIP(" len=%d tot=%d", p->len, p->tot_len);
+
+		if(client && client->sock_id < LWIP_UDP_PCBS_CNT)
+		{
+			lwip_udp_sock_data_t* sock_data = &g_lwip_udp_socks[client->sock_id];
+
+			if(sock_data->recv_que.push({p,*addr,port}))
+			{
+				//send signal
+				//Get from the driver
+				p = NULL;
+				if(locked_clr_byte(&client->mode1, TCPHS_OP_READING))
+				{
+					RES_CODE res = lwip_api_read(client);
+
+					if(res & FLG_SIGNALED)
+					{
+						tsk_HND_SET_STATUS(client, res);
+					}
+				} else
+					if(locked_clr_byte(&client->mode1, TCPHS_OP_ACCEPTING))
+					{
+						*client->src.as_shortptr = addr->addr;
+						*client->dst.as_shortptr = port;
+
+					}
+
+			}
+		}
+	}
+	if(p)
+		pbuf_free(p);
+}
+#endif //LWIP_UDP_PCBS_CNT
 
 //--------------------   Helper   --------------------------------------------//
 /**
@@ -350,23 +524,50 @@ RES_CODE lwip_sock_open(CSocket* client, struct netif *netif)
 	//release the old one?
 	if(sock_mode && client->sock_id == SOCKET_ID_INVALID)
 	{
-		for(uint32_t i=0; i <LWIP_TCP_PCBS_CNT; i++)
+		switch(sock_mode->mode.sock_type)
 		{
-			if(g_lwip_socks[i].pcb == NULL)
+		case IP_SOCKET_TCP:
+			for(uint32_t i=0; i <LWIP_TCP_PCBS_CNT; i++)
 			{
-				pcb = tcp_alloc(sock_mode->lwip_priority);
-				if(pcb)
+				if(g_lwip_socks[i].pcb == NULL)
 				{
-					g_lwip_socks[i].pcb = pcb;
-					g_lwip_socks[i].recv_pos = 0;
-					client->sock_id = i;
-					client->mode1 = TCPHS_NEW;
-					lwip_tcp_setup(client, pcb);
-					res = RES_SIG_OK;
-				} else
-					res = RES_SIG_OUT_OF_MEMORY;
-				break;
+					pcb = tcp_alloc(sock_mode->lwip_priority);
+					if(pcb)
+					{
+						g_lwip_socks[i].pcb = pcb;
+						g_lwip_socks[i].recv_pos = 0;
+						client->sock_id = i;
+						client->mode1 = TCPHS_NEW;
+						lwip_tcp_setup(client, pcb);
+						res = RES_SIG_OK;
+					} else
+						res = RES_SIG_OUT_OF_MEMORY;
+					break;
+				}
 			}
+			break;
+#if LWIP_UDP_PCBS_CNT
+		case IP_SOCKET_UDP:
+			for(uint32_t i=0; i <LWIP_UDP_PCBS_CNT; i++)
+			{
+				if(g_lwip_udp_socks[i].pcb == NULL)
+				{
+					g_lwip_udp_socks[i].pcb = udp_new();
+					if(g_lwip_udp_socks[i].pcb)
+					{
+						g_lwip_udp_socks[i].recv_pos = 0;
+						client->sock_id = i;
+						client->mode1 = TCPHS_NEW;
+						g_lwip_udp_socks[i].pcb->recv_arg = client;
+						g_lwip_udp_socks[i].pcb->recv = lwip_cbf_udp_recv;
+						res = RES_SIG_OK;
+					} else
+						res = RES_SIG_OUT_OF_MEMORY;
+					break;
+				}
+			}
+			break;
+#endif //LWIP_UDP_PCBS_CNT
 		}
 	}
 
@@ -378,30 +579,54 @@ RES_CODE lwip_sock_open(CSocket* client, struct netif *netif)
 
 static void api_tcp_drain(CSocket* client)
 {
-	if(client->sock_id < LWIP_TCP_PCBS_CNT)
-	{
-		struct pbuf *p;
-		lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
-		struct tcp_pcb *pcb;
+	lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
+	struct pbuf *p;
 
-		// Drain the recv_que.
-		while( sock_data->recv_que.pop(p) )
+	if(sock_mode->mode.sock_type == IP_SOCKET_TCP)
+	{
+		if(client->sock_id < LWIP_TCP_PCBS_CNT)
 		{
-			if (p)
+			lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
+			struct tcp_pcb *pcb;
+
+			// Drain the recv_que.
+			while( sock_data->recv_que.pop(p) )
 			{
-				unsigned int len = p->tot_len;
-				if(sock_data->recv_pos <= len)
-					len -= sock_data->recv_pos;
-				tcp_recved(sock_data->pcb,	len);
-				pbuf_free(p);
+				if (p)
+				{
+					unsigned int len = p->tot_len;
+					if(sock_data->recv_pos <= len)
+						len -= sock_data->recv_pos;
+					tcp_recved(sock_data->pcb,	len);
+					pbuf_free(p);
+				}
+				sock_data->recv_pos = 0;
 			}
-			sock_data->recv_pos = 0;
+			// Drain the accept_que.
+			while(sock_data->accept_que.pop(pcb))
+			{
+				tcp_abort(pcb);
+			}
 		}
-		// Drain the accept_que.
-		while(sock_data->accept_que.pop(pcb))
+	} else
+	{
+#if LWIP_UDP_PCBS_CNT
+		if(client->sock_id < LWIP_UDP_PCBS_CNT)
 		{
-			tcp_abort(pcb);
+			lwip_udp_rcv_data_t pdata;
+			lwip_udp_sock_data_t* sock_data = &g_lwip_udp_socks[client->sock_id];
+
+			// Drain the recv_que.
+			while( sock_data->recv_que.pop(pdata) )
+			{
+				if (pdata.p)
+				{
+					pbuf_free(pdata.p);
+				}
+				sock_data->recv_pos = 0;
+			}
 		}
+#endif
 	}
 
 }
@@ -409,78 +634,110 @@ static void api_tcp_drain(CSocket* client)
 static RES_CODE api_close_internal(CSocket* client, unsigned int rxtx)
 {
 	err_t res;
-	struct tcp_pcb *pcb;
+	lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
 
-	if(client->sock_id < LWIP_TCP_PCBS_CNT)
-		pcb = g_lwip_socks[client->sock_id].pcb;
-	else
-		pcb = NULL;
-
-	if(pcb && client->mode1)
+	if(sock_mode->mode.sock_type == IP_SOCKET_TCP)
 	{
-		// Set back some callback pointers
-		if (rxtx == LWIP_SHUT_RDWR)
-		{
-			pcb->callback_arg = NULL;
-		}
+		struct tcp_pcb *pcb;
 
-		if (pcb->state == LISTEN)
+		if(client->sock_id < LWIP_TCP_PCBS_CNT)
+			pcb = g_lwip_socks[client->sock_id].pcb;
+		else
+			pcb = NULL;
+
+		if(pcb && client->mode1)
 		{
-			pcb->accept = NULL;
-		} else
-		{
-			// some callbacks have to be reset if tcp_close is not successful
-			if (rxtx & LWIP_SHUT_RD)
-			{
-				pcb->recv = NULL;
-				pcb->accept = NULL;
-			}
-			if (rxtx & LWIP_SHUT_WR)
-			{
-				pcb->sent = NULL;
-			}
+			// Set back some callback pointers
 			if (rxtx == LWIP_SHUT_RDWR)
 			{
-				pcb->poll = NULL;
-				pcb->pollinterval = 4;
-				pcb->errf = NULL;
+				pcb->callback_arg = NULL;
+			}
+
+			if (pcb->state == LISTEN)
+			{
+				pcb->accept = NULL;
+			} else
+			{
+				// some callbacks have to be reset if tcp_close is not successful
+				if (rxtx & LWIP_SHUT_RD)
+				{
+					pcb->recv = NULL;
+					pcb->accept = NULL;
+				}
+				if (rxtx & LWIP_SHUT_WR)
+				{
+					pcb->sent = NULL;
+				}
+				if (rxtx == LWIP_SHUT_RDWR)
+				{
+					pcb->poll = NULL;
+					pcb->pollinterval = 4;
+					pcb->errf = NULL;
+				}
+			}
+
+			// Try to close the connection
+			if (rxtx == LWIP_SHUT_RDWR)
+			{
+				res = tcp_close(pcb);
+			}
+			else
+			{
+				res = tcp_shutdown(pcb, rxtx & LWIP_SHUT_RD, rxtx & LWIP_SHUT_WR);
+			}
+
+			if (res == ERR_OK)
+			{
+				// Closing succeeded
+				client->mode1 = TCPHS_UNKNOWN;
+				// Set back some callback pointers as conn is going away
+				g_lwip_socks[client->sock_id].pcb = NULL;
+				client->sock_id = SOCKET_ID_INVALID;
+
+			}
+			else
+			{
+				// Closing failed, restore some of the callbacks
+				// Closing of listen pcb will never fail!
+				lwip_tcp_setup(client, pcb);
+				// don't restore recv callback: we don't want to receive any more data
+				pcb->recv = NULL;
+
+				// If closing didn't succeed, we get called again either
+				// from poll_tcp or from sent_tcp
+				return RES_SIG_IDLE;
 			}
 		}
-
-		// Try to close the connection
-		if (rxtx == LWIP_SHUT_RDWR)
+		return RES_SIG_OK;
+	} else
+	{
+#if LWIP_UDP_PCBS_CNT
+		if(sock_mode->mode.sock_type == IP_SOCKET_UDP)
 		{
-			res = tcp_close(pcb);
-		}
-		else
-		{
-			res = tcp_shutdown(pcb, rxtx & LWIP_SHUT_RD, rxtx & LWIP_SHUT_WR);
-		}
+			struct udp_pcb *pcb;
 
-		if (res == ERR_OK)
-		{
-			// Closing succeeded
-			client->mode1 = TCPHS_UNKNOWN;
-			// Set back some callback pointers as conn is going away
-			g_lwip_socks[client->sock_id].pcb = NULL;
-			client->sock_id = SOCKET_ID_INVALID;
+			if(client->sock_id < LWIP_UDP_PCBS_CNT)
+				pcb = g_lwip_udp_socks[client->sock_id].pcb;
+			else
+				pcb = NULL;
 
-		}
-		else
-		{
-			// Closing failed, restore some of the callbacks
-			// Closing of listen pcb will never fail!
-			lwip_tcp_setup(client, pcb);
-			// don't restore recv callback: we don't want to receive any more data
-			pcb->recv = NULL;
+			if(pcb && client->mode1)
+			{
+				pcb->recv = NULL;
+				udp_disconnect(pcb);
+				udp_remove(pcb);
+				client->mode1 = TCPHS_UNKNOWN;
+				g_lwip_udp_socks[client->sock_id].pcb = NULL;
+				client->sock_id = SOCKET_ID_INVALID;
 
-			// If closing didn't succeed, we get called again either
-			// from poll_tcp or from sent_tcp
-			return RES_SIG_IDLE;
+			}
+			return RES_SIG_OK;
 		}
+#endif
 	}
 
-	return RES_SIG_OK;
+
+	return RES_SIG_ERROR;
 }
 
 RES_CODE lwip_sock_close(CSocket* client, struct netif *netif)
@@ -552,23 +809,63 @@ err_t lwip_cbf_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 
 RES_CODE lwip_sock_get_adr(CSocket* client, struct netif *netif)
 {
-	if(client->sock_id < LWIP_TCP_PCBS_CNT)
-	{
-		lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
+	lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
 
-		if(sock_data->pcb  )
+	if(sock_mode->mode.sock_type == IP_SOCKET_TCP)
+	{
+		if(client->sock_id < LWIP_TCP_PCBS_CNT)
 		{
-			if(client->len)
+			lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
+
+			if(sock_data->pcb  )
 			{
-				client->src.as_int = sock_data->pcb->local_ip.addr;
-				client->dst.as_int = sock_data->pcb->local_port;
-			} else
-			{
-				client->src.as_int = sock_data->pcb->remote_ip.addr;
-				client->dst.as_int = sock_data->pcb->remote_ip.addr;
+				if(client->len)
+				{
+					*client->src.as_intptr = sock_data->pcb->local_ip.addr;
+					*client->dst.as_shortptr = sock_data->pcb->local_port;
+				} else
+				{
+					*client->src.as_intptr = sock_data->pcb->remote_ip.addr;
+					*client->dst.as_shortptr = sock_data->pcb->remote_port;
+				}
+				return RES_SIG_OK;
 			}
-			return RES_SIG_OK;
 		}
+	} else
+	{
+#if LWIP_UDP_PCBS_CNT
+		if(sock_mode->mode.sock_type == IP_SOCKET_UDP)
+		{
+			if(client->sock_id < LWIP_UDP_PCBS_CNT)
+			{
+				lwip_udp_sock_data_t* sock_data = &g_lwip_udp_socks[client->sock_id];
+
+				if(sock_data->pcb  )
+				{
+					if(client->len)
+					{
+						*client->src.as_intptr = sock_data->pcb->local_ip.addr;
+						*client->dst.as_shortptr = sock_data->pcb->local_port;
+					} else
+					{
+						lwip_udp_rcv_data_t pdata;
+
+						if(sock_data->recv_que.empty())
+						{
+							client->mode1 |= TCPHS_OP_ACCEPTING;
+							return RES_IDLE;
+						} else
+						{
+							pdata = sock_data->recv_que.top();
+							*client->src.as_intptr = pdata.addr.addr;
+							*client->dst.as_shortptr = pdata.port;
+						}
+					}
+					return RES_SIG_OK;
+				}
+			}
+		}
+#endif
 	}
 	return RES_SIG_ERROR;
 }
@@ -576,45 +873,96 @@ RES_CODE lwip_sock_get_adr(CSocket* client, struct netif *netif)
 void lwip_finish_dns(CSocket* client, ip_addr_t *ipaddr)
 {
 	RES_CODE res = RES_SIG_ERROR;
-	lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
+	lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
 
-
-	if (ipaddr && client->sock_id < LWIP_TCP_PCBS_CNT)
+	if(sock_mode->mode.sock_type == IP_SOCKET_TCP)
 	{
+		lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
 
-		switch(client->mode0)
+
+		if (ipaddr && client->sock_id < LWIP_TCP_PCBS_CNT)
 		{
-		case 0:	// lwip_sock_get_host
-			ipaddr_nto_cstr(ipaddr, (CSTRING*)client->dst.as_voidptr);
-			res =  RES_SIG_OK;
-			break;
 
-		case 1: // lwip_sock_connect_url
-			if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
+			switch(client->mode0)
 			{
-				client->error = tcp_connect(sock_data->pcb, ipaddr,
-						client->dst.as_int, lwip_cbf_connected);
-				if(client->error == ERR_OK)
-				{
-					client->mode1 = TCPHS_CONECTING;
-					return;
-				}
-			}
-			break;
+			case 0:	// lwip_sock_get_host
+				ipaddr_nto_cstr(ipaddr, (CSTRING*)client->dst.as_voidptr);
+				res =  RES_SIG_OK;
+				break;
 
-		case 2: // lwip_sock_bind_url
-			if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
-			{
-				client->error = tcp_bind(sock_data->pcb, ipaddr, client->dst.as_int);
-
-				if(res==ERR_OK)
+			case 1: // lwip_sock_connect_url
+				if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
 				{
-					client->mode1 = TCPHS_BIND;
-					res = RES_SIG_OK;
+					client->error = tcp_connect(sock_data->pcb, ipaddr,
+							client->dst.as_int, lwip_cbf_connected);
+					if(client->error == ERR_OK)
+					{
+						client->mode1 = TCPHS_CONECTING;
+						return;
+					}
 				}
+				break;
+
+			case 2: // lwip_sock_bind_url
+				if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
+				{
+					client->error = tcp_bind(sock_data->pcb, ipaddr, client->dst.as_int);
+
+					if(res==ERR_OK)
+					{
+						client->mode1 = TCPHS_BIND;
+						res = RES_SIG_OK;
+					}
+				}
+				break;
 			}
-			break;
 		}
+	} else
+	{
+#if LWIP_UDP_PCBS_CNT
+		if(sock_mode->mode.sock_type == IP_SOCKET_UDP)
+		{
+			lwip_udp_sock_data_t* sock_data = &g_lwip_udp_socks[client->sock_id];
+
+
+			if (ipaddr && client->sock_id < LWIP_UDP_PCBS_CNT)
+			{
+
+				switch(client->mode0)
+				{
+				case 0:	// lwip_sock_get_host
+					ipaddr_nto_cstr(ipaddr, (CSTRING*)client->dst.as_voidptr);
+					res =  RES_SIG_OK;
+					break;
+
+				case 1: // lwip_sock_connect_url
+					if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
+					{
+						client->error = udp_connect(sock_data->pcb, ipaddr,	client->dst.as_int);
+						if(client->error == ERR_OK)
+						{
+							client->mode1 = TCPHS_ESTABLISHED;
+							return;
+						}
+					}
+					break;
+
+				case 2: // lwip_sock_bind_url
+					if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
+					{
+						client->error = udp_bind(sock_data->pcb, ipaddr, client->dst.as_int);
+
+						if(res==ERR_OK)
+						{
+							client->mode1 = TCPHS_BIND;
+							res = RES_SIG_OK;
+						}
+					}
+					break;
+				}
+			}
+		}
+#endif
 	}
 
 	tsk_HND_SET_STATUS(client, res);
@@ -674,25 +1022,57 @@ RES_CODE lwip_sock_get_host(CSocket* client, struct netif *netif)
 //--------------------   CONNECT   -------------------------------------------//
 RES_CODE lwip_sock_connect_adr(CSocket* client, struct netif *netif)
 {
-	if(client->sock_id < LWIP_TCP_PCBS_CNT)
-	{
-		lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
-		ip_addr ip;
+	lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
 
-		if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
+	if(sock_mode->mode.sock_type == IP_SOCKET_TCP)
+	{
+		if(client->sock_id < LWIP_TCP_PCBS_CNT)
 		{
-			if(ipaddr_aton(client->src.as_charptr, &ip))
+			lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
+			ip_addr ip;
+
+			if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
 			{
-				client->error = tcp_connect(sock_data->pcb, &ip,
-						client->dst.as_int, lwip_cbf_connected);
-				if(client->error == ERR_OK)
+				if(ipaddr_aton(client->src.as_charptr, &ip))
 				{
-					client->mode1 = TCPHS_CONECTING;
-					return (0);
+					client->error = tcp_connect(sock_data->pcb, &ip,
+							client->dst.as_int, lwip_cbf_connected);
+					if(client->error == ERR_OK)
+					{
+						client->mode1 = TCPHS_CONECTING;
+						return (0);
+					}
+				}
+
+			}
+		}
+	} else
+	{
+#if LWIP_UDP_PCBS_CNT
+		if(sock_mode->mode.sock_type == IP_SOCKET_UDP)
+		{
+			if(client->sock_id < LWIP_UDP_PCBS_CNT)
+			{
+				lwip_udp_sock_data_t* sock_data = &g_lwip_udp_socks[client->sock_id];
+				ip_addr ip;
+
+				if(sock_data->pcb && (client->mode1 & TCPHS_NEW) )
+				{
+					if(ipaddr_aton(client->src.as_charptr, &ip))
+					{
+						client->error = udp_connect(sock_data->pcb, &ip,
+								client->dst.as_int);
+						if(client->error == ERR_OK)
+						{
+							client->mode1 = TCPHS_ESTABLISHED;
+							return RES_SIG_OK;
+						}
+					}
+
 				}
 			}
-
 		}
+#endif
 	}
 	return RES_SIG_ERROR;
 }
@@ -703,11 +1083,32 @@ RES_CODE lwip_sock_connect_url(CSocket* client, struct netif *netif)
 
 	//try as IP address
 	res = lwip_sock_connect_adr(client, netif);
-	if(res != RES_IDLE && client->sock_id < LWIP_TCP_PCBS_CNT)
+	if(res != RES_IDLE && res != RES_SIG_OK)
 	{
-		client->mode0 = 1;
+		lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
 
-		res = lwip_start_dns(client, netif);
+		if(sock_mode->mode.sock_type == IP_SOCKET_TCP)
+		{
+			if(client->sock_id < LWIP_TCP_PCBS_CNT)
+			{
+				client->mode0 = 1;
+
+				res = lwip_start_dns(client, netif);
+			}
+		} else
+		{
+#if LWIP_UDP_PCBS_CNT
+			if(sock_mode->mode.sock_type == IP_SOCKET_UDP)
+			{
+				if(client->sock_id < LWIP_UDP_PCBS_CNT)
+				{
+					client->mode0 = 1;
+
+					res = lwip_start_dns(client, netif);
+				}
+			}
+#endif
+		}
 
 	}
 	return res;
@@ -719,31 +1120,69 @@ RES_CODE lwip_sock_connect_url(CSocket* client, struct netif *netif)
 
 RES_CODE lwip_sock_bind_adr(CSocket* client, struct netif *netif)
 {
-	if(client->sock_id < LWIP_TCP_PCBS_CNT)
+	lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
+
+	if(sock_mode->mode.sock_type == IP_SOCKET_TCP)
 	{
-		lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
-		err_t res;
-		ip_addr ip;
-		ip_addr* pip;
-
-		if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
+		if(client->sock_id < LWIP_TCP_PCBS_CNT)
 		{
-			if(!client->src.as_charptr)
-				pip = NULL;
-			else
-				pip = &ip;
-			if(!pip || ipaddr_aton(client->src.as_charptr, &ip))
-			{
-				res = tcp_bind(sock_data->pcb, pip, client->dst.as_int);
+			lwip_sock_data_t* sock_data = &g_lwip_socks[client->sock_id];
+			err_t res;
+			ip_addr ip;
+			ip_addr* pip;
 
-				client->error = res;
-				if(res==ERR_OK)
+			if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
+			{
+				if(!client->src.as_charptr)
+					pip = NULL;
+				else
+					pip = &ip;
+				if(!pip || ipaddr_aton(client->src.as_charptr, &ip))
 				{
-					client->mode1 = TCPHS_BIND;
-					return RES_SIG_OK;
+					res = tcp_bind(sock_data->pcb, pip, client->dst.as_int);
+
+					client->error = res;
+					if(res==ERR_OK)
+					{
+						client->mode1 = TCPHS_BIND;
+						return RES_SIG_OK;
+					}
 				}
 			}
 		}
+	} else
+	{
+#if LWIP_UDP_PCBS_CNT
+		if(sock_mode->mode.sock_type == IP_SOCKET_UDP)
+		{
+			if(client->sock_id < LWIP_UDP_PCBS_CNT)
+			{
+				lwip_udp_sock_data_t* sock_data = &g_lwip_udp_socks[client->sock_id];
+				err_t res;
+				ip_addr ip;
+				ip_addr* pip;
+
+				if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
+				{
+					if(!client->src.as_charptr)
+						pip = NULL;
+					else
+						pip = &ip;
+					if(!pip || ipaddr_aton(client->src.as_charptr, &ip))
+					{
+						res = udp_bind(sock_data->pcb, pip, client->dst.as_int);
+
+						client->error = res;
+						if(res==ERR_OK)
+						{
+							client->mode1 = TCPHS_BIND;
+							return RES_SIG_OK;
+						}
+					}
+				}
+			}
+		}
+#endif
 	}
 	return RES_SIG_ERROR;
 }
@@ -754,11 +1193,32 @@ RES_CODE lwip_sock_bind_url(CSocket* client, struct netif *netif)
 
 	//try as IP address
 	res = lwip_sock_bind_adr(client, netif);
-	if(res != RES_SIG_OK && client->sock_id < LWIP_TCP_PCBS_CNT)
+	if(res != RES_SIG_OK)
 	{
-		client->mode0 = 2;
+		lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
 
-		res = lwip_start_dns(client, netif);
+		if(sock_mode->mode.sock_type == IP_SOCKET_TCP)
+		{
+			if(client->sock_id < LWIP_TCP_PCBS_CNT)
+			{
+				client->mode0 = 2;
+
+				res = lwip_start_dns(client, netif);
+			}
+		} else
+		{
+#if LWIP_UDP_PCBS_CNT
+			if(sock_mode->mode.sock_type == IP_SOCKET_UDP)
+			{
+				if(client->sock_id < LWIP_UDP_PCBS_CNT)
+				{
+					client->mode0 = 2;
+
+					res = lwip_start_dns(client, netif);
+				}
+			}
+#endif
+		}
 
 	}
 	return res;
