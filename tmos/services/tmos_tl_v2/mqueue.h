@@ -147,7 +147,7 @@ public:
 		if(in != out)
 			return (items[out]);
 
-		return (NULL);
+		return T();
 	}
 };
 
