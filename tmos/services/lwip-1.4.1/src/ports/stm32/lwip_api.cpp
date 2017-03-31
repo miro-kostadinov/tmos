@@ -364,7 +364,7 @@ RES_CODE lwip_api_read(CSocket* client)
 		} else
 		{
 #if LWIP_UDP_PCBS_CNT
-			if(sock_mode->mode.sock_type == IP_SOCKET_TCP && client->sock_id < LWIP_UDP_PCBS_CNT)
+			if(sock_mode->mode.sock_type == IP_SOCKET_UDP && client->sock_id < LWIP_UDP_PCBS_CNT)
 			{
 				lwip_udp_sock_data_t* sock_data = &g_lwip_udp_socks[client->sock_id];
 				struct lwip_udp_rcv_data_t pdata;
@@ -430,7 +430,7 @@ void lwip_cbf_udp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t
 {
 	CSocket* client = (CSocket*)arg;
 
-	TRACELN_LWIP("LWIP UDP recv %x %x", client, err);
+	TRACELN_LWIP("LWIP UDP recv %x", client);
 	if(p)
 	{
 		TRACE_LWIP(" len=%d tot=%d", p->len, p->tot_len);
@@ -455,9 +455,10 @@ void lwip_cbf_udp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t
 				} else
 					if(locked_clr_byte(&client->mode1, TCPHS_OP_ACCEPTING))
 					{
-						*client->src.as_shortptr = addr->addr;
+						*client->src.as_intptr = addr->addr;
 						*client->dst.as_shortptr = port;
 
+						tsk_HND_SET_STATUS(client, RES_SIG_OK);
 					}
 
 			}
@@ -954,7 +955,7 @@ void lwip_finish_dns(CSocket* client, ip_addr_t *ipaddr)
 
 						if(res==ERR_OK)
 						{
-							client->mode1 = TCPHS_BIND;
+							client->mode1 = TCPHS_ESTABLISHED;
 							res = RES_SIG_OK;
 						}
 					}
@@ -1175,7 +1176,7 @@ RES_CODE lwip_sock_bind_adr(CSocket* client, struct netif *netif)
 						client->error = res;
 						if(res==ERR_OK)
 						{
-							client->mode1 = TCPHS_BIND;
+							client->mode1 = TCPHS_ESTABLISHED;
 							return RES_SIG_OK;
 						}
 					}
