@@ -442,6 +442,48 @@ ip_input(struct pbuf *p, struct netif *inp)
     } while(netif != NULL);
   }
 
+
+#if LWIP_UPNP
+  /* Pass UPNP messages regardless of destination address. UPNP traffic is addressed
+   * using multicast addressing so we must not filter on IP.
+   */
+  if (netif == NULL) {
+    /* remote port is DHCP server? */
+    if (IPH_PROTO(iphdr) == IP_PROTO_UDP) {
+      LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_TRACE | 1, ("ip_input: UDP packet to UPNP client port %"U16_F"\n",
+        ntohs(((struct udp_hdr *)((u8_t *)iphdr + iphdr_hlen))->dest)));
+      if (ntohs(((struct udp_hdr *)((u8_t *)iphdr + iphdr_hlen))->dest) == 1900) {
+        LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_TRACE | 1, ("ip_input: UPNP packet accepted.\n"));
+        netif = inp;
+        check_ip_src = 0;
+      }
+    }
+  }
+#endif /* LWIP_UPNP */
+
+#if LWIP_PTPD
+  /* Pass PTPD messages regardless of destination address. UPNP traffic is addressed
+   * using multicast addressing so we must not filter on IP.
+   */
+  if (netif == NULL) {
+    /* remote port is DHCP server? */
+    if (IPH_PROTO(iphdr) == IP_PROTO_UDP) {
+      LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_TRACE | 1, ("ip_input: UDP packet to UPNP client port %"U16_F"\n",
+        ntohs(((struct udp_hdr *)((u8_t *)iphdr + iphdr_hlen))->dest)));
+      if (ntohs(((struct udp_hdr *)((u8_t *)iphdr + iphdr_hlen))->dest) == 319) {
+        LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_TRACE | 1, ("ip_input: UPNP packet accepted.\n"));
+        netif = inp;
+        check_ip_src = 0;
+      }
+      else if (ntohs(((struct udp_hdr *)((u8_t *)iphdr + iphdr_hlen))->dest) == 320) {
+        LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_TRACE | 1, ("ip_input: UPNP packet accepted.\n"));
+        netif = inp;
+        check_ip_src = 0;
+      }
+    }
+  }
+#endif /* LWIP_PTPD */
+
 #if IP_ACCEPT_LINK_LAYER_ADDRESSING
   /* Pass DHCP messages regardless of destination address. DHCP traffic is addressed
    * using link layer addressing (such as Ethernet MAC) so we must not filter on IP.

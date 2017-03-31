@@ -182,6 +182,8 @@
 #define LWIP_UDP                        1
 //#define LWIP_UDPLITE                    0
 //#define UDP_TTL                         (IP_DEFAULT_TTL)
+#define LWIP_UPNP 1		// Pass UPNP messages regardless of destination address
+#define LWIP_PTPD 1		// Pass PTPD messages regardless of destination address
 
 //*****************************************************************************
 //
