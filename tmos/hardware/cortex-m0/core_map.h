@@ -1,9 +1,16 @@
-/*
- * core_map.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm0_core_map
+ * @file	hardware/cortex-m0/core_map.h
+ * @brief  	Cortex-M0 Memory Map
+ * @date    8. September 2014
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Sep 08, 2014
- *      Author: miro
- */
+ * @defgroup hardware_cm0_core_map  Core Memory Map
+ * @ingroup	 hardware_cm0
+ * Source and definitions for Cortex-M0 Core Memory Map
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef CORE_MAP_H_
 #define CORE_MAP_H_
@@ -90,3 +97,5 @@
 
 
 #endif /* CORE_MAP_H_ */
+
+/** @} */

@@ -1,8 +1,12 @@
-/*
- * nvic_cm0.cpp
- *
- *  Created on: Dec 1, 2014
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_cm0_nvic
+ * @{
+ * @file     hardware/cortex-m0/nvic_cm0.cpp
+ * @brief    Cortex-M0 NVIC
+ * @version  V3.00
+ * @date     1. December 2014
+ * @author	 Miroslav Kostadinov
+ * @}
  */
 
 #include <tmos.h>

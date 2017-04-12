@@ -1,16 +1,23 @@
-/*
- * itm_cm3.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm3_itm
+ * @file	hardware/cortex-m3/itm_cm3.h
+ * @brief  	Cortex-M3 ITM
+ * @date    18. December 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Dec 18, 2013
- *      Author: miro
- */
+ * @defgroup hardware_cm3_itm  Instrumentation Trace Macrocell (ITM)
+ * @ingroup	 hardware_cm3
+ * Source and definitions for Cortex-M3  Instrumentation Trace Macrocell (ITM)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef ITM_CM3_H_
 #define ITM_CM3_H_
 
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Instrumentation Trace Macrocell (ITM) 	base 0xE0000000
  ******************************************************************************/
 #ifndef __ASSEMBLY__
@@ -46,25 +53,29 @@ struct ITM_Type
 };
 #endif /* __ASSEMBLY__ */
 
-/*******************************************************************************
- * @defgroup ITM_regs_define
+/***************************************************************************//**
+ * @relates ITM_Type
  * @{
  ******************************************************************************/
 
-/** @defgroup ITM_PORT [32]: (ITM Offset: 0x000) ITM Stimulus Port Registers    */
+/** @name ITM_PORT [32]: (ITM Offset: 0x000) ITM Stimulus Port Registers	  */
+/** @{ */
 #define ITM_PORT_full			0x00000000 //!< Stimulus port FIFO status is full
 #define ITM_PORT_not_full		0x00000001 //!< Stimulus port FIFO status is not full
 /** @} */
 
-/** @defgroup ITM_TER:       (ITM Offset: 0xE00) ITM Trace Enable Register      */
+/** @name ITM_TER:       (ITM Offset: 0xE00) ITM Trace Enable Register        */
+/** @{ */
 #define ITM_TER_STIMENA 		0xFFFFFFFF //!< Bit mask to enable tracing on ITM stimulus ports. One bit per stimulus port
 /** @} */
 
-/** @defgroup ITM_TPR:       (ITM Offset: 0xE40) ITM Trace Privilege Register   */
+/** @name ITM_TPR:       (ITM Offset: 0xE40) ITM Trace Privilege Register	  */
+/** @{ */
 #define ITM_TPR_PRIVMASK		0x0000000F //!< Bit mask to enable tracing on ITM stimulus ports
 /** @} */
 
-/** @defgroup ITM_TCR:       (ITM Offset: 0xE80) ITM Trace Control Register     */
+/** @name ITM_TCR:       (ITM Offset: 0xE80) ITM Trace Control Register	      */
+/** @{ */
 #define ITM_TCR_BUSY        	0x00800000 //!< Set when ITM events present and being drained
 #define ITM_TCR_ATBID       	0x007F0000 //!< ATB ID for CoreSight system
 #define ITM_TCR_TSPrescale  	0x00000300 //!< Timestamp prescaler
@@ -79,65 +90,84 @@ struct ITM_Type
 #define ITM_TCR_ITMENA      	0x00000001 //!< Enable ITM
 /** @} */
 
-/** @defgroup ITM_IWR:       (ITM Offset: 0xEF8) ITM Integration Write Register */
+/** @name ITM_IWR:       (ITM Offset: 0xEF8) ITM Integration Write Register   */
+/** @{ */
 #define ITM_IWR_ATVALIDM        0x00000001 //!< integration mode is set
 /** @} */
 
-/** @defgroup ITM_IRR:       (ITM Offset: 0xEFC) ITM Integration Read Register  */
+/** @name ITM_IRR:       (ITM Offset: 0xEFC) ITM Integration Read Register    */
+/** @{ */
 #define ITM_IRR_ATREADYM        0x00000001 //!< Value on ATREADYM
 /** @} */
 
-/** @defgroup ITM_IMCR:      (ITM Offset: 0xF00) ITM Integration Mode Control Register */
+/** @name ITM_IMCR:      (ITM Offset: 0xF00) ITM Integration Mode Control Register */
+/** @{ */
 #define ITM_IMCR_INTEGRATION  	0x00000001 //!< ATVALIDM driven from Integration Write Register
 /** @} */
 
-/** @defgroup ITM_LAR:       (ITM Offset: 0xFB0) ITM Lock Access Register              */
+/** @name ITM_LAR:       (ITM Offset: 0xFB0) ITM Lock Access Register              */
+/** @{ */
 #define ITM_LAR_KEY		        0xC5ACCE55 //!< A privileged write of 0xC5ACCE55 enables more write access to Control Register 0xE00::0xFFC. An invalid write removes write access.
 /** @} */
 
-/** @defgroup ITM_LSR:       (ITM Offset: 0xFB4) ITM Lock Status Register              */
+/** @name ITM_LSR:       (ITM Offset: 0xFB4) ITM Lock Status Register              */
+/** @{ */
 #define ITM_LSR_ByteAcc         0x00000004 //!< You cannot implement 8-bit lock accesses
 #define ITM_LSR_Access       	0x00000002 //!< Write access to component is blocked. All writes are ignored, reads are permitted
 #define ITM_LSR_Present         0x00000001 //!< Indicates that a lock mechanism exists for this component
 /** @} */
 
-/** @defgroup ITM_PID4:      (ITM Offset: 0xFD0) ITM Peripheral Identification Register #4 */
+/** @name ITM_PID4:      (ITM Offset: 0xFD0) ITM Peripheral Identification Register #4 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_PID5:      (ITM Offset: 0xFD4) ITM Peripheral Identification Register #5 */
+/** @name ITM_PID5:      (ITM Offset: 0xFD4) ITM Peripheral Identification Register #5 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_PID6:      (ITM Offset: 0xFD8) ITM Peripheral Identification Register #6 */
+/** @name ITM_PID6:      (ITM Offset: 0xFD8) ITM Peripheral Identification Register #6 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_PID7:      (ITM Offset: 0xFDC) ITM Peripheral Identification Register #7 */
+/** @name ITM_PID7:      (ITM Offset: 0xFDC) ITM Peripheral Identification Register #7 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_PID0:      (ITM Offset: 0xFE0) ITM Peripheral Identification Register #0 */
+/** @name ITM_PID0:      (ITM Offset: 0xFE0) ITM Peripheral Identification Register #0 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_PID1:      (ITM Offset: 0xFE4) ITM Peripheral Identification Register #1 */
+/** @name ITM_PID1:      (ITM Offset: 0xFE4) ITM Peripheral Identification Register #1 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_PID2:      (ITM Offset: 0xFE8) ITM Peripheral Identification Register #2 */
+/** @name ITM_PID2:      (ITM Offset: 0xFE8) ITM Peripheral Identification Register #2 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_PID3:      (ITM Offset: 0xFEC) ITM Peripheral Identification Register #3 */
+/** @name ITM_PID3:      (ITM Offset: 0xFEC) ITM Peripheral Identification Register #3 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_CID0:      (ITM Offset: 0xFF0) ITM Component  Identification Register #0 */
+/** @name ITM_CID0:      (ITM Offset: 0xFF0) ITM Component  Identification Register #0 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_CID1:      (ITM Offset: 0xFF4) ITM Component  Identification Register #1 */
+/** @name ITM_CID1:      (ITM Offset: 0xFF4) ITM Component  Identification Register #1 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_CID2:      (ITM Offset: 0xFF8) ITM Component  Identification Register #2 */
+/** @name ITM_CID2:      (ITM Offset: 0xFF8) ITM Component  Identification Register #2 */
+/** @{ */
 /** @} */
 
-/** @defgroup ITM_CID3:      (ITM Offset: 0xFFC) ITM Component  Identification Register #3 */
+/** @name ITM_CID3:      (ITM Offset: 0xFFC) ITM Component  Identification Register #3 */
+/** @{ */
 /** @} */
 
 
-/** @} */ // @defgroup ITM_regs_define
+/** @} */ // @relates ITM_Type
 
 #endif /* ITM_CM3_H_ */
+
+/** @} */

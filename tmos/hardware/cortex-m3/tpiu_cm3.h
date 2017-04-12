@@ -1,16 +1,23 @@
-/*
- * tpiu_cm3.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm3_tpiu
+ * @file	hardware/cortex-m3/tpiu_cm3.h
+ * @brief  	Cortex-M3 TPIU
+ * @date    18. December 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Dec 18, 2013
- *      Author: miro
- */
+ * @defgroup hardware_cm3_tpiu  Trace Port Interface Unit (TPIU)
+ * @ingroup	 hardware_cm3
+ * Source and definitions for Cortex-M3  Trace Port Interface Unit (TPIU)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef TPIU_CM3_H_
 #define TPIU_CM3_H_
 
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Trace Port Interface Unit (TPIU)
  ******************************************************************************/
 #ifndef __ASSEMBLY__
@@ -42,42 +49,48 @@ struct TPIU_Type
 };
 #endif /* __ASSEMBLY__ */
 
-/*******************************************************************************
- * @defgroup TPIU_regs_define
+/***************************************************************************//**
+ * @relates TPIU_Type
  * @{
  ******************************************************************************/
 
-/** @defgroup TPIU_SSPSR: //!< (TPIU Offset: 0x000) Supported Sync Port Sizes Register */
+/** @name TPIU_SSPSR: //!< (TPIU Offset: 0x000) Supported Sync Port Sizes Register */
+/** @{ */
 #define TPIU_SSPSR_WORD			   0x00000008 //!< port size 4
 #define TPIU_SSPSR_HALFWORD		   0x00000002 //!< port size 2
 #define TPIU_SSPSR_BYTE			   0x00000001 //!< port size 1
 /** @} */
 
-/** @defgroup TPIU_CSPSR: //!< (TPIU Offset: 0x004) Current Sync Port Size Register */
+/** @name TPIU_CSPSR: //!< (TPIU Offset: 0x004) Current Sync Port Size Register */
+/** @{ */
 #define TPIU_CSPSR_WORD			   0x00000008 //!< port size 4
 #define TPIU_CSPSR_HALFWORD		   0x00000002 //!< port size 2
 #define TPIU_CSPSR_BYTE			   0x00000001 //!< port size 1
 /** @} */
 
-/** @defgroup TPIU_ACPR:  //!< (TPIU Offset: 0x010) Async Clock Prescaler Register */
+/** @name TPIU_ACPR:  //!< (TPIU Offset: 0x010) Async Clock Prescaler Register */
+/** @{ */
 #define TPIU_ACPR_PRESCALER	 	   0x00001FFF //!< Divisor for TRACECLKIN is Prescaler + 1.
 /** @} */
 
-/** @defgroup TPIU_SPPR:  //!< (TPIU Offset: 0x0F0) Selected Pin Protocol Register */
+/** @name TPIU_SPPR:  //!< (TPIU Offset: 0x0F0) Selected Pin Protocol Register */
+/** @{ */
 #define TPIU_SPPR_PROTOCOL	 	   0x00000003 //!< Protocol to use for trace output
 #define TPIU_SPPR_SYNC		 	   0x00000000 //!< 	TracePort mode
 #define TPIU_SPPR_ASYNC_MANCHESTER 0x00000001 //!< 	SerialWire Output (Manchester)
 #define TPIU_SPPR_ASYNC_NRZ 	   0x00000002 //!< 	SerialWire Output (NRZ)
 /** @} */
 
-/** @defgroup TPIU_FFSR:  //!< (TPIU Offset: 0x300) Formatter and Flush Status Register */
+/** @name TPIU_FFSR:  //!< (TPIU Offset: 0x300) Formatter and Flush Status Register */
+/** @{ */
 #define TPIU_FFSR_FTNONSTOP		   0x00000008 //!< Formatter cannot be stopped
 #define TPIU_FFSR_TCPRESENT		   0x00000004 //!< This bit always reads zero
 #define TPIU_FFSR_FTSTOPPED		   0x00000002 //!< This bit always reads zero
 #define TPIU_FFSR_FLINPROG		   0x00000001 //!< This bit always reads zero
 /** @} */
 
-/** @defgroup TPIU_FFCR:  //!< (TPIU Offset: 0x304) Formatter and Flush Control Register */
+/** @name TPIU_FFCR:  //!< (TPIU Offset: 0x304) Formatter and Flush Control Register */
+/** @{ */
 #define TPIU_FFCR_StopTrig 		   0x00002000 //!< Stop the formatter after a Trigger Event is observed
 #define TPIU_FFCR_StopFI 		   0x00001000 //!< Stop the formatter after a flush completes
 #define TPIU_FFCR_TrigFI 		   0x00000400 //!< Indicates a trigger on Flush completion
@@ -90,17 +103,19 @@ struct TPIU_Type
 #define TPIU_FFCR_EnFTC 		   0x00000001 //!< Enable Formatting. Because TRACECTL is never present, this bit reads as zero
 /** @} */
 
-/** @defgroup TPIU_FSCR:  //!< (TPIU Offset: 0x308) Formatter Synchronization Counter Register */
+/** @name TPIU_FSCR:  //!< (TPIU Offset: 0x308) Formatter Synchronization Counter Register */
+/** @{ */
 /** @} */
 
 
 
-/** @} */
 
 
-
-/** @} */ // @defgroup TPIU_regs_define
+/** @} */ // @relates TPIU_Type
 
 
 
 #endif /* TPIU_CM3_H_ */
+
+/** @} */
+

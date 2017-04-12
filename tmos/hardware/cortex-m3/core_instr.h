@@ -1,9 +1,16 @@
-/*
- * core_instr.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm3_core_instr
+ * @file	hardware/cortex-m3/core_instr.h
+ * @brief  	Cortex-M3 instructions
+ * @date    18. December 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Dec 18, 2013
- *      Author: miro
- */
+ * @defgroup hardware_cm3_core_instr  Core inline instructions
+ * @ingroup	 hardware_cm3
+ * Source and definitions for Cortex-M3  Core inline instructions
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef CORE_INSTR_H_
 #define CORE_INSTR_H_
@@ -569,6 +576,11 @@ static inline void __set_FPSCR(uint32_t fpscr)
 
 #endif /* (__CORTEX_M == 0x04) */
 
+/**
+ * Count leading zeroes
+ * @param val
+ * @return count of the leading zeroes
+ */
 static inline unsigned int __CLZ(unsigned int val)
 {
 	unsigned int result;
@@ -579,3 +591,6 @@ static inline unsigned int __CLZ(unsigned int val)
 
 
 #endif /* CORE_INSTR_H_ */
+
+/** @} */
+

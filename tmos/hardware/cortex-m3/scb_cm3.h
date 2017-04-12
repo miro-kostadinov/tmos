@@ -1,16 +1,23 @@
-/*
- * scb_cm3.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm3_scb
+ * @file	hardware/cortex-m3/scb_cm3.h
+ * @brief  	Cortex-M3 SCB
+ * @date    17. December 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Dec 17, 2013
- *      Author: miro
- */
+ * @defgroup hardware_cm3_scb  System Control Block (SCB)
+ * @ingroup	 hardware_cm3
+ * Source and definitions for Cortex-M3  System Control Block (SCB)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef SCB_CM3_H_
 #define SCB_CM3_H_
 
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  System Control Block (SCB)
  ******************************************************************************/
 #ifndef __ASSEMBLY__
@@ -38,12 +45,13 @@ struct SCB_Type
 };
 #endif /* __ASSEMBLY__ */
 
-/*******************************************************************************
- * @defgroup SCB_regs_define
+/***************************************************************************//**
+ * @relates SCB_Type
  * @{
  ******************************************************************************/
 
-/** @defgroup SCB_CPUID:    (SCB Offset: 0x00)  CPU ID Base Register          */
+/** @name SCB_CPUID:    (SCB Offset: 0x00)  CPU ID Base Register   		      */
+/** @{ */
 #define SCB_CPUID_IMPLEMENTER	   0xFF000000 //!< Implementer code
 #define SCB_CPUID_IMPLEMENTER_ARM  0x41000000 //!<	ARM
 #define SCB_CPUID_VARIANT		   0x00F00000 //!< Variant number, the r value in the rnpn product revision identifier
@@ -53,7 +61,8 @@ struct SCB_Type
 #define SCB_CPUID_REVISION		   0x0000000F //!< Revision number, the p value in the rnpn product revision identifier
 /** @} */
 
-/** @defgroup SCB_ICSR:     (SCB Offset: 0x04)  Interrupt Control State Register */
+/** @name SCB_ICSR:     (SCB Offset: 0x04)  Interrupt Control State Register  */
+/** @{ */
 #define SCB_ICSR_NMIPENDSET		   0x80000000 //!< NMI set-pending bit
 #define SCB_ICSR_PENDSVSET		   0x10000000 //!< PendSV set-pending bit
 #define SCB_ICSR_PENDSVCLR		   0x08000000 //!< PendSV clear-pending bit (WO1)
@@ -66,11 +75,13 @@ struct SCB_Type
 #define SCB_ICSR_VECTACTIVE		   0x000001FF //!< Contains the active exception number (0 = Thread mode)
 /** @} */
 
-/** @defgroup SCB_VTOR:     (SCB Offset: 0x08)  Vector Table Offset Register  */
+/** @name SCB_VTOR:     (SCB Offset: 0x08)  Vector Table Offset Register	  */
+/** @{ */
 #define SCB_VTOR_TBLOFF			   0xFFFFFF80 //!< he offset of the vector table base address
 /** @} */
 
-/** @defgroup SCB_AIRCR:    (SCB Offset: 0x0C)  Application Interrupt / Reset Control Register */
+/** @name SCB_AIRCR:    (SCB Offset: 0x0C)  Application Interrupt / Reset Control Register */
+/** @{ */
 #define SCB_AIRCR_VECTKEY		   0xFFFF0000 //!< Register key
 #define SCB_AIRCR_VECTKEY_STAT	   0xFA050000 //!< 	Reads as 0xFA05
 #define SCB_AIRCR_VECTKEY_VAL	   0x05FA0000 //!< 	write 0x5FA to VECTKEY
@@ -89,7 +100,8 @@ struct SCB_Type
 #define SCB_AIRCR_VECTRESET		   0x00000001 //!< Reserved for Debug use
 /** @} */
 
-/** @defgroup SCB_SCR:      (SCB Offset: 0x10)  System Control Register       */
+/** @name SCB_SCR:      (SCB Offset: 0x10)  System Control Register		      */
+/** @{ */
 #define SCB_SCR_SEVONPEND		   0x00000010 //!< Send Event on Pending bit
 #define SCB_SCR_SEVONPEND_en	   0x00000000 //!< 	only enabled interrupts or events can wakeup the processor
 #define SCB_SCR_SEVONPEND_all	   0x00000010 //!< 	enabled events and all interrupts, including disabled interrupts, can wakeup the processor
@@ -97,7 +109,8 @@ struct SCB_Type
 #define SCB_SCR_SLEEPONEXIT		   0x00000002 //!< Indicates sleep-on-exit when returning from Handler mode to Thread mode
 /** @} */
 
-/** @defgroup SCB_CCR:      (SCB Offset: 0x14)  Configuration Control Register */
+/** @name SCB_CCR:      (SCB Offset: 0x14)  Configuration Control Register	  */
+/** @{ */
 #define SCB_CCR_STKALIGN		   0x00000200 //!< Indicates stack alignment on exception entry
 #define SCB_CCR_STKALIGN_4		   0x00000000 //!< 	4-byte aligned
 #define SCB_CCR_STKALIGN_8		   0x00000200 //!< 	8-byte aligned
@@ -108,7 +121,8 @@ struct SCB_Type
 #define SCB_CCR_NONBASETHRDENA	   0x00000001 //!< Indicates how the processor enters Thread mode
 /** @} */
 
-/** @defgroup SCB_SHPR[12]:  (SCB Offset: 0x18)  System Handlers Priority Registers (4-7, 8-11, 12-15) */
+/** @name SCB_SHPR[12]:  (SCB Offset: 0x18)  System Handlers Priority Registers (4-7, 8-11, 12-15) */
+/** @{ */
 // The SHPRx registers set the priority level, 0 to 255, of the exception handlers that have
 // configurable priority
 #define SCB_SHPR_indx_MemManage		0	//!< PRI_4 Priority of system handler 4, MemManage
@@ -119,7 +133,8 @@ struct SCB_Type
 #define SCB_SHPR_indx_SysTick		11	//!< PRI_15 Priority of system handler 15, SysTick exception
 /** @} */
 
-/** @defgroup SCB_SHCSR:    (SCB Offset: 0x24)  System Handler Control and State Register */
+/** @name SCB_SHCSR:    (SCB Offset: 0x24)  System Handler Control and State Register */
+/** @{ */
 #define SCB_SHCSR_USGFAULTENA	   0x00040000 //!< UsageFault enable bit
 #define SCB_SHCSR_BUSFAULTENA	   0x00020000 //!< BusFault enable bit
 #define SCB_SHCSR_MEMFAULTENA	   0x00010000 //!< MemManage enable bit
@@ -136,7 +151,8 @@ struct SCB_Type
 #define SCB_SHCSR_MEMFAULTACT	   0x00000001 //!< MemManage active bit
 /** @} */
 
-/** @defgroup SCB_CFSR:     (SCB Offset: 0x28)  Configurable Fault Status Register */
+/** @name SCB_CFSR:     (SCB Offset: 0x28)  Configurable Fault Status Register */
+/** @{ */
 #define SCB_CFSR_UFSR 			   0xFFFF0000 //!< Usage Fault Status Register
 #define SCB_CFSR_UFSR_DIVBYZERO	   0x02000000 //!<	Divide by zero UsageFault
 #define SCB_CFSR_UFSR_UNALIGNED    0x01000000 //!<	Unaligned access UsageFault
@@ -163,13 +179,15 @@ struct SCB_Type
 #define SCB_CFSR_MMFSR_IACCVIOL    0x00000001 //!< 	Instruction access violation flag
 /** @} */
 
-/** @defgroup SCB_HFSR:     (SCB Offset: 0x2C)  Hard Fault Status Register    */
+/** @name SCB_HFSR:     (SCB Offset: 0x2C)  Hard Fault Status Register	      */
+/** @{ */
 #define SCB_HFSR_DEBUGEVT		   0x80000000 //!< Reserved for Debug use
 #define SCB_HFSR_FORCED			   0x40000000 //!< 	Indicates a forced hard fault, generated by escalation of a fault with configurable priority that cannot be handles, either because of priority or because it is disabled
 #define SCB_HFSR_VECTTBL		   0x00000002 //!<	Indicates a BusFault on a vector table read during exception processing
 /** @} */
 
-/** @defgroup SCB_DFSR:     (SCB Offset: 0x30)  Debug Fault Status Register   */
+/** @name SCB_DFSR:     (SCB Offset: 0x30)  Debug Fault Status Register		  */
+/** @{ */
 #define SCB_DFSR_EXTERNA		   0x00000010 //!<
 #define SCB_DFSR_VCATCH		       0x00000008 //!<
 #define SCB_DFSR_DWTTRAP	  	   0x00000004 //!<
@@ -177,32 +195,42 @@ struct SCB_Type
 #define SCB_DFSR_HALTED		  	   0x00000001 //!<
 /** @} */
 
-/** @defgroup SCB_MMFAR:    (SCB Offset: 0x34)  Mem Manage Address Register   */
+/** @name SCB_MMFAR:    (SCB Offset: 0x34)  Mem Manage Address Register		  */
+/** @{ */
 /** @} */
 
-/** @defgroup SCB_BFAR:     (SCB Offset: 0x38)  Bus Fault Address Register    */
+/** @name SCB_BFAR:     (SCB Offset: 0x38)  Bus Fault Address Register 	 	  */
+/** @{ */
 /** @} */
 
-/** @defgroup SCB_AFSR:     (SCB Offset: 0x3C)  Auxiliary Fault Status Register */
+/** @name SCB_AFSR:     (SCB Offset: 0x3C)  Auxiliary Fault Status Register	  */
+/** @{ */
 /** @} */
 
-/** @defgroup SCB_PFR[2]:   (SCB Offset: 0x40)  Processor Feature Register    */
+/** @name SCB_PFR[2]:   (SCB Offset: 0x40)  Processor Feature Register	      */
+/** @{ */
 /** @} */
 
-/** @defgroup SCB_DFR:      (SCB Offset: 0x48)  Debug Feature Register        */
+/** @name SCB_DFR:      (SCB Offset: 0x48)  Debug Feature Register   	      */
+/** @{ */
 /** @} */
 
-/** @defgroup SCB_ADR:      (SCB Offset: 0x4C)  Auxiliary Feature Register    */
+/** @name SCB_ADR:      (SCB Offset: 0x4C)  Auxiliary Feature Register	 	  */
+/** @{ */
 /** @} */
 
-/** @defgroup SCB_MMFR[4]:  (SCB Offset: 0x50)  Memory Model Feature Register */
+/** @name SCB_MMFR[4]:  (SCB Offset: 0x50)  Memory Model Feature Register 	  */
+/** @{ */
 /** @} */
 
-/** @defgroup SCB_ISAR[5]:  (SCB Offset: 0x60)  ISA Feature Register          */
+/** @name SCB_ISAR[5]:  (SCB Offset: 0x60)  ISA Feature Register         	  */
+/** @{ */
 /** @} */
 
 
 
-/** @} */ // @defgroup SCB_regs_define
+/** @} */ // @relates SCB_Type
 
 #endif /* SCB_CM3_H_ */
+
+/** @} */

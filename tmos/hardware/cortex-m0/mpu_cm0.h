@@ -1,16 +1,23 @@
-/*
- * mpu_cm0.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm0_mpu
+ * @file	hardware/cortex-m0/mpu_cm0.h
+ * @brief  	Cortex-M0 MPU
+ * @date    9. September 2014
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Sep 9, 2014
- *      Author: miro
- */
+ * @defgroup hardware_cm0_mpu  Memory Protection Unit (MPU)
+ * @ingroup	 hardware_cm0
+ * Source and definitions for Cortex-M0 Memory Protection Unit (MPU)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef MPU_CM0_H_
 #define MPU_CM0_H_
 
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Memory Protection Unit (MPU) 0xE000ED90
  ******************************************************************************/
 #ifndef __ASSEMBLY__
@@ -24,34 +31,39 @@ struct MPU_Type
 };
 #endif /* __ASSEMBLY__ */
 
-/*******************************************************************************
- * @defgroup MPU_regs_define
+/***************************************************************************//**
+ * @relates MPU_Type
  * @{
  ******************************************************************************/
 
-/** @defgroup MPU_TYPE:	   (MPU Offset: 0x00) MPU Type Register                              */
+/** @name MPU_TYPE:	   (MPU Offset: 0x00) MPU Type Register                              */
+/** @{ */
 #define MPU_TYPE_IREGION 		   0x00FF0000 //!< Number of supported MPU instruction regions. Always contains 0x00. The MPU memory map is unified and is described by the DREGION field
 #define MPU_TYPE_DREGION 		   0x0000FF00 //!< Number of supported MPU data regions: 0x08 = eight MPU regions
 #define MPU_TYPE_SEPARATE  		   0x00000001 //!< Indicates support for unified or separate instruction and date memory maps: 0 = unified
 /** @} */
 
-/** @defgroup MPU_CTRL:    (MPU Offset: 0x04) MPU Control Register                           */
+/** @name MPU_CTRL:    (MPU Offset: 0x04) MPU Control Register                           */
+/** @{ */
 #define MPU_CTRL_PRIVDEFENA 	   0x00000003 //!< Enables privileged software access to the default memory map
 #define MPU_CTRL_HFNMIENA  		   0x00000002 //!< Enables the operation of MPU during hard fault, NMI, and FAULTMASK handlers
 #define MPU_CTRL_ENABLE   		   0x00000001 //!< Enables the MPU
 /** @} */
 
-/** @defgroup MPU_RNR:     (MPU Offset: 0x08) MPU Region Number Register                     */
+/** @name MPU_RNR:     (MPU Offset: 0x08) MPU Region Number Register                     */
+/** @{ */
 #define MPU_RNR_REGION    		   0x000000FF //!< Indicates the MPU region referenced by the MPU_RBAR and MPU_RASR registers
 /** @} */
 
-/** @defgroup MPU_RBAR:    (MPU Offset: 0x0C) MPU Region Base Address Register               */
+/** @name MPU_RBAR:    (MPU Offset: 0x0C) MPU Region Base Address Register               */
+/** @{ */
 #define MPU_RBAR_ADDR     		   0xFFFFFFE0 //!< Region base address
 #define MPU_RBAR_VALID     		   0x00000010 //!< MPU Region Number valid bit
 #define MPU_RBAR_REGION    		   0x0000000F //!< MPU region field
 /** @} */
 
-/** @defgroup MPU_RASR:    (MPU Offset: 0x10) MPU Region Attribute and Size Register         */
+/** @name MPU_RASR:    (MPU Offset: 0x10) MPU Region Attribute and Size Register         */
+/** @{ */
 #define MPU_RASR_XN 	   		   0x10000000 //!< Instruction access disable bit
 #define MPU_RASR_AP 	   		   0x07000000 //!< Access permission field
 #define MPU_RASR_AP_PRV_NO_USR_NO  0x00000000 //!<  All accesses generate a permission fault
@@ -96,12 +108,14 @@ struct MPU_Type
 #define MPU_RASR_SIZE_2G           0x0000003C //!<  2G
 #define MPU_RASR_SIZE_4G           0x0000003E //!<  4G
 #define MPU_RASR_ENABLE    		   0x00000001 //!< Region enable bit
-
 /** @} */
 
 
-/** @} */ // @defgroup MPU_regs_define
+/** @} */ // @relates MPU_Type
 
 
 
 #endif /* MPU_CM0_H_ */
+
+/** @} */
+

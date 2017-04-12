@@ -1,8 +1,12 @@
-/*
- * nvic_cm3.cpp
- *
- *  Created on: Dec 18, 2013
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_cm3_nvic
+ * @{
+ * @file     hardware/cortex-m3/nvic_cm3.cpp
+ * @brief    Cortex-M3 NVIC
+ * @version  V3.00
+ * @date     18. December 2013
+ * @author	 Miroslav Kostadinov
+ * @}
  */
 
 #include <tmos.h>

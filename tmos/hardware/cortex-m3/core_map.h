@@ -1,9 +1,16 @@
-/*
- * core_map.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm3_core_map
+ * @file	hardware/cortex-m3/core_map.h
+ * @brief  	Cortex-M3 Memory Map
+ * @date    18. December 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Dec 18, 2013
- *      Author: miro
- */
+ * @defgroup hardware_cm3_core_map  Core Memory Map
+ * @ingroup	 hardware_cm3
+ * Source and definitions for Cortex-M3  Core Memory Map
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef CORE_MAP_H_
 #define CORE_MAP_H_
@@ -130,3 +137,6 @@
 
 
 #endif /* CORE_MAP_H_ */
+
+/** @} */
+

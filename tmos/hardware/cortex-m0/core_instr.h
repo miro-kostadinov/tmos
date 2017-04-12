@@ -1,9 +1,16 @@
-/*
- * core_instr.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm0_core
+ * @file	hardware/cortex-m0/core_instr.h
+ * @brief  	Cortex-M0 instructions
+ * @date    18. December 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Dec 18, 2013
- *      Author: miro
- */
+ * @defgroup hardware_cm0_core  Core inline instructions
+ * @ingroup	 hardware_cm0
+ * Source and definitions for Cortex-M0 Core inline instructions
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef CORE_INSTR_H_
 #define CORE_INSTR_H_
@@ -11,7 +18,9 @@
 #include <tmos_types.h>
 #include <hardware_inc.h>
 
+/// M0 is using ARMv6
 #define USE_ARMv6_SET	1
+
 /**
  * @brief  No Operation
  *
@@ -568,6 +577,11 @@ static inline void __set_FPSCR(uint32_t fpscr)
 
 #endif /* (__CORTEX_M == 0x04) */
 
+/**
+ * Count leading zeroes
+ * @param val
+ * @return count of the leading zeroes
+ */
 static inline uint32_t __CLZ(uint32_t num)
 {
 	register uint32_t cnt, tmp;
@@ -606,3 +620,5 @@ static inline uint32_t __CLZ(uint32_t num)
 }
 
 #endif /* CORE_INSTR_H_ */
+
+/** @} */

@@ -1,16 +1,23 @@
-/*
- * cdbg_cm0.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm0_cdbg
+ * @file	hardware/cortex-m0/cdbg_cm0.h
+ * @brief  	Cortex-M0 CDBG
+ * @date    9. September 2014
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Sep 9, 2014
- *      Author: miro
- */
+ * @defgroup hardware_cm0_cdbg  Core Debug (CDBG)
+ * @ingroup	 hardware_cm0
+ * Source and definitions for Cortex-M0 Core Debug (CDBG)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef CDBG_CM0_H_
 #define CDBG_CM0_H_
 
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Core Debug (CDBG)		0xE000EDF0
  ******************************************************************************/
 #ifndef __ASSEMBLY__
@@ -23,12 +30,13 @@ struct CDBG_Type
 };
 #endif /* __ASSEMBLY__ */
 
-/*******************************************************************************
- * @defgroup CDBG_regs_define
+/***************************************************************************//**
+ * @relates CDBG_Type
  * @{
  ******************************************************************************/
 
-/** @defgroup CDBG_DHCSR: (CDBG Offset: 0x00  Debug Halting Control and Status Register    */
+/** @name CDBG_DHCSR: (CDBG Offset: 0x00  Debug Halting Control and Status Register    */
+/** @{ */
 #define CDBG_DHCSR_DBGKEY		0xFFFF0000 //!< Debug Key
 #define CDBG_DHCSR_S_RESET_ST   0x02000000 //!< Indicates that the core has been reset, or is now being reset, since the last time this bit was read
 #define CDBG_DHCSR_S_RETIRE_ST  0x01000000 //!< Indicates that an instruction has completed since last read
@@ -42,15 +50,18 @@ struct CDBG_Type
 #define CDBG_DHCSR_C_DEBUGEN	0x00000001 //!< Enables debug
 /** @} */
 
-/** @defgroup CDBG_DCRSR: (CDBG Offset: 0x04  Debug Core Register Selector Register        */
+/** @name CDBG_DCRSR: (CDBG Offset: 0x04  Debug Core Register Selector Register        */
+/** @{ */
 #define CDBG_DCRSR_REGWnR       0x00010000 //!< Write /read
 #define CDBG_DCRSR_REGSEL       0x0000001F //!< register(s)
 /** @} */
 
-/** @defgroup CDBG_DCRDR: (CDBG Offset: 0x08  Debug Core Register Data Register            */
+/** @name CDBG_DCRDR: (CDBG Offset: 0x08  Debug Core Register Data Register            */
+/** @{ */
 /** @} */
 
-/** @defgroup CDBG_DEMCR: (CDBG Offset: 0x0C  Debug Exception and Monitor Control Register */
+/** @name CDBG_DEMCR: (CDBG Offset: 0x0C  Debug Exception and Monitor Control Register */
+/** @{ */
 #define CDBG_DEMCR_DWTENA         0x01000000 //!< Global enable for all features configured and controlled by the DWT unit
 #define CDBG_DEMCR_VC_HARDERR     0x00000400 //!< Debug trap on Hard Fault
 #define CDBG_DEMCR_VC_CORERESET   0x00000001 //!< Reset Vector Catch. Halt running system if Core reset occurs
@@ -58,8 +69,10 @@ struct CDBG_Type
 
 
 
-/** @} */ // @defgroup CDBG_regs_define
+/** @} */ // @relates CDBG_Type
 
 
 
 #endif /* CDBG_CM0_H_ */
+
+/** @} */

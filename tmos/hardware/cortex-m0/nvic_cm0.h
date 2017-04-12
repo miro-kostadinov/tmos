@@ -1,9 +1,16 @@
-/*
- * nvic_cm0.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm0_nvic
+ * @file	hardware/cortex-m0/nvic_cm0.h
+ * @brief  	Cortex-M0 NVIC
+ * @date    9. September 2014
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Sep 9, 2014
- *      Author: miro
- */
+ * @defgroup hardware_cm0_nvic  Nested Vectored Interrupt Controller (NVIC)
+ * @ingroup	 hardware_cm0
+ * Source and definitions for Cortex-M0 Nested Vectored Interrupt Controller (NVIC)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef NVIC_CM0_H_
 #define NVIC_CM0_H_
@@ -11,7 +18,7 @@
 
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Nested Vectored Interrupt Controller (NVIC) 0xE000E100
  ******************************************************************************/
 #ifndef __ASSEMBLY__
@@ -30,27 +37,32 @@ struct NVIC_Type
 #endif /* __ASSEMBLY__ */
 
 /*******************************************************************************
- * @defgroup NVIC_regs_define
+ * @relates NVIC_Type
  * @{
  ******************************************************************************/
 
-/** @defgroup NVIC_ISER[8]:  (NVIC Offset: 0x000) Interrupt Set Enable Register    */
+/** @name NVIC_ISER[8]:  (NVIC Offset: 0x000) Interrupt Set Enable Register    */
+/** @{ */
 // 32 bits
 /** @} */
 
-/** @defgroup NVIC_ICER[8]:  (NVIC Offset: 0x080) Interrupt Clear Enable Register  */
+/** @name NVIC_ICER[8]:  (NVIC Offset: 0x080) Interrupt Clear Enable Register  */
+/** @{ */
 // 32 bits
 /** @} */
 
-/** @defgroup NVIC_ISPR[8]:  (NVIC Offset: 0x100) Interrupt Set Pending Register   */
+/** @name NVIC_ISPR[8]:  (NVIC Offset: 0x100) Interrupt Set Pending Register   */
+/** @{ */
 // 320 bits
 /** @} */
 
-/** @defgroup NVIC_ICPR[8]:  (NVIC Offset: 0x180) Interrupt Clear Pending Register */
+/** @name NVIC_ICPR[8]:  (NVIC Offset: 0x180) Interrupt Clear Pending Register */
+/** @{ */
 // 32 bits
 /** @} */
 
-/** @defgroup NVIC_IPR[240]: (NVIC Offset: 0x300) Interrupt Priority Register (8Bit wide) */
+/** @name NVIC_IPR[240]: (NVIC Offset: 0x300) Interrupt Priority Register (8Bit wide) */
+/** @{ */
 // 32 8-bit registers
 //  The lower the value, the greater the priority of the corresponding interrupt. Register
 // priority value fields are 8 bits wide, and un-implemented low-order bits read as zero
@@ -61,7 +73,7 @@ struct NVIC_Type
 
 
 
-/** @} */ // @defgroup NVIC_regs_define
+/** @} */ // @relates NVIC_Type
 
 
 #ifndef __ASSEMBLY__
@@ -76,3 +88,6 @@ EXTERN_C uint32_t NVIC_GetPriority(int32_t IRQn);
 
 
 #endif /* NVIC_CM0_H_ */
+
+/** @} */
+

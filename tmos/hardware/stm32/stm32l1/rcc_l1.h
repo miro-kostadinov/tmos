@@ -305,17 +305,17 @@ typedef struct
 
 
 
-///*******************  Bit definition for RCC_CFGR3 register  ******************/
-///*!< USART1 Clock source selection */
+// /*******************  Bit definition for RCC_CFGR3 register  ******************/
+// /*!< USART1 Clock source selection */
 //#define RCC_CFGR3_USART1SW      0x00000003 //!< USART1SW[1:0] bits */
 //#define RCC_CFGR3_USART1SW_0    0x00000001 //!< Bit 0 */
 //#define RCC_CFGR3_USART1SW_1    0x00000002 //!< Bit 1 */
-///*!< I2C1 Clock source selection */
+// /*!< I2C1 Clock source selection */
 //#define RCC_CFGR3_I2C1SW        0x00000010 //!< I2C1SW bits */
 //#define RCC_CFGR3_CECSW         0x00000040 //!< CECSW bits */
 //#define RCC_CFGR3_ADCSW         0x00000100 //!< ADCSW bits */
 //
-///*******************  Bit definition for RCC_CR2 register  ********************/
+// /*******************  Bit definition for RCC_CR2 register  ********************/
 //#define RCC_CR2_HSI14ON         0x00000001 //!< Internal High Speed 14MHz clock enable */
 //#define RCC_CR2_HSI14RDY        0x00000002 //!< Internal High Speed 14MHz clock ready flag */
 //#define RCC_CR2_HSI14DIS        0x00000004 //!< Internal High Speed 14MHz clock disable */
@@ -324,10 +324,8 @@ typedef struct
 
 /** @} */ // @relates RCC_TypeDef
 
-/**
- * @brief In the following line adjust the External High Speed oscillator (HSE) Startup
-   Timeout value
-   */
+
+///* External High Speed oscillator (HSE) Startup  Timeout value
 #define HSE_STARTUP_TIMEOUT   0x0500 /*!< Time out for HSE start up */
 
 

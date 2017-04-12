@@ -1,16 +1,23 @@
-/*
- * cdbg_cm3.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm3_cdbg
+ * @file	hardware/cortex-m3/cdbg_cm3.h
+ * @brief  	Cortex-M3 CDBG
+ * @date    18. December 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Dec 18, 2013
- *      Author: miro
- */
+ * @defgroup hardware_cm3_cdbg  Core Debug (CDBG)
+ * @ingroup	 hardware_cm3
+ * Source and definitions for Cortex-M3 Core Debug (CDBG)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef CDBG_CM3_H_
 #define CDBG_CM3_H_
 
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Core Debug (CDBG)
  ******************************************************************************/
 #ifndef __ASSEMBLY__
@@ -24,11 +31,12 @@ struct CDBG_Type
 #endif /* __ASSEMBLY__ */
 
 /*******************************************************************************
- * @defgroup CDBG_regs_define
+ * @relates CDBG_Type
  * @{
  ******************************************************************************/
 
-/** @defgroup CDBG_DHCSR: (CDBG Offset: 0x00  Debug Halting Control and Status Register    */
+/** @name CDBG_DHCSR: (CDBG Offset: 0x00  Debug Halting Control and Status Register    */
+/** @{ */
 #define CDBG_DHCSR_DBGKEY		0xFFFF0000 //!< Debug Key
 #define CDBG_DHCSR_S_RESET_ST   0x02000000 //!< Indicates that the core has been reset, or is now being reset, since the last time this bit was read
 #define CDBG_DHCSR_S_RETIRE_ST  0x01000000 //!< Indicates that an instruction has completed since last read
@@ -43,15 +51,18 @@ struct CDBG_Type
 #define CDBG_DHCSR_C_DEBUGEN	0x00000001 //!< Enables debug
 /** @} */
 
-/** @defgroup CDBG_DCRSR: (CDBG Offset: 0x04  Debug Core Register Selector Register        */
+/** @name CDBG_DCRSR: (CDBG Offset: 0x04  Debug Core Register Selector Register        */
+/** @{ */
 #define CDBG_DCRSR_REGWnR       0x00010000 //!< Write /read
 #define CDBG_DCRSR_REGSEL       0x0000001F //!< register(s)
 /** @} */
 
-/** @defgroup CDBG_DCRDR: (CDBG Offset: 0x08  Debug Core Register Data Register            */
+/** @name CDBG_DCRDR: (CDBG Offset: 0x08  Debug Core Register Data Register            */
+/** @{ */
 /** @} */
 
-/** @defgroup CDBG_DEMCR: (CDBG Offset: 0x0C  Debug Exception and Monitor Control Register */
+/** @name CDBG_DEMCR: (CDBG Offset: 0x0C  Debug Exception and Monitor Control Register */
+/** @{ */
 #define CDBG_DEMCR_TRCENA         0x01000000 //!< This bit must be set to 1 to enable use of the trace and debug blocks
 #define CDBG_DEMCR_MON_REQ        0x00080000 //!< This enables the monitor to identify how it wakes up
 #define CDBG_DEMCR_MON_STEP       0x00040000 //!< When MON_EN = 1, this steps the core. When MON_EN = 0, this bit is ignored
@@ -69,8 +80,10 @@ struct CDBG_Type
 
 
 
-/** @} */ // @defgroup CDBG_regs_define
+/** @} */ // @relates CDBG_Type
 
 
 
 #endif /* CDBG_CM3_H_ */
+
+/** @} */

@@ -1,16 +1,23 @@
-/*
- * mpu_cm3.h
+/**************************************************************************//**
+ * @ingroup	hardware_cm3_mpu
+ * @file	hardware/cortex-m3/mpu_cm3.h
+ * @brief  	Cortex-M3 MPU
+ * @date    18. December 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Dec 18, 2013
- *      Author: miro
- */
+ * @defgroup hardware_cm3_mpu  Memory Protection Unit (MPU)
+ * @ingroup	 hardware_cm3
+ * Source and definitions for Cortex-M3  Memory Protection Unit (MPU)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef MPU_CM3_H_
 #define MPU_CM3_H_
 
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Memory Protection Unit (MPU)
  ******************************************************************************/
 #ifndef __ASSEMBLY__
@@ -30,34 +37,39 @@ struct MPU_Type
 };
 #endif /* __ASSEMBLY__ */
 
-/*******************************************************************************
- * @defgroup MPU_regs_define
+/***************************************************************************//**
+ * @relates MPU_Type
  * @{
  ******************************************************************************/
 
-/** @defgroup MPU_TYPE:	   (MPU Offset: 0x00) MPU Type Register                              */
+/** @name MPU_TYPE:	   (MPU Offset: 0x00) MPU Type Register                              */
+/** @{ */
 #define MPU_TYPE_IREGION 		   0x00FF0000 //!< Number of supported MPU instruction regions. Always contains 0x00. The MPU memory map is unified and is described by the DREGION field
 #define MPU_TYPE_DREGION 		   0x0000FF00 //!< Number of supported MPU data regions: 0x08 = eight MPU regions
 #define MPU_TYPE_SEPARATE  		   0x00000001 //!< Indicates support for unified or separate instruction and date memory maps: 0 = unified
 /** @} */
 
-/** @defgroup MPU_CTRL:    (MPU Offset: 0x04) MPU Control Register                           */
+/** @name MPU_CTRL:    (MPU Offset: 0x04) MPU Control Register                           */
+/** @{ */
 #define MPU_CTRL_PRIVDEFENA 	   0x00000003 //!< Enables privileged software access to the default memory map
 #define MPU_CTRL_HFNMIENA  		   0x00000002 //!< Enables the operation of MPU during hard fault, NMI, and FAULTMASK handlers
 #define MPU_CTRL_ENABLE   		   0x00000001 //!< Enables the MPU
 /** @} */
 
-/** @defgroup MPU_RNR:     (MPU Offset: 0x08) MPU Region Number Register                     */
+/** @name MPU_RNR:     (MPU Offset: 0x08) MPU Region Number Register                     */
+/** @{ */
 #define MPU_RNR_REGION    		   0x000000FF //!< Indicates the MPU region referenced by the MPU_RBAR and MPU_RASR registers
 /** @} */
 
-/** @defgroup MPU_RBAR:    (MPU Offset: 0x0C) MPU Region Base Address Register               */
+/** @name MPU_RBAR:    (MPU Offset: 0x0C) MPU Region Base Address Register               */
+/** @{ */
 #define MPU_RBAR_ADDR     		   0xFFFFFFE0 //!< Region base address
 #define MPU_RBAR_VALID     		   0x00000010 //!< MPU Region Number valid bit
 #define MPU_RBAR_REGION    		   0x0000000F //!< MPU region field
 /** @} */
 
-/** @defgroup MPU_RASR:    (MPU Offset: 0x10) MPU Region Attribute and Size Register         */
+/** @name MPU_RASR:    (MPU Offset: 0x10) MPU Region Attribute and Size Register         */
+/** @{ */
 #define MPU_RASR_XN 	   		   0x10000000 //!< Instruction access disable bit
 #define MPU_RASR_AP 	   		   0x07000000 //!< Access permission field
 #define MPU_RASR_AP_PRV_NO_USR_NO  0x00000000 //!<  All accesses generate a permission fault
@@ -105,32 +117,40 @@ struct MPU_Type
 
 /** @} */
 
-/** @defgroup MPU_RBAR_A1: (MPU Offset: 0x14) MPU Alias 1 Region Base Address Register       */
+/** @name MPU_RBAR_A1: (MPU Offset: 0x14) MPU Alias 1 Region Base Address Register       */
+/** @{ */
 // see MPU_RBAR register
 /** @} */
 
-/** @defgroup MPU_RASR_A1: (MPU Offset: 0x18) MPU Alias 1 Region Attribute and Size Register */
+/** @name MPU_RASR_A1: (MPU Offset: 0x18) MPU Alias 1 Region Attribute and Size Register */
+/** @{ */
 // see MPU_RASR register
 /** @} */
 
-/** @defgroup MPU_RBAR_A2: (MPU Offset: 0x1C) MPU Alias 2 Region Base Address Register       */
+/** @name MPU_RBAR_A2: (MPU Offset: 0x1C) MPU Alias 2 Region Base Address Register       */
+/** @{ */
 // see MPU_RBAR register
 /** @} */
 
-/** @defgroup MPU_RASR_A2: (MPU Offset: 0x20) MPU Alias 2 Region Attribute and Size Register */
+/** @name MPU_RASR_A2: (MPU Offset: 0x20) MPU Alias 2 Region Attribute and Size Register */
+/** @{ */
 // see MPU_RASR register
 /** @} */
 
-/** @defgroup MPU_RBAR_A3: (MPU Offset: 0x24) MPU Alias 3 Region Base Address Register       */
+/** @name MPU_RBAR_A3: (MPU Offset: 0x24) MPU Alias 3 Region Base Address Register       */
+/** @{ */
 // see MPU_RBAR register
 /** @} */
 
-/** @defgroup MPU_RASR_A3: (MPU Offset: 0x28) MPU Alias 3 Region Attribute and Size Register */
+/** @name MPU_RASR_A3: (MPU Offset: 0x28) MPU Alias 3 Region Attribute and Size Register */
+/** @{ */
 // see MPU_RASR register
 /** @} */
 
-/** @} */ // @defgroup MPU_regs_define
+/** @} */ // @relates MPU_Type
 
 
 
 #endif /* MPU_CM3_H_ */
+
+/** @} */
