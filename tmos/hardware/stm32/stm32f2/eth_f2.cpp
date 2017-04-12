@@ -1,8 +1,12 @@
-/*
- * eth_f2.cpp
- *
- *  Created on: May 20, 2015
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f2_eth
+ * @{
+ * @file     hardware/stm32/stm32f2/eth_f2.cpp
+ * @brief    STM32F2 ETH
+ * @version  V3.00
+ * @date     20. May 2015
+ * @author	 Miroslav Kostadinov
+ * @}
  */
 
 #include <tmos.h>

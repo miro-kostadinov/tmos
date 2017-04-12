@@ -1,10 +1,13 @@
-/*
- * rcc_f2.cpp
- *
- *  Created on: Nov 12, 2012
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f2_rcc
+ * @{
+ * @file     hardware/stm32/stm32f2/rcc_f2.cpp
+ * @brief    STM32F2 RCC
+ * @version  V3.00
+ * @date     12. November 2012
+ * @author	 Miroslav Kostadinov
+ * @}
  */
-
 
 #include <tmos.h>
 #include <fam_cpp.h>

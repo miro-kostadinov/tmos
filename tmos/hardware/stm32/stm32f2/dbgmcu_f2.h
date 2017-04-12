@@ -1,9 +1,16 @@
-/*
- * dbgmcu_f2.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f2_dbgmcu
+ * @file	hardware/stm32/stm32f2/dbgmcu_f2.h
+ * @brief  	STM32F2 DBGMCU
+ * @date    29. October 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Oct 29, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32f2_dbgmcu  MCU debug component (DBGMCU)
+ * @ingroup	 hardware_stm32f2
+ * Source and definitions for STM32F2 MCU debug component (DBGMCU)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef DBGMCU_F2_H_
 #define DBGMCU_F2_H_
@@ -12,7 +19,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  MCU debug component (DBGMCU)
  ******************************************************************************/
 typedef struct
@@ -25,17 +32,19 @@ typedef struct
 } DBGMCU_TypeDef;
 
 
-/*******************************************************************************
- * @defgroup DBGMCU_regs_define
+/***************************************************************************//**
+ * @relates DBGMCU_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup DBGMCU_IDCODE:	(dbgmcu offset: 0x00) MCU device ID code		  */
+/** @name DBGMCU_IDCODE:	(dbgmcu offset: 0x00) MCU device ID code		  */
+/** @{ */
 #define DBGMCU_IDCODE_DEV_ID        0x00000FFF //!< Device Identifier
 #define DBGMCU_IDCODE_REV_ID        0xFFFF0000 //!< REV_ID[15:0] bits (Revision Identifier)
 /** @} */
 
-/** @defgroup DBGMCU_CR:	(dbgmcu Offset: 0x04) Debug MCU configuration register		  */
+/** @name DBGMCU_CR:	(dbgmcu Offset: 0x04) Debug MCU configuration register  */
+/** @{ */
 #define DBGMCU_CR_DBG_SLEEP         0x00000001 //!< Debug Sleep Mode
 #define DBGMCU_CR_DBG_STOP          0x00000002 //!< Debug Stop Mode
 #define DBGMCU_CR_DBG_STANDBY       0x00000004 //!< Debug Standby mode
@@ -48,7 +57,8 @@ typedef struct
 #define DBGMCU_CR_TRACE_MODE_SYNC4  0x000000C0 //!< TRACE pin assignment for Synchronous Mode with a TRACEDATA size of 4
 /** @} */
 
-/** @defgroup DBGMCU_APB1FZ: (dbgmcu Offset: 0x08) Debug MCU APB1 freeze register */
+/** @name DBGMCU_APB1FZ: (dbgmcu Offset: 0x08) Debug MCU APB1 freeze register */
+/** @{ */
 #define DBGMCU_APB1_FZ_DBG_TIM2_STOP        0x00000001 //!< TIM2 counter stopped when core is halted
 #define DBGMCU_APB1_FZ_DBG_TIM3_STOP        0x00000002 //!< TIM3 counter stopped when core is halted
 #define DBGMCU_APB1_FZ_DBG_TIM4_STOP        0x00000004 //!< TIM4 counter stopped when core is halted
@@ -68,7 +78,8 @@ typedef struct
 #define DBGMCU_APB1_FZ_DBG_CAN2_STOP           0x04000000 //!< Debug CAN2 stopped when Core is halted
 /** @} */
 
-/** @defgroup DBGMCU_APB2FZ: (dbgmcu Offset: 0x0C) Debug MCU APB2 freeze register */
+/** @name DBGMCU_APB2FZ: (dbgmcu Offset: 0x0C) Debug MCU APB2 freeze register */
+/** @{ */
 #define DBGMCU_APB1_FZ_DBG_TIM1_STOP        0x00000001 //!< TIM1 counter stopped when core is halted
 #define DBGMCU_APB1_FZ_DBG_TIM8_STOP        0x00000002 //!< TIM8 counter stopped when core is halted
 #define DBGMCU_APB1_FZ_DBG_TIM9_STOP        0x00010000 //!< TIM9 counter stopped when core is halted
@@ -76,7 +87,9 @@ typedef struct
 #define DBGMCU_APB1_FZ_DBG_TIM11_STOP       0x00040000 //!< TIM11 counter stopped when core is halted
 /** @} */
 
-/** @} */ // @defgroup RCC_DBGMCU_regs_define
+/** @} */ // @relates DBGMCU_TypeDef
 
 
 #endif /* DBGMCU_F2_H_ */
+
+/** @} */

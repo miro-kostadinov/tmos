@@ -1,9 +1,16 @@
-/*
- * rcc_f2.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f2_rcc
+ * @file	hardware/stm32/stm32f2/rcc_f2.h
+ * @brief  	STM32F2 rcc
+ * @date    29. October 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Oct 29, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32f2_rcc  Reset and Clock Control (RCC)
+ * @ingroup	 hardware_stm32f2
+ * Source and definitions for STM32F2 Reset and Clock Control (RCC)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef RCC_F2_H_
 #define RCC_F2_H_
@@ -11,7 +18,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Reset and Clock Control registers
  ******************************************************************************/
 typedef struct
@@ -50,12 +57,13 @@ typedef struct
 
 } RCC_TypeDef;
 
-/*******************************************************************************
- * @defgroup RCC_regs_define
+/***************************************************************************//**
+ * @relates RCC_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup RCC_CR:	 	(rcc Offset: 0x00) Clock control register		  */
+/** @name RCC_CR:	 	(rcc Offset: 0x00) Clock control register			  */
+/** @{ */
 #define RCC_CR_HSION        		0x00000001 //!< Internal High Speed clock enable
 #define RCC_CR_HSIRDY           	0x00000002 //!< Internal High Speed clock ready flag
 #define RCC_CR_HSITRIM          	0x000000F8 //!< Internal High Speed clock trimming
@@ -71,7 +79,8 @@ typedef struct
 /** @} */
 
 
-/** @defgroup RCC_PLLCFGR:	 (rcc offset: 0x04) RCC PLL configuration register  */
+/** @name RCC_PLLCFGR:	 (rcc offset: 0x04) RCC PLL configuration register    */
+/** @{ */
 #define  RCC_PLLCFGR_PLLM           0x0000003F //!< Division factor for the main PLL (PLL) and audio PLL (PLLI2S) input clock
 #define  RCC_PLLCFGR_PLLM_Get(x)    ((x) & 0x3F)
 #define  RCC_PLLCFGR_PLLM_Set(x)    ((x) & 0x3F)
@@ -99,7 +108,8 @@ typedef struct
 /** @} */
 
 
-/** @defgroup RCC_CFGR:		 (rcc offset: 0x08) Clock configuration register    */
+/** @name RCC_CFGR:		 (rcc offset: 0x08) Clock configuration register      */
+/** @{ */
 /*!< SW configuration */
 #define RCC_CFGR_SW    				0x00000003 //!< SW[1:0] bits (System clock Switch)
 #define RCC_CFGR_SW_HSI       		0x00000000 //!< HSI selected as system clock
@@ -179,7 +189,8 @@ typedef struct
 /** @} */
 
 
-/** @defgroup RCC_CIR:		 (rcc Offset: 0x0C) Clock interrupt register		*/
+/** @name RCC_CIR:		 (rcc Offset: 0x0C) Clock interrupt register		  */
+/** @{ */
 #define RCC_CIR_LSIRDYF             0x00000001 //!< LSI Ready Interrupt flag
 #define RCC_CIR_LSERDYF             0x00000002 //!< LSE Ready Interrupt flag
 #define RCC_CIR_HSIRDYF             0x00000004 //!< HSI Ready Interrupt flag
@@ -203,7 +214,8 @@ typedef struct
 /** @} */
 
 
-/** @defgroup RCC_AHB1RSTR:	 (rcc Offset: 0x10) AHB1 peripheral reset register	*/
+/** @name RCC_AHB1RSTR:	 (rcc Offset: 0x10) AHB1 peripheral reset register	  */
+/** @{ */
 #define RCC_AHB1RSTR_GPIOARST       0x00000001 //!< IO port A reset
 #define RCC_AHB1RSTR_GPIOBRST       0x00000002 //!< IO port B reset
 #define RCC_AHB1RSTR_GPIOCRST       0x00000004 //!< IO port C reset
@@ -221,7 +233,8 @@ typedef struct
 /** @} */
 
 
-/** @defgroup RCC_AHB2RSTR:	 (rcc Offset: 0x14) AHB2 peripheral reset register	*/
+/** @name RCC_AHB2RSTR:	 (rcc Offset: 0x14) AHB2 peripheral reset register	  */
+/** @{ */
 #define RCC_AHB2RSTR_DCMIRST        0x00000001 //!< Camera interface reset
 #define RCC_AHB2RSTR_CRYPRST        0x00000010 //!< Cryptographic module reset
 #define RCC_AHB2RSTR_HSAHRST        0x00000020 //!< Hash module reset
@@ -229,11 +242,13 @@ typedef struct
 #define RCC_AHB2RSTR_OTGFSRST       0x00000080 //!< USB OTG FS module reset
 /** @} */
 
-/** @defgroup RCC_AHB3RSTR:	 (rcc Offset: 0x18) AHB3 peripheral reset register	*/
+/** @name RCC_AHB3RSTR:	 (rcc Offset: 0x18) AHB3 peripheral reset register	  */
+/** @{ */
 #define RCC_AHB3RSTR_FSMCRST        0x00000001 //!< Flexible static memory controller module reset
 /** @} */
 
-/** @defgroup RCC_APB1RSTR:	 (rcc Offset: 0x20) APB1 peripheral reset register	*/
+/** @name RCC_APB1RSTR:	 (rcc Offset: 0x20) APB1 peripheral reset register	  */
+/** @{ */
 #define RCC_APB1RSTR_TIM2RST        0x00000001 //!< TIM2 reset
 #define RCC_APB1RSTR_TIM3RST        0x00000002 //!< TIM3 reset
 #define RCC_APB1RSTR_TIM4RST        0x00000004 //!< TIM4 reset
@@ -260,7 +275,8 @@ typedef struct
 /** @} */
 
 
-/** @defgroup RCC_APB2RSTR:	 (rcc Offset: 0x24) APB2 peripheral reset register	*/
+/** @name RCC_APB2RSTR:	 (rcc Offset: 0x24) APB2 peripheral reset register	  */
+/** @{ */
 #define RCC_APB2RSTR_TIM1RST        0x00000001 //!< TIM1 reset
 #define RCC_APB2RSTR_TIM8RST        0x00000002 //!< TIM8 reset
 #define RCC_APB2RSTR_USART1RST      0x00000010 //!< USART1 reset
@@ -274,7 +290,8 @@ typedef struct
 #define RCC_APB2RSTR_TIM11RST       0x00040000 //!< TIM11 reset
 /** @} */
 
-/** @defgroup RCC_AHB1ENR:   (rcc Offset: 0x30) RCC AHB1 peripheral clock register */
+/** @name RCC_AHB1ENR:   (rcc Offset: 0x30) RCC AHB1 peripheral clock register */
+/** @{ */
 #define RCC_AHB1ENR_GPIOAEN         0x00000001 //!< IO port A clock enable
 #define RCC_AHB1ENR_GPIOBEN         0x00000002 //!< IO port B clock enable
 #define RCC_AHB1ENR_GPIOCEN         0x00000004 //!< IO port C clock enable
@@ -296,7 +313,8 @@ typedef struct
 #define RCC_AHB1ENR_OTGHSULPIEN     0x40000000 //!< USB OTG HSULPI clock enable
 /** @} */
 
-/** @defgroup RCC_AHB2ENR:   (rcc Offset: 0x34) RCC AHB2 peripheral clock register */
+/** @name RCC_AHB2ENR:   (rcc Offset: 0x34) RCC AHB2 peripheral clock register */
+/** @{ */
 #define RCC_AHB2ENR_DCMIEN          0x00000001 //!< Camera interface enable
 #define RCC_AHB2ENR_CRYPEN          0x00000010 //!< Cryptographic modules clock enable
 #define RCC_AHB2ENR_HASHEN          0x00000020 //!< Hash modules clock enable
@@ -304,11 +322,13 @@ typedef struct
 #define RCC_AHB2ENR_OTGFSEN         0x00000080 //!< USB OTG FS clock enable
 /** @} */
 
-/** @defgroup RCC_AHB3ENR:   (rcc Offset: 0x38) RCC AHB3 peripheral clock register */
+/** @name RCC_AHB3ENR:   (rcc Offset: 0x38) RCC AHB3 peripheral clock register */
+/** @{ */
 #define RCC_AHB3ENR_FSMCEN          0x00000001 //!< Flexible static memory controller module clock enable
 /** @} */
 
-/** @defgroup RCC_APB1ENR:	 (rcc Offset: 0x40) APB1 peripheral clock enable register */
+/** @name RCC_APB1ENR:	 (rcc Offset: 0x40) APB1 peripheral clock enable register */
+/** @{ */
 #define RCC_APB1ENR_TIM2EN          0x00000001 //!< TIM2 clock enable
 #define RCC_APB1ENR_TIM3EN          0x00000002 //!< TIM3 clock enable
 #define RCC_APB1ENR_TIM4EN          0x00000004 //!< TIM4 clock enable
@@ -334,7 +354,8 @@ typedef struct
 #define RCC_APB1ENR_DACEN           0x20000000 //!< DAC interface clock enable
 /** @} */
 
-/** @defgroup RCC_APB2ENR:	 (rcc Offset: 0x44) APB2 peripheral clock enable register */
+/** @name RCC_APB2ENR:	 (rcc Offset: 0x44) APB2 peripheral clock enable register */
+/** @{ */
 #define RCC_APB2ENR_TIM1EN          0x00000001 //!< TIM1 clock enable
 #define RCC_APB2ENR_TIM8EN          0x00000002 //!< TIM8 clock enable
 #define RCC_APB2ENR_USART1EN        0x00000010 //!< USART1 clock enable
@@ -350,7 +371,8 @@ typedef struct
 #define RCC_APB2ENR_TIM11EN         0x00040000 //!< TIM11 clock enable
 /** @} */
 
-/** @defgroup RCC_AHB1LPENR: (rcc Offset: 0x50) RCC AHB1 peripheral clock enable in low power mode register */
+/** @name RCC_AHB1LPENR: (rcc Offset: 0x50) RCC AHB1 peripheral clock enable in low power mode register */
+/** @{ */
 #define RCC_AHB1LPENR_GPIOALPEN     0x00000001 //!< IO port A clock enable during Sleep mode
 #define RCC_AHB1LPENR_GPIOBLPEN     0x00000002 //!< IO port B clock enable during Sleep mode
 #define RCC_AHB1LPENR_GPIOCLPEN     0x00000004 //!< IO port C clock enable during Sleep mode
@@ -375,7 +397,8 @@ typedef struct
 #define RCC_AHB1LPENR_OTGHSULPILPEN 0x40000000 //!< USB OTG HS ULPI clock enable during Sleep mode
 /** @} */
 
-/** @defgroup RCC_AHB2LPENR: (rcc Offset: 0x54) RCC AHB2 peripheral clock enable in low power mode register */
+/** @name RCC_AHB2LPENR: (rcc Offset: 0x54) RCC AHB2 peripheral clock enable in low power mode register */
+/** @{ */
 #define RCC_AHB2LPENR_DCMILPEN      0x00000001 //!< Camera interface enable during Sleep mode
 #define RCC_AHB2LPENR_CRYPLPEN      0x00000010 //!< Cryptography modules clock enable during Sleep mode
 #define RCC_AHB2LPENR_HASHLPEN      0x00000020 //!< Hash modules clock enable during Sleep mode
@@ -383,11 +406,13 @@ typedef struct
 #define RCC_AHB2LPENR_OTGFSLPEN     0x00000080 //!< USB OTG FS clock enable during Sleep mode
 /** @} */
 
-/** @defgroup RCC_AHB3LPENR: (rcc Offset: 0x58) RCC AHB3 peripheral clock enable in low power mode register */
+/** @name RCC_AHB3LPENR: (rcc Offset: 0x58) RCC AHB3 peripheral clock enable in low power mode register */
+/** @{ */
 #define RCC_AHB3LPENR_FSMCLPEN      0x00000001 //!< Flexible static memory controller module clock enable during Sleep mode
 /** @} */
 
-/** @defgroup RCC_APB1LPENR: (rcc Offset: 0x60) RCC APB1 peripheral clock enable in low power mode register */
+/** @name RCC_APB1LPENR: (rcc Offset: 0x60) RCC APB1 peripheral clock enable in low power mode register */
+/** @{ */
 #define RCC_APB1LPENR_TIM2LPEN      0x00000001 //!< TIM2 clock enable during Sleep mode
 #define RCC_APB1LPENR_TIM3LPEN      0x00000002 //!< TIM3 clock enable during Sleep mode
 #define RCC_APB1LPENR_TIM4LPEN      0x00000004 //!< TIM4 clock enable during Sleep mode
@@ -413,7 +438,8 @@ typedef struct
 #define RCC_APB1LPENR_DACLPEN       0x20000000 //!< DAC interface clock enable during Sleep mode
 /** @} */
 
-/** @defgroup RCC_APB2LPENR: (rcc Offset: 0x64) RCC APB2 peripheral clock enable in low power mode register */
+/** @name RCC_APB2LPENR: (rcc Offset: 0x64) RCC APB2 peripheral clock enable in low power mode register */
+/** @{ */
 #define RCC_APB2LPENR_TIM1LPEN      0x00000001 //!< TIM1 clock enable during Sleep mode
 #define RCC_APB2LPENR_TIM8LPEN      0x00000002 //!< TIM8 clock enable during Sleep mode
 #define RCC_APB2LPENR_USART1LPEN    0x00000010 //!< USART1 clock enable during Sleep mode
@@ -429,7 +455,8 @@ typedef struct
 #define RCC_APB2LPENR_TIM11LPEN     0x00040000 //!< TIM11 clock enable during Sleep mode
 /** @} */
 
-/** @defgroup RCC_BDCR:		 (rcc Offset: 0x70) Backup domain control register 	*/
+/** @name RCC_BDCR:		 (rcc Offset: 0x70) Backup domain control register 	*/
+/** @{ */
 #define RCC_BDCR_LSEON              0x00000001 //!< External low-speed oscillator enable
 #define RCC_BDCR_LSERDY             0x00000002 //!< External low-speed oscillator ready
 #define RCC_BDCR_LSEBYP             0x00000004 //!< External low-speed oscillator bypass
@@ -444,7 +471,8 @@ typedef struct
 #define RCC_BDCR_BDRST              0x00010000 //!< Backup domain software reset
 /** @} */
 
-/** @defgroup RCC_CSR:		 (rcc Offset: 0x74) Control/status register 		*/
+/** @name RCC_CSR:		 (rcc Offset: 0x74) Control/status register 		*/
+/** @{ */
 #define RCC_CSR_LSION               0x00000001 //!< Internal low-speed oscillator enable
 #define RCC_CSR_LSIRDY              0x00000002 //!< Internal low-speed oscillator ready
 #define RCC_CSR_RMVF                0x01000000 //!< Remove reset flag
@@ -457,7 +485,8 @@ typedef struct
 #define RCC_CSR_LPWRRSTF            0x80000000 //!< Low-power reset flag
 /** @} */
 
-/** @defgroup RCC_SSCGR:     (rcc Offset: 0x80) RCC spread spectrum clock generation register */
+/** @name RCC_SSCGR:     (rcc Offset: 0x80) RCC spread spectrum clock generation register */
+/** @{ */
 #define RCC_SSCGR_MODPER            0x00001FFF //!< Modulation period
 #define RCC_SSCGR_INCSTEP           0x0FFFE000 //!< Incrementation step
 #define RCC_SSCGR_SPREADSEL         0x40000000 //!< Spread Select
@@ -466,13 +495,13 @@ typedef struct
 #define RCC_SSCGR_SSCGEN            0x80000000 //!< Spread spectrum modulation enable
 /** @} */
 
-/** @defgroup RCC_PLLI2SCFGR:(rcc Offset: 0x84) RCC PLLI2S configuration register */
+/** @name RCC_PLLI2SCFGR:(rcc Offset: 0x84) RCC PLLI2S configuration register */
 #define RCC_PLLI2SCFGR_PLLI2SN      0x00007FC0 //!< PLLI2S multiplication factor for VCO
 #define RCC_PLLI2SCFGR_PLLI2SR      0x70000000 //!< PLLI2S division factor for I2S clocks
 /** @} */
 
 
-/** @} */ // @defgroup RCC_regs_define
+/** @} */ // @relates RCC_TypeDef
 
 /**
  * @brief In the following line adjust the value of External High Speed oscillator (HSE)
@@ -516,3 +545,5 @@ void RCCPeripheralLPDisable(unsigned int periph_id);
 void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks);
 
 #endif /* RCC_F2_H_ */
+
+/** @} */

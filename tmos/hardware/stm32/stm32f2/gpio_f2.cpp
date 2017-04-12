@@ -1,14 +1,13 @@
 /**************************************************************************//**
- * @ingroup	 stm32_gpio
+ * @ingroup	 hardware_stm32f2_gpio
  * @{
- * @file     gpio_f2.cpp
- * @brief    GPIO class functions
+ * @file     hardware/stm32/stm32f2/gpio_f2.cpp
+ * @brief    STM32F2 GPIO
  * @version  V3.00
  * @date     30. October 2012
  * @author	 Miroslav Kostadinov
- *
- *
- ******************************************************************************/
+ * @}
+ */
 
 #include <tmos.h>
 #include "fam_cpp.h"

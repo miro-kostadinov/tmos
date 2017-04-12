@@ -1,9 +1,16 @@
-/*
- * adc_f2.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f2_adc
+ * @file	hardware/stm32/stm32f2/adc_f2.h
+ * @brief  	STM32F2 ADC
+ * @date    22. February 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Feb 22, 2013
- *      Author: miro
- */
+ * @defgroup hardware_stm32f2_adc  Analog-to-digital converter (ADC)
+ * @ingroup	 hardware_stm32f2
+ * Source and definitions for STM32F2 Analog-to-digital converter
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef ADC_F2_H_
 #define ADC_F2_H_
@@ -12,7 +19,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Analog to Digital Converter
  ******************************************************************************/
 typedef struct
@@ -34,6 +41,7 @@ typedef struct
   __IO uint32_t reserved[44];   //!< (adc Offset: 0x050) reserved
 } ADC_TypeDef;
 
+/// Combined ADCs
 typedef struct
 {
 	ADC_TypeDef ADCx[3];		//!< (adcs Offset: 0x000) ADC1-ADC3
@@ -42,12 +50,13 @@ typedef struct
   __IO uint32_t ADC_CDR;        //!< (adcs Offset: 0x308) ADC common regular data register for dual and triple modes
 } ADCS_TypeDef;
 
-/*******************************************************************************
- * @defgroup ADC_regs_define
+/***************************************************************************//**
+ * @relates ADC_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup ADC_SR:		(adc Offset: 0x000) ADC Status Register			  */
+/** @name ADC_SR:		(adc Offset: 0x000) ADC Status Register				  */
+/** @{ */
 #define ADC_SR_OVR                  0x00000020 //!< Overrun flag
 #define ADC_SR_STRT                 0x00000010 //!< Regular channel Start flag
 #define ADC_SR_JSTRT                0x00000008 //!< Injected channel Start flag
@@ -56,7 +65,8 @@ typedef struct
 #define ADC_SR_AWD                  0x00000001 //!< Analog watchdog flag
 /** @} */
 
-/** @defgroup ADC_CR1:      (adc Offset: 0x004) ADC Control Register 1		  */
+/** @name ADC_CR1:      (adc Offset: 0x004) ADC Control Register 1			  */
+/** @{ */
 #define ADC_CR1_OVRIE               0x04000000 //!< overrun interrupt enable
 #define ADC_CR1_RES                 0x03000000 //!< RES[2:0] bits (Resolution)
 #define ADC_CR1_RES_12              0x00000000 //!<  12-bit (15 ADCCLK cycles)
@@ -77,7 +87,8 @@ typedef struct
 #define ADC_CR1_AWDCH               0x0000001F //!< AWDCH[4:0] bits (Analog watchdog channel select bits)
 /** @} */
 
-/** @defgroup ADC_CR2:      (adc Offset: 0x008) ADC Control Register 2		  */
+/** @name ADC_CR2:      (adc Offset: 0x008) ADC Control Register 2			  */
+/** @{ */
 #define ADC_CR2_SWSTART             0x40000000 //!< Start Conversion of regular channels
 #define ADC_CR2_EXTEN               0x30000000 //!< EXTEN[1:0] bits (External Trigger Conversion mode for regular channelsp)
 #define ADC_CR2_EXTSEL              0x0F000000 //!< EXTSEL[3:0] bits (External Event Select for regular group)
@@ -92,7 +103,8 @@ typedef struct
 #define ADC_CR2_ADON                0x00000001 //!< A/D Converter ON / OFF
 /** @} */
 
-/** @defgroup ADC_SMPRx:    ADC Sample ti0e 	  */
+/** @name ADC_SMPRx:    ADC Sample ti0e 	 								  */
+/** @{ */
 #define ADC_SMPRx_3                 0x00000000 //!< 3 cycles
 #define ADC_SMPRx_15                0x00000001 //!< 15 cycles
 #define ADC_SMPRx_28                0x00000002 //!< 28 cycles
@@ -103,7 +115,8 @@ typedef struct
 #define ADC_SMPRx_480               0x00000007 //!< 480 cycles
 /** @} */
 
-/** @defgroup ADC_SMPR1:    (adc Offset: 0x00C) ADC Sample time register 1	  */
+/** @name ADC_SMPR1:    (adc Offset: 0x00C) ADC Sample time register 1		  */
+/** @{ */
 #define ADC_SMPR1_SMP18             0x07000000 //!< SMP18[2:0] bits (Channel 18 Sample time selection)
 #define ADC_SMPR1_SMP18_Set(x)       ((x)<<24) //!<  SMP18 set macro
 #define ADC_SMPR1_SMP17             0x00E00000 //!< SMP17[2:0] bits (Channel 17 Sample time selection)
@@ -124,7 +137,8 @@ typedef struct
 #define ADC_SMPR1_SMP10_Set(x)        ((x)<<0) //!<  SMP10 set macro
 /** @} */
 
-/** @defgroup ADC_SMPR2:    (adc Offset: 0x010) ADC Sample time register 2	  */
+/** @name ADC_SMPR2:    (adc Offset: 0x010) ADC Sample time register 2	  	  */
+/** @{ */
 #define ADC_SMPR2_SMP9              0x38000000 //!< SMP9[2:0] bits (Channel 9 Sample time selection)
 #define ADC_SMPR2_SMP9_Set(x)        ((x)<<27) //!<  SMP9 set macro
 #define ADC_SMPR2_SMP8              0x07000000 //!< SMP8[2:0] bits (Channel 8 Sample time selection)
@@ -147,19 +161,23 @@ typedef struct
 #define ADC_SMPR2_SMP0_Set(x)         ((x)<<0) //!<  SMP0 set macro
 /** @} */
 
-/** @defgroup ADC_JOFRx[4]: (adc Offset: 0x014) ADC injected channel data offset register x */
+/** @name ADC_JOFRx[4]: (adc Offset: 0x014) ADC injected channel data offset register x */
+/** @{ */
 #define ADC_JOFR1_JOFFSETx          0x00000FFF //!< Data offset for injected channel x
 /** @} */
 
-/** @defgroup ADC_HTR:      (adc Offset: 0x024) ADC watchdog high threshold register */
+/** @name ADC_HTR:      (adc Offset: 0x024) ADC watchdog high threshold register */
+/** @{ */
 #define ADC_HTR_HT                  0x00000FFF //!< Analog watchdog high threshold
 /** @} */
 
-/** @defgroup ADC_LTR:      (adc Offset: 0x028) ADC watchdog low threshold register */
+/** @name ADC_LTR:      (adc Offset: 0x028) ADC watchdog low threshold register */
+/** @{ */
 #define ADC_LTR_LT                  0x00000FFF //!< Analog watchdog low threshold
 /** @} */
 
-/** @defgroup ADC_SQR1:     (adc Offset: 0x02C) ADC regular sequence register 1 */
+/** @name ADC_SQR1:     (adc Offset: 0x02C) ADC regular sequence register 1	  */
+/** @{ */
 #define ADC_SQR1_L                  0x00F00000 //!< L[3:0] bits (Regular channel sequence length)
 #define ADC_SQR_L_Get(x)         (((x)>>20)&3) //!<  L Get macro
 #define ADC_SQR_L_Set(x)         (((x)-1)<<20) //!<  L Set macro
@@ -174,7 +192,8 @@ typedef struct
 #define ADC_SQR1_SQ13_Set(x)          ((x)<<0) //!<  SQ13 Set macro
 /** @} */
 
-/** @defgroup ADC_SQR2:     (adc Offset: 0x030) ADC regular sequence register 2 */
+/** @name ADC_SQR2:     (adc Offset: 0x030) ADC regular sequence register 2	  */
+/** @{ */
 #define ADC_SQR2_SQ12               0x3E000000 //!< SQ12[4:0] bits (12th conversion in regular sequence)
 #define ADC_SQR2_SQ11               0x01F00000 //!< SQ11[4:0] bits (11th conversion in regular sequence)
 #define ADC_SQR2_SQ10               0x000F8000 //!< SQ10[4:0] bits (10th conversion in regular sequence)
@@ -191,7 +210,8 @@ typedef struct
 #define ADC_SQR2_SQ7_Set(x)           ((x)<<0) //!<  SQ7 Set macro
 /** @} */
 
-/** @defgroup ADC_SQR3:     (adc Offset: 0x034) ADC regular sequence register 3 */
+/** @name ADC_SQR3:     (adc Offset: 0x034) ADC regular sequence register 3	  */
+/** @{ */
 #define ADC_SQR3_SQ6                0x3E000000 //!< SQ6[4:0] bits (6th conversion in regular sequence)
 #define ADC_SQR3_SQ5                0x01F00000 //!< SQ5[4:0] bits (5th conversion in regular sequence)
 #define ADC_SQR3_SQ4                0x000F8000 //!< SQ4[4:0] bits (4th conversion in regular sequence)
@@ -207,7 +227,8 @@ typedef struct
 #define ADC_SQR3_SQ1_Set(x)           ((x)<<0) //!<  SQ1 Set macro
 /** @} */
 
-/** @defgroup ADC_JSQR:		(adc Offset: 0x038) ADC injected sequence register */
+/** @name ADC_JSQR:		(adc Offset: 0x038) ADC injected sequence register	  */
+/** @{ */
 #define ADC_JSQR_JL                 0x00300000 //!< JL[1:0] bits (Injected Sequence length)
 #define ADC_JSQR_JL_Get(x)       (((x)>>20)&3) //!<  JL Get macro
 #define ADC_JSQR_JL_Set(x)       (((x)-1)<<20) //!<  JL Set macro
@@ -217,16 +238,26 @@ typedef struct
 #define ADC_JSQR_JSQ1               0x0000001F //!< JSQ1[4:0] bits (1st conversion in injected sequence)
 /** @} */
 
-/** @defgroup ADC_JDRx[4]:	(adc Offset: 0x03C) ADC injected data register x  */
+/** @name ADC_JDRx[4]:	(adc Offset: 0x03C) ADC injected data register x	  */
+/** @{ */
 #define ADC_JDRx_JDATA              0x0000FFFF //!< Injected data
 /** @} */
 
-/** @defgroup ADC_DR:       (adc Offset: 0x04C) ADC data register			  */
+/** @name ADC_DR:       (adc Offset: 0x04C) ADC data register				  */
+/** @{ */
 #define ADC_DR_ADC2DATA             0xFFFF0000 //!< ADC2 data
 #define ADC_DR_DATA                 0x0000FFFF //!< Regular data
 /** @} */
 
-/** @defgroup ADC_CSR:      (adcs Offset: 0x300) ADC Common status register	  */
+/** @} */ // @relates ADC_TypeDef
+
+/***************************************************************************//**
+ * @relates ADCS_TypeDef
+ * @{
+ ******************************************************************************/
+
+/** @name ADC_CSR:      (adcs Offset: 0x300) ADC Common status register	 	  */
+/** @{ */
 #define ADC_CSR_DOVR3               0x00200000 //!< ADC3 DMA overrun  flag
 #define ADC_CSR_STRT3               0x00100000 //!< ADC3 Regular channel Start flag
 #define ADC_CSR_JSTRT3              0x00080000 //!< ADC3 Injected channel Start flag
@@ -247,7 +278,8 @@ typedef struct
 #define ADC_CSR_AWD1                0x00000001 //!< ADC1 Analog watchdog flag
 /** @} */
 
-/** @defgroup ADC_CCR:      (adcs Offset: 0x304) ADC common control register	  */
+/** @name ADC_CCR:      (adcs Offset: 0x304) ADC common control register	  */
+/** @{ */
 #define ADC_CCR_TSVREFE             0x00800000 //!< Temperature Sensor and VREFINT Enable
 #define ADC_CCR_VBATE               0x00400000 //!< VBAT Enable
 #define ADC_CCR_ADCPRE              0x00030000 //!< ADCPRE[1:0] bits (ADC prescaler)
@@ -292,20 +324,18 @@ typedef struct
 #define ADC_CCR_MULTI_triple_regsim		   	0x00000016 //!<  ADC1-3, regular simultaneous mode only
 #define ADC_CCR_MULTI_triple_inter		   	0x00000017 //!<  ADC1-3, interleaved mode only
 #define ADC_CCR_MULTI_triple_alter		   	0x00000019 //!<  ADC1-3, alternate trigger mode only
-
-
-
-
-
 /** @} */
 
-/** @defgroup ADC_CDR:      (adcs Offset: 0x308) ADC common regular data register for dual and triple modes */
+/** @name ADC_CDR:      (adcs Offset: 0x308) ADC common regular data register for dual and triple modes */
+/** @{ */
 #define ADC_CDR_DATA2               0xFFFF0000 //!< 2nd data of a pair of regular conversions
 #define ADC_CDR_DATA1               0x0000FFFF //!< 1st data of a pair of regular conversions
 /** @} */
 
 
-/** @} */ // @defgroup ADC_regs_define
+/** @} */ // @relates ADCS_TypeDef
 
 
 #endif /* ADC_F2_H_ */
+
+/** @} */

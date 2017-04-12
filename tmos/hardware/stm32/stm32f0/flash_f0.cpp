@@ -1,8 +1,11 @@
-/*
- * flash_f0.cpp
- *
- *  Created on: Feb 11, 2016
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f0_flash
+ * @{
+ * @file     hardware/stm32/stm32f0/flash_f0.cpp
+ * @brief    STM32F0 Flash
+ * @version  V3.00
+ * @date     11. February 2016
+ * @author	 Miroslav Kostadinov
  */
 
 #include <tmos.h>
@@ -201,6 +204,7 @@ uint32_t flash_write(uint32_t address, const void* data, uint32_t len)
 }
 
 
+/** @} */
 
 
 

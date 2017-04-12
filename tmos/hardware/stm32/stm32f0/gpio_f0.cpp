@@ -1,8 +1,11 @@
-/*
- * gpio_f0.cpp
- *
- *  Created on: Dec 1, 2014
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f0_gpio
+ * @{
+ * @file     hardware/stm32/stm32f0/gpio_f0.cpp
+ * @brief    STM32F0 GPIP
+ * @version  V3.00
+ * @date     1. December 2014
+ * @author	 Miroslav Kostadinov
  */
 
 #include <tmos.h>
@@ -288,4 +291,4 @@ void exti_set_line_source(unsigned int line, unsigned int port)
 
 
 
-
+/** @} */

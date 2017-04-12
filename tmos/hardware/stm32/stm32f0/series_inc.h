@@ -6,9 +6,9 @@
  * @date     13. December 2011
  * @author	 Miroslav Kostadinov
  *
- * @defgroup hardware_stm32f2 STM32F2 series
+ * @defgroup hardware_stm32f0 STM32F0 series
  * @ingroup	 hardware_stm32
- * Source and definitions for STM32F2 series mcu's
+ * Source and definitions for STM32F0 series mcu's
  *
  *
  ******************************************************************************/

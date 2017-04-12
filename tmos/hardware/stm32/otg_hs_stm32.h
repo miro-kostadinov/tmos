@@ -1,9 +1,16 @@
-/*
- * otg_hs_stm32.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32_usb
+ * @file	hardware/stm32/otg_hs_stm32.h
+ * @brief  	STM32 USB OTG HS
+ * @date    30. November 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Nov 30, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32_usb HS/FS USB OTG
+ * @ingroup	 hardware_stm32
+ * Source and definitions for STM32 HS USB OTG Controller
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef OTG_HS_STM32_H_
 #define OTG_HS_STM32_H_
@@ -129,6 +136,7 @@ typedef struct
 } OTG_DFIFO_REGS;
 
 
+/// USB peripheral registers
 typedef struct
 {
   OTG_CORE_REGS		core_regs;						//!< (otg Offset: 0x0000) Core global CSRs
@@ -152,8 +160,13 @@ typedef struct
 
 
 /* ---------- Core global registers 0x0000  -----------------------------------*/
+/***************************************************************************//**
+ * @relates OTG_CORE_REGS
+ * @{
+ ******************************************************************************/
 
-/** @defgroup GOTGCTL:	(otg Offset: 0x0000) USB_OTG Control and Status Register*/
+/** @name GOTGCTL:	(otg Offset: 0x0000) USB_OTG Control and Status Register  	*/
+/** @{ */
 #define OTG_GOTGCTL_BSVLD           (1u<<19)    //!< B-Session Valid
 #define OTG_GOTGCTL_ASVLD           (1u<<18)    //!< A-Session Valid
 #define OTG_GOTGCTL_DBCT            (1u<<17)    //!< Long/Short debounce time
@@ -166,7 +179,8 @@ typedef struct
 #define OTG_GOTGCTL_SRQSCS          (1u<<0)     //!< Session request success
 /** @} */
 
-/** @defgroup GOTGINT;  (otg Offset: 0x0004) USB_OTG Interrupt Register			*/
+/** @name GOTGINT:  (otg Offset: 0x0004) USB_OTG Interrupt Register			 	*/
+/** @{ */
 #define OTG_GOTGINT_DBCDNE          (1u<<19)    //!< Debounce done
 #define OTG_GOTGINT_ADTOCHG         (1u<<18)    //!< A-Device timeout change
 #define OTG_GOTGINT_HNGDET          (1u<<17)    //!< Host negotiation detected
@@ -175,7 +189,8 @@ typedef struct
 #define OTG_GOTGINT_SEDET           (1u<<2)     //!< Session end detected
 /** @} */
 
-/** @defgroup GAHBCFG;  (otg Offset: 0x0008) Core AHB Configuration Register	*/
+/** @name GAHBCFG:  (otg Offset: 0x0008) Core AHB Configuration Register		*/
+/** @{ */
 #define OTG_GAHBCFG_PTXFELVL        (1u<<8)     //!< Periodic TxFIFO empty level
 #define OTG_GAHBCFG_TXFELVL         (1u<<7)     //!< Non-periodic TxFIFO empty level
 #define OTG_GAHBCFG_DMAEN           (1u<<5)     //!< DMA enable (HS only
@@ -184,7 +199,8 @@ typedef struct
 #define OTG_GAHBCFG_GINTMSK         (1u<<0)     //!< Global interrupt mask
 /** @} */
 
-/** @defgroup GUSBCFG;  (otg Offset: 0x000C) Core USB Configuration Register	*/
+/** @name GUSBCFG:  (otg Offset: 0x000C) Core USB Configuration Register		*/
+/** @{ */
 #define OTG_GUSBCFG_CTXPKT          (1u<<31)    //!< Corrupt Tx packet
 #define OTG_GUSBCFG_FDMOD           (1u<<30)    //!< Force Device Mode
 #define OTG_GUSBCFG_FHMOD           (1u<<29)    //!< Force Host Mode
@@ -208,7 +224,8 @@ typedef struct
 #define OTG_GUSBCFG_TOCAL(n)        ((n)<<0)    //!< HS/FS timeout calibration
 /** @} */
 
-/** @defgroup GRSTCTL;  (otg Offset: 0x0010) Core Reset Register				*/
+/** @name GRSTCTL:  (otg Offset: 0x0010) Core Reset Register					*/
+/** @{ */
 #define OTG_GRSTCTL_AHBIDL          (1u<<31)    //!< AHB Master Idle
 #define OTG_GRSTCTL_TXFNUM_Msk      (31u<<6)    //!< TxFIFO number field mask
 #define OTG_GRSTCTL_TXFNUM(n)       ((n)<<6)    //!< TxFIFO number field value
@@ -219,7 +236,8 @@ typedef struct
 #define OTG_GRSTCTL_CSRST           (1u<<0)     //!< Core soft reset
 /** @} */
 
-/** @defgroup GINTSTS;  (otg Offset: 0x0014) Core Interrupt Register			*/
+/** @name GINTSTS:  (otg Offset: 0x0014) Core Interrupt Register				*/
+/** @{ */
 #define OTG_GINTSTS_WKUPINT         (1u<<31)    //!< Resume/Remote wakeup detected interrupt
 #define OTG_GINTSTS_SRQINT          (1u<<30)    //!< Session request/New session detected interrupt
 #define OTG_GINTSTS_DISCINT         (1u<<29)    //!< Disconnect detected interrupt
@@ -250,7 +268,8 @@ typedef struct
 #define OTG_GINTSTS_CMOD            (1u<<0)     //!< Current mode of operation
 /** @} */
 
-/** @defgroup GINTMSK;  (otg Offset: 0x0018) Core Interrupt Mask Register		*/
+/** @name GINTMSK:  (otg Offset: 0x0018) Core Interrupt Mask Register			*/
+/** @{ */
 #define OTG_GINTMSK_WUIM            (1u<<31)    //!< Resume/remote wakeup detected interrupt mask
 #define OTG_GINTMSK_SRQIM           (1u<<30)    //!< Session request/New session detected interrupt mask
 #define OTG_GINTMSK_DISCINT         (1u<<29)    //!< Disconnect detected interrupt mask
@@ -281,7 +300,8 @@ typedef struct
 #define OTG_GINTMSK_MMISM           (1u<<1)     //!< Mode Mismatch interrupt
 /** @} */
 
-/** @defgroup GRXSTSR;  (otg Offset: 0x001C) Receive Sts Q Read Register		*/
+/** @name GRXSTSR:  (otg Offset: 0x001C) Receive Sts Q Read Register			*/
+/** @{ */
 #define OTG_GRXSTSR_PKTSTS_Msk      (15u<<17)   //!< Packet status mask
 #define OTG_GRXSTSR_PKTSTS(n)       ((n)<<17)   //!< Packet status value
 #define OTG_GRXSTSR_OUT_GLOBAL_NAK  GRXSTSR_PKTSTS(1)
@@ -299,7 +319,8 @@ typedef struct
 #define OTG_GRXSTSR_EPNUM(n)        ((n)<<0)    //!< Endpoint number value
 /** @} */
 
-/** @defgroup GRXSTSP;  (otg Offset: 0x0020) Receive Sts Q Read & POP Register	*/
+/** @name GRXSTSP:  (otg Offset: 0x0020) Receive Sts Q Read & POP Register		*/
+/** @{ */
 #define OTG_GRXSTSP_PKTSTS_Msk      (15<<17)    //!< Packet status mask
 #define OTG_GRXSTSP_PKTSTS(n)       ((n)<<17)   //!< Packet status value
 #define OTG_GRXSTSP_PKTSTS_NAK 		  (1 << 17)	//!<  Dev: Global OUT NAK (triggers an interrupt)
@@ -324,12 +345,14 @@ typedef struct
 #define OTG_GRXSTSP_EPNUM(n)        ((n)<<0)    //!< Endpoint number value
 /** @} */
 
-/** @defgroup GRXFSIZ;  (otg Offset: 0x0024) Receive FIFO Size Register			*/
+/** @name GRXFSIZ:  (otg Offset: 0x0024) Receive FIFO Size Register				*/
+/** @{ */
 #define OTG_GRXFSIZ_RXFD_Msk        (0xFFFF<<0) //!< RxFIFO depth mask
 #define OTG_GRXFSIZ_RXFD(n)         ((n)<<0)    //!< RxFIFO depth value
 /** @} */
 
-/** @defgroup DIEPTXF0_HNPTXFSIZ; (otg Offset: 0x0028) EP0 / Non Periodic Tx FIFO Size Register*/
+/** @name DIEPTXF0_HNPTXFSIZ; (otg Offset: 0x0028) EP0 / Non Periodic Tx FIFO Size Register*/
+/** @{ */
 #define OTG_DIEPTXF0_TX0FD_Msk     (0xFFFFu<<16)//!< Device Endpoint 0 TxFIFO depth mask
 #define OTG_DIEPTXF0_TX0FD(n)       ((n)<<16)   //!< Device Endpoint 0 TxFIFO dept value
 #define OTG_DIEPTXF0_TX0FSA_Msk     (0xFFFF<<0) //!< Device Endpoint 0 transmit RAM start address mask
@@ -341,7 +364,8 @@ typedef struct
 #define OTG_HNPTXFSIZ_NPTXFSA(n)    ((n)<<0)    //!< Host Non-periodic transmit RAM start address
 /** @} */
 
-/** @defgroup GNPTXSTS; (otg Offset: 0x002C) Non Periodic Tx FIFO/Queue Sts reg	*/
+/** @name GNPTXSTS; (otg Offset: 0x002C) Non Periodic Tx FIFO/Queue Sts reg		*/
+/** @{ */
 #define OTG_GNPTXSTS_NPTXQTOP_Get(x) (((x)>>24) & 0x7Fu) //!< Top of the nonperiodic transmit request queue get
 #define OTG_GNPTXSTS_NPTXQTOP_CH_Get(x) (((x)>>27) & 0xFu) //!< Top of the nonperiodic transmit request queue channel get
 #define OTG_GNPTXSTS_NPTQXSAV_Msk   (0xFFu<<16) //!< Nonperiodic transmit request queue space available mask
@@ -350,7 +374,8 @@ typedef struct
 #define OTG_GNPTXSTS_NPTXFSAV(n)    (n)			//!< Nonperiodic TxFIFO space available value
 /** @} */
 
-/** @defgroup GCCFG;    (otg Offset: 0x0038) General Purpose IO Register		*/
+/** @name GCCFG;    (otg Offset: 0x0038) General Purpose IO Register			*/
+/** @{ */
 #define OTG_GCCFG_NOVBUSSENS        (1u<<21)    //!< VBUS sensing disable
 #define OTG_GCCFG_SOFOUTEN          (1u<<20)    //!< SOF output enable
 #define OTG_GCCFG_VBUSBSEN          (1u<<19)    //!< Enable the VBUS sensing "B" device
@@ -358,43 +383,56 @@ typedef struct
 #define OTG_GCCFG_PWRDWN            (1u<<16)    //!< Power down
 /** @} */
 
-/** @defgroup CID;      (otg Offset: 0x003C) User ID Register					*/
+/** @name CID;      (otg Offset: 0x003C) User ID Register						*/
+/** @{ */
 /** @} */
 
-/** @defgroup HPTXFSIZ; (otg Offset: 0x0100) Host periodic transmit FIFO size register */
+/** @name HPTXFSIZ; (otg Offset: 0x0100) Host periodic transmit FIFO size register */
+/** @{ */
 #define OTG_HPTXFSIZ_PTXFD_Msk     (0xFFFFu<<16)//!< Host periodic TxFIFO depth mask
 #define OTG_HPTXFSIZ_PTXFD(n)       ((n)<<16)   //!< Host periodic TxFIFO depth value
 #define OTG_HPTXFSIZ_PTXSA_Msk      (0xFFFFu<<0)//!< Host periodic TxFIFO Start address mask
 #define OTG_HPTXFSIZ_PTXSA(n)       ((n)<<0)    //!< Host periodic TxFIFO start address value
 /** @} */
 
-/** @defgroup DIEPTXF[OTG_MAX_FIFOS]; (otg Offset: 0x0104) device IN endpoint transmit FIFO size register */
+/** @name DIEPTXF[OTG_MAX_FIFOS]; (otg Offset: 0x0104) device IN endpoint transmit FIFO size register */
+/** @{ */
 /** @} */
+
+/** @} */ // @relates OTG_CORE_REGS
 
 
 
 /* ---------- Host-mode registers 0x0400 --------------------------------------*/
+/***************************************************************************//**
+ * @relates OTG_HOST_REGS
+ * @{
+ ******************************************************************************/
 
-/** @defgroup HCFG; 	(otg Offset: 0x0400) Host Configuration Register		*/
+/** @name HCFG; 	(otg Offset: 0x0400) Host Configuration Register			*/
+/** @{ */
 #define OTG_HCFG_FSLSS              (1u<<2)     //!< FS- and LS-only support
 #define OTG_HCFG_FSLSPCS_Msk        (3u<<0)     //!< FS/LS PHY clock select mask
 #define OTG_HCFG_FSLSPCS_48         (1u<<0)     //!< PHY clock is running at 48 MHz
 #define OTG_HCFG_FSLSPCS_6          (2u<<0)     //!< PHY clock is running at 6 MHz
 /** @} */
 
-/** @defgroup HFIR;     (otg Offset: 0x0404) Host Frame Interval Register		*/
+/** @name HFIR;     (otg Offset: 0x0404) Host Frame Interval Register			*/
+/** @{ */
 #define OTG_HFIR_FRIVL_Msk          (0xFFFFu<<0)//!< Frame interval mask
 #define OTG_HFIR_FRIVL(n)           ((n)<<0)    //!< Frame interval value
 /** @} */
 
-/** @defgroup HFNUM;    (otg Offset: 0x0408) Host Frame Nbr/Frame Remaining		*/
+/** @name HFNUM;    (otg Offset: 0x0408) Host Frame Nbr/Frame Remaining			*/
+/** @{ */
 #define OTG_HFNUM_FTREM_Msk        (0xFFFFu<<16)//!< Frame time Remaining mask
 #define OTG_HFNUM_FTREM(n)          ((n)<<16)   //!< Frame time Remaining value
 #define OTG_HFNUM_FRNUM_Msk         (0xFFFFu<<0)//!< Frame number mask
 #define OTG_HFNUM_FRNUM(n)          ((n)<<0)    //!< Frame number value
 /** @} */
 
-/** @defgroup HPTXSTS;  (otg Offset: 0x0410) Host Periodic Tx FIFO/ Queue Status*/
+/** @name HPTXSTS:  (otg Offset: 0x0410) Host Periodic Tx FIFO/ Queue Status	*/
+/** @{ */
 #define OTG_HPTXSTS_PTXQTOP_Msk     (0xFFu<<24) //!< Top of the periodic transmit request queue mask
 #define OTG_HPTXSTS_PTXQTOP(n)      ((n)<<24)   //!< Top of the periodictransmit request queue value
 #define OTG_HPTXSTS_PTXQSAV_Msk     (0xFF<<16)  //!< Periodic transmit request queue Space Available mask
@@ -403,19 +441,27 @@ typedef struct
 #define OTG_HPTXSTS_PTXFSAVL(n)     ((n)<<0)    //!< Periodic transmit Data FIFO Space Available value
 /** @} */
 
-/** @defgroup HAINT;   	(otg Offset: 0x0414) Host All Channels Interrupt Register*/
+/** @name HAINT;   	(otg Offset: 0x0414) Host All Channels Interrupt Register	*/
+/** @{ */
 #define OTG_HAINT_HAINT_Msk         (0xFFFFu<<0)//!< Channel interrupts mask
 #define OTG_HAINT_HAINT(n)          ((n)<<0)    //!< Channel interrupts value
 /** @} */
 
-/** @defgroup HAINTMSK; (otg Offset: 0x0418) Host All Channels Interrupt Mask	*/
+/** @name HAINTMSK; (otg Offset: 0x0418) Host All Channels Interrupt Mask		*/
+/** @{ */
 #define OTG_HAINTMSK_HAINTM_Msk     (0xFFFFu<<0)//!< Channel interrupt mask mask
 #define OTG_HAINTMSK_HAINTM(n)      ((n)<<0)    //!< Channel interrupt mask
 /** @} */
 
+/** @} */ // @relates OTG_HOST_REGS
 
 /* ---------- Host port control and status register  0x0440  ------------------*/
-/** @defgroup HPRT;		(otg Offset: 0x0440) Host port control and status register */
+/***************************************************************************//**
+ * @relates USB_TypeDef
+ * @{
+ ******************************************************************************/
+/** @name HPRT;		(otg Offset: 0x0440) Host port control and status register */
+/** @{ */
 #define OTG_HPRT_PSPD_Msk           (3u<<17)    //!< Port speed mask
 #define OTG_HPRT_PSPD_FS            (1u<<17)    //!< Full speed value
 #define OTG_HPRT_PSPD_LS            (2u<<17)    //!< Low speed value
@@ -434,14 +480,19 @@ typedef struct
 #define OTG_HPRT_PENA               (1u<<2)     //!< Port enable
 #define OTG_HPRT_PCDET              (1u<<1)     //!< Port Connect detected
 #define OTG_HPRT_PCSTS              (1u<<0)     //!< Port connect status
-#define OTG_HPRT_rc_w1_bits         (OTG_HPRT_PENA    | OTG_HPRT_PCDET |\
-	    OTG_HPRT_PENCHNG | OTG_HPRT_POCCHNG)     //!< rc_w1 bits (PENA is rc_w0 according to the RM v.6 but more likely is not)
+#define OTG_HPRT_rc_w1_bits         (OTG_HPRT_PENA    | OTG_HPRT_PCDET | OTG_HPRT_PENCHNG | OTG_HPRT_POCCHNG)     //!< rc_w1 bits (PENA is rc_w0 according to the RM v.6 but more likely is not)
 /** @} */
+/** @} */ // @relates USB_TypeDef
 
 
 /* ---------- Host channel-specific registers  0x0500, 0x0520... --------------*/
+/***************************************************************************//**
+ * @relates OTG_HC_REGS
+ * @{
+ ******************************************************************************/
 
-/** @defgroup HCCHAR;   (otg Offset: 0x0500+) Host channel-x characteristics register */
+/** @name HCCHAR;   (otg Offset: 0x0500+) Host channel-x characteristics register */
+/** @{ */
 #define OTG_HCCHAR_CHENA            (1u<<31)    //!< Channel enable
 #define OTG_HCCHAR_CHDIS            (1u<<30)    //!< Channel Disable
 #define OTG_HCCHAR_ODDFRM           (1u<<29)    //!< Odd frame
@@ -463,10 +514,12 @@ typedef struct
 #define OTG_HCCHAR_MPS(n)           ((n)<<0)    //!< Maximum packet size value
 /** @} */
 
-/** @defgroup HCSPLT;   (otg Offset: 0x0504+) host channel-x split control register */
+/** @name HCSPLT;   (otg Offset: 0x0504+) host channel-x split control register */
+/** @{ */
 /** @} */
 
-/** @defgroup HCINT;    (otg Offset: 0x0508+) Host channel-x interrupt register */
+/** @name HCINT;    (otg Offset: 0x0508+) Host channel-x interrupt register */
+/** @{ */
 #define OTG_HCINT_DTERR             (1u<<10)    //!< Data toggle error
 #define OTG_HCINT_FRMOR             (1u<<9)     //!< Frame overrun
 #define OTG_HCINT_BBERR             (1u<<8)     //!< Babble error
@@ -480,7 +533,8 @@ typedef struct
 #define OTG_HCINT_XFRC              (1u<<0)     //!< Transfer completed
 /** @} */
 
-/** @defgroup HCINTMSK; (otg Offset: 0x050C+) Host channel-x interrupt mask register */
+/** @name HCINTMSK; (otg Offset: 0x050C+) Host channel-x interrupt mask register */
+/** @{ */
 #define OTG_HCINTMSK_DTERRM         (1u<<10)    //!< Data toggle error mask
 #define OTG_HCINTMSK_FRMORM         (1u<<9)     //!< Frame overrun mask
 #define OTG_HCINTMSK_BBERRM         (1u<<8)     //!< Babble error mask
@@ -493,7 +547,8 @@ typedef struct
 #define OTG_HCINTMSK_XFRCM          (1u<<0)     //!< Transfer completed mask
 /** @} */
 
-/** @defgroup HCTSIZ;   (otg Offset: 0x0510+) Host channel-x transfer size register */
+/** @name HCTSIZ;   (otg Offset: 0x0510+) Host channel-x transfer size register */
+/** @{ */
 #define OTG_HCTSIZ_DPID_Msk         (3u<<29)    //!< PID mask
 #define OTG_HCTSIZ_DPID_DATA0       (0u<<29)    //!< DATA0
 #define OTG_HCTSIZ_DPID_DATA2       (1u<<29)    //!< DATA2
@@ -505,14 +560,21 @@ typedef struct
 #define OTG_HCTSIZ_XFRSIZ(n)        ((n)<<0)    //!< Transfer size value
 /** @} */
 
-/** @defgroup HCDMA;    (otg Offset: 0x0514+) host channel-x DMA address register */
+/** @name HCDMA;    (otg Offset: 0x0514+) host channel-x DMA address register */
 /** @} */
+
+/** @} */ // @relates OTG_HC_REGS
 
 
 
 /* ---------- Device mode CSRs 0x0800 -----------------------------------------*/
+/***************************************************************************//**
+ * @relates OTG_DEVICE_REGS
+ * @{
+ ******************************************************************************/
 
-/** @defgroup DCFG;     (otg Offset: 0x0800) device Configuration Register		*/
+/** @name DCFG;     (otg Offset: 0x0800) device Configuration Register			*/
+/** @{ */
 #define OTG_DCFG_PFIVL_Msk          (3u<<11)    //!< Periodic frame interval mask
 #define OTG_DCFG_PFIVL(n)           ((n)<<11)   //!< Periodic frame interval value
 #define OTG_DCFG_PFIVL_80      		(0u<<11)    //!<  80% of the frame interval
@@ -528,7 +590,8 @@ typedef struct
 #define OTG_DCFG_DSPD_FS11          (3u<<0)     //!< Full speed (USB 1.1 transceiver clock is 48 MHz)
 /** @} */
 
-/** @defgroup DCTL;     (otg Offset: 0x0804) device Control Register			*/
+/** @name DCTL;     (otg Offset: 0x0804) device Control Register				*/
+/** @{ */
 #define OTG_DCTL_POPRGDNE           (1u<<11)    //!< Power-on programming done
 #define OTG_DCTL_CGONAK             (1u<<10)    //!< Clear global OUT NAK
 #define OTG_DCTL_SGONAK             (1u<<9)     //!< Set global OUT NAK
@@ -542,7 +605,8 @@ typedef struct
 #define OTG_DCTL_RWUSIG             (1u<<0)     //!< Remote wakeup signaling
 /** @} */
 
-/** @defgroup DSTS;     (otg Offset: 0x0808) device Status Register (RO)		*/
+/** @name DSTS;     (otg Offset: 0x0808) device Status Register (RO)			*/
+/** @{ */
 #define OTG_DSTS_FNSOF_Msk          (0x3FFu<<8) //!< Frame number of the received SOF mask
 #define OTG_DSTS_FNSOF(n)           ((n)<<8)    //!< Frame number of the received SOF value
 #define OTG_DSTS_FNSOF_ODD          ((1)<<8)    //!<  Frame number of the received SOF value
@@ -555,7 +619,8 @@ typedef struct
 #define OTG_DSTS_SUSPSTS            (1u<<0)     //!< Suspend status
 /** @} */
 
-/** @defgroup DIEPMSK;  (otg Offset: 0x0810) device IN Endpoint Mask			*/
+/** @name DIEPMSK:  (otg Offset: 0x0810) device IN Endpoint Mask				*/
+/** @{ */
 #define OTG_DIEPMSK_BIM             (1u<<9)     //!< BNA interrupt mask
 #define OTG_DIEPMSK_TXFURM          (1u<<8)     //!< FIFO underrun mask
 #define OTG_DIEPMSK_TXFEM           (1u<<6)     //!< Transmit FIFO empty mask
@@ -566,7 +631,8 @@ typedef struct
 #define OTG_DIEPMSK_XFRCM           (1u<<0)     //!< Transfer completed
 /** @} */
 
-/** @defgroup DOEPMSK;  (otg Offset: 0x0814) device OUT Endpoint Mask			*/
+/** @name DOEPMSK:  (otg Offset: 0x0814) device OUT Endpoint Mask				*/
+/** @{ */
 #define OTG_DOEPMSK_BOIM            (1u<<9)     //!< BNA interrupt mask
 #define OTG_DOEPMSK_OPEM            (1u<<8)     //!< OUT packet error mask
 #define OTG_DOEPMSK_B2BSTUP         (1u<<6)     //!< Back-to-back SETUP packets received mask
@@ -576,31 +642,36 @@ typedef struct
 #define OTG_DOEPMSK_XFRCM           (1u<<0)     //!< Transfer completed interrupt mask
 /** @} */
 
-/** @defgroup DAINT;    (otg Offset: 0x0818) device All Endpoints Itr Reg		*/
+/** @name DAINT;    (otg Offset: 0x0818) device All Endpoints Itr Reg			*/
+/** @{ */
 #define OTG_DAINT_OEPINT_Msk        (0xFFFFu<<16)//!< OUT endpoint interrupt bits mask
 #define OTG_DAINT_OEPINT(n)         ((n)<<16)   //!< OUT endpoint interrupt bits value
 #define OTG_DAINT_IEPINT_Msk        (0xFFFFu<<0)//!< IN endpoint interrupt bits mask
 #define OTG_DAINT_IEPINT(n)         ((n)<<0)    //!< IN endpoint interrupt bits value
 /** @} */
 
-/** @defgroup DAINTMSK; (otg Offset: 0x081C) device All Endpoints Itr Mask		*/
+/** @name DAINTMSK; (otg Offset: 0x081C) device All Endpoints Itr Mask			*/
+/** @{ */
 #define OTG_DAINTMSK_OEPM_Msk       (0xFFFFu<<16)//!< OUT EP interrupt mask bits mask
 #define OTG_DAINTMSK_OEPM(n)        (1u<<(16+(n)))//!< OUT EP interrupt mask bits value
 #define OTG_DAINTMSK_IEPM_Msk       (0xFFFFu<<0)//!< IN EP interrupt mask bits mask
 #define OTG_DAINTMSK_IEPM(n)        (1u<<(n))   //!< IN EP interrupt mask bits value
 /** @} */
 
-/** @defgroup DVBUSDIS; (otg Offset: 0x0828) device VBUS discharge Register		*/
+/** @name DVBUSDIS; (otg Offset: 0x0828) device VBUS discharge Register			*/
+/** @{ */
 #define OTG_DVBUSDIS_VBUSDT_Msk     (0xFFFFu<<0)//!< Device VBUS discharge time mask
 #define OTG_DVBUSDIS_VBUSDT(n)      ((n)<<0)    //!< Device VBUS discharge time value
 /** @} */
 
-/** @defgroup DVBUSPULSE   (otg Offset: 0x082C) device VBUS Pulse Register		*/
+/** @name DVBUSPULSE   (otg Offset: 0x082C) device VBUS Pulse Register			*/
+/** @{ */
 #define OTG_DVBUSPULSE_DVBUSP_Msk   (0xFFFu<<0) //!< Device VBUSpulsing time mask
 #define OTG_DVBUSPULSE_DVBUSP(n)    ((n)<<0)    //!< Device VBUS pulsing time value
 /** @} */
 
-/** @defgroup DTHRCTL;     (otg Offset: 0x0830) device thr						*/
+/** @name DTHRCTL;     (otg Offset: 0x0830) device thr							*/
+/** @{ */
 #define OTG_DTHRCTL_ARPEN           (1u<<27)    //!< Arbiter parking enable
 #define OTG_DTHRCTL_RXTHRLEN_Msk    (0x1FFu<<17)//!< Receive threshold length mask
 #define OTG_DTHRCTL_RXTHRLEN(n)     ((n)<<17)   //!< Receive threshold length set
@@ -611,37 +682,50 @@ typedef struct
 #define OTG_DTHRCTL_NONISOTHREN     (1u<<0)     //!< Nonisochronous IN endpoints threshold enable
 /** @} */
 
-/** @defgroup DIEPEMPMSK;  (otg Offset: 0x0834) device empty msk				*/
+/** @name DIEPEMPMSK:  (otg Offset: 0x0834) device empty msk					*/
+/** @{ */
 #define OTG_DIEPEMPMSK_INEPTXFEM(n) (1u<<(n))   //!< IN EP Tx FIFO empty interrupt mask bit
 /** @} */
 
-/** @defgroup DEACHINT;    (otg Offset: 0x0838) dedicated EP interrupt			*/
+/** @name DEACHINT;    (otg Offset: 0x0838) dedicated EP interrupt				*/
+/** @{ */
 #define OTG_DEACHINT_OEP1INT        (1u<<17)    //!< OUT endpoint 1 interrupt bit
 #define OTG_DEACHINT_IEP1INT        (1u<<1)     //!< IN endpoint 1interrupt bit
 /** @} */
 
-/** @defgroup DEACHINTMSK; (otg Offset: 0x083C) dedicated EP msk				*/
+/** @name DEACHINTMSK; (otg Offset: 0x083C) dedicated EP msk					*/
+/** @{ */
 #define OTG_DEACHINTMSK_OEP1INTM    (1u<<17)    //!< OUT endpoint 1 interrupt mask bit
 #define OTG_DEACHINTMSK_IEP1INT     (1u<<1)     //!< IN endpoint 1interrupt mask bit
 /** @} */
 
-/** @defgroup DIEPEACHMSK1;(otg Offset: 0x0840) dedicated in EP-1 interrupt		*/
+/** @name DIEPEACHMSK1;(otg Offset: 0x0840) dedicated in EP-1 interrupt			*/
+/** @{ */
 /** @} */
 
-/** @defgroup DINEP1MSK;   (otg Offset: 0x0844) dedicated EP mask				*/
+/** @name DINEP1MSK;   (otg Offset: 0x0844) dedicated EP mask					*/
+/** @{ */
 /** @} */
 
-/** @defgroup DOEPEACHMSK1;(otg Offset: 0x0880) device each OUT endpoint-1 interrupt register */
+/** @name DOEPEACHMSK1;(otg Offset: 0x0880) device each OUT endpoint-1 interrupt register */
+/** @{ */
 /** @} */
 
-/** @defgroup DOUTEP1MSK;  (otg Offset: 0x0884) dedicated EP msk				*/
+/** @name DOUTEP1MSK:  (otg Offset: 0x0884) dedicated EP msk					*/
+/** @{ */
 /** @} */
 
+/** @} */ // @relates OTG_DEVICE_REGS
 
 
 /* ---------- Device IN Endpoint CSRs 0x0900, 0x0920... -----------------------*/
+/***************************************************************************//**
+ * @relates OTG_IN_EPT_REGS
+ * @{
+ ******************************************************************************/
 
-/** @defgroup DIEPCTL: 	(otg Offset: 0x0900+) dev IN Endpoint Control Reg		*/
+/** @name DIEPCTL: 	(otg Offset: 0x0900+) dev IN Endpoint Control Reg			*/
+/** @{ */
 #define OTG_DIEPCTL_EPENA           (1u<<31)    //!< Endpoint enable
 #define OTG_DIEPCTL_EPDIS           (1u<<30)    //!< Endpoint disable
 #define OTG_DIEPCTL_SD1PID          (1u<<29)    //!< Set DATA1 PID	(ep 1..7)
@@ -668,7 +752,8 @@ typedef struct
 #define OTG_DIEPCTL_MPSIZ(n)        ((n)<<0)    //!< Maximum Packet size value.
 /** @} */
 
-/** @defgroup DIEPINT: 	(otg Offset: 0x0908+) dev IN Endpoint Itr Reg			*/
+/** @name DIEPINT: 	(otg Offset: 0x0908+) dev IN Endpoint Itr Reg				*/
+/** @{ */
 #define OTG_DIEPINT_TXFE            (1u<<7)     //!< Transmit FIFO empty
 #define OTG_DIEPINT_INEPNE          (1u<<6)     //!< IN endpoint NAK effective
 #define OTG_DIEPINT_ITTXFE          (1u<<4)     //!< IN Token received when TxFIFO is empty
@@ -677,7 +762,8 @@ typedef struct
 #define OTG_DIEPINT_XFRC            (1u<<0)     //!< Transfer completed
 /** @} */
 
-/** @defgroup DIEPTSIZ: (otg Offset: 0x0910+) IN Endpoint Txfer Size			*/
+/** @name DIEPTSIZ: (otg Offset: 0x0910+) IN Endpoint Txfer Size				*/
+/** @{ */
 #define OTG_DIEPTSIZ_MCNT_Msk       (3u<<29)  	//!< Multi count mask.
 #define OTG_DIEPTSIZ_MCNT(n)        ((n)<<29)   //!< Multi count value.
 #define OTG_DIEPTSIZ_PKTCNT_Msk    (0x3FFu<<19) //!< Packet count mask.
@@ -686,14 +772,22 @@ typedef struct
 #define OTG_DIEPTSIZ_XFRSIZ(n)      ((n)<<0)    //!< Transfer size value.
 /** @} */
 
-/** @defgroup DTXFSTS:	(otg Offset: 0x0918+) IN Endpoint Tx FIFO Status Reg	*/
+/** @name DTXFSTS:	(otg Offset: 0x0918+) IN Endpoint Tx FIFO Status Reg		*/
+/** @{ */
 #define DTXFSTS_INEPTFSAV_Msk       (0xFFFFu<<0) //!< IN endpoint TxFIFO space  available.                 */
 /** @} */
 
+/** @} */ // @relates OTG_IN_EPT_REGS
+
 
 /* ---------- Device OUT Endpoint CSRs 0x0B00, 0x0B20... ----------------------*/
+/***************************************************************************//**
+ * @relates OTG_OUT_EPT_REGS
+ * @{
+ ******************************************************************************/
 
-/** @defgroup DOEPCTL:   (otg Offset: 0x0B00+) dev OUT Endpoint Control Reg		*/
+/** @name DOEPCTL:   (otg Offset: 0x0B00+) dev OUT Endpoint Control Reg			*/
+/** @{ */
 #define OTG_DOEPCTL_EPENA           (1u<<31)    //!< Endpoint enable.
 #define OTG_DOEPCTL_EPDIS           (1u<<30)    //!< Endpoint disable.
 #define OTG_DOEPCTL_SD1PID          (1u<<29)    //!< Set DATA1 PID.
@@ -718,7 +812,8 @@ typedef struct
 #define OTG_DOEPCTL_MPSIZ(n)        ((n)<<0)    //!< Maximum Packet size value.
 /** @} */
 
-/** @defgroup DOEPINT:   (otg Offset: 0x0B08+) dev OUT Endpoint Itr Reg			*/
+/** @name DOEPINT:   (otg Offset: 0x0B08+) dev OUT Endpoint Itr Reg				*/
+/** @{ */
 #define OTG_DOEPINT_B2BSTUP         (1u<<6)     //!< Back-to-back SETUP packets received
 #define OTG_DOEPINT_OTEPDIS         (1u<<4)     //!< OUT token received when endpoint disabled
 #define OTG_DOEPINT_STUP            (1u<<3)     //!< SETUP phase done
@@ -726,7 +821,8 @@ typedef struct
 #define OTG_DOEPINT_XFRC            (1u<<0)     //!< Transfer completed interrupt
 /** @} */
 
-/** @defgroup DOEPTSIZ:  (otg Offset: 0x0B10+) dev OUT Endpoint Txfer Size		*/
+/** @name DOEPTSIZ:  (otg Offset: 0x0B10+) dev OUT Endpoint Txfer Size			*/
+/** @{ */
 #define OTG_DOEPTSIZ_RXDPID_Msk     (3u<<29)    //!< Received data PID mask.
 #define OTG_DOEPTSIZ_RXDPID(n)      ((n)<<29)   //!< Received data PID value.
 #define OTG_DOEPTSIZ_STUPCNT_Msk    (3u<<29)    //!< SETUP packet count mask.
@@ -737,13 +833,20 @@ typedef struct
 #define OTG_DOEPTSIZ_XFRSIZ(n)      ((n)<<0)    //!< Transfer size value.
 /** @} */
 
-/** @defgroup DOEPDMA:   (otg Offset: 0x0B14+) dev OUT Endpoint DMA Address   */
+/** @name DOEPDMA:   (otg Offset: 0x0B14+) dev OUT Endpoint DMA Address   		*/
+/** @{ */
 /** @} */
 
-/** @defgroup PCGCCTL: 	(otg Offset: 0x0E00) power and clock gating control register */
+/** @name PCGCCTL: 	(otg Offset: 0x0E00) power and clock gating control register */
+/** @{ */
 #define OTG_PCGCCTL_PHYSUSP         (1u<<4)     //!< PHY suspended
 #define OTG_PCGCCTL_GATEHCLK        (1u<<1)     //!< Gate HCLK
 #define OTG_PCGCCTL_STPPCLK         (1u<<0)     //!< Stop PHY clock
 /** @} */
 
+/** @} */ // @relates OTG_OUT_EPT_REGS
+
+
 #endif /* OTG_HS_STM32_H_ */
+
+/** @} */

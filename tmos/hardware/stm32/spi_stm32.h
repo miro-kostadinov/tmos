@@ -1,9 +1,16 @@
-/*
- * spi_stm32.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32_spi
+ * @file	hardware/stm32/spi_stm32.h
+ * @brief  	STM32 SPI
+ * @date    20. November 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Nov 20, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32_spi Serial Peripheral Interface (SPI)
+ * @ingroup	 hardware_stm32
+ * Source and definitions for STM32 SPI Controller
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef SPI_STM32_H_
 #define SPI_STM32_H_
@@ -15,6 +22,7 @@
 #error "unknown series"
 #endif
 
+/// HW version of the SPI, default value
 #if (CFG_SERIES == stm32f0) || (CFG_SERIES == stm32f3)
 #define STM32_SPI_TYPE 03
 #endif
@@ -23,7 +31,7 @@
 #define STM32_SPI_TYPE 124
 #endif
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Serial Peripheral Interface
  ******************************************************************************/
 typedef struct
@@ -39,12 +47,13 @@ typedef struct
   __IO uint32_t SPI_I2SPR;      //!< (spi Offset: 0x20) SPI_I2S prescaler register
 } SPI_TypeDef;
 
-/*******************************************************************************
- * @defgroup SPI_regs_define
+/***************************************************************************//**
+ * @relates SPI_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup SPI_CR1:      (spi Offset: 0x00) SPI control register 1 (not used in I2S mode) */
+/** @name SPI_CR1:      (spi Offset: 0x00) SPI control register 1 (not used in I2S mode) */
+/** @{ */
 #define  SPI_CR1_CPHA           0x0001 //!< Clock Phase
 #define  SPI_CR1_CPOL           0x0002 //!< Clock Polarity
 #define  SPI_CR1_MSTR           0x0004 //!< Master Selection
@@ -80,7 +89,8 @@ typedef struct
 #define  SPI_CR1_BIDIMODE       0x8000 //!< Bidirectional data mode enable
 /** @} */
 
-/** @defgroup SPI_CR2:      (spi Offset: 0x04) SPI control register 2 			*/
+/** @name SPI_CR2:      (spi Offset: 0x04) SPI control register 2 				*/
+/** @{ */
 #define  SPI_CR2_RXDMAEN        0x01   //!< Rx Buffer DMA Enable
 #define  SPI_CR2_TXDMAEN        0x02   //!< Tx Buffer DMA Enable
 #define  SPI_CR2_SSOE           0x04   //!< SS Output Enable
@@ -118,7 +128,8 @@ typedef struct
 
 /** @} */
 
-/** @defgroup SPI_SR:       (spi Offset: 0x08) SPI status register				*/
+/** @name SPI_SR:       (spi Offset: 0x08) SPI status register					*/
+/** @{ */
 #define  SPI_SR_RXNE            0x01   //!< Receive buffer Not Empty
 #define  SPI_SR_TXE             0x02   //!< Transmit buffer Empty
 #define  SPI_SR_CHSIDE          0x04   //!< Channel side
@@ -140,23 +151,28 @@ typedef struct
 
 /** @} */
 
-/** @defgroup SPI_DR:       (spi Offset: 0x0C) SPI data register				*/
+/** @name SPI_DR:       (spi Offset: 0x0C) SPI data register					*/
+/** @{ */
 #define  SPI_DR_DR              0xFFFF //!< Data Register
 /** @} */
 
-/** @defgroup SPI_CRCPR:    (spi Offset: 0x10) SPI CRC polynomial register (not used in I2S mode) */
+/** @name SPI_CRCPR:    (spi Offset: 0x10) SPI CRC polynomial register (not used in I2S mode) */
+/** @{ */
 #define  SPI_CRCPR_CRCPOLY      0xFFFF //!< CRC polynomial register
 /** @} */
 
-/** @defgroup SPI_RXCRCR:   (spi Offset: 0x14) SPI RX CRC register (not used in I2S mode) */
+/** @name SPI_RXCRCR:   (spi Offset: 0x14) SPI RX CRC register (not used in I2S mode) */
+/** @{ */
 #define  SPI_RXCRCR_RXCRC       0xFFFF //!< Rx CRC Register
 /** @} */
 
-/** @defgroup SPI_TXCRCR:   (spi Offset: 0x18) SPI TX CRC register (not used in I2S mode) */
+/** @name SPI_TXCRCR:   (spi Offset: 0x18) SPI TX CRC register (not used in I2S mode) */
+/** @{ */
 #define  SPI_TXCRCR_TXCRC       0xFFFF //!< Tx CRC Register
 /** @} */
 
-/** @defgroup SPI_I2SCFGR:  (spi Offset: 0x1C) SPI_I2S configuration register 	*/
+/** @name SPI_I2SCFGR:  (spi Offset: 0x1C) SPI_I2S configuration register	 	*/
+/** @{ */
 #define  SPI_I2SCFGR_CHLEN      0x0001 //!< Channel length (number of bits per audio channel)
 
 #define  SPI_I2SCFGR_DATLEN     0x0006 //!< DATLEN[1:0] bits (Data length to be transferred)
@@ -179,15 +195,18 @@ typedef struct
 #define  SPI_I2SCFGR_I2SMOD     0x0800 //!< I2S mode selection
 /** @} */
 
-/** @defgroup SPI_I2SPR:    (spi Offset: 0x20) SPI_I2S prescaler register		*/
+/** @name SPI_I2SPR:    (spi Offset: 0x20) SPI_I2S prescaler register			*/
+/** @{ */
 #define  SPI_I2SPR_I2SDIV       0x00FF //!< I2S Linear prescaler
 #define  SPI_I2SPR_ODD          0x0100 //!< Odd factor for the prescaler
 #define  SPI_I2SPR_MCKOE        0x0200 //!< Master Clock Output Enable
 /** @} */
 
 
-/** @} */ // @defgroup SPI_regs_define
+/** @} */ // @relates SPI_TypeDef
 
 
 
 #endif /* SPI_STM32_H_ */
+
+/** @} */

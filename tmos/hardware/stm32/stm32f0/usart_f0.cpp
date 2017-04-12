@@ -1,8 +1,11 @@
-/*
- * usart_f0.cpp
- *
- *  Created on: Dec 2, 2014
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f0_usart
+ * @{
+ * @file     hardware/stm32/stm32f0/usart_f0.cpp
+ * @brief    STM32F0 USART
+ * @version  V3.00
+ * @date     2. December 2014
+ * @author	 Miroslav Kostadinov
  */
 
 #include <tmos.h>
@@ -11,9 +14,9 @@
 
 /**
  * Get peripheral clock for given uart id
- *
  * @param periph_id
- * @return
+ * @param rate
+ * @return clock in Hz
  */
 unsigned int get_usart_source_clk(unsigned int periph_id, unsigned int rate)
 {
@@ -40,7 +43,13 @@ unsigned int get_usart_source_clk(unsigned int periph_id, unsigned int rate)
 	return clocks.PCLK1_Frequency;
 }
 
-
+/**
+ * Sets USART baudrate
+ * @param usart
+ * @param periph_id
+ * @param rate
+ * @return 1
+ */
 unsigned int set_usart_baudrate(USART_TypeDef* usart, uint32_t periph_id, uint32_t rate)
 {
 	uint32_t freq;
@@ -68,5 +77,6 @@ unsigned int set_usart_baudrate(USART_TypeDef* usart, uint32_t periph_id, uint32
 
 
 
+/** @} */
 
 

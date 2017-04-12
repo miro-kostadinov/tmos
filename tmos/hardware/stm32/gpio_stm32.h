@@ -1,9 +1,16 @@
-/*
- * gpio_stm32.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32_gpio
+ * @file	hardware/stm32/gpio_stm32.h
+ * @brief  	STM32 USB OTG HS
+ * @date    25. October 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Oct 25, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32_gpio General-purpose I/Os (GPIO)
+ * @ingroup	 hardware_stm32
+ * Common definitions for STM32 GPIO Controllers
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef GPIO_STM32_H_
 #define GPIO_STM32_H_
@@ -13,10 +20,6 @@
 #ifndef CFG_SERIES
 #error "unknown series"
 #endif
-/*******************************************************************************
- * @defgroup STD_PIO Standard PIO definitions
- * @{
- ******************************************************************************/
 
 /** Pin set **/
 typedef unsigned short pio_set;
@@ -28,8 +31,8 @@ typedef unsigned int pio_def;
 typedef unsigned int PIN_DESC;
 
 
-
-/// Pin definition bits 31:30 = MODE
+/// @name Pin definition bits 31:30 = MODE
+/** @{ */
 #define PD_MODE_Pos 		30						//!< mode bits position
 #define PD_MODE_Msk			(0x3 << PD_MODE_Pos)	//!< mode bits mask
 #define PD_MODE_Get(x)		(uint32_t)((x) >> PD_MODE_Pos) 	//!< mode value
@@ -37,17 +40,21 @@ typedef unsigned int PIN_DESC;
 #define PD_MODE_OUTPUT		(1u << PD_MODE_Pos)		//!< general purpose output mode
 #define PD_MODE_AF			(2u << PD_MODE_Pos)		//!< alternative function mode
 #define PD_MODE_ANALOG		(3u << PD_MODE_Pos)		//!< analog mode
+/** @} */
 
 
-/// Pin definition bits 29:29 = output type
+/// @name Pin definition bits 29:29 = output type
+/** @{ */
 #define PD_OTYPE_Pos 		29						//!< output type bits position
 #define PD_OTYPE_Msk		(0x1 << PD_OTYPE_Pos)	//!< output type bits mask
 #define PD_OTYPE_Get(x)		(0x1 & ((x) >> PD_OTYPE_Pos)) //!< output type value
 #define PD_OTYPE_PP			(0 << PD_OTYPE_Pos)		//!< Output push-pull (reset state)
 #define PD_OTYPE_OD			(1 << PD_OTYPE_Pos)		//!< Output open-drain
+/** @} */
 
 
-/// Pin definition bits 28:27 = output speed or interrupt type
+/// @name Pin definition bits 28:27 = output speed or interrupt type
+/** @{ */
 #define PD_OSPEED_Pos 		27						//!< output speed bits position
 #define PD_OSPEED_Msk		(0x3 << PD_OSPEED_Pos)	//!< output speed bits mask
 #define PD_OSPEED_Get(x)	(0x3 & ((x) >> PD_OSPEED_Pos)) //!< output speed value
@@ -68,24 +75,29 @@ typedef unsigned int PIN_DESC;
 #define PD_INT_BE			(3 << PD_INT_Pos)		//!< both edges
 #define PD_INT_Msk			(0x3 << PD_INT_Pos)	//!< output speed bits mask
 #define PD_INT_Get(x)		(0x3 & ((x) >> PD_INT_Pos)) //!< output speed value
+/** @} */
 
 
-/// Pin definition bits 25:25 = pulldown
+/// @name Pin definition bits 26:25 = pulldown, pullup
+/** @{ */
 #define PD_PULL_DOWN   		(1 << 26)				//!< weak pull down
 
-/// Pin definition bits 26:26 = pullup
 #define PD_PULL_UP   		(1 << 25)				//!< weak pull up
 
 
 #define PD_PULL_Get(x)	(0x3 & ((x) >> 25)) //!< PUPD value
+/** @} */
 
 
-/// Pin definition bit 24 = Active level
+/// @name Pin definition bit 24 = Active level
+/** @{ */
 #define PD_ACTIVE_HIGH 	  	(1 << 24)
 #define PD_ACTIVE_LOW 	  	(0 << 24)
+/** @} */
 
 
-/// Pin definition bits 23:20 = pin mux
+/// @name Pin definition bits 23:20 = pin mux
+/** @{ */
 #define PD_MUX_Pos			20						//!< mux bits position
 #define PD_MUX_Msk			(0xF << PD_MUX_Pos)		//!< mux bits mask
 #define PD_MUX_Get(x)		(0xF & ((x) >> PD_MUX_Pos)) //!< mux value
@@ -105,9 +117,11 @@ typedef unsigned int PIN_DESC;
 #define PD_MUX_AF13			(13 << PD_MUX_Pos)		//!< mux configuration 13
 #define PD_MUX_AF14			(14 << PD_MUX_Pos)		//!< mux configuration 14
 #define PD_MUX_AF15			(15 << PD_MUX_Pos)		//!< mux configuration 15
+/** @} */
 
 
-/// Pin definition bits 19:16 = port
+/// @name Pin definition bits 19:16 = port
+/** @{ */
 #define PD_PORT_Pos			16						//!< port bits position
 #define PD_PORT_Msk			(0xF << PD_PORT_Pos)	//!< port bits mask
 #define PD_PORT_Get(x)		(0xF & ((x) >> PD_PORT_Pos)) //!< port value
@@ -121,10 +135,12 @@ typedef unsigned int PIN_DESC;
 #define	PD_PORT_H			(7 << PD_PORT_Pos)		//!< port H
 #define	PD_PORT_I			(8 << PD_PORT_Pos)		//!< port I
 #define PD_PORT_V           (0xF << PD_PORT_Pos)	//!< virtual port V
+/** @} */
 
 
 
-/// Pin definition bits 15:0 = pin bits
+/// @name Pin definition bits 15:0 = pin bits
+/** @{ */
 #define PD_PINS_Pos			0						//!< pins bits position
 #define PD_PINS_Msk			(0xFFFF << PD_PINS_Pos)	//!< pins bits mask
 #define PD_PINS_Get(x)		(0xFFFF & (x))			//!< pins value
@@ -144,13 +160,15 @@ typedef unsigned int PIN_DESC;
 #define PD_PIN_13			(0x2000 << PD_PINS_Pos)	//!< pin 13
 #define PD_PIN_14			(0x4000 << PD_PINS_Pos)	//!< pin 14
 #define PD_PIN_15			(0x8000 << PD_PINS_Pos)	//!< pin 15
+/** @} */
 
 
 
 
 
 
-/// Values that can be used in pin definitions
+/// @name Values that can be used in pin definitions
+/** @{ */
 
 #define PD_PA0				(PD_PORT_A | PD_PIN_0)	//!< pin PA0
 #define PD_PA1				(PD_PORT_A | PD_PIN_1)	//!< pin PA1
@@ -319,9 +337,11 @@ typedef unsigned int PIN_DESC;
 #define PD_AF_OUT_50MHz		(PD_MODE_AF | PD_OSPEED_50MHz) 	//!< AF output 50MHz pin
 #define PD_AF_OUT_100MHz	(PD_MODE_AF | PD_OSPEED_100MHz) //!< AF output 100MHz pin
 #endif
+/** @} */
 
 
-/** @} */ // @STD_GPIO
 
 
 #endif /* GPIO_STM32_H_ */
+
+/** @} */

@@ -1,8 +1,12 @@
-/*
- * rcc_f1.cpp
- *
- *  Created on: Nov 1, 2012
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f1_rcc
+ * @{
+ * @file     hardware/stm32/stm32f1/rcc_f1.cpp
+ * @brief    STM32F1 RCC
+ * @version  V3.00
+ * @date     1. November 2012
+ * @author	 Miroslav Kostadinov
+ * @}
  */
 
 #include <tmos.h>

@@ -1,9 +1,16 @@
-/*
- * rtc_f4.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f4_rtc
+ * @file	hardware/stm32/stm32f4/rtc_f4.h
+ * @brief  	STM32F4 rtc
+ * @date    13. February 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Feb 13, 2013
- *      Author: miro
- */
+ * @defgroup hardware_stm32f4_rtc  Real-Time Clock (RTC)
+ * @ingroup	 hardware_stm32f4
+ * Source and definitions for STM32F4 Real-Time Clock (RTC)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef RTC_F4_H_
 #define RTC_F4_H_
@@ -12,7 +19,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Real-Time Clock
  ******************************************************************************/
 typedef struct
@@ -41,12 +48,13 @@ typedef struct
 
 } RTC_TypeDef;
 
-/*******************************************************************************
- * @defgroup RTC_regs_define
+/***************************************************************************//**
+ * @relates RTC_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup RTC_TR;      	(rtc Offset: 0x00) RTC time register			  */
+/** @name RTC_TR;      	(rtc Offset: 0x00) RTC time register				  */
+/** @{ */
 #define RTC_TR_PM                   0x00400000 //!< PM: AM/PM notation
 #define RTC_TR_HT                   0x00300000 //!< HT[1:0]: Hour tens in BCD format
 #define RTC_TR_HU                   0x000F0000 //!< HU[3:0]: Hour units in BCD format
@@ -56,7 +64,8 @@ typedef struct
 #define RTC_TR_SU                   0x0000000F //!< SU[3:0]: Second units in BCD format
 /** @} */
 
-/** @defgroup RTC_DR;      	(rtc Offset: 0x04) RTC date register			  */
+/** @name RTC_DR;      	(rtc Offset: 0x04) RTC date register				  */
+/** @{ */
 #define RTC_DR_YT                   0x00F00000 //!< YT[3:0]: Year tens in BCD format
 #define RTC_DR_YU                   0x000F0000 //!< YU[3:0]: Year units in BCD format
 #define RTC_DR_WDU                  0x0000E000 //!< WDU[2:0]: Week day units (1-7)
@@ -66,7 +75,8 @@ typedef struct
 #define RTC_DR_DU                   0x0000000F //!< DU[3:0]: Date units in BCD format
 /** @} */
 
-/** @defgroup RTC_CR;      	(rtc Offset: 0x08) RTC control register			  */
+/** @name RTC_CR;      	(rtc Offset: 0x08) RTC control register				  */
+/** @{ */
 #define RTC_CR_COE                  0x00800000 //!< COE: Calibration output enable
 #define RTC_CR_OSEL                 0x00600000 //!< OSEL[1:0]: Output selection
 #define RTC_CR_OSEL_DIS             0x00000000 //!<  Output disabled
@@ -94,7 +104,8 @@ typedef struct
 #define RTC_CR_WUCKSEL              0x00000007 //!< WUCKSEL[2:0]: Wakeup clock selection
 /** @} */
 
-/** @defgroup RTC_ISR;     	(rtc Offset: 0x0C) RTC initialization and status register */
+/** @name RTC_ISR;     	(rtc Offset: 0x0C) RTC initialization and status register */
+/** @{ */
 #define RTC_ISR_RECALPF             0x00010000 //!< RECALPF: Recalibration pending Flag
 #define RTC_ISR_TAMP2F              0x00004000 //!< TAMP2F: TAMPER2 detection flag
 #define RTC_ISR_TAMP1F              0x00002000 //!< TAMP1F: Tamper detection flag
@@ -113,21 +124,25 @@ typedef struct
 #define RTC_ISR_ALRAWF              0x00000001 //!< ALRAWF: Alarm A write flag
 /** @} */
 
-/** @defgroup RTC_PRER;    	(rtc Offset: 0x10) RTC prescaler register		  */
+/** @name RTC_PRER;    	(rtc Offset: 0x10) RTC prescaler register			  */
+/** @{ */
 #define RTC_PRER_PREDIV_A           0x007F0000 //!< PREDIV_A[6:0]: Asynchronous prescaler factor
 #define RTC_PRER_PREDIV_S           0x00007FFF //!< PREDIV_S[14:0]: Synchronous prescaler factor
 /** @} */
 
-/** @defgroup RTC_WUTR;    	(rtc Offset: 0x14) RTC wakeup timer register	  */
+/** @name RTC_WUTR;    	(rtc Offset: 0x14) RTC wakeup timer register		  */
+/** @{ */
 #define RTC_WUTR_WUT	            0x0000FFFF //!< WUT[15:0]: Wakeup auto-reload value bits
 /** @} */
 
-/** @defgroup RTC_CALIBR;  	(rtc Offset: 0x18) RTC calibration register		  */
+/** @name RTC_CALIBR;  	(rtc Offset: 0x18) RTC calibration register			  */
+/** @{ */
 #define RTC_CALIBR_DCS              0x00000080 //!< DCS: Digital calibration sign
 #define RTC_CALIBR_DC               0x0000001F //!< DC[4:0]: Digital calibration
 /** @} */
 
-/** @defgroup RTC_ALRMAR;  	(rtc Offset: 0x1C) RTC alarm A register			  */
+/** @name RTC_ALRMAR;  	(rtc Offset: 0x1C) RTC alarm A register				  */
+/** @{ */
 #define RTC_ALRMAR_MSK4             0x80000000u//!< MSK4: Alarm A date mask
 #define RTC_ALRMAR_WDSEL            0x40000000 //!< WDSEL: Week day selection
 #define RTC_ALRMAR_DT               0x30000000 //!< DT[1:0]: Date tens in BCD format
@@ -144,7 +159,8 @@ typedef struct
 #define RTC_ALRMAR_SU               0x0000000F //!< SU[3:0]: Second units in BCD format
 /** @} */
 
-/** @defgroup RTC_ALRMBR;  	(rtc Offset: 0x20) RTC alarm B register			  */
+/** @name RTC_ALRMBR;  	(rtc Offset: 0x20) RTC alarm B register				  */
+/** @{ */
 #define RTC_ALRMBR_MSK4             0x80000000u//!< MSK4: Alarm B date mask
 #define RTC_ALRMBR_WDSEL            0x40000000 //!< WDSEL: Week day selection
 #define RTC_ALRMBR_DT               0x30000000 //!< DT[1:0]: Date tens in BCD format
@@ -161,20 +177,24 @@ typedef struct
 #define RTC_ALRMBR_SU               0x0000000F //!< SU[3:0]: Second units in BCD format
 /** @} */
 
-/** @defgroup RTC_WPR;     	(rtc Offset: 0x24) RTC write protection register  */
+/** @name RTC_WPR;     	(rtc Offset: 0x24) RTC write protection register 	  */
+/** @{ */
 #define RTC_WPR_KEY                 0x000000FF //!< KEY[7:0]: Write protection key
 /** @} */
 
-/** @defgroup RTC_SSR; 	 	(rtc Offset: 0x28) RTC sub second register		  */
+/** @name RTC_SSR; 	 	(rtc Offset: 0x28) RTC sub second register			  */
+/** @{ */
 #define RTC_SSR_SS                  0x0000FFFF //!< SS: Sub second value
 /** @} */
 
-/** @defgroup RTC_SHIFTR;  	(rtc Offset: 0x2C) RTC shift control register	  */
+/** @name RTC_SHIFTR;  	(rtc Offset: 0x2C) RTC shift control register		  */
+/** @{ */
 #define RTC_SHIFTR_ADD1S            0x80000000u//!< ADD1S: Add one second
 #define RTC_SHIFTR_SUBFS            0x00007FFF //!< SUBFS: Subtract a fraction of a second
 /** @} */
 
-/** @defgroup RTC_TSTR;    	(rtc Offset: 0x30) RTC time stamp time register   */
+/** @name RTC_TSTR;    	(rtc Offset: 0x30) RTC time stamp time register	 	  */
+/** @{ */
 #define RTC_TSTR_PM                 0x00400000 //!< PM: AM/PM notation
 #define RTC_TSTR_HT                 0x00300000 //!< HT[1:0]: Hour tens in BCD format
 #define RTC_TSTR_HU                 0x000F0000 //!< HU[3:0]: Hour units in BCD format
@@ -184,7 +204,8 @@ typedef struct
 #define RTC_TSTR_SU                 0x0000000F //!< SU[3:0]: Second units in BCD format
 /** @} */
 
-/** @defgroup RTC_TSDR;    	(rtc Offset: 0x34) RTC time stamp date register   */
+/** @name RTC_TSDR;    	(rtc Offset: 0x34) RTC time stamp date register		  */
+/** @{ */
 #define RTC_TSDR_WDU                0x0000E000 //!< WDU[1:0]: Week day units
 #define RTC_TSDR_MT                 0x00001000 //!< MT: Month tens in BCD format
 #define RTC_TSDR_MU                 0x00000F00 //!< MU[3:0]: Month units in BCD format
@@ -192,18 +213,21 @@ typedef struct
 #define RTC_TSDR_DU                 0x0000000F //!< DU[3:0]: Date units in BCD forma
 /** @} */
 
-/** @defgroup RTC_TSSSR;  	(rtc Offset: 0x38) RTC time-stamp sub second register */
+/** @name RTC_TSSSR;  	(rtc Offset: 0x38) RTC time-stamp sub second register */
+/** @{ */
 #define RTC_TSSSR_SS                0x0000FFFF //!< SS: Sub second value
 /** @} */
 
-/** @defgroup RTC_CALR;	  	(rtc Offset: 0x3C) RTC calibration register		  */
+/** @name RTC_CALR;	  	(rtc Offset: 0x3C) RTC calibration register			  */
+/** @{ */
 #define RTC_CALR_CALP               0x00008000 //!< CALP: Increase frequency of RTC by 488.5 ppm
 #define RTC_CALR_CALW8              0x00004000 //!< CALW8: Use an 8-second calibration cycle period
 #define RTC_CALR_CALW16             0x00002000 //!< CALW16: Use a 16-second calibration cycle period
 #define RTC_CALR_CALM               0x000001FF //!< CALM[8:0]: Calibration minus
 /** @} */
 
-/** @defgroup RTC_TAFCR;   	(rtc Offset: 0x40) RTC tamper and alternate function configuration register */
+/** @name RTC_TAFCR;   	(rtc Offset: 0x40) RTC tamper and alternate function configuration register */
+/** @{ */
 #define RTC_TAFCR_ALARMOUTTYPE      0x00040000 //!< ALARMOUTTYPE: AFO_ALARM output type
 #define RTC_TAFCR_TSINSEL	        0x00020000 //!< TSINSEL: TIMESTAMP mapping
 #define RTC_TAFCR_TAMP1INSEL        0x00010000 //!< TAMP1INSEL: TAMPER1 mapping
@@ -219,19 +243,23 @@ typedef struct
 #define RTC_TAFCR_TAMP1E            0x00000001 //!< TAMP1E: Tamper 1 detection enable
 /** @} */
 
-/** @defgroup RTC_ALRMASSR; (rtc Offset: 0x44) RTC alarm A sub second register */
+/** @name RTC_ALRMASSR; (rtc Offset: 0x44) RTC alarm A sub second register	  */
+/** @{ */
 #define RTC_ALRMASSR_MASKSS         0x0F000000 //!< MASKSS[3:0]: Mask the most-significant bits starting at this bit
 #define RTC_ALRMASSR_SS             0x00007FFF //!< SS[14:0]: Sub seconds value
 /** @} */
 
-/** @defgroup RTC_ALRMBSSR; (rtc Offset: 0x48) RTC alarm B sub second register */
+/** @name RTC_ALRMBSSR; (rtc Offset: 0x48) RTC alarm B sub second register	  */
+/** @{ */
 #define RTC_ALRMBSSR_MASKSS         0x0F000000 //!< MASKSS[3:0]: Mask the most-significant bits starting at this bit
 #define RTC_ALRMBSSR_SS             0x00007FFF //!< SS[14:0]: Sub seconds value
 /** @} */
 
 
-/** @} */ // @defgroup RTC_regs_define
+/** @} */ // @relates RTC_TypeDef
 
 
 
 #endif /* RTC_F4_H_ */
+
+/** @} */

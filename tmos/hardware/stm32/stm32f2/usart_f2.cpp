@@ -1,8 +1,12 @@
-/*
- * usart_f2.cpp
- *
- *  Created on: Nov 12, 2012
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f2_usart
+ * @{
+ * @file     hardware/stm32/stm32f2/usart_f2.cpp
+ * @brief    STM32F2 USART
+ * @version  V3.00
+ * @date     12. November 2012
+ * @author	 Miroslav Kostadinov
+ * @}
  */
 
 #include <tmos.h>

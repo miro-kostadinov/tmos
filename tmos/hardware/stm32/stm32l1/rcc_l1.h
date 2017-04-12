@@ -1,9 +1,16 @@
-/*
- * rcc_f1.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32l1_rcc
+ * @file	hardware/stm32/stm32l1/rcc_l1.h
+ * @brief  	STM32L1 RCC
+ * @date    25. October 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Oct 25, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32l1_rcc  Reset and Clock Control (RCC)
+ * @ingroup	 hardware_stm32l1
+ * Source and definitions for STM32L1 Reset and Clock Control (RCC)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef RCC_F1_H_
 #define RCC_F1_H_
@@ -11,7 +18,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Reset and Clock Control registers
  ******************************************************************************/
 typedef struct
@@ -38,12 +45,13 @@ typedef struct
 #endif /* STM32F10X_LD_VL || STM32F10X_MD_VL || STM32F10X_HD_VL */
 } RCC_TypeDef;
 
-/*******************************************************************************
- * @defgroup RCC_regs_define
+/**************************************************************************//***
+ * @relates RCC_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup RCC_CR:	 	(rcc Offset: 0x00) Clock control register		  */
+/** @name RCC_CR:	 	(rcc Offset: 0x00) Clock control register			  */
+/** @{ */
 #define RCC_CR_HSION        	0x00000001 //!< Internal High Speed clock enable
 #define RCC_CR_HSIRDY           0x00000002 //!< Internal High Speed clock ready flag
 #define RCC_CR_HSITRIM          0x000000F8 //!< Internal High Speed clock trimming
@@ -56,7 +64,8 @@ typedef struct
 #define RCC_CR_PLLRDY           0x02000000 //!< PLL clock ready flag
 /** @} */
 
-/** @defgroup RCC_CFGR:		(rcc offset: 0x04) Clock configuration register   */
+/** @name RCC_CFGR:		(rcc offset: 0x04) Clock configuration register 	  */
+/** @{ */
 /*!< SW configuration */
 #define RCC_CFGR_SW    			0x00000003 //!< SW[1:0] bits (System clock Switch)
 #define RCC_CFGR_SW_HSI       	0x00000000 //!< HSI selected as system clock
@@ -132,7 +141,8 @@ typedef struct
 #define RCC_CFGR_MCO_PLL        0x07000000 //!< PLL clock divided by 2 selected as MCO source
 /** @} */
 
-/** @defgroup RCC_CIR:		(rcc Offset: 0x08) Clock interrupt register		  */
+/** @name RCC_CIR:		(rcc Offset: 0x08) Clock interrupt register			  */
+/** @{ */
 #define RCC_CIR_LSIRDYF         0x00000001 //!< LSI Ready Interrupt flag
 #define RCC_CIR_LSERDYF         0x00000002 //!< LSE Ready Interrupt flag
 #define RCC_CIR_HSIRDYF         0x00000004 //!< HSI Ready Interrupt flag
@@ -155,7 +165,8 @@ typedef struct
 #define RCC_CIR_CSSC            0x00800000 //!< Clock Security System Interrupt Clear
 /** @} */
 
-/** @defgroup RCC_APB2RSTR:	(rcc Offset: 0x0C) APB2 peripheral reset register */
+/** @name RCC_APB2RSTR:	(rcc Offset: 0x0C) APB2 peripheral reset register	  */
+/** @{ */
 #define RCC_APB2RSTR_SYSCFGRST  0x00000001 //!< SYSCFG clock reset
 #define RCC_APB2RSTR_ADC1RST    0x00000200 //!< ADC1 clock reset
 #define RCC_APB2RSTR_TIM1RST    0x00000800 //!< TIM1 clock reset
@@ -167,7 +178,8 @@ typedef struct
 #define RCC_APB2RSTR_DBGMCURST  0x00400000 //!< DBGMCU clock reset
 /** @} */
 
-/** @defgroup RCC_APB1RSTR:	(rcc Offset: 0x10) APB1 peripheral reset register */
+/** @name RCC_APB1RSTR:	(rcc Offset: 0x10) APB1 peripheral reset register	  */
+/** @{ */
 #define RCC_APB1RSTR_TIM2RST    0x00000001 //!< Timer 2 clock reset
 #define RCC_APB1RSTR_TIM3RST    0x00000002 //!< Timer 3 clock reset
 #define RCC_APB1RSTR_TIM6RST    0x00000010 //!< Timer 6 clock reset
@@ -182,7 +194,8 @@ typedef struct
 #define RCC_APB1RSTR_CECRST     0x40000000 //!< CEC clock reset
 /** @} */
 
-/** @defgroup RCC_AHBENR:	(rcc Offset: 0x14) AHB Peripheral Clock enable register */
+/** @name RCC_AHBENR:	(rcc Offset: 0x14) AHB Peripheral Clock enable register */
+/** @{ */
 #define RCC_AHBENR_DMA1EN       0x00000001 //!< DMA1 clock enable
 #define RCC_AHBENR_SRAMEN       0x00000004 //!< SRAM interface clock enable
 #define RCC_AHBENR_FLITFEN      0x00000010 //!< FLITF clock enable
@@ -195,7 +208,8 @@ typedef struct
 #define RCC_AHBENR_TSEN         0x01000000 //!< TS clock enable
 /** @} */
 
-/** @defgroup RCC_APB2ENR:	(rcc Offset: 0x18) APB2 peripheral clock enable register */
+/** @name RCC_APB2ENR:	(rcc Offset: 0x18) APB2 peripheral clock enable register */
+/** @{ */
 #define RCC_APB2ENR_SYSCFGEN    0x00000001 //!< SYSCFG clock enable
 #define RCC_APB2ENR_ADC1EN      0x00000200 //!< ADC1 clock enable
 #define RCC_APB2ENR_TIM1EN      0x00000800 //!< TIM1 clock enable
@@ -207,7 +221,8 @@ typedef struct
 #define RCC_APB2ENR_DBGMCUEN    0x00400000 //!< DBGMCU clock enable
 /** @} */
 
-/** @defgroup RCC_APB1ENR:	(rcc Offset: 0x1C) APB1 peripheral clock enable register */
+/** @name RCC_APB1ENR:	(rcc Offset: 0x1C) APB1 peripheral clock enable register */
+/** @{ */
 #define RCC_APB1ENR_TIM2EN      0x00000001 //!< Timer 2 clock enable
 #define RCC_APB1ENR_TIM3EN      0x00000002 //!< Timer 3 clock enable
 #define RCC_APB1ENR_TIM6EN      0x00000010 //!< Timer 6 clock enable
@@ -222,7 +237,8 @@ typedef struct
 #define RCC_APB1ENR_CECEN       0x40000000 //!< CEC clock enable
 /** @} */
 
-/** @defgroup RCC_BDCR:		(rcc Offset: 0x20) Backup domain control register */
+/** @name RCC_BDCR:		(rcc Offset: 0x20) Backup domain control register 	  */
+/** @{ */
 #define RCC_BDCR_LSEON          0x00000001 //!< External Low Speed oscillator enable
 #define RCC_BDCR_LSERDY         0x00000002 //!< External Low Speed oscillator Ready
 #define RCC_BDCR_LSEBYP         0x00000004 //!< External Low Speed oscillator Bypass
@@ -240,7 +256,8 @@ typedef struct
 #define RCC_BDCR_BDRST          0x00010000 //!< Backup domain software reset
 /** @} */
 
-/** @defgroup RCC_CSR:		(rcc Offset: 0x24) Control/status register		  */
+/** @name RCC_CSR:		(rcc Offset: 0x24) Control/status register			  */
+/** @{ */
 #define RCC_CSR_LSION           0x00000001 //!< Internal Low Speed oscillator enable
 #define RCC_CSR_LSIRDY          0x00000002 //!< Internal Low Speed oscillator Ready
 #define RCC_CSR_V18PWRRSTF      0x00800000 //!< V1.8 power domain reset flag
@@ -254,7 +271,8 @@ typedef struct
 #define RCC_CSR_LPWRRSTF        0x80000000 //!< Low-Power reset flag
 /** @} */
 
-/** @defgroup RCC_AHBRSTR:	(rcc Offset: 0x28) AHB peripheral clock reset register */
+/** @name RCC_AHBRSTR:	(rcc Offset: 0x28) AHB peripheral clock reset register */
+/** @{ */
 #define RCC_AHBRSTR_GPIOARST    0x00020000 //!< GPIOA clock reset
 #define RCC_AHBRSTR_GPIOBRST    0x00040000 //!< GPIOB clock reset
 #define RCC_AHBRSTR_GPIOCRST    0x00080000 //!< GPIOC clock reset
@@ -263,7 +281,8 @@ typedef struct
 #define RCC_AHBRSTR_TSRST       0x00100000 //!< TS clock reset
 /** @} */
 
-/** @defgroup RCC_CFGR2:	(rcc Offset: 0x2C) Clock configuration register2  */
+/** @name RCC_CFGR2:	(rcc Offset: 0x2C) Clock configuration register2	  */
+/** @{ */
 /*!< PREDIV1 configuration */
 #define RCC_CFGR2_PREDIV1       0x0000000F //!< PREDIV1[3:0] bits */
 #define RCC_CFGR2_PREDIV1_DIV1  0x00000000 //!< PREDIV1 input clock not divided
@@ -303,7 +322,7 @@ typedef struct
 //#define RCC_CR2_HSI14TRIM       0x000000F8 //!< Internal High Speed 14MHz clock trimming */
 //#define RCC_CR2_HSI14CAL        0x0000FF00 //!< Internal High Speed 14MHz clock Calibration */
 
-/** @} */ // @defgroup RCC_regs_define
+/** @} */ // @relates RCC_TypeDef
 
 /**
  * @brief In the following line adjust the External High Speed oscillator (HSE) Startup
@@ -313,3 +332,5 @@ typedef struct
 
 
 #endif /* RCC_F1_H_ */
+
+/** @} */

@@ -17,6 +17,6 @@
 
 #include <series_inc.h>
 
-#define CFG_FAMILY_STM32 	1
+#define CFG_FAMILY_STM32 	1	//!< Enable STM32 family specific code
 
 #endif /* FAM_INC_H_ */

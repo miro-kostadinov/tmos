@@ -1,10 +1,13 @@
-/*
- * rtc_f2.cpp
- *
- *  Created on: Feb 15, 2013
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f2_rtc
+ * @{
+ * @file     hardware/stm32/stm32f2/rtc_f2.cpp
+ * @brief    STM32F2 RTC
+ * @version  V3.00
+ * @date     15. February 2013
+ * @author	 Miroslav Kostadinov
+ * @}
  */
-
 
 #include <tmos.h>
 #include <fam_cpp.h>

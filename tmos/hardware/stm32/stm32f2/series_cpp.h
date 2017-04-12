@@ -1,7 +1,7 @@
 /**************************************************************************//**
  * @ingroup	 hardware_stm32f2
  * @{
- * @file     hardware/stm32/cortex-m3/stm32f2/series_cpp.h
+ * @file     hardware/stm32/stm32f2/series_cpp.h
  * @brief    STM32F2 series CPP header
  * @version  V3.00
  * @date     13. December 2011

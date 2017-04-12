@@ -1,10 +1,13 @@
-/*
- * rtc_f1.cpp
- *
- *  Created on: Feb 22, 2013
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f1_rtc
+ * @{
+ * @file     hardware/stm32/stm32f1/rtc_f1.cpp
+ * @brief    STM32F1 RTC
+ * @version  V3.00
+ * @date     22. February 2013
+ * @author	 Miroslav Kostadinov
+ * @}
  */
-
 
 #include <tmos.h>
 #include <fam_cpp.h>

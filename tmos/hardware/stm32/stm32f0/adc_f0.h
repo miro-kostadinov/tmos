@@ -1,9 +1,16 @@
-/*
- * adc_f0.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f0_adc
+ * @file	hardware/stm32/stm32f0/adc_f0.h
+ * @brief  	STM32F0 ADC
+ * @date    22. February 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Feb 22, 2013
- *      Author: miro
- */
+ * @defgroup hardware_stm32f0_adc  Analog-to-digital converter (ADC)
+ * @ingroup	 hardware_stm32f0
+ * Source and definitions for STM32F0 Analog-to-digital converter
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef ADC_F0_H_
 #define ADC_F0_H_
@@ -12,7 +19,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Analog to Digital Converter
  ******************************************************************************/
 typedef struct
@@ -34,12 +41,13 @@ typedef struct
 
 } ADC_TypeDef;
 
-/*******************************************************************************
- * @defgroup ADC_regs_define
+/***************************************************************************//**
+ * @relates ADC_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup ADC_ISR:      (adc Offset: 0x000) ADC Interrupt and Status register */
+/** @name ADC_ISR:      (adc Offset: 0x000) ADC Interrupt and Status register */
+/** @{ */
 #define ADC_ISR_AWD                 0x00000080 //!< Analog watchdog flag
 #define ADC_ISR_OVR                 0x00000010 //!< Overrun flag
 #define ADC_ISR_EOSEQ               0x00000008 //!< End of Sequence flag
@@ -48,7 +56,8 @@ typedef struct
 #define ADC_ISR_ADRDY               0x00000001 //!< ADC Ready
 /** @} */
 
-/** @defgroup ADC_IER:      (adc Offset: 0x004) ADC Interrupt Enable register  */
+/** @name ADC_IER:      (adc Offset: 0x004) ADC Interrupt Enable register  */
+/** @{ */
 #define ADC_IER_AWDIE               0x00000080 //!< Analog Watchdog interrupt enable
 #define ADC_IER_OVRIE               0x00000010 //!< Overrun interrupt enable
 #define ADC_IER_EOSEQIE             0x00000008 //!< End of Sequence of conversion interrupt enable
@@ -57,7 +66,8 @@ typedef struct
 #define ADC_IER_ADRDYIE             0x00000001 //!< ADC Ready interrupt enable
 /** @} */
 
-/** @defgroup ADC_CR:       (adc Offset: 0x008) ADC Control register			  */
+/** @name ADC_CR:       (adc Offset: 0x008) ADC Control register			  */
+/** @{ */
 #define ADC_CR_ADCAL                0x80000000 //!< ADC calibration
 #define ADC_CR_ADSTP                0x00000010 //!< ADC stop of conversion command
 #define ADC_CR_ADSTART              0x00000004 //!< ADC start of conversion
@@ -66,7 +76,8 @@ typedef struct
 #define ADC_CR_BUSY					(ADC_CR_ADCAL | ADC_CR_ADSTP | ADC_CR_ADDIS)
 /** @} */
 
-/** @defgroup ADC_CFGR1:    (adc Offset: 0x00C) ADC Configuration register 1   */
+/** @name ADC_CFGR1:    (adc Offset: 0x00C) ADC Configuration register 1 	  */
+/** @{ */
 #define ADC_CFGR1_AWDCH             0x7C000000 //!< AWDCH[4:0] bits (Analog watchdog channel select bits)
 #define ADC_CFGR1_AWDCH_Set(x)      ((x)<<26)  //!<  AWDCH set macro
 #define ADC_CFGR1_AWDEN             0x00800000 //!< Analog watchdog enable on regular channels
@@ -94,12 +105,14 @@ typedef struct
 #define ADC_CFGR1_DMAEN             0x00000001 //!< Direct memory access enable
 /** @} */
 
-/** @defgroup ADC_CFGR2:    (adc Offset: 0x010) ADC Configuration register 2   */
+/** @name ADC_CFGR2:    (adc Offset: 0x010) ADC Configuration register 2 	  */
+/** @{ */
 #define ADC_CFGR2_JITOFFDIV4        0x80000000 //!< Jitter Off when ADC clocked by PCLK div4
 #define ADC_CFGR2_JITOFFDIV2        0x40000000 //!< Jitter Off when ADC clocked by PCLK div2
 /** @} */
 
-/** @defgroup ADC_SMPR:     (adc Offset: 0x014) ADC Sampling time register	  */
+/** @name ADC_SMPR:     (adc Offset: 0x014) ADC Sampling time register		  */
+/** @{ */
 #define ADC_SMPR1_SMPR              0x00000007 //!< SMPR[2:0] bits (Sampling time selection)
 #define ADC_SMPR1_SMPR_1_5          0x00000000 //!<  000: 1.5 ADC clock cycles
 #define ADC_SMPR1_SMPR_7_5          0x00000001 //!<  001: 7.5 ADC clock cycles
@@ -111,12 +124,14 @@ typedef struct
 #define ADC_SMPR1_SMPR_239_5        0x00000007 //!<  111: 239.5 ADC clock cycles
 /** @} */
 
-/** @defgroup ADC_TR:       (adc Offset: 0x020) ADC watchdog threshold register*/
+/** @name ADC_TR:       (adc Offset: 0x020) ADC watchdog threshold register	  */
+/** @{ */
 #define ADC_TR_HT                   0x0FFF0000 //!< Analog watchdog high threshold
 #define ADC_TR_LT                   0x00000FFF //!< Analog watchdog low threshold
 /** @} */
 
-/** @defgroup ADC_CHSELR:   (adc Offset: 0x028) ADC channel selection register */
+/** @name ADC_CHSELR:   (adc Offset: 0x028) ADC channel selection register	  */
+/** @{ */
 #define ADC_CHSELR_CHSEL17          0x00020000 //!< Channel 17 selection
 #define ADC_CHSELR_CHSEL16          0x00010000 //!< Channel 16 selection
 #define ADC_CHSELR_CHSEL15          0x00008000 //!< Channel 15 selection
@@ -137,19 +152,23 @@ typedef struct
 #define ADC_CHSELR_CHSEL0           0x00000001 //!< Channel 0 selection
 /** @} */
 
-/** @defgroup ADC_DR:       (adc Offset: 0x040) ADC data register			  */
+/** @name ADC_DR:       (adc Offset: 0x040) ADC data register				  */
+/** @{ */
 #define ADC_DR_DATA                0x0000FFFF //!< Regular data */
 /** @} */
 
 
-/** @defgroup ADC_CCR:      (adc Offset: 0x308) ADC common configuration register */
+/** @name ADC_CCR:      (adc Offset: 0x308) ADC common configuration register */
+/** @{ */
 #define ADC_CCR_VBATEN              0x01000000 //!< Voltage battery enable
 #define ADC_CCR_TSEN                0x00800000 //!< Temperature sensor enable
 #define ADC_CCR_VREFEN              0x00400000 //!< Temperature sensor and Vrefint enable
 /** @} */
 
 
-/** @} */ // @defgroup ADC_regs_define
+/** @} */ // @relates ADC_TypeDef
 
 
 #endif /* ADC_F0_H_ */
+
+/** @} */

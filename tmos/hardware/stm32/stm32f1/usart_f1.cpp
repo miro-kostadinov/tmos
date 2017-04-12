@@ -1,9 +1,14 @@
-/*
- * usart_f1.cpp
- *
- *  Created on: Nov 8, 2012
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f1_usart
+ * @{
+ * @file     hardware/stm32/stm32f1/usart_f1.cpp
+ * @brief    STM32F1 USART
+ * @version  V3.00
+ * @date     8. November 2012
+ * @author	 Miroslav Kostadinov
+ * @}
  */
+
 #include <tmos.h>
 #include <fam_cpp.h>
 

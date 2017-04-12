@@ -1,9 +1,16 @@
-/*
- * sdio_stm32.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32_sdio
+ * @file	hardware/stm32/sdio_stm32.h
+ * @brief  	STM32 SDIO
+ * @date    3. October 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Oct 3, 2013
- *      Author: miro
- */
+ * @defgroup hardware_stm32_sdio  Secure digital input/output interface (SDIO)
+ * @ingroup	 hardware_stm32
+ * Source and definitions for STM32 SDIO Controller
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef SDIO_STM32_H_
 #define SDIO_STM32_H_
@@ -11,7 +18,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Secure digital input/output interface (SDIO)
  ******************************************************************************/
 typedef struct
@@ -35,19 +42,21 @@ typedef struct
   __IO uint32_t SDIO_FIFO;      //!< (sdio offset 0x80) SDIO data FIFO register
 } SDIO_TypeDef;
 
-/*******************************************************************************
- * @defgroup SDIO_regs_define
+/***************************************************************************//**
+ * @relates SDIO_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup SDIO_POWER:   (sdio offset 0x00) SDIO power control register	  */
+/** @name SDIO_POWER:   (sdio offset 0x00) SDIO power control register			*/
+/** @{ */
 #define SDIO_POWER_PWRCTRL		0x0003 //!< PWRCTRL[1:0] Power supply control bits
 #define SDIO_POWER_PWRCTRL_off	0x0000 //!<  00: Power-off: the clock to card is stopped
 #define SDIO_POWER_PWRCTRL_up   0x0002 //!<  10: Reserved power-up
 #define SDIO_POWER_PWRCTRL_on   0x0003 //!<  11: Power-on: the card is clocked
 /** @} */
 
-/** @defgroup SDIO_CLKCR:   (sdio offset 0x04) SDIO clock control register	  */
+/** @name SDIO_CLKCR:   (sdio offset 0x04) SDIO clock control register	  		*/
+/** @{ */
 #define SDIO_CLKCR_HWFC_EN      0x4000 //!< HW Flow Control enable
 #define SDIO_CLKCR_NEGEDGE      0x2000 //!< SDIO_CK dephasing selection bit
 #define SDIO_CLKCR_WIDBUS       0x1800 //!< WIDBUS[1:0] Wide bus mode enable bit
@@ -62,11 +71,13 @@ typedef struct
 #define SDIO_CLKCR_CLKDIV_Set(x) ((x)&0xFF)	//!< set macro
 /** @} */
 
-/** @defgroup SDIO_ARG:     (sdio offset 0x08) SDIO argument register		  */
+/** @name SDIO_ARG:     (sdio offset 0x08) SDIO argument register		 		*/
+/** @{ */
 #define SDIO_ARG_CMDARG         0xFFFFFFFF //!< Command argument
 /** @} */
 
-/** @defgroup SDIO_CMD:     (sdio offset 0x0C) SDIO command register		  */
+/** @name SDIO_CMD:     (sdio offset 0x0C) SDIO command register				*/
+/** @{ */
 #define SDIO_CMD_CEATACMD       0x4000 //!< CE-ATA command
 #define SDIO_CMD_NIEN           0x2000 //!< Not Interrupt Enable
 #define SDIO_CMD_ENCMDCOMPL     0x1000 //!< Enable CMD completion
@@ -140,11 +151,13 @@ typedef struct
 
 /** @} */
 
-/** @defgroup SDIO_RESPCMD: (sdio offset 0x10) SDIO command response register */
+/** @name SDIO_RESPCMD: (sdio offset 0x10) SDIO command response register 		*/
+/** @{ */
 #define SDIO_RESPCMD_RESPCMD    0x003F //!< Response command index
 /** @} */
 
-/** @defgroup SDIO_RESPx:   (sdio offset 0x14) SDIO response 1-4 registers	  */
+/** @name SDIO_RESPx:   (sdio offset 0x14) SDIO response 1-4 registers	  		*/
+/** @{ */
 #define SDIO_RESPx_CARDSTATUSx  0xFFFFFFFF //!< Card Status
 
 #define SDIO_RESP1_OUT_OF_RANGE 		0x80000000 //!< The command's argument was out of the allowed range for this card
@@ -160,7 +173,8 @@ typedef struct
 #define SDIO_RESP1_CARD_ECC_FAILED 		0x00200000 //!< Card internal ECC was applied but failed to correct the data
 #define SDIO_RESP1_CC_ERROR 			0x00100000 //!< Internal card controller error
 #define SDIO_RESP1_ERROR 				0x00080000 //!< A general or an unknown error occurred during the operation.
-#define SDIO_RESP1_CSD_OVERWRITE 		0x00010000 //!< Can be either one of the following errors:
+#define SDIO_RESP1_CSD_OVERWRITE 		0x00010000 //!< CSD OVERWRITE
+ 	 	 	 	 	 	 	 	 	 	 	 	   //!< Can be either one of the following errors:
 												   //!< - The read only section of the CSD does not match the card content.
 												   //!< - An attempt to reverse the copy (set as original) or permanent WP (unprotected) bits was made
 #define SDIO_RESP1_WP_ERASE_SKIP 		0x00008000 //!< "Set when only partial address space was erased due to existing write protected blocks or the temporary or permanent write protected card was erased
@@ -182,6 +196,7 @@ typedef struct
 #define SDIO_RESP1_SDIO					0x00000010 //!< reserved for SD I/O Card
 #define SDIO_RESP1_AKE_SEQ_ERROR 		0x00000008 //!< Error in the sequence of the authentication process
 
+/// all RESP1 errors
 #define SDIO_RESP1_ERRORS (SDIO_RESP1_OUT_OF_RANGE | SDIO_RESP1_ADDRESS_ERROR \
 		| SDIO_RESP1_BLOCK_LEN_ERROR | SDIO_RESP1_ERASE_SEQ_ERROR \
 		| SDIO_RESP1_ERASE_PARAM | SDIO_RESP1_WP_VIOLATION \
@@ -193,15 +208,18 @@ typedef struct
 /** @} */
 
 
-/** @defgroup SDIO_DTIMER:  (sdio offset 0x24) SDIO data timer register       */
+/** @name SDIO_DTIMER:  (sdio offset 0x24) SDIO data timer register       		*/
+/** @{ */
 #define SDIO_DTIMER_DATATIME    0xFFFFFFFF //!< Data timeout period.
 /** @} */
 
-/** @defgroup SDIO_DLEN:    (sdio offset 0x28) SDIO data length register      */
+/** @name SDIO_DLEN:    (sdio offset 0x28) SDIO data length register      		*/
+/** @{ */
 #define SDIO_DLEN_DATALENGTH    0x01FFFFFF //!< Data length value
 /** @} */
 
-/** @defgroup SDIO_DCTRL:   (sdio offset 0x2C) SDIO data control register     */
+/** @name SDIO_DCTRL:   (sdio offset 0x2C) SDIO data control register    		*/
+/** @{ */
 #define SDIO_DCTRL_SDIOEN       0x0800 //!< SD I/O enable functions
 #define SDIO_DCTRL_RWMOD        0x0400 //!< Read wait mode
 #define SDIO_DCTRL_RWSTOP       0x0200 //!< Read wait stop
@@ -229,11 +247,13 @@ typedef struct
 #define SDIO_DCTRL_DTEN         0x0001 //!< Data transfer enabled bit
 /** @} */
 
-/** @defgroup SDIO_DCOUNT:  (sdio offset 0x30) SDIO data counter register     */
+/** @name SDIO_DCOUNT:  (sdio offset 0x30) SDIO data counter register     		*/
+/** @{ */
 #define SDIO_DCOUNT_DATACOUNT   0x01FFFFFF //!<Data count value
 /** @} */
 
-/** @defgroup SDIO_STA:     (sdio offset 0x34) SDIO status register           */
+/** @name SDIO_STA:     (sdio offset 0x34) SDIO status register           		*/
+/** @{ */
 #define SDIO_STA_CEATAEND       0x00800000 //!< CE-ATA command completion signal received for CMD61
 #define SDIO_STA_SDIOIT         0x00400000 //!< SDIO interrupt received
 #define SDIO_STA_RXDAVL         0x00200000 //!< Data available in receive FIFO
@@ -259,6 +279,7 @@ typedef struct
 #define SDIO_STA_DCRCFAIL       0x00000002 //!< Data block sent/received (CRC check failed)
 #define SDIO_STA_CCRCFAIL       0x00000001 //!< Command response received (CRC check failed)
 
+///
 #define SDIO_STA_DONE_TR	(SDIO_STA_CEATAEND | SDIO_STA_SDIOIT | \
 							  SDIO_STA_DBCKEND | SDIO_STA_DATAEND )
 
@@ -282,7 +303,8 @@ typedef struct
 
 /** @} */
 
-/** @defgroup SDIO_ICR:     (sdio offset 0x38) SDIO interrupt clear register  */
+/** @name SDIO_ICR:     (sdio offset 0x38) SDIO interrupt clear register  		*/
+/** @{ */
 #define SDIO_ICR_CCRCFAILC      0x00000001 //!< CCRCFAIL flag clear bit
 #define SDIO_ICR_DCRCFAILC      0x00000002 //!< DCRCFAIL flag clear bit
 #define SDIO_ICR_CTIMEOUTC      0x00000004 //!< CTIMEOUT flag clear bit
@@ -298,7 +320,8 @@ typedef struct
 #define SDIO_ICR_CEATAENDC      0x00800000 //!< CEATAEND flag clear bit
 /** @} */
 
-/** @defgroup SDIO_MASK:    (sdio offset 0x3C) SDIO mask register             */
+/** @name SDIO_MASK:    (sdio offset 0x3C) SDIO mask register             		*/
+/** @{ */
 #define SDIO_MASK_CEATAENDIE    0x00800000 //!<CE-ATA command completion signal received Interrupt Enable
 #define SDIO_MASK_SDIOITIE      0x00400000 //!<SDIO Mode Interrupt Received interrupt Enable
 #define SDIO_MASK_RXDAVLIE      0x00200000 //!<Data available in Rx FIFO interrupt Enable
@@ -325,11 +348,13 @@ typedef struct
 #define SDIO_MASK_CCRCFAILIE    0x00000001 //!<Command CRC Fail Interrupt Enable
 /** @} */
 
-/** @defgroup SDIO_FIFOCNT: (sdio offset 0x48) SDIO FIFO counter register     */
+/** @name SDIO_FIFOCNT: (sdio offset 0x48) SDIO FIFO counter register     		*/
+/** @{ */
 #define SDIO_FIFOCNT_FIFOCOUNT  0x00FFFFFF //!< Remaining number of words to be written to or read from the FIFO
 /** @} */
 
-/** @defgroup SDIO_FIFO:    (sdio offset 0x80) SDIO data FIFO register        */
+/** @name SDIO_FIFO:    (sdio offset 0x80) SDIO data FIFO register        		*/
+/** @{ */
 #define SDIO_FIFO_FIFODATA      0xFFFFFFFF //!< Receive and transmit FIFO data
 /** @} */
 
@@ -338,3 +363,5 @@ typedef struct
 
 
 #endif /* SDIO_STM32_H_ */
+
+/** @} */

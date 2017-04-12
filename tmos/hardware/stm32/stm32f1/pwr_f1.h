@@ -1,9 +1,16 @@
-/*
- * pwr_f1.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f1_pwr
+ * @file	hardware/stm32/stm32f1/pwr_f1.h
+ * @brief  	STM32F1 PWR
+ * @date    21. February 2013
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Feb 21, 2013
- *      Author: miro
- */
+ * @defgroup hardware_stm32f1_pwr  Power control (PWR)
+ * @ingroup	 hardware_stm32f1
+ * Source and definitions for STM32F1 Power control (PWR)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef PWR_F1_H_
 #define PWR_F1_H_
@@ -11,7 +18,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Power control (PWR)
  ******************************************************************************/
 typedef struct
@@ -42,12 +49,13 @@ typedef struct
 
 } PWR_BB_TypeDef;
 
-/*******************************************************************************
- * @defgroup PWR_regs_define
+/***************************************************************************//**
+ * @relates PWR_BB_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup PWR_CR:      	(pwr Offset: 0x00) PWR power control register	  */
+/** @name PWR_CR:      	(pwr Offset: 0x00) PWR power control register		  */
+/** @{ */
 #define PWR_CR_DBP          0x0100 //!< Bit 8 DBP: Disable backup domain write protection
 #define PWR_CR_PLS          0x00E0 //!< Bits 7:5 PLS[2:0]: PVD level selection
 #define PWR_CR_PLS_2_2V     0x0000 //!<  000: 2.2 V
@@ -65,18 +73,20 @@ typedef struct
 #define PWR_CR_LPDS         0x0001 //!< Bit 0 LPDS: Low-power deep sleep
 /** @} */
 
-/** @defgroup PWR_CSR:      (pwr Offset: 0x04) PWR power control/status register */
+/** @name PWR_CSR:      (pwr Offset: 0x04) PWR power control/status register  */
+/** @{ */
 #define PWR_CSR_EWUP        0x0100 //!< Bit 8 EWUP: Enable WKUP pin
 #define PWR_CSR_PVDO        0x0004 //!< Bit 2 PVDO: PVD output
 #define PWR_CSR_SBF         0x0002 //!< Bit 1 SBF: Standby flag
 #define PWR_CSR_WUF         0x0001 //!< Bit 0 WUF: Wakeup flag
-
 /** @} */
 
 
 
-/** @} */ // @defgroup PWR_regs_define
+/** @} */ // @@relates PWR_BB_TypeDef
 
 
 
 #endif /* PWR_F1_H_ */
+
+/** @} */

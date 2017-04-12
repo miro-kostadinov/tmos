@@ -1,9 +1,16 @@
-/*
- * dac_f0.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f0_dac
+ * @file	hardware/stm32/stm32f0/dac_f0.h
+ * @brief  	STM32F0 DAC
+ * @date    10. September 2015
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Sep 10, 2015
- *      Author: miro
- */
+ * @defgroup hardware_stm32f0_dac  Digital-to-analog converter (DAC)
+ * @ingroup	 hardware_stm32f0
+ * Source and definitions for Digital-to-analog converter (DAC) (STM32F05xxx series)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef HARDWARE_STM32_STM32F0_DAC_F0_H_
 #define HARDWARE_STM32_STM32F0_DAC_F0_H_
@@ -11,7 +18,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Digital-to-analog converter (DAC) (STM32F05xxx series)
  ******************************************************************************/
 typedef struct
@@ -27,12 +34,13 @@ typedef struct
   __IO uint32_t DAC_SR;      	//!< (dac Offset: 0x34) DAC status register
 } DAC_TypeDef;
 
-/*******************************************************************************
- * @defgroup DAC_regs_define
+/***************************************************************************//**
+ * @relates DAC_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup DAC_CR:      	(dac Offset: 0x00) DAC control register             */
+/** @name DAC_CR:      	(dac Offset: 0x00) DAC control register     	      */
+/** @{ */
 #define DAC_CR_DMAUDRIE1            0x00002000 //!< DAC channel1 DMA Underrun Interrupt enable
 #define DAC_CR_DMAEN1               0x00001000 //!< DAC channel1 DMA enable
 #define DAC_CR_TSEL1                0x00000038 //!< TSEL1[2:0] (DAC channel1 Trigger selection)
@@ -49,31 +57,40 @@ typedef struct
 #define DAC_CR_EN1                  0x00000001 //!< DAC channel1 enable
 /** @} */
 
-/** @defgroup DAC_SWTRIGR: 	(dac Offset: 0x04) DAC software trigger register    */
+/** @name DAC_SWTRIGR: 	(dac Offset: 0x04) DAC software trigger register	  */
+/** @{ */
 #define DAC_SWTRIGR_SWTRIG1         0x00000001 //!< DAC channel1 software trigger
 /** @} */
 
-/** @defgroup DAC_DHR12R1: 	(dac Offset: 0x08) DAC channel1 12-bit right-aligned data holding register */
+/** @name DAC_DHR12R1: 	(dac Offset: 0x08) DAC channel1 12-bit right-aligned data holding register */
+/** @{ */
 #define DAC_DHR12R1_DACC1DHR        0x00000FFF //!< DAC channel1 12-bit Right aligned data
 /** @} */
 
-/** @defgroup DAC_DHR12L1: 	(dac Offset: 0x0C) DAC channel1 12-bit left aligned data holding register  */
+/** @name DAC_DHR12L1: 	(dac Offset: 0x0C) DAC channel1 12-bit left aligned data holding register  */
+/** @{ */
 #define DAC_DHR12L1_DACC1DHR        0x0000FFF0 //!< DAC channel1 12-bit Left aligned data *
 /** @} */
 
-/** @defgroup DAC_DHR8R1:  	(dac Offset: 0x10) DAC channel1 8-bit right aligned data holding register  */
+/** @name DAC_DHR8R1:  	(dac Offset: 0x10) DAC channel1 8-bit right aligned data holding register  */
+/** @{ */
 #define DAC_DHR8R1_DACC1DHR         0x000000FF //!< DAC channel1 8-bit Right aligned data
 /** @} */
 
-/** @defgroup DAC_DOR1:    	(dac Offset: 0x2C) DAC channel1 data output register*/
+/** @name DAC_DOR1:    	(dac Offset: 0x2C) DAC channel1 data output register  */
+/** @{ */
 #define DAC_DOR1_DACC1DOR           0x00000FFF //!< DAC channel1 data output
 /** @} */
 
-/** @defgroup DAC_SR:      	(dac Offset: 0x34) DAC status register              */
+/** @name DAC_SR:      	(dac Offset: 0x34) DAC status register                */
+/** @{ */
 #define DAC_SR_DMAUDR1              0x00002000 //!< DAC channel1 DMA underrun flag
 /** @} */
 
 
+/** @} */ // @relates DAC_TypeDef
 
 
 #endif /* HARDWARE_STM32_STM32F0_DAC_F0_H_ */
+
+/** @} */

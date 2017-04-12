@@ -1,9 +1,16 @@
-/*
- * dbgmcu_f1.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f1_dbgmcu
+ * @file	hardware/stm32/stm32f1/dbgmcu_f1.h
+ * @brief  	STM32F1 DBGMCU
+ * @date    29. October 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Oct 29, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32f1_dbgmcu  MCU debug component (DBGMCU)
+ * @ingroup	 hardware_stm32f1
+ * Source and definitions for STM32F1 MCU debug component (DBGMCU)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef DBGMCU_F1_H_
 #define DBGMCU_F1_H_
@@ -11,7 +18,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  MCU debug component (DBGMCU)
  ******************************************************************************/
 typedef struct
@@ -21,17 +28,19 @@ typedef struct
 } DBGMCU_TypeDef;
 
 
-/*******************************************************************************
- * @defgroup DBGMCU_regs_define
+/***************************************************************************//**
+ * @relates DBGMCU_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup DBGMCU_IDCODE:	(dbgmcu offset: 0x00) MCU device ID code		  */
+/** @name DBGMCU_IDCODE:	(dbgmcu offset: 0x00) MCU device ID code		  */
+/** @{ */
 #define DBGMCU_IDCODE_DEV_ID        0x00000FFF //!< Device Identifier
 #define DBGMCU_IDCODE_REV_ID        0xFFFF0000 //!< REV_ID[15:0] bits (Revision Identifier)
 /** @} */
 
-/** @defgroup DBGMCU_CR:	(dbgmcu Offset: 0x04) Debug MCU configuration register		  */
+/** @name DBGMCU_CR:	(dbgmcu Offset: 0x04) Debug MCU configuration register  */
+/** @{ */
 #define DBGMCU_CR_DBG_SLEEP         0x00000001 //!< Debug Sleep Mode
 #define DBGMCU_CR_DBG_STOP          0x00000002 //!< Debug Stop Mode
 #define DBGMCU_CR_DBG_STANDBY       0x00000004 //!< Debug Standby mode
@@ -69,9 +78,11 @@ typedef struct
 /** @} */
 
 
-/** @} */ // @defgroup RCC_DBGMCU_regs_define
+/** @} */ // @relates DBGMCU_TypeDef
 
 
 
 
 #endif /* DBGMCU_F1_H_ */
+
+/** @} */

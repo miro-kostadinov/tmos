@@ -1,9 +1,16 @@
-/*
- * eth_phy_f2.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f2_eth_phy
+ * @file	hardware/stm32/stm32f2/eth_phy_f2.h
+ * @brief  	STM32F2 ETH PHY
+ * @date    27. July 2016
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Jul 27, 2016
- *      Author: miro
- */
+ * @defgroup hardware_stm32f2_eth_phy  Ethernet PHY Registers
+ * @ingroup	 hardware_stm32f2
+ * Source and definitions for Ethernet PHY Registers (TLK110, LAN87xx)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef HARDWARE_STM32_STM32F2_ETH_PHY_F2_H_
 #define HARDWARE_STM32_STM32F2_ETH_PHY_F2_H_
@@ -55,6 +62,7 @@
 
 #define ETH_PHY_LAN8700
 #ifdef ETH_PHY_LAN8700
+
 //// Extended PHY Registers
 #define PHY_REG_IMR     0x1E    //!< PHY Interrupt Mask Register
 #define PHY_REG_SR      0x1F    //!< PHY status register Offset
@@ -139,3 +147,5 @@ RES_CODE HAL_ETH_PHY_Init_TLK110(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);
 
 
 #endif /* HARDWARE_STM32_STM32F2_ETH_PHY_F2_H_ */
+
+/** @} */

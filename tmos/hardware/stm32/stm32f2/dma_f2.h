@@ -1,9 +1,16 @@
-/*
- * dma_f2.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f2_dma
+ * @file	hardware/stm32/stm32f2/dma_f2.h
+ * @brief  	STM32F2 DMA
+ * @date    7. November 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Nov 7, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32f2_dma  DMA Controller
+ * @ingroup	 hardware_stm32f2
+ * Source and definitions for STM32F2 DMA Controller
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef DMA_F2_H_
 #define DMA_F2_H_
@@ -11,8 +18,8 @@
 #include <tmos_types.h>
 #include <mcu_inc.h>
 
-/*******************************************************************************
- *  DMA Controller
+/***************************************************************************//**
+ *  DMA Stream
  ******************************************************************************/
 typedef struct
 {
@@ -24,6 +31,9 @@ typedef struct
   __IO uint32_t DMA_SxFCR;    //!< (dmas Offset: 0x14) DMA stream x FIFO control register
 } DMA_Stream_TypeDef;
 
+/***************************************************************************//**
+ *  DMA Controller
+ ******************************************************************************/
 typedef struct
 {
   __IO uint32_t DMA_ISR[2];		 //!< (dma Offset: 0x00) DMA low/high DMA_LISR/DMA_LISR interrupt status register
@@ -31,12 +41,13 @@ typedef struct
   DMA_Stream_TypeDef DMA_Chx[8]; //!< (dma Offset: 0x10) DMA channel x
 } DMA_TypeDef;
 
-/*******************************************************************************
- * @defgroup DMA_regs_define
+/***************************************************************************//**
+ * @relates DMA_Stream_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup DMA_SxCR:     (dmas Offset: 0x00) DMA stream x configuration register */
+/** @name DMA_SxCR:     (dmas Offset: 0x00) DMA stream x configuration register */
+/** @{ */
 #define DMA_SxCR_EN                 0x00000001 //!< Stream enable / flag stream ready when read low
 #define DMA_SxCR_DMEIE              0x00000002 //!< Direct mode error interrupt enable
 #define DMA_SxCR_TEIE               0x00000004 //!< Transfer error interrupt enable
@@ -91,23 +102,28 @@ typedef struct
 #define DMA_SxCR_RESERVED_NOINTS    0x80000000 //!< DISABLE interrupts
 /** @} */
 
-/** @defgroup DMA_SxNDTR:   (dmas Offset: 0x04) DMA stream x number of data register */
+/** @name DMA_SxNDTR:   (dmas Offset: 0x04) DMA stream x number of data register */
+/** @{ */
 #define DMA_SxNDTR_NDT              0x0000FFFF //!< Number of data to Transfer
 /** @} */
 
-/** @defgroup DMA_SxPAR:    (dmas Offset: 0x08) DMA stream x peripheral address register */
+/** @name DMA_SxPAR:    (dmas Offset: 0x08) DMA stream x peripheral address register */
+/** @{ */
 #define DMA_SxPAR_PAR              	0xFFFFFFFF //!< Peripheral Address
 /** @} */
 
-/** @defgroup DMA_SxM0AR:   (dmas Offset: 0x0C) DMA stream x memory 0 address register */
+/** @name DMA_SxM0AR:   (dmas Offset: 0x0C) DMA stream x memory 0 address register */
+/** @{ */
 #define DMA_SxM0AR_M0A              0xFFFFFFFF //!< Memory 0 address
 /** @} */
 
-/** @defgroup DMA_SxM1AR:   (dmas Offset: 0x10) DMA stream x memory 1 address register */
+/** @name DMA_SxM1AR:   (dmas Offset: 0x10) DMA stream x memory 1 address register */
+/** @{ */
 #define DMA_SxM1AR_M1A              0xFFFFFFFF //!< Memory 1 address (used in case of Double buffer mode)
 /** @} */
 
-/** @defgroup DMA_SxFCR:    (dmas Offset: 0x14) DMA stream x FIFO control register */
+/** @name DMA_SxFCR:    (dmas Offset: 0x14) DMA stream x FIFO control register */
+/** @{ */
 #define DMA_SxFCR_FEIE              0x00000080 //!< FIFO error interrupt enable
 #define DMA_SxFCR_FS                0x00000038 //!< FS[2:0]: FIFO status
 #define DMA_SxFCR_FS_00_14          0x00000000 //!<  0 < fifo_level < 1/4
@@ -125,7 +141,15 @@ typedef struct
 #define DMA_SxFCR_DMODE             0x00000000 //!< Direct mode
 /** @} */
 
-/** @defgroup DMA_ISR[2]:	(dma Offset: 0x00) DMA low/high DMA_LISR/DMA_LISR interrupt status register */
+/** @} */ // @relates DMA_Stream_TypeDef
+
+/***************************************************************************//**
+ * @relates DMA_TypeDef
+ * @{
+ ******************************************************************************/
+
+/** @name DMA_ISR[2]:	(dma Offset: 0x00) DMA low/high DMA_LISR/DMA_LISR interrupt status register */
+/** @{ */
 #define DMA_ISR_TCIFx               0x20       //!< Stream x transfer complete interrupt flag
 #define DMA_ISR_HTIFx               0x10       //!< Stream x half transfer interrupt flag
 #define DMA_ISR_TEIFx               0x08       //!< Stream x transfer error interrupt flag
@@ -133,7 +157,8 @@ typedef struct
 #define DMA_ISR_FEIFx               0x01       //!< Stream x FIFO error interrupt flag
 /** @} */
 
-/** @defgroup DMA_IFCR[2]:	(dma Offset: 0x08) DMA low/high interrupt flag clear register */
+/** @name DMA_IFCR[2]:	(dma Offset: 0x08) DMA low/high interrupt flag clear register */
+/** @{ */
 #define DMA_IFCR_CTCIFx             0x20       //!< Stream x clear transfer complete interrupt flag
 #define DMA_IFCR_CHTIFx             0x10       //!< Stream x clear half transfer interrupt flag
 #define DMA_IFCR_CTEIFx             0x08       //!< Stream x clear transfer error interrupt flag
@@ -141,7 +166,7 @@ typedef struct
 #define DMA_IFCR_CFEIFx             0x01       //!< Stream x clear FIFO error interrupt flag
 /** @} */
 
-/** @} */ // @defgroup DMA_regs_define
+/** @} */ // @relates DMA_TypeDef
 
 #define STM32_DMA_ERRORS (DMA_ISR_TEIFx | DMA_ISR_DMEIFx )	//!< errors for F2 (DMA_ISR_FEIFx is fake???)
 
@@ -238,3 +263,5 @@ void stm32_en_ints(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode);
 void stm32_dis_ints(DMA_TypeDef* dmac, uint32_t indx);
 
 #endif /* DMA_F2_H_ */
+
+/** @} */

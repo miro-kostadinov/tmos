@@ -1,9 +1,14 @@
-/*
- * dma_f2.cpp
- *
- *  Created on: Nov 21, 2012
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f2_dma
+ * @{
+ * @file     hardware/stm32/stm32f2/dma_f2.cpp
+ * @brief    STM32F2 DMA
+ * @version  V3.00
+ * @date     21. November 2012
+ * @author	 Miroslav Kostadinov
+ * @}
  */
+
 #include <tmos.h>
 #include "fam_cpp.h"
 

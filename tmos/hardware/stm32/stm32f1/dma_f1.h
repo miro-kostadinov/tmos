@@ -1,9 +1,16 @@
-/*
- * dma_f1.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f1_dma
+ * @file	hardware/stm32/stm32f1/dma_f1.h
+ * @brief  	STM32F1 DMA
+ * @date    7. November 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Nov 7, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32f1_dma  DMA Controller
+ * @ingroup	 hardware_stm32f1
+ * Source and definitions for STM32F1 DMA Controller
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef DMA_F1_H_
 #define DMA_F1_H_
@@ -11,8 +18,8 @@
 #include <tmos_types.h>
 #include <mcu_inc.h>
 
-/*******************************************************************************
- *  DMA Controller
+/***************************************************************************//**
+ *  DMA Channel
  ******************************************************************************/
 typedef struct
 {
@@ -23,6 +30,9 @@ typedef struct
   __IO uint32_t reserved[836];	//!< (dmach Offset: 0x10) reserved
 } DMA_Channel_TypeDef;
 
+/***************************************************************************//**
+ *  DMA Controller
+ ******************************************************************************/
 typedef struct
 {
   __IO uint32_t DMA_ISR;		  //!< (dma Offset: 0x00) DMA interrupt status register
@@ -30,12 +40,13 @@ typedef struct
   DMA_Channel_TypeDef DMA_Chx[7]; //!< (dma Offset: 0x08) DMA channels (up to 7)
 } DMA_TypeDef;
 
-/*******************************************************************************
- * @defgroup DMA_regs_define
+/***************************************************************************//**
+ * @relates DMA_Channel_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup DMA_CCRx:		(dmach Offset: 0x00) DMA channel x configuration register */
+/** @name DMA_CCRx:		(dmach Offset: 0x00) DMA channel x configuration register */
+/** @{ */
 #define DMA_CCRx_EN                 0x0001 //!< Channel enable
 #define DMA_CCRx_TCIE               0x0002 //!< Transfer complete interrupt enable
 #define DMA_CCRx_HTIE               0x0004 //!< Half Transfer interrupt enable
@@ -64,19 +75,31 @@ typedef struct
 #define DMA_CCRx_MEM2MEM            0x4000 //!< Memory to memory mode
 /** @} */
 
-/** @defgroup DMA_CNDTRx:	(dmach Offset: 0x04) DMA channel x number of data register */
+/** @name DMA_CNDTRx:	(dmach Offset: 0x04) DMA channel x number of data register */
+/** @{ */
 #define DMA_CNDTRx_NDT              0xFFFF //!< Number of data to Transfer
 /** @} */
 
-/** @defgroup DMA_CPARx:	(dmach Offset: 0x08) DMA channel x peripheral address register */
+/** @name DMA_CPARx:	(dmach Offset: 0x08) DMA channel x peripheral address register */
+/** @{ */
 #define DMA_CPARx_PA                0xFFFFFFFF //!< Peripheral Address
 /** @} */
 
-/** @defgroup DMA_CMARx:	(dmach Offset: 0x0C) DMA channel x memory address register */
+/** @name DMA_CMARx:	(dmach Offset: 0x0C) DMA channel x memory address register */
+/** @{ */
 #define DMA_CMAR1_MA                0xFFFFFFFF //!< Memory Address
 /** @} */
 
-/** @defgroup DMA_ISR:		(dma Offset: 0x00) DMA interrupt status register */
+/** @} */ // @relates DMA_Channel_TypeDef
+
+
+/***************************************************************************//**
+ * @relates DMA_TypeDef
+ * @{
+ ******************************************************************************/
+
+/** @name DMA_ISR:		(dma Offset: 0x00) DMA interrupt status register	  */
+/** @{ */
 #define DMA_ISR_GIFx                0x1 //!< Channel x Global interrupt flag
 #define DMA_ISR_TCIFx               0x2 //!< Channel x Transfer Complete flag
 #define DMA_ISR_HTIFx               0x4 //!< Channel x Half Transfer flag
@@ -85,10 +108,10 @@ typedef struct
 #define DMA_ISR_Msk(x)  	(0xF<<((x)*4))      //!< mask
 #define DMA_ISR_Get(x,y)  (((y)>>((x)*4))& 0xF) //!< get macro
 #define DMA_ISR_Set(x,y)      ((y)<<((x)*4)) 	//!< set macro
-
 /** @} */
 
-/** @defgroup DMA_IFCR:		(dma Offset: 0x04) DMA interrupt flag clear register */
+/** @name DMA_IFCR:		(dma Offset: 0x04) DMA interrupt flag clear register  */
+/** @{ */
 #define DMA_IFCR_CGIFx              0x1 //!< Channel x Global interrupt clear
 #define DMA_IFCR_CTCIFx             0x2 //!< Channel x Transfer Complete clear
 #define DMA_IFCR_CHTIFx             0x4 //!< Channel x Half Transfer clear
@@ -98,6 +121,9 @@ typedef struct
 #define DMA_IFCR_Get(x,y)  (((y)>>((x)*4))& 0xF) //!< get macro
 #define DMA_IFCR_Set(x,y)      ((y)<<((x)*4)) 	//!< set macro
 /** @} */
+
+/** @} */ // @relates DMA_TypeDef
+
 
 #define STM32_DMA_ERRORS (DMA_ISR_TEIFx )	//!< errors for F1
 
@@ -141,8 +167,9 @@ void stm32_en_ints(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode);
 void stm32_dis_ints(DMA_TypeDef* dmac, uint32_t indx);
 
 
-/** @} */ // @defgroup DMA_regs_define
 
 
 
 #endif /* DMA_F1_H_ */
+
+/** @} */

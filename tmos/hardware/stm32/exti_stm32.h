@@ -1,9 +1,16 @@
-/*
- * exti_stm32.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32_exti
+ * @file	hardware/stm32/exti_stm32.h
+ * @brief  	STM32 External Interrupt/Event Controller (EXTI)
+ * @date    1. November 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Nov 1, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32_exti External Interrupt/Event Controller (EXTI)
+ * @ingroup	 hardware_stm32
+ * Source and definitions for STM32 External Interrupt/Event Controller (EXTI)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef EXTI_STM32_H_
 #define EXTI_STM32_H_
@@ -12,10 +19,10 @@
 #include <tmos_types.h>
 #include <gpio_stm32.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  External Interrupt/Event Controller (EXTI) registers
  ******************************************************************************/
-typedef struct
+struct EXTI_TypeDef
 {
 	__IO uint32_t EXTI_IMR;  	//!< (exti Offset: 0x00) EXTI Interrupt mask register
 	__IO uint32_t EXTI_EMR;   	//!< (exti Offset: 0x04) EXTI Event mask register
@@ -23,14 +30,16 @@ typedef struct
 	__IO uint32_t EXTI_FTSR;  	//!< (exti Offset: 0x0C) EXTI Falling trigger selection register
 	__IO uint32_t EXTI_SWIER; 	//!< (exti Offset: 0x10) EXTI Software interrupt event register
 	__IO uint32_t EXTI_PR;    	//!< (exti Offset: 0x14) EXTI Pending register
-} EXTI_TypeDef;
+};
 
-/*******************************************************************************
- * @defgroup EXTI_regs_define
+/***************************************************************************//**
+ * @relates EXTI_TypeDef
  * @{
  ******************************************************************************/
 
 
+/** @name EXTI lines
+ * @{*/
 #define EXTI_Line0         		0x00000001 //!< External Interrupt line 0
 #define EXTI_Line1              0x00000002 //!< External Interrupt line 1
 #define EXTI_Line2              0x00000004 //!< External Interrupt line 2
@@ -54,8 +63,10 @@ typedef struct
 #define EXTI_Line20             0x00100000 //!< External Interrupt line 20
 #define EXTI_Line21             0x00200000 //!< External Interrupt line 21
 #define EXTI_Line22             0x00400000 //!< External Interrupt line 22
+/** @} */
 
-/** @defgroup EXTI_IMR:  	(exti Offset: 0x00) EXTI Interrupt mask register	*/
+/** @name EXTI_IMR:  	(exti Offset: 0x00) EXTI Interrupt mask register
+ * @{*/
 #define EXTI_IMR_MR0         	0x00000001 //!< Interrupt Mask on line 0
 #define EXTI_IMR_MR1            0x00000002 //!< Interrupt Mask on line 1
 #define EXTI_IMR_MR2            0x00000004 //!< Interrupt Mask on line 2
@@ -81,7 +92,8 @@ typedef struct
 #define EXTI_IMR_MR22           0x00400000 //!< Interrupt Mask on line 22
 /** @} */
 
-/** @defgroup EXTI_EMR:   	(exti Offset: 0x04) EXTI Event mask register		*/
+/** @name EXTI_EMR:   	(exti Offset: 0x04) EXTI Event mask register
+ * @{*/
 #define EXTI_EMR_MR0            0x00000001 //!< Event Mask on line 0
 #define EXTI_EMR_MR1            0x00000002 //!< Event Mask on line 1
 #define EXTI_EMR_MR2            0x00000004 //!< Event Mask on line 2
@@ -107,7 +119,8 @@ typedef struct
 #define EXTI_EMR_MR22           0x00400000 //!< Event Mask on line 22
 /** @} */
 
-/** @defgroup EXTI_RTSR:  	(exti Offset: 0x05) EXTI Rising trigger selection register */
+/** @name EXTI_RTSR:  	(exti Offset: 0x05) EXTI Rising trigger selection register
+ * @{*/
 #define EXTI_RTSR_TR0           0x00000001 //!< Rising trigger event configuration bit of line 0
 #define EXTI_RTSR_TR1           0x00000002 //!< Rising trigger event configuration bit of line 1
 #define EXTI_RTSR_TR2           0x00000004 //!< Rising trigger event configuration bit of line 2
@@ -130,7 +143,8 @@ typedef struct
 #define EXTI_RTSR_TR19          0x00080000 //!< Rising trigger event configuration bit of line 19
 /** @} */
 
-/** @defgroup EXTI_FTSR:  	(exti Offset: 0x0C) EXTI Falling trigger selection register */
+/** @name EXTI_FTSR:  	(exti Offset: 0x0C) EXTI Falling trigger selection register
+ * @{*/
 #define EXTI_FTSR_TR0           0x00000001 //!< Falling trigger event configuration bit of line 0
 #define EXTI_FTSR_TR1           0x00000002 //!< Falling trigger event configuration bit of line 1
 #define EXTI_FTSR_TR2           0x00000004 //!< Falling trigger event configuration bit of line 2
@@ -153,7 +167,8 @@ typedef struct
 #define EXTI_FTSR_TR19          0x00080000 //!< Falling trigger event configuration bit of line 19
 /** @} */
 
-/** @defgroup EXTI_SWIER: 	(exti Offset: 0x10) EXTI Software interrupt event register */
+/** @name EXTI_SWIER: 	(exti Offset: 0x10) EXTI Software interrupt event register
+ * @{*/
 #define EXTI_SWIER_SWIER0       0x00000001 //!< Software Interrupt on line 0
 #define EXTI_SWIER_SWIER1       0x00000002 //!< Software Interrupt on line 1
 #define EXTI_SWIER_SWIER2       0x00000004 //!< Software Interrupt on line 2
@@ -176,7 +191,8 @@ typedef struct
 #define EXTI_SWIER_SWIER19      0x00080000 //!< Software Interrupt on line 19
 /** @} */
 
-/** @defgroup EXTI_PR:    	(exti Offset: 0x14) EXTI Pending register			*/
+/** @name EXTI_PR:    	(exti Offset: 0x14) EXTI Pending register
+ * @{*/
 #define EXTI_PR_PR0             0x00000001 //!< Pending bit for line 0
 #define EXTI_PR_PR1             0x00000002 //!< Pending bit for line 1
 #define EXTI_PR_PR2             0x00000004 //!< Pending bit for line 2
@@ -203,13 +219,16 @@ typedef struct
 /** @} */
 
 
-/** @} */ // @defgroup EXTI_regs_define
+/** @} */ // @relates EXTI_TypeDef
 
+/** @{ EXTI HW API functions*/
 void exti_enable_irq(EXTI_TypeDef* exti, uint32_t lines, pio_def type);
 void exti_enable_event(EXTI_TypeDef* exti, uint32_t lines, pio_def type);
 void exti_disable_irq(EXTI_TypeDef* exti, uint32_t lines);
 void exti_disable_event(EXTI_TypeDef* exti, uint32_t lines);
-
+/** @} */
 
 
 #endif /* EXTI_STM32_H_ */
+
+/** @} */

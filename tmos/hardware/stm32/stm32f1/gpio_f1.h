@@ -1,16 +1,16 @@
-/**
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f1_gpio
+ * @file	hardware/stm32/stm32f1/gpio_f1.h
+ * @brief  	STM32F1 GPIO
+ * @date    7. November 2012
+ * @author	Miroslav Kostadinov
+ *
+ * @defgroup hardware_stm32f1_gpio  GPIO General-purpose I/Os (GPIO)
  * @ingroup	 hardware_stm32f1
- * @defgroup  STM32F1_GPIO General-purpose I/Os (GPIO)
- * Interface for GPIO
+ * Source and definitions for STM32F1 _GPIO General-purpose I/Os (GPIO)
  * @{
  *
- * @file     hardware/stm32/cortex-m3/stm32f1/gpio.h
- * @ingroup	 STM32F1_GPIO
- * @brief    GPIO header
- *
- * @}
-*/
-
+ ******************************************************************************/
 #ifndef _GPIO_H_
 #define _GPIO_H_
 
@@ -30,7 +30,7 @@
 
 
 
-/*******************************************************************************
+/***************************************************************************//**
  *  GPIO hardware registers
  ******************************************************************************/
 typedef struct {
@@ -44,13 +44,14 @@ typedef struct {
 
 } GPIO_TypeDef;
 
-/*******************************************************************************
- * @defgroup GPIO_pins_define
+/***************************************************************************//**
+ * @relates GPIO_TypeDef
  * @{
  ******************************************************************************/
 
 
-/** @defgroup GPIO_CRL: (gpio Offset: 0x0000) Port configuration register low */
+/** @name GPIO_CRL: (gpio Offset: 0x0000) Port configuration register low 	  */
+/** @{ */
 #define GPIO_CRL_MODEx_Msk(x)    (3<<((x)*4))       //!< Port x mode bits mask
 #define GPIO_CRL_MODEx_Set(x,y)  ((y)<<((x)*4))     //!< Port x mode bits Set
 #define GPIO_CRL_MODEx_Get(x,y)  (((y)>>((x)*4))&3) //!< Port x mode bits Get
@@ -60,7 +61,8 @@ typedef struct {
 #define GPIO_CRL_CNFx_Get(x,y)   (((y)>>((x+2)*4))&3) //!< Port x configuration bits Get
 /** @} */
 
-/** @defgroup GPIO_CRH: (gpio Offset: 0x0004) Port configuration register high*/
+/** @name GPIO_CRH: (gpio Offset: 0x0004) Port configuration register high	  */
+/** @{ */
 #define GPIO_CRH_MODEx_Msk(x)    (3<<((x-8)*4))       //!< Port x mode bits mask
 #define GPIO_CRH_MODEx_Set(x,y)  ((y)<<((x-8)*4))     //!< Port x mode bits Set
 #define GPIO_CRH_MODEx_Get(x,y)  (((y)>>((x-8)*4))&3) //!< Port x mode bits Get
@@ -84,7 +86,8 @@ typedef struct {
 #define GPIO_CRx_CNF_OUT_AF_PP	 8			//!< CNFx (OUT mode)- Alternate function output Push-pull
 #define GPIO_CRx_CNF_OUT_AF_OD	 12			//!< CNFx (OUT mode)- Alternate function output Open-drain
 
-/** @defgroup GPIO_IDR: (gpio Offset: 0x0008) Port input data register        */
+/** @name GPIO_IDR: (gpio Offset: 0x0008) Port input data register 			  */
+/** @{ */
 #define GPIO_IDR_IDR0      0x0001            //!< Port input data, bit 0
 #define GPIO_IDR_IDR1      0x0002            //!< Port input data, bit 1
 #define GPIO_IDR_IDR2      0x0004            //!< Port input data, bit 2
@@ -103,7 +106,8 @@ typedef struct {
 #define GPIO_IDR_IDR15     0x8000            //!< Port input data, bit 15
 /** @} */
 
-/** @defgroup GPIO_ODR: (gpio Offset: 0x000C) Port output data register       */
+/** @name GPIO_ODR: (gpio Offset: 0x000C) Port output data register     	  */
+/** @{ */
 #define GPIO_ODR_ODR0      0x0001            //!< Port output data, bit 0
 #define GPIO_ODR_ODR1      0x0002            //!< Port output data, bit 1
 #define GPIO_ODR_ODR2      0x0004            //!< Port output data, bit 2
@@ -122,7 +126,8 @@ typedef struct {
 #define GPIO_ODR_ODR15     0x8000            //!< Port output data, bit 15
 /** @} */
 
-/** @defgroup GPIO_BSRR:(gpio Offset: 0x0010) Port bit set/reset register     */
+/** @name GPIO_BSRR:(gpio Offset: 0x0010) Port bit set/reset register 	      */
+/** @{ */
 #define GPIO_BSRR_BS0      0x00000001        //!< Port x Set bit 0
 #define GPIO_BSRR_BS1      0x00000002        //!< Port x Set bit 1
 #define GPIO_BSRR_BS2      0x00000004        //!< Port x Set bit 2
@@ -158,7 +163,8 @@ typedef struct {
 #define GPIO_BSRR_BR15     0x80000000        //!< Port x Reset bit 15
 /** @} */
 
-/** @defgroup GPIO_BRR: (gpio Offset: 0x0014) Port bit reset register         */
+/** @name GPIO_BRR: (gpio Offset: 0x0014) Port bit reset register    	      */
+/** @{ */
 #define GPIO_BRR_BR0       0x0001            //!< Port x Reset bit 0
 #define GPIO_BRR_BR1       0x0002            //!< Port x Reset bit 1
 #define GPIO_BRR_BR2       0x0004            //!< Port x Reset bit 2
@@ -177,7 +183,8 @@ typedef struct {
 #define GPIO_BRR_BR15      0x8000            //!< Port x Reset bit 15
 /** @} */
 
-/** @defgroup GPIO_LCKR:(gpio Offset: 0x0018) ort configuration lock register */
+/** @name GPIO_LCKR:(gpio Offset: 0x0018) ort configuration lock register	  */
+/** @{ */
 #define GPIO_LCKR_LCK0     0x00000001        //!< Port x Lock bit 0
 #define GPIO_LCKR_LCK1     0x00000002        //!< Port x Lock bit 1
 #define GPIO_LCKR_LCK2     0x00000004        //!< Port x Lock bit 2
@@ -197,9 +204,9 @@ typedef struct {
 #define GPIO_LCKR_LCKK     0x00010000        //!< Lock key */
 /** @} */
 
-/** @} */ // @defgroup GPIO_pins_define
+/** @} */ // @relates GPIO_TypeDef
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Alternate Function I/O (AFIO) registers
  ******************************************************************************/
 typedef struct
@@ -211,12 +218,13 @@ typedef struct
 	__IO uint32_t AFIO_MAPR2;  		//!< (afio Offset: 0x1C) AF remap and debug I/O configuration register2
 } AFIO_TypeDef;
 
-/*******************************************************************************
- * @defgroup AFIO_pins_define
+/***************************************************************************//**
+ * @relates AFIO_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup AFIO_EVCR:		(afio Offset: 0x00) Event control register 		*/
+/** @name AFIO_EVCR:		(afio Offset: 0x00) Event control register 		  */
+/** @{ */
 /*!< PIN configuration */
 #define AFIO_EVCR_PIN               0x0000000F //!< PIN[3:0] bits (Pin selection)
 #define AFIO_EVCR_PIN_Msk           0x0000000F //!< Pin selection mask
@@ -237,7 +245,8 @@ typedef struct
 #define AFIO_EVCR_EVOE              0x00000080 //!< Event Output Enable */
 /** @} */
 
-/** @defgroup AFIO_MAPR:		(afio Offset: 0x04) AF remap and debug I/O configuration register */
+/** @name AFIO_MAPR:		(afio Offset: 0x04) AF remap and debug I/O configuration register */
+/** @{ */
 #define AFIO_MAPR_SPI1_REMAP                 0x00000001 //!< SPI1 remapping
 #define AFIO_MAPR_I2C1_REMAP                 0x00000002 //!< I2C1 remapping
 #define AFIO_MAPR_USART1_REMAP               0x00000004 //!< USART1 remapping
@@ -330,13 +339,15 @@ typedef struct
 #endif
 /** @} */
 
-/** @defgroup AFIO_EXTICR[4]:	(afio Offset: 0x08) External interrupt configuration registers */
+/** @name AFIO_EXTICR[4]:	(afio Offset: 0x08) External interrupt configuration registers */
+/** @{ */
 #define AFIO_EXTICRy_EXTIx_Msk(x)            (0xF << ((x)*4))            //!< EXTI x configuration
 #define AFIO_EXTICRy_EXTIx_Get(x,y)          (((y) >> ((x)*4)) & 0xF)    //!< EXTI x configuration get
 #define AFIO_EXTICRy_EXTIx_Set(x,y)          ((y) << ((x)*4))            //!< EXTI x configuration set
 /** @} */
 
-/** @defgroup AFIO_MAPR2:  		(afio Offset: 0x1C) AF remap and debug I/O configuration register2 */
+/** @name AFIO_MAPR2:  		(afio Offset: 0x1C) AF remap and debug I/O configuration register2 */
+/** @{ */
 #if defined (STM32F10X_LD_VL) || defined (STM32F10X_MD_VL) || defined (STM32F10X_HD_VL)
 #define AFIO_MAPR2_TIM15_REMAP               0x00000001 //!< TIM15 remapping
 #define AFIO_MAPR2_TIM16_REMAP               0x00000002 //!< TIM16 remapping
@@ -366,7 +377,7 @@ typedef struct
 
 
 
-/** @} */ // @defgroup AFIO_pins_define
+/** @} */ // @relates AFIO_TypeDef
 
 /// Calculate port address for a given pin definition
 #define PORT_ADDRESS(num) ((GPIO_TypeDef*)(GPIOA_BASE + ((num)*0x400)))
@@ -412,3 +423,4 @@ void exti_set_line_source(unsigned int line, unsigned int port);
 
 #endif /* #ifndef _GPIO_H_ */
 
+ /** @} */

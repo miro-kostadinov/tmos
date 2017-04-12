@@ -1,9 +1,16 @@
-/*
- * flash_f2.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f2_flash
+ * @file	hardware/stm32/stm32f2/flash_f2.h
+ * @brief  	STM32F2 Flash
+ * @date    29. October 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Oct 29, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32f2_flash  Flash program and erase controller (FPEC)
+ * @ingroup	 hardware_stm32f2
+ * Source and definitions for STM32F2 Flash program and erase controller (FPEC)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef FLASH_F2_H_
 #define FLASH_F2_H_
@@ -11,7 +18,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Flash program and erase controller (FPEC) registers
  ******************************************************************************/
 typedef struct
@@ -24,12 +31,13 @@ typedef struct
 	__IO uint32_t 	FLASH_OPTCR;	//!< (flash Offset: 0x14) FLASH option control register
 } FLASH_TypeDef;
 
-/*******************************************************************************
- * @defgroup FLASH_regs_define
+/***************************************************************************//**
+ * @relates FLASH_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup FLASH_ACR:	(flash Offset: 0x00) Flash access control register*/
+/** @name FLASH_ACR:	(flash Offset: 0x00) Flash access control register	  */
+/** @{ */
 #define FLASH_ACR_LATENCY          0x00000007 //!<  LATENCY[2:0] bits (Latency)
 #define FLASH_ACR_LATENCY_0WS      0x00000000 //!<  Zero wait state
 #define FLASH_ACR_LATENCY_1WS      0x00000001 //!<  One wait state
@@ -49,19 +57,22 @@ typedef struct
 #define FLASH_ACR_BYTE2_ADDRESS    0x40023C03 //!<
 /** @} */
 
-/** @defgroup FLASH_KEYR:	(flash Offset: 0x04) FPEC key register			  */
+/** @name FLASH_KEYR:	(flash Offset: 0x04) FPEC key register				  */
+/** @{ */
 #define FLASH_KEYR_KEY	           0xFFFFFFFF //!< FPEC Key
 #define FLASH_KEYR_KEY_1		   0x45670123 //!<  key 1
 #define FLASH_KEYR_KEY_2           0xCDEF89AB //!<  key 2
 /** @} */
 
-/** @defgroup FLASH_OPTKEYR:(flash Offset: 0x08) Flash OPTKEY register		  */
+/** @name FLASH_OPTKEYR:(flash Offset: 0x08) Flash OPTKEY register			  */
+/** @{ */
 #define FLASH_OPTKEYR_KEY	       0xFFFFFFFF //!< Option Byte Key
 #define FLASH_OPTKEYR_KEY_1        0x08192A3B //!<  key 1
 #define FLASH_OPTKEYR_KEY_2		   0x4C5D6E7F //!<  key 2
 /** @} */
 
-/** @defgroup FLASH_SR:		(flash Offset: 0x0C) Flash status register		  */
+/** @name FLASH_SR:		(flash Offset: 0x0C) Flash status register			  */
+/** @{ */
 #define FLASH_SR_EOP               0x00000001 //!< End of operation
 #define FLASH_SR_OPERR             0x00000002 //!< Operation error
 #define FLASH_SR_WRPERR            0x00000010 //!< Write protection error
@@ -75,7 +86,8 @@ typedef struct
 
 /** @} */
 
-/** @defgroup FLASH_CR:		(flash Offset: 0x10) Flash control register		  */
+/** @name FLASH_CR:		(flash Offset: 0x10) Flash control register			  */
+/** @{ */
 #define FLASH_CR_PG                0x00000001 //!< Programming
 #define FLASH_CR_SER               0x00000002 //!< Sector Erase
 #define FLASH_CR_MER               0x00000004 //!< Mass Erase
@@ -94,7 +106,8 @@ typedef struct
 #define FLASH_CR_LOCK              0x80000000 //!< Lock
 /** @} */
 
-/** @defgroup FLASH_OPTCR:	(flash Offset: 0x14) FLASH option control register */
+/** @name FLASH_OPTCR:	(flash Offset: 0x14) FLASH option control register	  */
+/** @{ */
 #define FLASH_OPTCR_OPTLOCK        0x00000001 //!< Option lock
 #define FLASH_OPTCR_OPTSTRT        0x00000002 //!< Option start
 
@@ -135,7 +148,7 @@ typedef struct
 /** @} */
 
 
-/** @} */ // @defgroup FLASH_regs_define
+/** @} */ // @relates FLASH_TypeDef
 
 
 uint32_t flash_unlock();
@@ -152,3 +165,5 @@ uint32_t flash_ob_write(uint32_t value);
 
 
 #endif /* FLASH_F2_H_ */
+
+/** @} */

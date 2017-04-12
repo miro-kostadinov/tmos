@@ -1,8 +1,12 @@
-/*
- * eth_phy_f2.cpp
- *
- *  Created on: Jul 27, 2016
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f2_eth_phy
+ * @{
+ * @file     hardware/stm32/stm32f2/eth_phy_f2.cpp
+ * @brief    STM32F2 ETH PHY
+ * @version  V3.00
+ * @date     27. July 2016
+ * @author	 Miroslav Kostadinov
+ * @}
  */
 
 #include <tmos.h>

@@ -1,10 +1,12 @@
-/*
- * rcc_f0.cpp
- *
- *  Created on: Dec 1, 2014
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f0_rcc
+ * @{
+ * @file     hardware/stm32/stm32f0/rcc_f0.cpp
+ * @brief    STM32F0 RCC
+ * @version  V3.00
+ * @date     1. December 2014
+ * @author	 Miroslav Kostadinov
  */
-
 
 #include <tmos.h>
 #include <fam_cpp.h>
@@ -273,3 +275,4 @@ void rcc_cfg_adc_clock(uint32_t adc_clk)
 	}
 }
 
+/** @} */

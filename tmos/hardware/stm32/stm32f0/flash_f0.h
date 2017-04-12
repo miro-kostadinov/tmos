@@ -1,9 +1,16 @@
-/*
- * flash_f0.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f0_flash
+ * @file	hardware/stm32/stm32f0/flash_f0.h
+ * @brief  	STM32F0 Flash
+ * @date    27. October 2014
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Oct 27, 2014
- *      Author: miro
- */
+ * @defgroup hardware_stm32f0_flash  Flash program and erase controller (FPEC)
+ * @ingroup	 hardware_stm32f0
+ * Source and definitions for STM32F0 Flash program and erase controller (FPEC)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef FLASH_F0_H_
 #define FLASH_F0_H_
@@ -11,7 +18,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Flash program and erase controller (FPEC) registers
  ******************************************************************************/
 typedef struct
@@ -28,11 +35,12 @@ typedef struct
 } FLASH_TypeDef;
 
 /*******************************************************************************
- * @defgroup FLASH_regs_define
+ * @relates FLASH_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup FLASH_ACR:	(flash Offset: 0x00) Flash access control register*/
+/** @name FLASH_ACR:	(flash Offset: 0x00) Flash access control register	  */
+/** @{ */
 #define FLASH_ACR_PRFTBS           0x00000020 //!< Prefetch buffer status
 #define FLASH_ACR_PRFTEN           0x00000010 //!< Prefetch enable
 #define FLASH_ACR_LATENCY          0x00000007 //!< LATENCY[2:0] bits (Latency)
@@ -40,29 +48,32 @@ typedef struct
 #define FLASH_ACR_LATENCY_1WS      0x00000001 //!<  One wait state, if 24 MHz < SYSCLK <= 48 MHz
 /** @} */
 
-/** @defgroup FLASH_KEYR:	(flash Offset: 0x04) FPEC key register			  */
+/** @name FLASH_KEYR:	(flash Offset: 0x04) FPEC key register				  */
+/** @{ */
 #define FLASH_KEYR_KEY	           0xFFFFFFFF //!< FPEC Key
 #define FLASH_KEYR_KEY_1		   0x45670123 //!<  key 1
 #define FLASH_KEYR_KEY_2           0xCDEF89AB //!<  key 2
 /** @} */
 
-/** @defgroup FLASH_OPTKEYR:(flash Offset: 0x08) Flash OPTKEY register		  */
+/** @name FLASH_OPTKEYR:(flash Offset: 0x08) Flash OPTKEY register		 	  */
+/** @{ */
 #define FLASH_OPTKEYR_KEY	       0xFFFFFFFF //!< Option Byte Key
 #define FLASH_OPTKEYR_KEY_1        0x08192A3B //!<  key 1
 #define FLASH_OPTKEYR_KEY_2		   0x4C5D6E7F //!<  key 2
 /** @} */
 
-/** @defgroup FLASH_SR:		(flash Offset: 0x0C) Flash status register		  */
+/** @name FLASH_SR:		(flash Offset: 0x0C) Flash status register		 	  */
+/** @{ */
 #define FLASH_SR_EOP               0x00000020 //!< End of operation
 #define FLASH_SR_WRPERR            0x00000010 //!< Write protection error
 #define FLASH_SR_PGERR             0x00000008 //!< Programming error
 #define FLASH_SR_BSY               0x00000001 //!< Busy
 
 #define FLASH_SR_ERRORS 		  (FLASH_SR_WRPERR | FLASH_SR_PGERR)
-
 /** @} */
 
-/** @defgroup FLASH_CR:		(flash Offset: 0x10) Flash control register		  */
+/** @name FLASH_CR:		(flash Offset: 0x10) Flash control register			  */
+/** @{ */
 #define FLASH_CR_OBL_LAUNCH        0x00002000 //!< Force option byte loading
 #define FLASH_CR_EOPIE             0x00001000 //!< End of operation interrupt enable
 #define FLASH_CR_ERRIE             0x00000400 //!< Error interrupt enable
@@ -77,13 +88,16 @@ typedef struct
 /** @} */
 
 
-/** @defgroup FLASH_AR:		(flash Offset: 0x14) Flash address register        */
+/** @name FLASH_AR:		(flash Offset: 0x14) Flash address register      	  */
+/** @{ */
 /** @} */
 
-/** @defgroup reserved:		(flash Offset: 0x18)                               */
+/** @name reserved:		(flash Offset: 0x18)                           		  */
+/** @{ */
 /** @} */
 
-/** @defgroup FLASH_OBR:	(flash Offset: 0x1C) Option byte register          */
+/** @name FLASH_OBR:	(flash Offset: 0x1C) Option byte register       	  */
+/** @{ */
 #define FLASH_OBR_RAM_PARITY_CHECK 0x00004000 //!< User option bytes
 #define FLASH_OBR_VDDA_MONITOR	   0x00002000 //!< User option bytes
 #define FLASH_OBR_nBOOT1		   0x00001000 //!< User option bytes
@@ -92,12 +106,13 @@ typedef struct
 #define FLASH_OBR_WDG_SW		   0x00000100 //!< User option bytes
 /** @} */
 
-/** @defgroup FLASH_WRPR:	(flash Offset: 0x20) Write protection register     */
+/** @name FLASH_WRPR:	(flash Offset: 0x20) Write protection register  	  */
+/** @{ */
 /** @} */
 
 
 
-/** @} */ // @defgroup FLASH_regs_define
+/** @} */ // @relates FLASH_TypeDef
 
 
 uint32_t flash_unlock();
@@ -114,3 +129,5 @@ uint32_t flash_write(uint32_t address, const void* data, uint32_t len);
 
 
 #endif /* FLASH_F0_H_ */
+
+/** @} */

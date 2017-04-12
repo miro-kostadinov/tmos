@@ -1,8 +1,12 @@
-/*
- * flash_f2.cpp
- *
- *  Created on: Dec 13, 2013
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32f2_flash
+ * @{
+ * @file     hardware/stm32/stm32f2/flash_f2.cpp
+ * @brief    STM32F2 Flash
+ * @version  V3.00
+ * @date     13. December 2013
+ * @author	 Miroslav Kostadinov
+ * @}
  */
 
 #include <tmos.h>

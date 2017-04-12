@@ -1,13 +1,22 @@
-/*
- * exti_stm32.cpp
- *
- *  Created on: Feb 19, 2013
- *      Author: miro
+/**************************************************************************//**
+ * @ingroup	 hardware_stm32_exti
+ * @{
+ * @file     hardware/stm32/exti_stm32.cpp
+ * @brief    STM32 External Interrupt/Event Controller (EXTI) functions
+ * @version  V3.00
+ * @date     18. February 2013
+ * @author	 Miroslav Kostadinov
  */
 
 #include <tmos.h>
 #include <fam_cpp.h>
 
+/**
+ * Enable Interrupt for a given line(s)
+ * @param exti
+ * @param lines
+ * @param type
+ */
 void exti_enable_irq(EXTI_TypeDef* exti, uint32_t lines, pio_def type)
 {
     /* Clear Rising Falling edge configuration */
@@ -48,3 +57,5 @@ void exti_disable_event(EXTI_TypeDef* exti, uint32_t lines)
 {
 	exti->EXTI_EMR &= ~lines;
 }
+
+/** @} */

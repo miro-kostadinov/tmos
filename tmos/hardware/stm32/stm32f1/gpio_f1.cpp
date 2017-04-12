@@ -1,14 +1,12 @@
 /**************************************************************************//**
- * @ingroup	 stm32_gpio
+ * @ingroup	 hardware_stm32f1_gpio
  * @{
- * @file     gpio_f1.cpp
- * @brief    GPIO class functions
+ * @file     hardware/stm32/stm32f1/gpio_f1.cpp
+ * @brief    STM32F1 GPIO
  * @version  V3.00
  * @date     31. October 2012
  * @author	 Miroslav Kostadinov
- *
- *
- ******************************************************************************/
+ */
 
 #include <tmos.h>
 #include <fam_cpp.h>
@@ -321,7 +319,8 @@ void exti_set_line_source(unsigned int line, unsigned int port)
 	*reg = (*reg & ~AFIO_EXTICRy_EXTIx_Msk(line)) | AFIO_EXTICRy_EXTIx_Set(line, port & 0xF);
 }
 
-/** @} ingroup stm32_gpio */
+
+/** @} */
 
 
 

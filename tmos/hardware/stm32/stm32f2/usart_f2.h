@@ -1,9 +1,16 @@
-/*
- * usart_f2.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f2_usart
+ * @file	hardware/stm32/stm32f2/usart_f2.h
+ * @brief  	STM32F2 USART
+ * @date    6. November 2012
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Nov 6, 2012
- *      Author: miro
- */
+ * @defgroup hardware_stm32f2_usart  Universal Synchronous Asynchronous Receiver Transmitter (USART)
+ * @ingroup	 hardware_stm32f2
+ * Source and definitions for STM32F2 Universal Synchronous Asynchronous Receiver Transmitter (USART
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef USART_F2_H_
 #define USART_F2_H_
@@ -12,7 +19,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Universal Synchronous Asynchronous Receiver Transmitter
  ******************************************************************************/
 typedef struct
@@ -27,11 +34,12 @@ typedef struct
 } USART_TypeDef;
 
 /*******************************************************************************
- * @defgroup USART_regs_define
+ * @relates USART_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup USART_SR:		(usart Offset: 0x00) Status register				*/
+/** @name USART_SR:		(usart Offset: 0x00) Status register				  */
+/** @{ */
 #define USART_SR_PE          	    0x0001 //!< Parity Error
 #define USART_SR_FE                 0x0002 //!< Framing Error
 #define USART_SR_NE                 0x0004 //!< Noise Error Flag
@@ -44,11 +52,13 @@ typedef struct
 #define USART_SR_CTS                0x0200 //!< CTS Flag
 /** @} */
 
-/** @defgroup USART_DR:		(usart Offset: 0x04) Data register					*/
+/** @name USART_DR:		(usart Offset: 0x04) Data register					  */
+/** @{ */
 #define USART_DR_DR                 0x01FF //!< Data value */
 /** @} */
 
-/** @defgroup USART_BRR:	(usart Offset: 0x08) Baud rate register				*/
+/** @name USART_BRR:	(usart Offset: 0x08) Baud rate register				  */
+/** @{ */
 #define USART_BRR_DIV_Fraction      	0x000F 	   //!< Fraction of USARTDIV
 #define USART_BRR_DIV_Fraction_Msk      0x000F 	   //!< Pin selection mask
 #define USART_BRR_DIV_Fraction_Set(x)   (x)        //!< Pin selection set
@@ -60,7 +70,8 @@ typedef struct
 #define USART_BRR_DIV_Mantissa_Get(x)   (((x)>>4)& 0xFFF) //!< Pin selection get
 /** @} */
 
-/** @defgroup USART_CR1:	(usart Offset: 0x0C) Control register 1				*/
+/** @name USART_CR1:	(usart Offset: 0x0C) Control register 1				  */
+/** @{ */
 #define USART_CR1_SBK               0x0001 //!< Send Break
 #define USART_CR1_RWU               0x0002 //!< Receiver wakeup
 #define USART_CR1_RE                0x0004 //!< Receiver Enable
@@ -78,7 +89,8 @@ typedef struct
 #define USART_CR1_OVER8             0x8000 //!< USART Oversmapling 8-bits
 /** @} */
 
-/** @defgroup USART_CR2:	(usart Offset: 0x10) Control register 2				*/
+/** @name USART_CR2:	(usart Offset: 0x10) Control register 2				  */
+/** @{ */
 #define USART_CR2_ADD               0x000F //!< Address of the USART node
 #define USART_CR2_ADD_Set(x)  		 (x)   //!< Address set
 #define USART_CR2_ADD_Get(x)   	((x)& 0xF) //!< Address get
@@ -99,7 +111,8 @@ typedef struct
 #define USART_CR2_LINEN             0x4000 //!< LIN mode enable
 /** @} */
 
-/** @defgroup USART_CR3:	(usart Offset: 0x14) Control register 3				*/
+/** @name USART_CR3:	(usart Offset: 0x14) Control register 3				  */
+/** @{ */
 #define USART_CR3_EIE               0x0001 //!< Error Interrupt Enable
 #define USART_CR3_IREN              0x0002 //!< IrDA mode Enable
 #define USART_CR3_IRLP              0x0004 //!< IrDA Low-Power
@@ -114,7 +127,8 @@ typedef struct
 #define USART_CR3_ONEBIT            0x0800 //!< One Bit method
 /** @} */
 
-/** @defgroup USART_GTPR:	(usart Offset: 0x18) Guard time and prescaler register */
+/** @name USART_GTPR:	(usart Offset: 0x18) Guard time and prescaler register */
+/** @{ */
 #define USART_GTPR_PSC              0x00FF //!< PSC[7:0] bits (Prescaler value) */
 #define USART_GTPR_PSC_Set(x)  		 (x)   //!< Prescaler value set
 #define USART_GTPR_PSC_Get(x)  ((x)& 0xFF) //!< Prescaler value get
@@ -126,7 +140,7 @@ typedef struct
 /** @} */
 
 
-/** @} */ // @defgroup USART_regs_define
+/** @} */ // @relates USART_TypeDef
 
 #define USART_STATUS_TC 	USART_SR_TC		//!< TC flag for F2 family
 #define USART_STATUS_TXE 	USART_SR_TXE	//!< TXE flag for F2 family
@@ -164,3 +178,5 @@ unsigned int set_usart_baudrate(USART_TypeDef* usart, uint32_t periph_id, uint32
 #define disable_usart_drv_ints(uart, f) (uart->USART_CR1 &= ~(f)) 	//!< disable usart interrupts
 
 #endif /* USART_F2_H_ */
+
+/** @} */

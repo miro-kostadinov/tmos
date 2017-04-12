@@ -1,9 +1,16 @@
-/*
- * usart_f0.h
+/**************************************************************************//**
+ * @ingroup	hardware_stm32f0_usart
+ * @file	hardware/stm32/stm32f0/usart_f0.h
+ * @brief  	STM32F0 USART
+ * @date    28. October 2014
+ * @author	Miroslav Kostadinov
  *
- *  Created on: Oct 28, 2014
- *      Author: miro
- */
+ * @defgroup hardware_stm32f0_usart  Universal synchronous asynchronous receiver transmitter (USART)
+ * @ingroup	 hardware_stm32f0
+ * Source and definitions for Universal synchronous asynchronous receiver transmitter (USART)
+ * @{
+ *
+ ******************************************************************************/
 
 #ifndef USART_F0_H_
 #define USART_F0_H_
@@ -12,7 +19,7 @@
 #include <mcu_inc.h>
 #include <tmos_types.h>
 
-/*******************************************************************************
+/***************************************************************************//**
  *  Universal Synchronous Asynchronous Receiver Transmitter
  ******************************************************************************/
 typedef struct
@@ -31,11 +38,12 @@ typedef struct
 } USART_TypeDef;
 
 /*******************************************************************************
- * @defgroup USART_regs_define
+ * @relates USART_TypeDef
  * @{
  ******************************************************************************/
 
-/** @defgroup USART_CR1:	(usart Offset: 0x00) Control register 1           */
+/** @name USART_CR1:	(usart Offset: 0x00) Control register 1 	          */
+/** @{ */
 #define USART_CR1_EOBIE             0x08000000 //!< End of Block interrupt enable
 #define USART_CR1_RTOIE             0x04000000 //!< Receiver timeout interrupt enable
 #define USART_CR1_DEAT              0x03E00000 //!< Driver Enable assertion time
@@ -58,7 +66,8 @@ typedef struct
 #define USART_CR1_UE                0x00000001 //!< USART Enable
 /** @} */
 
-/** @defgroup USART_CR2:	(usart Offset: 0x04) Control register 2           */
+/** @name USART_CR2:	(usart Offset: 0x04) Control register 2 	          */
+/** @{ */
 #define USART_CR2_ADD               0xFF000000 //!< Address of the USART node
 #define USART_CR2_ADD_Set(x)  		((x)<<24)  //!<  Address set
 #define USART_CR2_ADD_Get(x)   		((x)>>24)  //!<  Address get
@@ -84,7 +93,8 @@ typedef struct
 #define USART_CR2_ADDM7             0x00000010 //!< 7-bit Address Detection/4-bit Address Detection
 /** @} */
 
-/** @defgroup USART_CR3:	(usart Offset: 0x08) Control register 3           */
+/** @name USART_CR3:	(usart Offset: 0x08) Control register 3    			  */
+/** @{ */
 #define USART_CR3_WUFIE             0x00400000 //!< Wakeup from Stop mode interrupt enable
 #define USART_CR3_WUS               0x00300000 //!< Wakeup from Stop mode interrupt flag selection
 #define USART_CR3_WUS_ADD           0x00000000 //!<  WUF active on address match (as defined by ADD[7:0] and ADDM7)
@@ -109,10 +119,12 @@ typedef struct
 #define USART_CR3_EIE               0x00000001 //!< Error Interrupt Enable
 /** @} */
 
-/** @defgroup USART_BRR:	(usart Offset: 0x0C) Baud rate register           */
+/** @name USART_BRR:	(usart Offset: 0x0C) Baud rate register 	          */
+/** @{ */
 /** @} */
 
-/** @defgroup USART_GTPR:	(usart Offset: 0x10) Guard time and prescaler register */
+/** @name USART_GTPR:	(usart Offset: 0x10) Guard time and prescaler register */
+/** @{ */
 #define USART_GTPR_PSC              0x00FF //!< PSC[7:0] bits (Prescaler value) */
 #define USART_GTPR_PSC_Set(x)  		 (x)   //!< Prescaler value set
 #define USART_GTPR_PSC_Get(x)  ((x)& 0xFF) //!< Prescaler value get
@@ -121,10 +133,12 @@ typedef struct
 #define USART_GTPR_GT_Get(x) (((x)>>8)&0xFF) //!< Guard time value get
 /** @} */
 
-/** @defgroup USART_RTOR:	(usart Offset: 0x14) Receiver timeout register    */
+/** @name USART_RTOR:	(usart Offset: 0x14) Receiver timeout register		  */
+/** @{ */
 /** @} */
 
-/** @defgroup USART_RQR:	(usart Offset: 0x18) Request register             */
+/** @name USART_RQR:	(usart Offset: 0x18) Request register     	          */
+/** @{ */
 #define USART_RQR_TXFRQ             0x00000010 //!< Transmit data flush request
 #define USART_RQR_RXFRQ             0x00000008 //!< Receive data flush request
 #define USART_RQR_MMRQ              0x00000004 //!< Mute mode request
@@ -132,7 +146,8 @@ typedef struct
 #define USART_RQR_ABRRQ             0x00000001 //!< Auto baud rate request
 /** @} */
 
-/** @defgroup USART_ISR:	(usart Offset: 0x1C) Interrupt & status register  */
+/** @name USART_ISR:	(usart Offset: 0x1C) Interrupt & status register 	  */
+/** @{ */
 #define USART_ISR_REACK             0x00400000 //!< Receive enable acknowledge flag
 #define USART_ISR_TEACK             0x00200000 //!< Transmit enable acknowledge flag
 #define USART_ISR_WUF               0x00100000 //!< Wakeup from Stop mode flag
@@ -157,7 +172,8 @@ typedef struct
 #define USART_ISR_PE          	    0x00000001 //!< Parity Error
 /** @} */
 
-/** @defgroup USART_ICR:	(usart Offset: 0x20) Interrupt flag clear register*/
+/** @name USART_ICR:	(usart Offset: 0x20) Interrupt flag clear register	  */
+/** @{ */
 #define USART_ICR_WUCF              0x00100000 //!< Wakeup from Stop mode clear flag
 #define USART_ICR_CMCF              0x00020000 //!< Character match clear flag
 #define USART_ICR_EOBCF             0x00001000 //!< End of timeout clear flag
@@ -172,14 +188,16 @@ typedef struct
 #define USART_ICR_PECF         	    0x00000001 //!< Parity error clear flag
 /** @} */
 
-/** @defgroup USART_RDR:	(usart Offset: 0x24) Receive data register        */
+/** @name USART_RDR:	(usart Offset: 0x24) Receive data register    	      */
+/** @{ */
 #define USART_RDR_RDR               0x01FF //!< Data value */
 /** @} */
 
-/** @defgroup USART_TDR:	(usart Offset: 0x28) Transmit data register       */
+/** @name USART_TDR:	(usart Offset: 0x28) Transmit data register  	      */
+/** @{ */
 /** @} */
 
-/** @} */ // @defgroup USART_regs_define
+/** @} */ // @relates USART_TypeDef
 
 #define USART_STATUS_TC 	USART_ISR_TC	//!< TC flag for F0 family
 #define USART_STATUS_TXE 	USART_ISR_TXE	//!< TXE flag for F0 family
@@ -238,3 +256,6 @@ unsigned int set_usart_baudrate(USART_TypeDef* usart, uint32_t periph_id, uint32
 #define disable_usart_drv_ints(uart, f) (uart->USART_CR1 &= ~(f)) 	//!< disable usart interrupts
 
 #endif /* USART_F0_H_ */
+
+/** @} */
+
