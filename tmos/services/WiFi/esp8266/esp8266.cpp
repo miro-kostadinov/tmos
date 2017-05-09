@@ -221,6 +221,7 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 			{
 				drv_data->wifi_flags_ok = WIFI_FLAG_ON;
 				drv_data->wifi_flags_bad &= ~WIFI_FLAG_ON;
+				wifi_on_pwron(this);
 				// configure AP
 				CSTRING ssid(WIFI_CFG_AP"=");
 				if(wifi_name_pass(ssid))
@@ -231,7 +232,6 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 				if(WIFI_CMD_STATE_OK == res)
 				{
 					wifi_send_cmd(WIFI_CFG_AP"?", 5);
-					wifi_on_pwron(this);
 					return NET_OK;
 				}
 			}
@@ -1299,6 +1299,7 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 #if !USE_DEPRECATED_AT_CMD
 		cmd_state = 0;
 #endif
+		bool timeout = true;
 		do
 		{
 			process_input(rcv_hnd.signal, cmd.c_str(), snd_pending);
@@ -1321,14 +1322,21 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 				} else
 				{
 					if ( cmd_state >= WIFI_CMD_STATE_OK )
+					{
+						timeout = false;
 						break; // command completed with OK, ERROR ..
+					}
 				}
 			}
 
 		} while(tsk_resume_wait_signal(rcv_hnd.signal));
 
+		if(timeout)
+		{
+			TRACE("\r\nWIFI: send timeout!");
+		}
 //	    wifi_on_blink_transfer(this, GPRS_TRANSFER_INDICATOR);
-
+		TRACE("\r\nWIFI:state %X", cmd_state);
 	    //Check the result
 	    if(cmd_state & WIFI_CMD_STATE_OK)
 	    {
