@@ -336,7 +336,7 @@ void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area 
 				}
 
 				if(!(object->flags & GO_FLG_TRANSPARENT))
-					clear_rect(area);
+					clear_rect(frame);
 				object->draw_this(this);
 
 				if(res)
@@ -347,7 +347,14 @@ void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area 
 					tmp = initial->nextObj;
 					res =0;
 					if(frame.x0 <= frame.x1)
+					{
 						continue;
+					}
+					else
+					{
+						frame.x0 = area.x0;
+						frame.x1 = area.x1;
+					}
 				}
 				break;
     		}
