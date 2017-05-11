@@ -580,10 +580,21 @@ int GObject::overlapped(GObject* obj, RECT_T& frame)
 	int res = 0;
 	if (obj && !(obj->flags & GO_FLG_TRANSPARENT) && (obj->flags & GO_FLG_SHOW))
 	{
-		if(frame.y1 < rect.y0 || rect.y1 < frame.y0 )
+		if(frame.y1 <= rect.y0 || rect.y1 < frame.y0 )
 			return 0x000;
 		if(frame.x1 < rect.x0 || rect.x1 < frame.x0 )
 			return 0x000;
+
+		if(frame.y1 <= obj->rect.y0 || obj->rect.y1 < frame.y0 )
+			return 0x000;
+		if(frame.x1 < obj->rect.x0 || obj->rect.x1 < frame.x0 )
+			return 0x000;
+
+		if(obj->rect.y1 < rect.y0 || rect.y1 < obj->rect.y0)
+			return 0x000;
+		if(obj->rect.x1 < rect.x0 || rect.x1 < obj->rect.x0)
+			return 0x000;
+
 		RECT_T backup(rect.as_int);
 		if(frame.x0 > rect.x0)
 			rect.x0 = frame.x0;
