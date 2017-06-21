@@ -586,16 +586,28 @@ NET_CODE CURL::url_parse(const char* url, bool path_only)
 	url = url_scheme(url, &url_flags);
 	if((url_flags & URL_FLAG_SCHEME_MASK) > URL_FLAG_SCHEME_HTTP)
 		return NET_ERR_URL_SCHEME;
-	if(!url[0])
+	if(!url[0] && host.empty())
 		return NET_ERR_URL_INVALID;
 
-	port = 0;
-	if (!port)
+	// default port
+	switch( url_flags & URL_FLAG_SCHEME_MASK)
 	{
-		if(url_flags&URL_FLAG_SCHEME_HTTP)
-			port = 80;
-		if(url_flags&URL_FLAG_SCHEME_FTP)
-			port = 21;
+	case URL_FLAG_SCHEME_FTP:
+		port = DEFAULT_FTP_PORT;
+		break;
+
+	case URL_FLAG_SCHEME_HTTP:
+		port = DEFAULT_HTTP_PORT;
+		break;
+
+	case URL_FLAG_SCHEME_HTTPS:
+		port = DEFAULT_HTTPS_PORT;
+		break;
+
+	default:
+		port = 0;
+		break;
+
 	}
 
 	path.clear();
@@ -735,29 +747,14 @@ static void strip_after_last_slash(CSTRING& s)
 
 NET_CODE CURL::url_resolve(const CURL & old_link)
 {
+	bool host_empty;
+
 	//If the relative URL has a scheme, it's interpreted as a complete absolute URL by itself.
 	//Step 2
 	//        b) If the embedded URL starts with a scheme name, it is
 	//           interpreted as an absolute URL and we are done.
 	if(url_flags & URL_FLAG_SCHEME_MASK)
 	{
-#ifdef URL_CUSTOM_ROUTING
-		if(old_link.host.start_with("/~"))
-		{
-			const char* ptr;
-			CSTRING s(old_link.host);
-
-			ptr = s.c_str();
-			ptr = strchr(ptr +2, '/');
-			if(ptr)
-			{
-				s.erase(ptr - s.c_str()+1, -1u);
-			} else
-				s += '/';
-			s += host;
-			host = s;
-		}
-#endif
 		return NET_OK;
 	}
 	else
@@ -765,13 +762,52 @@ NET_CODE CURL::url_resolve(const CURL & old_link)
 	//        c) Otherwise, the embedded URL inherits the scheme of
 	//           the base URL.
 	//
+#ifdef URL_CUSTOM_ROUTING
+		// if "~/" do not inherit
+		if(host[0] == '~')
+		{
+			host.erase(0, 1);
+			if(host.empty())
+				host += '/';
+			return NET_OK;
+		}
+
+#endif
 		url_flags |= old_link.url_flags & URL_FLAG_SCHEME_MASK;
+		port = old_link.port;
 	}
+	host_empty = host.empty();
+	if(!host_empty && host == "/")
+		host_empty = true;
+#ifdef URL_CUSTOM_ROUTING
+	// copy interface
+	if(old_link.host.start_with("/~") && !host.start_with("/~"))
+	{
+		const char* ptr;
+		CSTRING s(old_link.host);
+
+		ptr = s.c_str();
+		ptr = strchr(ptr +2, '/');
+		if(ptr)
+		{
+			s.erase(ptr - s.c_str()+1, -1u);
+		} else
+			s += '/';
+		if(!host_empty)
+		{
+			if(host[0] == '/')
+				s+= host.c_str()+1;
+			else
+				s += host;
+		}
+		host = s;
+	}
+#endif
 
 	//Step 3: If the embedded URL's <net_loc> is non-empty, we skip to
 	//        Step 7.  Otherwise, the embedded URL inherits the <net_loc>
 	//        (if any) of the base URL.
-	if(!host.empty())
+	if(!host_empty)
 	{
 		if(url_flags & (URL_FLAG_SCHEME_FTP | URL_FLAG_SCHEME_HTTP))
 			return NET_OK;
@@ -794,7 +830,6 @@ NET_CODE CURL::url_resolve(const CURL & old_link)
 	{
 		host = old_link.host;
 	}
-	port = old_link.port;
 	if(user.empty())
 		user = old_link.user;
 
@@ -911,7 +946,26 @@ NET_CODE CURL::url_resolve(const CURL & old_link)
 
 void CURL::url_print(CSTRING& str)
 {
-	unsigned int i;
+	unsigned int i, host_pos=0;
+
+#ifdef URL_CUSTOM_ROUTING
+	if(host.start_with("/~"))
+	{
+		const char* ptr;
+
+		ptr = strchr(host.c_str()+2, '/');
+		if(ptr)
+		{
+			host_pos = ptr+1 - host.c_str();
+			str.append(host.c_str(), host_pos);
+		} else
+		{
+			str += host;
+			str += '/';
+			host_pos = host.length();
+		}
+	}
+#endif
 
 	switch(url_flags & URL_FLAG_SCHEME_MASK)
 	{
@@ -939,7 +993,7 @@ void CURL::url_print(CSTRING& str)
 		}
 		str += '@';
 	}
-	str += host;
+	str += host.c_str() + host_pos;
 
 	switch(url_flags & URL_FLAG_SCHEME_MASK)
 	{
