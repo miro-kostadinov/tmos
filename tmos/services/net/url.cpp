@@ -571,6 +571,8 @@ NET_CODE CURL::url_parse(const char* url, bool path_only)
 
 	host.clear();
 #ifdef URL_CUSTOM_ROUTING
+	if(url[0] == '/' && url[1] == 0)
+		url = "~/";
 	if(url[0] == '/' && url[1] == '~')
 	{
 		surl = strchr(url+2, '/');
