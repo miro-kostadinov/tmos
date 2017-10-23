@@ -285,7 +285,7 @@ FUNC(	aes_tmos_en_key		)
 	// copy key from in to out
     mov     cnt, nk
 1:
-	ldmia	in!,  {tmp}
+    ldr     tmp, [in], #4
     stmia   out!, {tmp}
     subs    cnt, #1
     bne     1b
@@ -456,7 +456,10 @@ FUNC(   aes_tmos_en_ecb     )
     push    {r0-r9, lr}
 
 1: // Encript loop
-    ldmia   r1!, {X0, X1, X2, X3}       // Copy cipher text block
+    ldr     X1, [r1, #4]
+    ldr     X2, [r1, #8]
+    ldr     X3, [r1, #12]
+    ldr     X0, [r1], #16
     str     r1, [sp, #4]
 
     ldr     lut, [r0, #AES_CONTEXT_FT] //lut
@@ -626,7 +629,10 @@ FUNC(   aes_tmos_en_ecb     )
     eors    X3, Y0
 
     ldmia   sp, {r0-r3}                 //r0=ctxt, r1=input, r2=output, r3=blocks
-    stmia   r2!, {X0-X3}
+    str     X1, [r2, #4]
+    str     X2, [r2, #8]
+    str     X3, [r2, #12]
+    str     X0, [r2], #16
 //    pop     {r0-r9, pc}
     subs    r3, #1
     IT      EQ
