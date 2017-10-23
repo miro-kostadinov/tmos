@@ -116,6 +116,28 @@ static inline uint32_t __REV(uint32_t value)
 }
 
 /**
+ * @brief  Reverse byte order (64 bit)
+ *
+ * @param  value  value to reverse
+ * @return        reversed value
+ *
+ * Reverse byte order in integer value
+ */
+static inline uint64_t __REV64(uint64_t value)
+{
+	uint32_t temp;
+
+	asm volatile (
+			"	movs %1, %H0 				\n\t"
+			"	rev %H0, %0 				\n\t"
+			"	rev %0, %1 					\n\t"
+			: "=r" (value), "=r" (temp)
+			:
+			:  );
+	return (value);
+}
+
+/**
  * @brief  Reverse byte order (16 bit)
  *
  * @param  value  value to reverse
