@@ -586,7 +586,7 @@ NET_CODE CURL::url_parse(const char* url, bool path_only)
 
 	//parse the scheme
 	url = url_scheme(url, &url_flags);
-	if((url_flags & URL_FLAG_SCHEME_MASK) > URL_FLAG_SCHEME_HTTP)
+	if((url_flags & URL_FLAG_SCHEME_MASK) > URL_FLAG_SCHEME_HTTPS)
 		return NET_ERR_URL_SCHEME;
 	if(!url[0] && host.empty())
 		return NET_ERR_URL_INVALID;
