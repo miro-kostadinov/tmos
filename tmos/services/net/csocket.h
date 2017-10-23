@@ -36,6 +36,7 @@
 #define IP_SOCKET_TCP			0
 #define IP_SOCKET_UDP			1
 #define BT_SOCKET				2
+#define REDIRECTED_SOCKET		4
 
 struct sock_mode_t
 {
@@ -43,7 +44,12 @@ struct sock_mode_t
 	unsigned char 	interface;		//!< driver interface index (e.g. apn index)
 	unsigned short 	port;			//!< optional port (e.g. for UDP)
 	unsigned char	sock_type;		//!< IP_SOCKET_TCP or IP_SOCKET_UDP
+};
 
+struct redir_sock_mode_t
+{
+	sock_mode_t mode;
+	const sock_mode_t*	redir_mode;
 };
 
 /**
