@@ -88,7 +88,7 @@ bool hmac_sha1::Result(void)
 			SHA1::Input(result, SHA1_DIGEST_LENGTH);
 			hmac_computed = true;
 
-			delete result;
+			delete[] result;
 		}
     }
 
