@@ -21,6 +21,8 @@ local_as_src-$(USE_TMOS_STDIO)	+= tmos_stdio.S
 local_as_src-$(USE_TMOS_LLONG)	+= tmos_llong.S 
 local_as_src-$(USE_AES_TMOS)    += aes_tmos.S
 
+local_c_src-$(USE_AES_TMOS)   	+= aes_tmos.c
+
 local_cpp_src-y	+= kernel.cpp handle.cpp services.cpp  
 
 local_h_src-y 	+= port_cpp.h port_inc.h tasks.h services.h

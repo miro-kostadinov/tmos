@@ -65,6 +65,19 @@ void aes_tmos_en_ecb(const aes_context* ctxt, const unsigned char* input,
 void aes_tmos_de_ecb(const aes_context* ctxt, const unsigned char* input,
 		unsigned char* output, unsigned blocks);
 
+#if STATIC_AES_TABLES
+extern const unsigned char aes_ForwardSBox[256];
+extern const unsigned int aes_ForwardTable[256];
+extern const unsigned char aes_ReverseSBox[256];
+extern const unsigned int aes_ReverseTable[256];
+#endif // STATIC_AES_TABLES
+#if DYNAMIC_AES_TABLES
+extern unsigned char aes_ForwardSBox[256];
+extern unsigned int aes_ForwardTable[256];
+extern unsigned char aes_ReverseSBox[256];
+extern unsigned int aes_ReverseTable[256];
+#endif // DYNAMIC_AES_TABLES
+
 #ifdef __cplusplus
 }
 #endif
