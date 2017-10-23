@@ -685,7 +685,7 @@ CSTRING operator+( const CSTRING& s1, char c )
 	unsigned int len2;
 
 	len1 = s1.length();
-	len2 = len1 + c?1:0;
+	len2 = len1 + (c?1:0);
 
 	CSTRING res(len2);
 
@@ -1237,6 +1237,7 @@ int CSTRING::appendf(const char *fmt, ...)
 	{
 		len2 = 0;
 	}
+	va_end(args);
 
 	return len2;
 }
@@ -1263,6 +1264,7 @@ int CSTRING::format(const char *fmt, ...)
 	{
 		len = 0;
 	}
+	va_end(args);
 
 	return len;
 }

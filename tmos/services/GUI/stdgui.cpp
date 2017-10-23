@@ -138,7 +138,7 @@ RES_CODE menu_draw(MENU_HANDLE menu_hnd)
 {
     unsigned int first, last;
     lcd->set_xy_all(10, ALL_CENTER);
-    lcd->draw_text(menu_hnd->menu->name));
+    lcd->draw_text(menu_hnd->menu->name);
     lcd->draw_hline(0, 101, 20);
 
     if(menu_hnd->pos > 2)
