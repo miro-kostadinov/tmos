@@ -42,6 +42,7 @@ local_modules-$(USE_NET)		+= net
 local_modules-$(USE_TMOS_TL_V1)	+= tmos_tl_v1
 local_modules-$(USE_TMOS_TL_V2)	+= tmos_tl_v2 
 local_modules-$(USE_WIFI)		+= WiFi 
+local_modules-$(USE_SECURITY)	+= security 
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)
