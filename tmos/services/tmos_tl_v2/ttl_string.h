@@ -370,10 +370,16 @@ protected:
 			{
 				if(len == m_capacity(p))
 				{
-					p = static_cast<pointer>(tsk_realloc(mem_head(p),
+					data_header* old_p;
+
+					old_p = mem_head(p);
+					p = static_cast<pointer>(tsk_realloc(old_p,
 							sizeof(data_header) + len * sizeof(CharT) + 8));
 					if(p == nullptr)
+					{
+						::operator delete(old_p);
 						return p;
+					}
 				}
     			p[len++] = *__beg;
     			++__beg;

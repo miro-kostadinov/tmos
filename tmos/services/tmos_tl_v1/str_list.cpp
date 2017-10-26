@@ -17,12 +17,27 @@
 #define str_free 		tsk_free
 #define STR_MIN_SIZE 	(sizeof(str_storage)+1)
 
-#define storage_realloc(size) 	(storage.ram = (str_storage*)tsk_realloc(storage.ram, size))
 #define storage_malloc(size) 	(storage.ram = (str_storage*)tsk_malloc(size))
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 					 CString
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void* CSTRING::storage_realloc(unsigned int size)
+{
+	void* mem;
+
+	mem = tsk_realloc(storage.ram, size);
+	if(mem == nullptr)
+	{
+		if(RAM_ADR(storage.adr))
+			if(locked_dec_short(&storage.ram->refs) <= 0)
+				str_free(storage.ram);
+	}
+	storage.ram = (str_storage*)mem;
+
+	return mem;
+}
+
 char CSTRING::dummy_char;
 
 /** Default constructor

@@ -500,6 +500,9 @@ FUNC(	svc_realloc		)					// r0    r1    r2    r3	   r4	 r5
 //assimilate next							// r0    r1    r2    r3	   r4	 r5
 				lsrs			r5, #16		// ptr4 nszw   cs	 ptr   csb   fs
 				adds			r2, r5		//            cs+fs
+				cmp             r2, r1
+                blo             smr_realloc
+
 				strh			r2, [r3]			//	r3->next = cs+fs
 
 				lsls			r2, #1
@@ -529,7 +532,6 @@ FUNC(	svc_realloc		)					// r0    r1    r2    r3	   r4	 r5
 smr_check_split:	//	r0, , r1=newsize_w r2=oldsize_w
 				subs			r3, r2, r1			//r3=cs-ns
 				beq				smr_exit_pop		//size match
-				blo				smr_realloc
 				//the current block is bigger
 				cmp				r3, #1
 				beq				smr_exit_pop		//can't free
@@ -622,8 +624,8 @@ smr_realloc:
 				str				r3, [r1, r5]
 				bhi				.L3
 
-.L4:
 				bl				svc_free
+.L4:
 				mov				lr, r4
 				b				smr_exit_pop
 

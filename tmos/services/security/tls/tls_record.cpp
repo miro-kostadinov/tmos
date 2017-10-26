@@ -795,12 +795,13 @@ RES_CODE tls_context_t::tls_message_read(record_ctxt_t* rc)
 					{
 						uint8_t* data;
 
-						data = rc->data.release();
+						data = rc->data.get();
 						data = (uint8_t*)tsk_realloc(data, rc->msg_len + rc2.msg_len);
 						if(data)
 						{
-							memcpy(data + rc->msg_len, rc2.data.get(), rc2.msg_len);
+							rc->data.release();
 							rc->data = data;
+							memcpy(data + rc->msg_len, rc2.data.get(), rc2.msg_len);
 							rc->rec_len += rc2.msg_len;
 							rc->msg_len = rc->rec_len;
 						} else

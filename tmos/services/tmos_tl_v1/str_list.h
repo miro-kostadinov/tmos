@@ -172,6 +172,8 @@ public:
 		storage.ram->len = n;
 	}
 
+protected:
+	void* storage_realloc(unsigned int size);
 };
 
 CSTRING operator+(const CSTRING& s1, const CSTRING& s2 );

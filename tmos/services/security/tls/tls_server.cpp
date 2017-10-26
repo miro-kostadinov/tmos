@@ -623,6 +623,7 @@ RES_CODE tls_context_t::tls_make_server_key_exchange_msg(uint8_t*& msg, size_t& 
 	RES_CODE res = RES_OK;
 	uint32_t n, n2, n3;
 	size_t params, paramsLen;
+	uint8_t* mem;
 
 	len = sizeof(tls_handshake_t);
 
@@ -641,9 +642,10 @@ RES_CODE tls_context_t::tls_make_server_key_exchange_msg(uint8_t*& msg, size_t& 
    TLS_DHE_PSK_SUPPORT || TLS_ECDHE_PSK_SUPPORT)
 		n += psk_identity_hint.length();
 #endif
-		msg = (uint8_t*)tsk_realloc(msg, n + len);
-		if(!msg)
+		mem = (uint8_t*)tsk_realloc(msg, n + len);
+		if(!mem)
 			return RES_OUT_OF_MEMORY;
+		msg = mem;
 		pskIdentityHint = (TlsPskIdentityHint*)(msg + len);
 		pskIdentityHint->length = __REV16(n);
 		len += n;
@@ -692,9 +694,10 @@ RES_CODE tls_context_t::tls_make_server_key_exchange_msg(uint8_t*& msg, size_t& 
 			n = dhContext.params.p.mpiGetByteLength();
 			n2 = dhContext.params.g.mpiGetByteLength();
 			n3 = dhContext.ya.mpiGetByteLength();
-			msg = (uint8_t*)tsk_realloc(msg, len + n + n2 + n3 + 6);
-			if(!msg)
+			mem = (uint8_t*)tsk_realloc(msg, len + n + n2 + n3 + 6);
+			if(!mem)
 				return RES_OUT_OF_MEMORY;
+			msg = mem;
 
 			msg[len] = n >> 8;
 			msg[len+1] = n;
@@ -750,9 +753,10 @@ RES_CODE tls_context_t::tls_make_server_key_exchange_msg(uint8_t*& msg, size_t& 
 
 				n += ecdhContext.params.p.mpiGetByteLength() *2 + 1 + 1;
 
-				msg = (uint8_t*)tsk_realloc(msg, n + len);
-				if(!msg)
+				mem = (uint8_t*)tsk_realloc(msg, n + len);
+				if(!mem)
 					return RES_OUT_OF_MEMORY;
+				msg = mem;
 
 	            //Set the type of the elliptic curve domain parameters
 	            msg[len++] = TLS_EC_CURVE_TYPE_NAMED_CURVE;
@@ -849,9 +853,10 @@ RES_CODE tls_context_t::tls_make_server_key_exchange_msg(uint8_t*& msg, size_t& 
 
 				//Sign the key exchange parameters using RSA
 				n = privateKey.n.mpiGetByteLength();
-				msg = (uint8_t*)tsk_realloc(msg, n + len);
-				if(msg == nullptr)
+				mem = (uint8_t*)tsk_realloc(msg, n + len);
+				if(mem == nullptr)
 					return RES_OUT_OF_MEMORY;
+				msg = mem;
 
 
 				//Generate a RSA signature using the client's private key
@@ -964,10 +969,11 @@ RES_CODE tls_context_t::tls_make_server_key_exchange_msg(uint8_t*& msg, size_t& 
 
 						n = privateKey.n.mpiGetByteLength();
 						len += n;
-						msg = (uint8_t*)tsk_realloc(msg, len);
+						mem = (uint8_t*)tsk_realloc(msg, len);
 
-						if (msg)
+						if (mem)
 						{
+							msg = mem;
 							//Point to the digitally-signed element
 							signature = (TlsDigitalSignature2 *) (msg + params);
 

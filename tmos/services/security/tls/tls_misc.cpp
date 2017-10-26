@@ -1148,11 +1148,15 @@ RES_CODE tls_context_t::tlsGenerateDsaSignature(const uint8_t* digest,
 		res = dsaSignature.dsaWriteSignatureLen(&len);
 		if(res == RES_OK)
 		{
-			*signature = (uint8_t*)tsk_realloc(*signature, len + *signatureLength);
-			if(*signature != nullptr)
+			uint8_t* mem;
+
+			mem = (uint8_t*)tsk_realloc(*signature, len + *signatureLength);
+			if(mem != nullptr)
 			{
+				*signature = mem;
+
 				//Encode the resulting (R, S) integer pair using ASN.1
-				res = dsaSignature.dsaWriteSignature((*signature) + *signatureLength, &len);
+				res = dsaSignature.dsaWriteSignature(mem + *signatureLength, &len);
 				*signatureLength += len;
 			} else
 				res = RES_OUT_OF_MEMORY;

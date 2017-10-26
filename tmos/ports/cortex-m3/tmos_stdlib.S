@@ -400,8 +400,11 @@ FUNC(	svc_realloc		)
 // n  |*?? | ?? | nf | ?? |           n  |      |     |pf+nf|     |
 //    +----+----+----+----+              +------+-----+-----+--- -+
 
-//assimilate next
+//assimilate next?
 				add				r2, r2, r5, lsr #16	//r2=cs+fs
+				cmp             r2, r3
+                blo             .L2
+
 				strh			r2, [r0]			//	r0->next = cs+fs
 #ifdef USE_MEMORY_TRACKING
                 // r0, r2, r3, r4, r5 [r1]
@@ -433,7 +436,6 @@ FUNC(	svc_realloc		)
 smf_check_split:	//	r0, r1=newsize_b, r2=oldsize_w, r3=newsize_w
 				subs			r1, r2, r3			//r1=cs-ns
 				beq				.L9					//size match
-				blo				.L2
 				//the current block is bigger
 				cmp				r1, #1
 				beq				.L9					//can't free
@@ -516,8 +518,8 @@ smf_check_split:	//	r0, r1=newsize_b, r2=oldsize_w, r3=newsize_w
 				str				r3, [r1, r5]
 				bhi				.L3
 
-.L4:
 				bl				svc_free
+.L4:
 				mov				lr, r4
 				pop				{r0, r4, r5}
 				bx				lr

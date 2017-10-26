@@ -74,6 +74,8 @@ void Mpi::mpi_free()
 
 RES_CODE Mpi::mpiGrow(uint32_t size)
 {
+	uint32_t* data;
+
 	//Ensure the parameter is valid
 	size = max(size, 1u);
 
@@ -87,12 +89,12 @@ RES_CODE Mpi::mpiGrow(uint32_t size)
 	//Allocate a memory buffer
 	if(mpi_refs)
 	{
-		mpi_data = (uint32_t*)tsk_realloc(mpi_data, size * MPI_INT_SIZE);
+		data = (uint32_t*)tsk_realloc(mpi_data, size * MPI_INT_SIZE);
+		if (data == nullptr)
+			return RES_OUT_OF_MEMORY;
 	}
 	else
 	{
-		uint32_t* data;
-
 		data = (uint32_t*)tsk_malloc(size * MPI_INT_SIZE);
 		if (data == nullptr)
 			return RES_OUT_OF_MEMORY;
@@ -100,8 +102,8 @@ RES_CODE Mpi::mpiGrow(uint32_t size)
 		mpi_refs = 1;
 		if(mpi_size)
 			memcpy(data, mpi_data, mpi_size * MPI_INT_SIZE);
-		mpi_data = data;
 	}
+	mpi_data = data;
 
 	while(mpi_size < size)
 		mpi_data[mpi_size++] = 0;

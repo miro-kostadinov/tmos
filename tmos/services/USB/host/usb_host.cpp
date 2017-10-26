@@ -179,11 +179,14 @@ RES_CODE usb_remote_dev_t::get_device_descriptor()
 RES_CODE usb_remote_dev_t::get_config_descriptor_part(uint32_t size)
 {
 	RES_CODE res;
+	void* new_descriptor;
+
+	new_descriptor = usr_realloc(config_descriptor, size);
+	if(size && !new_descriptor)
+		return RES_OUT_OF_MEMORY;
 
 	req.wLength = size;
-	config_descriptor = (USBConfigurationDescriptor*) usr_realloc(config_descriptor, size);
-	if(!config_descriptor)
-		return RES_OUT_OF_MEMORY;
+	config_descriptor = (USBConfigurationDescriptor*) new_descriptor;
 
 	res = std_request(config_descriptor);
 	if(res == RES_OK)
