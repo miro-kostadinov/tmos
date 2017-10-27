@@ -1015,6 +1015,8 @@ bool esp8266_module::wifi_data_received(const char* row)
 		if(id < WIFI_ESP8266_MAX_SOCKETS)
 		{
 			CSocket* sock = alloc_sockets[id];
+			char* mem;
+
 			if(sock && sock->sock_state == SOCKET_CONECTED)
 			{
 				if (sock && ((sock->res & RES_BUSY_WAITING) == RES_BUSY_WAITING))
@@ -1037,11 +1039,12 @@ bool esp8266_module::wifi_data_received(const char* row)
 				}
 				if(size)
 				{
-					received_data[id] = (char*)tsk_realloc(received_data[id], received_size[id]+size);
-					if(received_data[id])
+					mem = (char*)tsk_realloc(received_data[id], received_size[id]+size);
+					if(mem)
 					{
+						received_data[id] = mem;
 						INC_ALLOC_SIZE(size);
-						if( rcv_hnd.tsk_read_pkt(received_data[id]+received_size[id], size, WIFI_READ_TOT) == RES_OK)
+						if( rcv_hnd.tsk_read_pkt(mem+received_size[id], size, WIFI_READ_TOT) == RES_OK)
 						{
 							TRACE1("read Ok");
 //							TRACE_BUF(received_data[id]+received_size[id], size, TC_TXT_CYAN);
@@ -1057,8 +1060,14 @@ bool esp8266_module::wifi_data_received(const char* row)
 					} else
 					{
 						//ops out of memory..
-						DEC_ALLOC_SIZE(received_size[id]);
-						received_size[id] = 0;
+						// drain the data and close socket?
+						while(size)
+						{
+							if( rcv_hnd.tsk_read_pkt(buf, min(size, sizeof(buf)), WIFI_READ_TOT) != RES_OK)
+								break;
+
+							size -= min(size, sizeof(buf));
+						}
 					}
 				}
 
@@ -1069,10 +1078,11 @@ bool esp8266_module::wifi_data_received(const char* row)
 				{
 					if(size)
 					{
-						received_data[id] = (char*)tsk_realloc(received_data[id], received_size[id]+size);
-						if(received_data[id])
+						mem = (char*)tsk_realloc(received_data[id], received_size[id]+size);
+						if(mem)
 						{
-							if( rcv_hnd.tsk_read_pkt(received_data[id]+received_size[id], size, WIFI_READ_TOT) == RES_OK)
+							received_data[id] = mem;
+							if( rcv_hnd.tsk_read_pkt(mem+received_size[id], size, WIFI_READ_TOT) == RES_OK)
 							{
 								INC_ALLOC_SIZE(size);
 								received_size[id] += size;
@@ -1081,8 +1091,14 @@ bool esp8266_module::wifi_data_received(const char* row)
 						} else
 						{
 							//ops out of memory..
-							received_size[id] = 0;
-							DEC_ALLOC_SIZE(received_size[id]);
+							// drain the data and close socket?
+							while(size)
+							{
+								if( rcv_hnd.tsk_read_pkt(buf, min(size, sizeof(buf)), WIFI_READ_TOT) != RES_OK)
+									break;
+
+								size -= min(size, sizeof(buf));
+							}
 						}
 					}
 				}
