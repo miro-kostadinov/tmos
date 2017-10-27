@@ -508,7 +508,7 @@ unsigned int GMsgBox::process_key (GMessage& msg)
 		switch((type&(MBF_LAST_BTN-1)))
 		{
 		case 0: // no buttons
-			param = GO_EXIT;
+//			param = GO_EXIT;
 		case MB_OKCANCEL:
 		case MB_RETRYCANCEL:
 		case MB_YESNOCANCEL:
