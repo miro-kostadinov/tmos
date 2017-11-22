@@ -14,15 +14,50 @@
  * 			Debug Dinamic Memory
  *----------------------------------------------------------*/
 
+WEAK bool on_out_of_memory(size_t size)
+{
+	return true;
+}
+
 void* operator new(size_t size)
 {
-    return (tsk_malloc(size));
+	void *ptr;
+	uint32_t tmp = CURRENT_TIME;
+	while(true)
+	{
+		if((ptr = tsk_malloc(size)) != nullptr)
+			break;
+		if(on_out_of_memory(size))
+				break;
+		tsk_sleep(1);
+		if(seconds_since(tmp) > 15 )
+		{
+	    	SYST->SYST_CSR = 0;
+			LowLevelReboot();
+		}
+	}
+	return  ptr;
 }
 
 
 void* operator new[](size_t size)
 {
-    return (tsk_malloc(size));
+	void *ptr;
+	uint32_t tmp = CURRENT_TIME;
+	while(true)
+	{
+		if((ptr = tsk_malloc(size)) != nullptr)
+			break;
+		if(on_out_of_memory(size))
+				break;
+		tsk_sleep(1);
+		if(seconds_since(tmp) > 15 )
+		{
+	    	SYST->SYST_CSR = 0;
+			LowLevelReboot();
+		}
+	}
+	return  ptr;
 }
 
 void operator delete(void *p)
@@ -73,7 +108,7 @@ int is_dynamic_mem(void* ptr)
 	int res = 0;
 	int mem_size;
 
-	if ((adr > (unsigned int) pool) && (adr < (0x20018000)))
+	if ((adr > (unsigned int) pool) && (adr < (BASE_SRAM + RAM_SIZE)))
 	{
 		adr -= 4;
 
@@ -133,13 +168,19 @@ void* tsk_malloc(unsigned int size)
 	ptr = usr_malloc(size);
 	if(ptr)
 	{
-		TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
+		if(buf[0] == *(int*)((void*)"LWIP"))
+		{
+			TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
+			trace_sleep();
+		}
+		CURRENT_TASK->aloc_ptrs++;
+		CURRENT_TASK->aloc_mem += dyn_sizeof(ptr);;
 	} else
 	{
 		TRACE("\r\nERROR:[%s+%d]", buf, size);
 
 	}
-	trace_sleep();
+//	trace_sleep();
 	is_dynamic_mem(ptr);
 	return ptr;
 }
@@ -158,13 +199,19 @@ void* tsk_malloc_clear(unsigned int size)
 	ptr = usr_malloc(size);
 	if(ptr)
 	{
-		TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
+		if(buf[0] == *(int*)((void*)"LWIP"))
+		{
+			TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
+			trace_sleep();
+		}
+		CURRENT_TASK->aloc_mem += dyn_sizeof(ptr);
+		CURRENT_TASK->aloc_ptrs++;
 	} else
 	{
 		TRACE("\r\nERROR:[%s+%d]", buf, size);
 
 	}
-	trace_sleep();
+//	trace_sleep();
 	if(ptr)
 		memclr(ptr, size);
 	is_dynamic_mem(ptr);
@@ -182,6 +229,11 @@ void  tsk_free(void* ptr)
 	is_dynamic_mem(ptr);
 	if(ptr)
 	{
+		uint32_t size;
+
+		if((char*)ptr > &end)
+			size = dyn_sizeof(ptr);
+
 		usr_free(ptr);
 		if((char*)ptr > &end)
 		{
@@ -190,8 +242,14 @@ void  tsk_free(void* ptr)
 			ptr1 = CURRENT_TASK->name;
 			*buf = *((int*)ptr1);
 			buf[1] = 0;
-			TRACE_MEMORY("\r\n-%x[%s %x>%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
-			trace_sleep();
+			if(buf[0] == *(int*)((void*)"LWIP"))
+			{
+				TRACE_MEMORY("\r\n-%x[%s %x>%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
+				trace_sleep();
+			}
+			CURRENT_TASK->aloc_ptrs--;
+			CURRENT_TASK->aloc_mem -= size;
+//			trace_sleep();
 		}
 	}
 }
@@ -213,13 +271,25 @@ void* tsk_realloc(void* ptr, unsigned int size)
 	{
 		if((char*)ptr > &end)
 		{
-			TRACE_MEMORY("\r\n-%x[%x<]", ptr, lr);
+			if(buf[0] == *(int*)((void*)"LWIP"))
+			{
+				TRACE_MEMORY("\r\n-%x[%x<]", ptr, lr);
+				trace_sleep();
+			}
+			CURRENT_TASK->aloc_mem -= dyn_sizeof(ptr);
+			CURRENT_TASK->aloc_ptrs--;
 		}
 	}
 	ptr = usr_realloc(ptr, size);
 	if(ptr)
 	{
-		TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
+		if(buf[0] == *(int*)((void*)"LWIP"))
+		{
+			TRACE_MEMORY("\r\n+%x[%s %x<%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
+			trace_sleep();
+		}
+		CURRENT_TASK->aloc_mem += dyn_sizeof(ptr);
+		CURRENT_TASK->aloc_ptrs++;
 	} else
 	{
 		if(size)
@@ -230,7 +300,7 @@ void* tsk_realloc(void* ptr, unsigned int size)
 			TRACE_MEMORY("\r\n+%x[%s %x=%d,%d]", ptr, buf, lr, PMAIN_TASK->aloc_ptrs, (PMAIN_TASK->aloc_mem<<2));
 		}
 	}
-	trace_sleep();
+//	trace_sleep();
 	return ptr;
 }
 
