@@ -171,7 +171,7 @@ sma_search_loop:
 				lsls			bsize, asize, #1
 				subs			bptr, best, #2
 				strh			bsize, [bptr, asize, lsl #2]	// n -> s<
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
 #if USE_TASK_REGISTERS
                 mov             bptr, REG_MTASK
 #else
@@ -202,7 +202,7 @@ sma_match:		//match (pf, asize=bsize)
 //    +----+----+----+----+              +----+----+-----+----+
 				movs			best, bptr
 7:
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
                 //r0 = best [r1=bptr r2=asize r3=bsize]
 #if USE_TASK_REGISTERS
                 mov             bptr, REG_MTASK
@@ -229,6 +229,18 @@ sma_match:		//match (pf, asize=bsize)
 				bx 				lr
 
 sma_fail:
+#if USE_TASK_REGISTERS
+				mov				r0, REG_CTASK
+#else
+				ldr				r3, =main_task
+                ldr             r0, [r3, #tsk_int_task]
+#endif
+				ldr				r3, [r0, #tsk_res]
+				cmp				r3, #RES_OK
+				bne				sma_fail_1
+				mov				r3, #RES_OUT_OF_MEMORY
+				str				r3, [r0, #tsk_res]
+sma_fail_1:
 				movs			r0, #0
 				bx				lr
 
@@ -255,7 +267,7 @@ FUNC(	svc_pool_free		)
 				bls				smf_exit				//BAD ptr!
 //check next
 				ldrh			r12, [r0, #-4]!			//r12=cs
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
 #if USE_TASK_REGISTERS
                 mov             r2, REG_MTASK
 #else
@@ -406,7 +418,7 @@ FUNC(	svc_realloc		)
                 blo             .L2
 
 				strh			r2, [r0]			//	r0->next = cs+fs
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
                 // r0, r2, r3, r4, r5 [r1]
 #if USE_TASK_REGISTERS
                 ldr             r1, [REG_MTASK, #tsk_aloc_mem]
@@ -436,6 +448,7 @@ FUNC(	svc_realloc		)
 smf_check_split:	//	r0, r1=newsize_b, r2=oldsize_w, r3=newsize_w
 				subs			r1, r2, r3			//r1=cs-ns
 				beq				.L9					//size match
+				blo				.L2
 				//the current block is bigger
 				cmp				r1, #1
 				beq				.L9					//can't free
@@ -449,7 +462,7 @@ smf_check_split:	//	r0, r1=newsize_b, r2=oldsize_w, r3=newsize_w
 //  n | cs<| ?? |   ...   |            n |cs-ns<|     |   ...   |
 //    +----+----+----+----+              +------+-----+----+----+
 
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
                 //r0, r1, [r2, r4]
 #if USE_TASK_REGISTERS
 				ldr				r4, [REG_MTASK, #tsk_aloc_mem]
