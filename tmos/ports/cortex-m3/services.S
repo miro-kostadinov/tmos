@@ -128,6 +128,13 @@ ENDF(	svc_send_signal		)
 //------------------------------------------------------------------------------
 //void task_schedule(Task *task)
 FUNC(	svc_task_schedule	)
+#if USE_MEMORY_TRACKING
+				movs			r2, #0
+				str				r2, [r0, #tsk_aloc_mem]
+				str				r2, [r0, #tsk_aloc_ptrs]
+				mov				r2, #RES_OK
+				str				r2, [r0, #tsk_res]
+#endif
 #if USE_TASK_REGISTERS
                 ldr             r2, [REG_MTASK, #tsk_tlist]
                 str             r2, [r0, #tsk_tlist]
