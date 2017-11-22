@@ -67,7 +67,7 @@
 #define _tsk_o2_		(_tsk_o1_ + 0x2C)
 #endif
 
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
 #define tsk_aloc_mem	(_tsk_o2_ + 0x00)
 #define tsk_aloc_ptrs	(_tsk_o2_ + 0x04)
 #endif
