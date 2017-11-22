@@ -231,7 +231,7 @@ sma_search_loop:
 				adds			r0, r3
 				str				r1, [r0]
 				adds			r0, #4
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
 #if USE_TASK_REGISTERS
                 mov             r1, REG_MTASK
 #else
@@ -268,7 +268,7 @@ sma_match:		//match (pf, asize=bsize)
 												//		 ptr   wsize
 				movs			r0, r1
 7:
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
                 //r0 = best [r1=bptr r2=asize r3=bsize]
 #if USE_TASK_REGISTERS
                 mov             r1, REG_MTASK
@@ -328,7 +328,7 @@ FUNC(	svc_pool_free		)						// r0    r1    r2    r3		r12
 				subs			r0, #4
 				mov				r12, r1
 				ldrh			r1, [r0]			// ptr  size				pool
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
 #if USE_TASK_REGISTERS
                 mov             r2, REG_MTASK
 #else
@@ -464,7 +464,7 @@ FUNC(	svc_realloc		)					// r0    r1    r2    r3	   r4	 r5
 				cmp				r1, r2
 				beq				smr_exit		//size match
 //check next
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
 				push			{r0, r4, r5, r7}
 #if USE_TASK_REGISTERS
 				mov 			r7, REG_MTASK
@@ -509,7 +509,7 @@ FUNC(	svc_realloc		)					// r0    r1    r2    r3	   r4	 r5
 				adds			r3, r2
 				adds			r3, r2
 				strh			r2, [r3, #2]		//nn->prev = (cs+fs)<<1
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
                 ldr             r3, [r7, #tsk_aloc_mem]
                 adds            r3, r5
                 str             r3, [r7, #tsk_aloc_mem]
@@ -545,7 +545,7 @@ smr_check_split:	//	r0, , r1=newsize_w r2=oldsize_w
 //  n | cs<| ?? |   ...   |            n |cs-ns<|     |   ...   |
 //    +----+----+----+----+              +------+-----+----+----+
 
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
 				ldr				r4, [r7, #tsk_aloc_mem]
 				subs			r4, r3
 				str				r4, [r5, #tsk_aloc_mem]
@@ -589,7 +589,7 @@ smr_check_split:	//	r0, , r1=newsize_w r2=oldsize_w
 
 
 smr_exit_pop:
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
 				pop				{r0, r4, r5, r7}
 #else
 				pop				{r0, r4, r5}

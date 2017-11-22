@@ -103,7 +103,7 @@ typedef struct TASK_STRU_t
 #if TASK_HISTORY_LOG || !USE_TASK_REGISTERS
     volatile Task	*int_task;	/**< interrupted task (current for main_task)*/
 #endif
-#ifdef USE_MEMORY_TRACKING
+#if USE_MEMORY_TRACKING
 	int				aloc_mem;	/**< allocated memory words (main_task) */
 	int				aloc_ptrs;	/**< allocated memory pointers	*/
 #endif
