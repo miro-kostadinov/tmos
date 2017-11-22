@@ -264,6 +264,21 @@ void PIO_Deassert(PIN_DESC pins);
 
 void exti_set_line_source(unsigned int line, unsigned int port);
 
+// Virtual PIO functions which must be implemented from the application
+/**
+ * Write to virtual port
+ * @note must be implemented from the application
+ * @param pio
+ * @param val
+ */
+void VPIO_Write(pio_def pio, unsigned int val );
+/**
+ * Read from virtual port
+ * @note must be implemented from the application
+ * @param pio
+ * @return
+ */
+pio_set VPIO_Read(pio_def pio);
 
 #ifdef __cplusplus
 }
