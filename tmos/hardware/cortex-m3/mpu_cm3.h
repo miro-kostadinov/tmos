@@ -51,7 +51,7 @@ struct MPU_Type
 
 /** @name MPU_CTRL:    (MPU Offset: 0x04) MPU Control Register                           */
 /** @{ */
-#define MPU_CTRL_PRIVDEFENA 	   0x00000003 //!< Enables privileged software access to the default memory map
+#define MPU_CTRL_PRIVDEFENA 	   0x00000004 //!< Enables privileged software access to the default memory map
 #define MPU_CTRL_HFNMIENA  		   0x00000002 //!< Enables the operation of MPU during hard fault, NMI, and FAULTMASK handlers
 #define MPU_CTRL_ENABLE   		   0x00000001 //!< Enables the MPU
 /** @} */
