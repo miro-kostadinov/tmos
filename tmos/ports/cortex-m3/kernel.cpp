@@ -291,7 +291,7 @@ Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
 		task = (Task*)((unsigned int)svc_malloc(stack_words+4)+4);
 	}
 
-	if(task)
+	if(task != (void *)4)
 	{
 		TASK_STACKED_CTX ctx;
 		ctx = (TASK_STACKED_CTX) (((unsigned int)task) + stack_words);
@@ -310,6 +310,8 @@ Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
 		task->state = TSKSTATE_SUSPEND;
 		strcpy(task->name, name);
 	}
+	else
+		task = NULL;
 
 	return (task);
 }
