@@ -579,6 +579,15 @@ CSTRING& CSTRING::append(char ch)
 	return (*this);
 }
 
+CSTRING& CSTRING::insert (const char* s, unsigned int index)
+{
+	CSTRING tmp (c_str(), index);
+	tmp.append (s);
+	tmp.append (substr(index, length() - index));
+	return (*this = tmp);
+}
+
+
 CSTRING& CSTRING::insert (char ch, unsigned int index)
 {
 	CSTRING tmp (c_str(), index);
