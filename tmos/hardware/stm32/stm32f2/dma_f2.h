@@ -257,7 +257,43 @@ static inline uint32_t stm32_dma_is_en(DMA_TypeDef* dmac, uint32_t indx)
 	return dmac->DMA_Chx[indx].DMA_SxCR & DMA_SxCR_EN;
 }
 
+static inline uint32_t stm32_dma_msize(uint32_t SxCR, uint32_t size)
+{
+	switch(size)
+	{
+	case 8:
+		size = DMA_SxCR_MSIZE_8bit;
+		break;
+	case 16:
+		size = DMA_SxCR_MSIZE_16bit;
+		break;
+	case 32:
+		size = DMA_SxCR_MSIZE_32bit;
+		break;
+	default:
+		size = 0;
+	}
+	return ((SxCR & ~(DMA_SxCR_MSIZE))|size);
+}
 
+static inline uint32_t stm32_dma_psize(uint32_t SxCR, uint32_t size)
+{
+	switch(size)
+	{
+	case 8:
+		size = DMA_SxCR_PSIZE_8bit;
+		break;
+	case 16:
+		size = DMA_SxCR_PSIZE_16bit;
+		break;
+	case 32:
+		size = DMA_SxCR_PSIZE_32bit;
+		break;
+	default:
+		size = 0;
+	}
+	return ((SxCR & ~(DMA_SxCR_PSIZE))|size);
+}
 
 void stm32_en_ints(DMA_TypeDef* dmac, uint32_t indx, DMA_DRIVER_MODE* mode);
 void stm32_dis_ints(DMA_TypeDef* dmac, uint32_t indx);
