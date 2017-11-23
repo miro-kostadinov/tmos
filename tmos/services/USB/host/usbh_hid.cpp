@@ -136,6 +136,459 @@ RES_CODE usb_remote_hid_t::set_protocol(uint32_t protocol)
 //	functions
 //------------------------------------------------------------------------------
 
+RES_CODE hid_parse_report(const unsigned char * report, int rep_size)
+{
+	bool desktop_foud = false;
+
+	while (rep_size > 0)
+	{
+		uint8_t item = *report;
+		uint32_t data = 0;
+
+		report++;
+		rep_size--;
+
+	    switch (item & USBHID_RPTITEM_SIZE_MASK)
+		{
+		case USBHID_RPTITEM_SIZE_4: /* 4 bytes of little endian data follow */
+			data = (uint32_t) (*report++);
+			data |= (uint32_t) (*report++) << 8;
+			data |= (uint32_t) (*report++) << 16;
+			data |= (uint32_t) (*report++) << 24;
+			rep_size -= 4;
+			break;
+
+		case USBHID_RPTITEM_SIZE_2: /* 2 bytes of little endian data follow */
+			data = (uint32_t) (*report++);
+			data |= (uint32_t) (*report++) << 8;
+			rep_size -= 2;
+			break;
+
+		case USBHID_RPTITEM_SIZE_1: /* 1 byte of data follows */
+			data = (uint32_t) (*report++);
+			rep_size -= 1;
+			break;
+
+		case USBHID_RPTITEM_SIZE_0: /* No data follows */
+		default:
+			break;
+		}
+
+	    switch (item & ~USBHID_RPTITEM_SIZE_MASK)
+		{
+
+		case USBHID_GLOBAL_USAGEPAGE_PREFIX:
+			if((data & 0xFFFF) == USBHID_USAGE_PAGE_GENERIC_DCTRL) // Generic desktop control
+				desktop_foud = true;
+			else
+				desktop_foud = false;
+			break;
+
+		case USBHID_LOCAL_USAGE_PREFIX:
+			if(desktop_foud)
+			{
+				if(data == USBHID_DCTRLUSE_KEYBOARD || data == USBHID_DCTRLUSE_KEYPAD)
+					return RES_OK;
+			}
+			break;
+
+/*
+		case USBHID_GLOBAL_PUSH_PREFIX:
+		case USBHID_GLOBAL_POP_PREFIX:
+		case USBHID_GLOBAL_LOGICALMIN_PREFIX:
+		case USBHID_GLOBAL_LOGICALMAX_PREFIX:
+		case USBHID_GLOBAL_PHYSICALMIN_PREFIX:
+		case USBHID_GLOBAL_PHYSMICALAX_PREFIX:
+		case USBHID_GLOBAL_UNITEXP_PREFIX:
+		case USBHID_GLOBAL_UNIT_PREFIX:
+		case USBHID_GLOBAL_REPORTSIZE_PREFIX:
+		case USBHID_GLOBAL_REPORTCOUNT_PREFIX:
+		case USBHID_GLOBAL_REPORTID_PREFIX:
+		case USBHID_LOCAL_USAGEMIN_PREFIX:
+		case USBHID_LOCAL_USAGEMAX_PREFIX:
+		case USBHID_MAIN_COLLECTION_PREFIX:
+		case USBHID_MAIN_ENDCOLLECTION_PREFIX:
+		case USBHID_MAIN_INPUT_PREFIX:
+		case USBHID_MAIN_OUTPUT_PREFIX:
+		case USBHID_MAIN_FEATURE_PREFIX:
+*/
+		default:
+			desktop_foud = false;
+			break;
+		}
+
+	}
+	return RES_EOF;
+}
+
+/*
+int hid_parsereport(const uint8_t *report, int rptlen,
+                    hid_rptfilter_t filter, struct hid_rptinfo_s *rptinfo)
+{
+  struct hid_state_s           state[CONFIG_HID_STATEDEPTH];
+  struct hid_state_s          *currstate = &state[0];
+  struct hid_collectionpath_s *collectionpath = NULL;
+  struct hid_rptsizeinfo_s    *rptidinfo = &rptinfo->rptsize[0];
+  uint16_t                     usage[CONFIG_HID_USAGEDEPTH];
+  uint8_t                      nusage = 0;
+  struct hid_range_s           usage_range = { 0, 0 };
+  int                          i;
+
+  DEBUGASSERT(report && filter && rptinfo);
+
+  memset(rptinfo, 0x00, sizeof(struct hid_rptinfo_s));
+  memset(currstate, 0x00, sizeof(struct hid_state_s));
+  memset(rptidinfo, 0x00, sizeof(struct hid_rptsizeinfo_s));
+
+  rptinfo->nreports = 1;
+
+  while (rptlen > 0)
+    {
+      uint8_t  item = *report;
+      uint32_t data = 0;
+
+      report++;
+      rptlen--;
+
+      switch (item & USBHID_RPTITEM_SIZE_MASK)
+        {
+        case USBHID_RPTITEM_SIZE_4:  4 bytes of little endian data follow
+          data    = (uint32_t)(*report++);
+          data   |= (uint32_t)(*report++) << 8;
+          data   |= (uint32_t)(*report++) << 16;
+          data   |= (uint32_t)(*report++) << 24;
+          rptlen -= 4;
+          break;
+
+        case USBHID_RPTITEM_SIZE_2:  2 bytes of little endian data follow
+          data    = (uint32_t)(*report++);
+          data   |= (uint32_t)(*report++) << 8;
+          rptlen -= 2;
+          break;
+
+        case USBHID_RPTITEM_SIZE_1:  1 byte of data follows
+          data    = (uint32_t)(*report++);
+          rptlen -= 1;
+          break;
+
+        case USBHID_RPTITEM_SIZE_0:  No data follows
+        default:
+          break;
+        }
+
+      switch (item & ~USBHID_RPTITEM_SIZE_MASK)
+        {
+        case USBHID_GLOBAL_PUSH_PREFIX:
+          if (currstate == &state[CONFIG_HID_STATEDEPTH - 1])
+            {
+              return -E2BIG;
+            }
+
+          memcpy((currstate + 1),
+                 currstate, sizeof(struct hid_rptitem_s));
+
+          currstate++;
+          break;
+
+        case USBHID_GLOBAL_POP_PREFIX:
+          if (currstate == &state[0])
+            {
+              return -EINVAL;  Pop without push?
+            }
+
+          currstate--;
+          break;
+
+        case USBHID_GLOBAL_USAGEPAGE_PREFIX:
+          if ((item & USBHID_RPTITEM_SIZE_MASK) == USBHID_RPTITEM_SIZE_4)
+            {
+              currstate->attrib.usage.page = (data >> 16);
+            }
+
+          currstate->attrib.usage.page = data;
+          break;
+
+        case USBHID_GLOBAL_LOGICALMIN_PREFIX:
+          currstate->attrib.logical.min = data;
+          break;
+
+        case USBHID_GLOBAL_LOGICALMAX_PREFIX:
+          currstate->attrib.logical.max = data;
+          break;
+
+        case USBHID_GLOBAL_PHYSICALMIN_PREFIX:
+          currstate->attrib.physical.min = data;
+          break;
+
+        case USBHID_GLOBAL_PHYSMICALAX_PREFIX:
+          currstate->attrib.physical.max = data;
+          break;
+
+        case USBHID_GLOBAL_UNITEXP_PREFIX:
+          currstate->attrib.unit.exponent = data;
+          break;
+
+        case USBHID_GLOBAL_UNIT_PREFIX:
+          currstate->attrib.unit.type = data;
+          break;
+
+        case USBHID_GLOBAL_REPORTSIZE_PREFIX:
+          currstate->attrib.bitsize = data;
+          break;
+
+        case USBHID_GLOBAL_REPORTCOUNT_PREFIX:
+          currstate->rptcount = data;
+          break;
+
+        case USBHID_GLOBAL_REPORTID_PREFIX:
+          currstate->id = data;
+
+          if (rptinfo->haverptid)
+            {
+              rptidinfo = NULL;
+
+              for (i = 0; i < rptinfo->nreports; i++)
+                {
+                  if (rptinfo->rptsize[i].id == currstate->id)
+                    {
+                      rptidinfo = &rptinfo->rptsize[i];
+                      break;
+                    }
+                }
+
+              if (rptidinfo == NULL)
+                {
+                  if (rptinfo->nreports == CONFIG_HID_MAXIDS)
+                    {
+                      return -EINVAL;
+                    }
+
+                  rptidinfo = &rptinfo->rptsize[rptinfo->nreports++];
+                  memset(rptidinfo, 0x00, sizeof(struct hid_rptsizeinfo_s));
+                }
+            }
+
+          rptinfo->haverptid = true;
+
+          rptidinfo->id = currstate->id;
+          break;
+
+        case USBHID_LOCAL_USAGE_PREFIX:
+          if (nusage == CONFIG_HID_USAGEDEPTH)
+            {
+              return -E2BIG;
+            }
+
+          usage[nusage++] = data;
+          break;
+
+        case USBHID_LOCAL_USAGEMIN_PREFIX:
+          usage_range.min = data;
+          break;
+
+        case USBHID_LOCAL_USAGEMAX_PREFIX:
+          usage_range.max = data;
+          break;
+
+        case USBHID_MAIN_COLLECTION_PREFIX:
+          if (collectionpath == NULL)
+            {
+              collectionpath = &rptinfo->collectionpaths[0];
+            }
+          else
+            {
+              struct hid_collectionpath_s *ParentCollectionPath = collectionpath;
+
+              collectionpath = &rptinfo->collectionpaths[1];
+
+              while (collectionpath->parent != NULL)
+                {
+                  if (collectionpath == &rptinfo->collectionpaths[CONFIG_HID_MAXCOLLECTIONS - 1])
+                    {
+                      return -EINVAL;
+                    }
+
+                  collectionpath++;
+                }
+
+              collectionpath->parent = ParentCollectionPath;
+            }
+
+          collectionpath->type       = data;
+          collectionpath->usage.page = currstate->attrib.usage.page;
+
+          if (nusage)
+            {
+              collectionpath->usage.usage = usage[0];
+
+              for (i = 0; i < nusage; i++)
+                usage[i] = usage[i + 1];
+
+              nusage--;
+            }
+          else if (usage_range.min <= usage_range.max)
+            {
+              collectionpath->usage.usage = usage_range.min++;
+            }
+
+          break;
+
+        case USBHID_MAIN_ENDCOLLECTION_PREFIX:
+          if (collectionpath == NULL)
+            {
+              return -EINVAL;
+            }
+
+          collectionpath = collectionpath->parent;
+          break;
+
+        case USBHID_MAIN_INPUT_PREFIX:
+        case USBHID_MAIN_OUTPUT_PREFIX:
+        case USBHID_MAIN_FEATURE_PREFIX:
+          {
+            int itemno;
+            for (itemno = 0; itemno < currstate->rptcount; itemno++)
+              {
+                struct hid_rptitem_s newitem;
+                uint8_t tag;
+
+                memcpy(&newitem.attrib, &currstate->attrib,
+                       sizeof(struct hid_rptitem_attributes_s));
+
+                newitem.flags          = data;
+                newitem.collectionpath = collectionpath;
+                newitem.id             = currstate->id;
+
+                if (nusage)
+                  {
+                    newitem.attrib.usage.usage = usage[0];
+
+                    for (i = 0; i < nusage; i++)
+                      {
+                        usage[i] = usage[i + 1];
+                      }
+                    nusage--;
+                  }
+                else if (usage_range.min <= usage_range.max)
+                  {
+                    newitem.attrib.usage.usage = usage_range.min++;
+                  }
+
+                tag = (item & ~USBHID_RPTITEM_SIZE_MASK);
+                if (tag == USBHID_MAIN_INPUT_PREFIX)
+                  {
+                    newitem.type = HID_REPORT_ITEM_IN;
+                  }
+                else if (tag == USBHID_MAIN_OUTPUT_PREFIX)
+                  {
+                    newitem.type = HID_REPORT_ITEM_OUT;
+                  }
+                else
+                  {
+                    newitem.type = HID_REPORT_ITEM_FEATURE;
+                  }
+
+                newitem.bitoffset              = rptidinfo->size[newitem.type];
+                rptidinfo->size[newitem.type] += currstate->attrib.bitsize;
+
+                 Accumulate the maximum report size
+
+                if (rptinfo->maxrptsize < newitem.bitoffset)
+                  {
+                    rptinfo->maxrptsize = newitem.bitoffset;
+                  }
+
+                if ((data & USBHID_MAIN_CONSTANT) == 0 && filter(&newitem))
+                  {
+                    if (rptinfo->nitems == CONFIG_HID_MAXITEMS)
+                      {
+                        return -EINVAL;
+                      }
+
+                    memcpy(&rptinfo->items[rptinfo->nitems],
+                           &newitem, sizeof(struct hid_rptitem_s));
+
+                    rptinfo->nitems++;
+                  }
+              }
+          }
+          break;
+        }
+
+      if ((item & USBHID_RPTITEM_TYPE_MASK) == USBHID_RPTITEM_TYPE_MAIN)
+        {
+          usage_range.min = 0;
+          usage_range.max = 0;
+          nusage = 0;
+        }
+    }
+
+  if (!(rptinfo->nitems))
+    {
+      return -ENOENT;
+    }
+
+  return OK;
+}
+*/
+
+RES_CODE usb_remote_hid_t::config_interface_enpoints()
+{
+	HANDLE interface_ep = epi_hnd[pid->bInterfaceNumber];
+	if(interface_ep)
+	{
+		for(int i=0; i<pid->bNumEndpoints && i<2; i++)
+		{
+			USBEndpointDescriptor* ped;
+
+			ped = usb_get_enpoint(config_descriptor, i, pid->bInterfaceNumber);
+			if(ped && ped->bmAttributes == ENDPOINT_TYPE_INTERRUPT)
+			{
+				if( ped->bEndpointAddress & 0x80 )
+				{
+					if(interface_ep->mode.as_bytes[0] == EPT_0)
+					{
+						interface_ep->mode.as_bytes[0] = ped->bEndpointAddress & 0x7F;
+						interface_ep->mode.as_ushort[1] = ep0_hnd->mode.as_ushort[1]; //drv_state_cnt
+						usb_svc_configendpoint(interface_ep, &ped->as_generic);
+					}
+				} else
+				{
+					if(interface_ep->mode.as_bytes[1] == EPT_0)
+					{
+						interface_ep->mode.as_bytes[1] = ped->bEndpointAddress ;
+						interface_ep->mode.as_ushort[1] = ep0_hnd->mode.as_ushort[1]; //drv_state_cnt
+						usb_svc_configendpoint(interface_ep, &ped->as_generic);
+					}
+				}
+			}
+		}
+//		set_idle(0, HID_REPORT_ALL);
+	}
+	return RES_OK;
+}
+
+RES_CODE usb_remote_hid_t::is_keypad_report(const USBHIDDescriptor *hid, int i)
+{
+	RES_CODE res;
+
+	unsigned char *report;
+	uint32_t rep_size = hid->hid_descriptors[i].wDescriptorLength;
+	report = (unsigned char*)tsk_malloc(rep_size);
+	if(report)
+	{
+		res = get_hid_report_descriptor(report, rep_size);
+		if(res == RES_OK)
+		{
+			res =hid_parse_report(report, rep_size);
+		}
+		tsk_free(report);
+	}
+	else
+		res = RES_OUT_OF_MEMORY;
+	return res;
+}
+
 RES_CODE usb_remote_hid_t::scan_hid(uint32_t port_indx, USBSubClassCode subcls, USBProtocolCode proto)
 {
 	RES_CODE res;
@@ -143,10 +596,15 @@ RES_CODE usb_remote_hid_t::scan_hid(uint32_t port_indx, USBSubClassCode subcls, 
 	// select EPT_0 and device address
 	ep0_hnd->mode.as_bytes[0] = EPT_0; // RX pipe
 	ep0_hnd->mode.as_bytes[1] = EPT_0; // TX pipe
+	epi_hnd[0]->mode.as_bytes[0] = EPT_0;
+	epi_hnd[0]->mode.as_bytes[1] = EPT_0;
+	epi_hnd[1]->mode.as_bytes[0] = EPT_0;
+	epi_hnd[1]->mode.as_bytes[1] = EPT_0;
 	res = hdc_init(port_indx);
 	if(res == RES_OK)
 	{
-		epi_hnd->mode0 = ep0_hnd->mode0;  // device hub port
+		epi_hnd[0]->mode0 = ep0_hnd->mode0;  // device hub port
+		epi_hnd[1]->mode0 = ep0_hnd->mode0;  // device hub port
 		// TRACE Device descriptor
 		TRACELN("HID: dev found %x:%x", dev_descriptor.idVendor, dev_descriptor.idProduct);
 		trace_usb_descriptor(&dev_descriptor.as_generic);
@@ -163,60 +621,39 @@ RES_CODE usb_remote_hid_t::scan_hid(uint32_t port_indx, USBSubClassCode subcls, 
 				trace_usb_descriptor(&config_descriptor->as_generic);
 
 				//loop the interfaces
-				for(uint32_t iface_indx=0; iface_indx<config_descriptor->bNumInterfaces; iface_indx++)
+				for(uint32_t iface_indx=0; iface_indx<config_descriptor->bNumInterfaces && iface_indx < 2; iface_indx++)
 				{
 					pid = usb_get_interface(config_descriptor, iface_indx);
-					if(pid && pid->bDeviceClass == HID_DEVICE_CLASS &&
-							pid->bDeviceSubClass == subcls && pid->bDeviceProtocol == proto)
+					if(pid  && pid->bDeviceClass == HID_DEVICE_CLASS )
 					{
-						// set the configuration
-//						set_configuration(0);
-						res = set_configuration(config_descriptor->bConfigurationValue);
-
-						if(res == RES_OK)
+						const USBHIDDescriptor *hid;
+						hid = usb_get_hid_descriptor(config_descriptor, iface_indx);
+						if(hid)
 						{
-							epi_hnd->mode.as_bytes[0] = EPT_0;
-							epi_hnd->mode.as_bytes[1] = EPT_0;
-							for(int i=0; i<pid->bNumEndpoints && i<2; i++)
+							config_interface_enpoints();
+							for(int i=0; i < hid->bNumDescriptors; i++)
 							{
-								USBEndpointDescriptor* ped;
-
-								ped = usb_get_enpoint(config_descriptor, i);
-								if(ped && ped->bmAttributes == ENDPOINT_TYPE_INTERRUPT)
+								if(hid->hid_descriptors[i].bDescriptorType == HIDREPORT_DESCRIPTOR)
 								{
-									if( ped->bEndpointAddress & 0x80 )
+									if(RES_OK ==is_keypad_report(hid, i))
 									{
-										if(epi_hnd->mode.as_bytes[0] == EPT_0)
+										// set the configuration
+										res = set_configuration(config_descriptor->bConfigurationValue);
+										if(res == RES_OK)
 										{
-											epi_hnd->mode.as_bytes[0] = ped->bEndpointAddress & 0x7F;
-											epi_hnd->mode.as_ushort[1] = ep0_hnd->mode.as_ushort[1]; //drv_state_cnt
-											usb_svc_configendpoint(epi_hnd, &ped->as_generic);
-										}
-									} else
-									{
-										if(epi_hnd->mode.as_bytes[1] == EPT_0)
-										{
-											epi_hnd->mode.as_bytes[1] = ped->bEndpointAddress ;
-											epi_hnd->mode.as_ushort[1] = ep0_hnd->mode.as_ushort[1]; //drv_state_cnt
-											usb_svc_configendpoint(epi_hnd, &ped->as_generic);
+											set_idle(0, HID_REPORT_ALL);
+											return res;
 										}
 									}
 								}
 							}
-							hid_idle = 255;
-							get_idle(HID_REPORT_ALL);
-							return RES_OK;
-
 						}
 					}
 				}
 			}
 		}
 	}
-
-	if(res == RES_OK)
-		res = RES_ERROR;
-	return res;
+	return RES_ERROR;
 }
 
 
