@@ -229,7 +229,7 @@
 //#define LWIP_NETIF_HOSTNAME             0
 //#define LWIP_NETIF_API                  0
 //#define LWIP_NETIF_STATUS_CALLBACK      0
-//#define LWIP_NETIF_LINK_CALLBACK        0
+#define LWIP_NETIF_LINK_CALLBACK          1
 //#define LWIP_NETIF_HWADDRHINT           0
 
 //*****************************************************************************
