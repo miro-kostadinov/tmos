@@ -22,6 +22,8 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 					 CString
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+char CSTRING::dummy_char;
+
 void* CSTRING::storage_realloc(unsigned int size)
 {
 	void* mem;
@@ -37,8 +39,6 @@ void* CSTRING::storage_realloc(unsigned int size)
 
 	return mem;
 }
-
-char CSTRING::dummy_char;
 
 /** Default constructor
  *
@@ -931,11 +931,13 @@ unsigned int CSTRING::reserve( unsigned int size)
 		{
 			// we need to make a new storage
 
+			if(size < storage.ram->len)
+				size = storage.ram->len;
 			tmp = str_malloc1(size + STR_MIN_SIZE);
 			if(tmp)
 			{
-				strcpy(tmp->buf, storage.ram->buf);
-				tmp->len = storage.ram->len;
+				memcpy(&tmp->len, &storage.ram->len, storage.ram->len + 3);
+//				tmp->len = storage.ram->len;
 				tmp->refs = 1;
 			}
 			else
@@ -1208,12 +1210,14 @@ unsigned int CSTRING::find_in_list(STR_LIST sl, unsigned int* dwRead) const
  */
 char& CSTRING::operator[]( unsigned int index )
 {
-	ASSERT(storage.adr);
+	if(!RAM_ADR(storage.adr))
+		reserve();
 	if(RAM_ADR(storage.adr))
 	{
 		ASSERT(index <= storage.ram->len);
 		return (storage.ram->buf[index]);
 	}
+	ASSERT(0);
 	return (dummy_char);
 }
 
