@@ -387,7 +387,7 @@ RES_CODE usb_remote_dev_t::hdc_init(uint32_t port_indx)
 
 
 USBEndpointDescriptor* usb_get_enpoint(const USBConfigurationDescriptor* des,
-		int indx)
+		int indx, unsigned char bInterfaceNumber)
 {
 	if (des && des->as_generic.bDescriptorType == CONFIGURATION_DESCRIPTOR)
 	{
@@ -395,18 +395,25 @@ USBEndpointDescriptor* usb_get_enpoint(const USBConfigurationDescriptor* des,
 		size -= sizeof(USBConfigurationDescriptor);
 
 		const USBGenericDescriptor *pd = &des->as_generic;
+		unsigned char interface = 0xFF;
 		while ( size > 0)
 		{
 
 			pd = pd->GetNextDescriptor();
 			size -= pd->GetLength();
-
-			if (pd->GetType() == ENDPOINT_DESCRIPTOR)
+			USBDescriptorType type = pd->GetType();
+			if(type == INTERFACE_DESCRIPTOR)
 			{
-				if (!indx--)
+				interface = ((USBInterfaceDescriptor*)pd)->bInterfaceNumber;
+			}
+			else
+			{
+				if (interface == bInterfaceNumber && type == ENDPOINT_DESCRIPTOR)
 				{
-
-					return (USBEndpointDescriptor*)pd;
+					if (!indx--)
+					{
+						return (USBEndpointDescriptor*)pd;
+					}
 				}
 			}
 		}

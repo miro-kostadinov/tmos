@@ -56,7 +56,7 @@ RES_CODE hdc_request(USBGenericRequest* req, void* ptr,  HANDLE hnd);
 RES_CODE usb_host_reset_bus(USB_DRV_INFO drv_info, HANDLE hnd);
 
 USBEndpointDescriptor* usb_get_enpoint(const USBConfigurationDescriptor* des,
-		int indx);
+		int indx, unsigned char bInterfaceNumber);
 
 
 #endif /* USB_HOST_H_ */
