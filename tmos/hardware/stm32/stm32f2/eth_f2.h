@@ -637,7 +637,7 @@ typedef struct
 /** @name ENET_Buffers_setting
   * @{
   */
-#define ETH_MAX_PACKET_SIZE    1520    /*!< ETH_HEADER + ETH_EXTRA + MAX_ETH_PAYLOAD + ETH_CRC */
+#define ETH_MAX_PACKET_SIZE    1524    /*!< ETH_HEADER + ETH_EXTRA + MAX_ETH_PAYLOAD + ETH_CRC */
 #define ETH_HEADER               14    /*!< 6 byte Dest addr, 6 byte Src addr, 2 byte length/type */
 #define ETH_CRC                   4    /*!< Ethernet CRC */
 #define ETH_EXTRA                 2    /*!< Extra bytes in some cases */
@@ -954,7 +954,7 @@ RES_CODE HAL_ETH_Init(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);
 void HAL_ETH_DMATxDescListInit(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);
 void HAL_ETH_DMARxDescListInit(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);
 void HAL_ETH_Start(ETH_TypeDef* mac);
-RES_CODE HAL_ETH_PHY_INTs(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);
+void HAL_ETH_Stop(ETH_TypeDef* mac);
 void HAL_ETH_TransmitFrame(ETH_TypeDef* mac, eth_mac_data_t* mac_data, uint32_t FrameLength);
 void HAL_ETH_ReleaseFrame(eth_mac_data_t* mac_data, uint32_t descriptors);
 uint32_t HAL_ETH_GetReceivedFrame_IT(const eth_mac_cfg_t* cfg);

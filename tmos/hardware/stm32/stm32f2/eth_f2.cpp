@@ -397,34 +397,45 @@ void HAL_ETH_Start(ETH_TypeDef* mac)
 	mac->ETH_DMAOMR |= ETH_DMAOMR_SR;
 }
 
-/**** Configure PHY to generate an interrupt when Eth Link state changes ****/
-RES_CODE HAL_ETH_PHY_INTs(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg)
+void HAL_ETH_Stop(ETH_TypeDef* mac)
 {
-	uint32_t regvalue;
-	RES_CODE res;
+	uint32_t tmpreg;
 
-	// mask 30.4
-	// Source flag 29.4 Link Down
-	// Interrupt source 1.2 Link Status
-	// Event to assert Falling
-	// Event to de-assert 1.2 Reading register 1 or	Reading register 29
+	/* Disable the DMA transmission */
+	mac->ETH_DMAOMR &= ~ETH_DMAOMR_ST;
 
-	  /* Read Register Configuration */
-//	  HAL_ETH_ReadPHYRegister(mac, cfg, PHY_MICR, &regvalue);
-//	  regvalue |= (PHY_MICR_INT_EN | PHY_MICR_INT_OE);
-	  /* Enable Interrupts */
-//	  HAL_ETH_WritePHYRegister(mac, cfg, PHY_MICR, regvalue );
+	/* Disable the DMA reception */
+	mac->ETH_DMAOMR &= ~ETH_DMAOMR_SR;
 
-	  /* Read Register Configuration */
-	  res = HAL_ETH_ReadPHYRegister(mac, cfg, PHY_REG_IMR, &regvalue);
-	  if(res == RES_OK)
-	  {
-		  regvalue |= PHY_REG_IMR_LINK_STATUS;
+	/* Disable receive state machine of the MAC for reception from the MII */
+	/* Disable the MAC reception */
+	mac->ETH_MACCR &= ~ETH_MACCR_RE;
 
-		  /* Enable Interrupt on change of link status */
-		  res = HAL_ETH_WritePHYRegister(mac, cfg, PHY_REG_IMR, regvalue);
-	  }
-	  return res;
+	/* Wait until the write operation will be taken into account:
+	 at least four TX_CLK/RX_CLK clock cycles */
+	tmpreg = mac->ETH_MACCR;
+	tsk_sleep(ETH_REG_WRITE_DELAY);
+	mac->ETH_MACCR = tmpreg;
+
+	/* Flush Transmit FIFO */
+	/* Set the Flush Transmit FIFO bit */
+	mac->ETH_DMAOMR |= ETH_DMAOMR_FTF;
+
+	/* Wait until the write operation will be taken into account:
+	 at least four TX_CLK/RX_CLK clock cycles */
+	tmpreg = mac->ETH_DMAOMR;
+	tsk_sleep(ETH_REG_WRITE_DELAY);
+	mac->ETH_DMAOMR = tmpreg;
+
+	/* Disable transmit state machine of the MAC for transmission on the MII */
+	/* Disable the MAC transmission */
+	mac->ETH_MACCR &= ~ETH_MACCR_TE;
+
+	/* Wait until the write operation will be taken into account:
+	 at least four TX_CLK/RX_CLK clock cycles */
+	tmpreg = mac->ETH_MACCR;
+	tsk_sleep(ETH_REG_WRITE_DELAY);
+	mac->ETH_MACCR = tmpreg;
 }
 
 void HAL_ETH_TransmitFrame(ETH_TypeDef* mac, eth_mac_data_t* mac_data, uint32_t FrameLength)

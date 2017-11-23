@@ -26,11 +26,19 @@ WEAK RES_CODE HAL_ETH_Init_PHY(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg)
 
 	// TO DO - read the PHY id register and call the right function
 	// for now just use LAN8720 by default
+#if ETH_PHY_LAN8700
 	res = HAL_ETH_PHY_Init_LAN8720(mac, cfg);
-
+#else
+#if ETH_PHY_TLK110
+	res = HAL_ETH_PHY_Init_TLK110(mac, cfg);
+#else
+	res = RES_ERROR;
+#endif
+#endif
 	return res;
 }
 
+#if ETH_PHY_LAN8700
 WEAK RES_CODE HAL_ETH_PHY_Init_LAN8720(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg)
 {
 	RES_CODE res;
@@ -143,6 +151,38 @@ WEAK RES_CODE HAL_ETH_PHY_Init_LAN8720(ETH_TypeDef* mac, const eth_mac_cfg_t* cf
 	return res;
 }
 
+/**** Configure PHY to generate an interrupt when Eth Link state changes ****/
+WEAK RES_CODE HAL_ETH_PHY_INTs(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg)
+{
+	uint32_t regvalue;
+	RES_CODE res;
+
+	// mask 30.4
+	// Source flag 29.4 Link Down
+	// Interrupt source 1.2 Link Status
+	// Event to assert Falling
+	// Event to de-assert 1.2 Reading register 1 or	Reading register 29
+
+	  /* Read Register Configuration */
+//	  HAL_ETH_ReadPHYRegister(mac, cfg, PHY_MICR, &regvalue);
+//	  regvalue |= (PHY_MICR_INT_EN | PHY_MICR_INT_OE);
+	  /* Enable Interrupts */
+//	  HAL_ETH_WritePHYRegister(mac, cfg, PHY_MICR, regvalue );
+
+	  /* Read Register Configuration */
+	  res = HAL_ETH_ReadPHYRegister(mac, cfg, PHY_REG_IMR, &regvalue);
+	  if(res == RES_OK)
+	  {
+		  regvalue |= PHY_REG_IMR_LINK_STATUS;
+
+		  /* Enable Interrupt on change of link status */
+		  res = HAL_ETH_WritePHYRegister(mac, cfg, PHY_REG_IMR, regvalue);
+	  }
+	  return res;
+}
+#endif
+
+#if ETH_PHY_TLK110
 WEAK RES_CODE HAL_ETH_PHY_Init_TLK110(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg)
 {
 	RES_CODE res;
@@ -277,3 +317,52 @@ WEAK RES_CODE HAL_ETH_PHY_Init_TLK110(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg
 
 
 }
+
+/**
+ *
+ * return Link status and clear interrupts (for TLK110 )
+ */
+WEAK RES_CODE HAL_ETH_PHY_INT_LINK_STATUS(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg, uint32_t *Reg)
+{
+	RES_CODE res;
+	uint32_t status;
+
+	/* Clear interrupt status () */
+	HAL_ETH_ReadPHYRegister(mac, cfg,	PHY_TLK110_MISR1, &status);
+	res = HAL_ETH_ReadPHYRegister(mac, cfg, PHY_REG_BSR, &status);
+	if(res == RES_OK && Reg)
+	{
+		*Reg = (status & PHY_REG_BSR_LINKED_STATUS);
+	}
+
+	return res;
+}
+
+/**** Configure PHY to generate an interrupt when Eth Link state changes for TLK110 ****/
+WEAK RES_CODE HAL_ETH_PHY_INTs(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg)
+{
+	uint32_t regvalue;
+	RES_CODE res;
+
+	res = HAL_ETH_ReadPHYRegister(mac, cfg, PHY_TLK110_PHYSCR, &regvalue);
+	if(res == RES_OK)
+	{
+		regvalue |= PHY_TLK110_PHYSCR_INT_OE | PHY_TLK110_PHYSCR_INT_EN | PHY_TLK110_PHYSCR_INT_POL;
+
+		/* Enable Interrupt on change of link status */
+		res = HAL_ETH_WritePHYRegister(mac, cfg, PHY_TLK110_PHYSCR, regvalue);
+		if(res == RES_OK)
+		{
+			res = HAL_ETH_ReadPHYRegister(mac, cfg, PHY_TLK110_MISR1, &regvalue);
+			if(res == RES_OK)
+			{
+				regvalue |= PHY_TLK110_MISR1_LINK_EN;
+				res = HAL_ETH_WritePHYRegister(mac, cfg, PHY_TLK110_MISR1, regvalue);
+			}
+		}
+	}
+	return res;
+}
+
+#endif
+

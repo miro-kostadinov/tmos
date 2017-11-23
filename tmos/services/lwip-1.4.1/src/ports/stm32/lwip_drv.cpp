@@ -15,8 +15,10 @@
 #include "lwip/dhcp.h"
 #include "lwip/init.h"
 #include "lwip/stats.h"
+#include "lwip/netif.h"
 
 #include <lwip_api.h>
+#include <tmos_drivers.h>
 //*****************************************************************************
 //
 // lwIP API Header Files
@@ -58,6 +60,7 @@
 //#include "driverlib/sysctl.h"
 
 
+#if LWIP_RX_L2_QUE || LWIP_TX_L2_QUE
 /**
  * Push a pbuf packet onto a pbuf packet queue
  *
@@ -145,6 +148,7 @@ static struct pbuf* dequeue_packet(struct pbufq *q)
 	SYS_ARCH_UNPROTECT(lev);
 	return (pBuf);
 }
+#endif
 
 /**
  * This function should do the actual transmission of the packet. The packet is
@@ -247,7 +251,9 @@ static err_t low_level_transmit(struct netif *netif, struct pbuf *p)
  */
 static err_t low_level_output(struct netif *netif, struct pbuf *p)
 {
+#if LWIP_TX_L2_QUE
 	LWIP_DRIVER_DATA* drv_data = (LWIP_DRIVER_DATA*)netif;
+#endif
 	err_t errval;
 	SYS_ARCH_DECL_PROTECT(lev);
 
@@ -272,6 +278,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 	 */
 	errval = low_level_transmit(netif, p);
 	TRACELN_LWIP("ETH: tx %x %u res %u", p, p->tot_len, errval);
+#if LWIP_TX_L2_QUE
 	if(errval != ERR_OK)
 	{
 		/* Otherwise place the pbuf on the transmit queue. */
@@ -283,6 +290,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 		}
 
 	}
+#endif
 
 
 	/* Return to prior interrupt state and return. */
@@ -429,19 +437,6 @@ WEAK_C void lwIPHostTimerHandler(void)
 static void lwIPServiceTimers(struct netif *netif)
 {
 	LWIP_DRIVER_DATA* drv_data = (LWIP_DRIVER_DATA*)netif;
-    //
-    // Service the MDIX timer.
-    //
-    if(drv_data->timer_main > drv_data->timer_mdix)
-    {
-        //
-        // See if there has not been a link for 2 seconds. (auto MDIX)
-        //
-        //
-        // Reset the MDIX timer.
-        //
-    	drv_data->timer_mdix = drv_data->timer_main + 2048;
-    }
 
     //
     // Service the host timer.
@@ -524,7 +519,10 @@ static void lwIPServiceTimers(struct netif *netif)
  */
 err_t ethernetif_init(struct netif *netif)
 {
+#if LWIP_RX_L2_QUE || LWIP_TX_L2_QUE
 	LWIP_DRIVER_DATA* drv_data = (LWIP_DRIVER_DATA*)netif;
+#endif
+
 	LWIP_ASSERT("netif != NULL", (netif != NULL));
 
 #if LWIP_NETIF_HOSTNAME
@@ -550,16 +548,89 @@ err_t ethernetif_init(struct netif *netif)
 	netif->linkoutput = low_level_output;
 
 //	drv_data->ethaddr = (struct eth_addr *) &(netif->hwaddr[0]);
+#if LWIP_TX_L2_QUE
 	drv_data->txq.qread = drv_data->txq.qwrite = 0;
 	drv_data->txq.overflow = 0;
+#endif
+#if LWIP_RX_L2_QUE
 	drv_data->rxq.qread = drv_data->rxq.qwrite = 0;
 	drv_data->rxq.overflow = 0;
+#endif
 
 	/* initialize the hardware */
 	low_level_init(netif);
 
 	return (ERR_OK);
 }
+
+#if LWIP_NETIF_LINK_CALLBACK
+/**
+  * @brief  This function notify user about link status changement.
+  * @param  netif: the network interface
+  * @retval None
+  */
+WEAK void ethernetif_notify_conn_changed(struct netif *netif)
+{
+  /* NOTE : This is function clould be implemented in user file
+            when the callback is needed,
+  */
+}
+
+/**
+  * @brief  Link callback function, this function is called on change of link status
+  *         to update low level driver configuration.
+  * @param  netif: The network interface
+  * @retval None
+  */
+void ethernetif_update_config(struct netif *netif)
+{
+	LWIP_DRIVER_DATA* drv_data = (LWIP_DRIVER_DATA*)netif;
+	const LWIP_DRIVER_INFO* drv_info = drv_data->drv_info;
+
+	if (netif_is_link_up(netif))
+	{
+		HAL_ETH_Start (drv_info->hw_base);
+
+		// Start DHCP, if enabled.
+#if LWIP_DHCP
+		if (drv_data->ip_addr_mode == IPADDR_USE_DHCP)
+		{
+			dhcp_start(netif);
+		}
+#endif
+
+		// Start AutoIP, if enabled and DHCP is not.
+#if LWIP_AUTOIP
+		if (drv_data->ip_addr_mode == IPADDR_USE_AUTOIP)
+		{
+			autoip_start(netif);
+		}
+#endif
+	}
+	else
+	{
+		// Stop DHCP, if enabled.
+#if LWIP_DHCP
+		if (drv_data->ip_addr_mode == IPADDR_USE_DHCP)
+		{
+			dhcp_stop(netif);
+		}
+#endif
+
+		// Stop AutoIP, if enabled and DHCP is not.
+#if LWIP_AUTOIP
+		if (drv_data->ip_addr_mode == IPADDR_USE_AUTOIP)
+		{
+			autoip_stop(netif);
+		}
+#endif
+		/* Stop MAC interface */
+		HAL_ETH_Stop(drv_info->hw_base);
+	}
+
+	ethernetif_notify_conn_changed(netif);
+}
+#endif
 
 //*****************************************************************************
 //
@@ -651,30 +722,42 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
     //
     drv_data->ip_addr_mode = set->ip_addr_mode;
 
-    //
-    // Start DHCP, if enabled.
-    //
+
+    if (netif_is_link_up(&drv_data->lwip_netif))
+	{
+		//
+		// Start DHCP, if enabled.
+		//
 #if LWIP_DHCP
-    if(drv_data->ip_addr_mode == IPADDR_USE_DHCP)
-    {
-        dhcp_start(&drv_data->lwip_netif);
-    }
+		if (drv_data->ip_addr_mode == IPADDR_USE_DHCP)
+		{
+			dhcp_start(&drv_data->lwip_netif);
+		}
 #endif
 
-    //
-    // Start AutoIP, if enabled and DHCP is not.
-    //
+		//
+		// Start AutoIP, if enabled and DHCP is not.
+		//
 #if LWIP_AUTOIP
-    if(drv_data->ip_addr_mode == IPADDR_USE_AUTOIP)
-    {
-        autoip_start(&drv_data->lwip_netif);
-    }
+		if (drv_data->ip_addr_mode == IPADDR_USE_AUTOIP)
+		{
+			autoip_start(&drv_data->lwip_netif);
+		}
 #endif
 
-    //
-    // Bring the interface up.
-    //
-    netif_set_up(&drv_data->lwip_netif);
+		/* When the netif is fully configured this function must be called */
+		netif_set_up(&drv_data->lwip_netif);
+	}
+	else
+	{
+		/* When the netif link is down this function must be called */
+		netif_set_down(&drv_data->lwip_netif);
+	}
+
+#if LWIP_NETIF_LINK_CALLBACK
+    /* Set the link callback function, this function is called on change of link status*/
+    netif_set_link_callback(&drv_data->lwip_netif, ethernetif_update_config);
+#endif
 }
 
 //*****************************************************************************
@@ -887,6 +970,7 @@ void lwIPNetworkConfigChange(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
 //*****************************************************************************
 
 
+#if LWIP_RX_L2_QUE
 /**
  * This function should be called when a packet is ready to be read
  * from the interface. It uses the function low_level_input() that
@@ -917,7 +1001,23 @@ int ethernetif_input(struct netif *netif)
 
 	return (count);
 }
+#else
+void ethernetif_input(struct netif *netif)
+{
+	struct pbuf *p;
 
+	while( (p = low_level_receive(netif)) )
+	{
+		if (ethernet_input(p, netif) != ERR_OK)
+		{
+			LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: input error\n"));
+			pbuf_free(p);
+		}
+	}
+}
+#endif
+
+#if LWIP_RX_L2_QUE || LWIP_TX_L2_QUE
 /**
  * Process tx and rx packets at the low-level interrupt.
  *
@@ -928,6 +1028,7 @@ static void stm32_eth_interrupt(struct netif *netif)
 	LWIP_DRIVER_DATA* drv_data = (LWIP_DRIVER_DATA*)netif;
 	struct pbuf *p;
 
+#if LWIP_RX_L2_QUE
 	/*
 	 * Process the transmit and receive queues as long as there is receive
 	 * data available
@@ -945,6 +1046,7 @@ static void stm32_eth_interrupt(struct netif *netif)
 			break;
 		}
 
+#if LWIP_TX_L2_QUE
 		/* Check if TX fifo is empty and packet available */
 		if (!PBUF_QUEUE_EMPTY(&drv_data->txq))
 		{
@@ -957,11 +1059,14 @@ static void stm32_eth_interrupt(struct netif *netif)
 			if(p == NULL)
 				dequeue_packet(&drv_data->txq);
 		}
+#endif
 
 		/* Read another packet from the RX fifo */
 		p = low_level_receive(netif);
 	}
+#endif
 
+#if LWIP_TX_L2_QUE
 	/* One more check of the transmit queue/fifo */
 	if (!PBUF_QUEUE_EMPTY(&drv_data->txq))
 	{
@@ -974,8 +1079,9 @@ static void stm32_eth_interrupt(struct netif *netif)
 		if(p == NULL)
 			dequeue_packet(&drv_data->txq);
 	}
+#endif
 }
-
+#endif
 
 //*----------------------------------------------------------------------------
 //*			lwIP thread
@@ -994,6 +1100,7 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 {
 	LWIP_DRIVER_DATA*  drv_data = drv_info->drv_data;
     CHandle helper;
+    CHandle phy_int;
 
 	ip_adr_set set;
 
@@ -1006,6 +1113,14 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 	helper.tsk_safe_open(drv_info->info.drv_index, 0);
 	helper.mode0 = 0; //mode0=0 control handle
 	helper.tsk_start_read(NULL, 0);
+	if(drv_info->phy_int)
+	{
+		phy_int.tsk_safe_open(GPIO_IRQn, drv_info->phy_int);
+		phy_int.len = 0;
+		phy_int.set_res_cmd(CMD_READ|FLAG_LOCK);
+		phy_int.dst.as_voidptr = nullptr;
+		phy_int.tsk_start_handle();
+	}
     while(1)
     {
     	unsigned int sig;
@@ -1015,11 +1130,36 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
         // 1) process ISRs
     	if(sig)
     	{
+#if LWIP_RX_L2_QUE || LWIP_TX_L2_QUE
 			//queue in/out packets
             stm32_eth_interrupt(&drv_data->lwip_netif);
+#endif
 
 			//process input
 		    ethernetif_input(&drv_data->lwip_netif);
+
+		    //process phy interrupts
+			if (sig & phy_int.signal)
+			{
+				uint32_t regvalue = 0;
+
+				if(HAL_ETH_PHY_INT_LINK_STATUS(drv_info->hw_base,
+						drv_info->mac_cfg, &regvalue) == RES_OK)
+				{
+					if (regvalue )
+					{
+						netif_set_link_up(&drv_data->lwip_netif);
+					}
+					else
+					{
+						netif_set_link_down(&drv_data->lwip_netif);
+					}
+
+				}
+
+				phy_int.set_res_cmd(CMD_READ|FLAG_LOCK);
+				phy_int.tsk_start_handle();
+		    }
     	}
 
         // 2) get waiting clients
@@ -1065,7 +1205,6 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
         	if(sig < drv_data->timer_main)
         	{
         		//timer overflow
-        		drv_data->timer_mdix &= 0x7FFFFFFF;
         		drv_data->timer_tcp  &= 0x7FFFFFFF;
 				#if HOST_TMR_INTERVAL
 				drv_data->timer_host &= 0x7FFFFFFF;

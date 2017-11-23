@@ -29,6 +29,7 @@
 #include "tim_f2.h"
 #include "crc_f2.h"
 #include "eth_f2.h"
+#include "eth_phy_f2.h"
 #include "dac_f2.h"
 
 #endif /* SERIES_CPP_H_ */

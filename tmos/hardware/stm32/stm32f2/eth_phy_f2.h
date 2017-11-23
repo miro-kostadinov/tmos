@@ -60,8 +60,7 @@
 #define PHY_REG_MISR_LINK_INTERRUPT         0x2000  //!<  PHY link status interrupt mask
 #endif
 
-#define ETH_PHY_LAN8700
-#ifdef ETH_PHY_LAN8700
+#if ETH_PHY_LAN8700
 
 //// Extended PHY Registers
 #define PHY_REG_IMR     0x1E    //!< PHY Interrupt Mask Register
@@ -81,6 +80,7 @@
 #define PHY_REG_SR_DUPLEX_STATUS            0x0010  //!<  PHY Duplex mask
 #endif
 
+#if ETH_PHY_TLK110
 /// ---------------- TLK110 Registers -----------------------------------------
 #define PHY_TLK110_BMCR 		0x00  //!< RW  Basic Mode Control Register
 #define PHY_TLK110_BMSR 		0x01  //!< RO  Basic Mode Status Register
@@ -139,12 +139,40 @@
 #define PHY_TLK110_PHYSTS_SPEED			0x0002  //!< Speed Status: 1 = 10 Mb/s mode 0 = 100 Mb/s mode
 #define PHY_TLK110_PHYSTS_LINK			0x0001  //!< Link Status. This bit is a duplicate of the Link Status bit in the BMSR register (0x0001)
 
+/// PHY_TLK110_PHYSCR: 		(phy Offset: 0x11)  RW  PHY Specific Control Register
+#define PHY_TLK110_PHYSCR_DISABLE_PLL	0x8000  //!< Disable internal clocks Circuitries
+#define PHY_TLK110_PHYSCR_PS_ENABLE		0x4000  //!< Enable power save modes
+#define PHY_TLK110_PHYSCR_PS_MODES		0x3000  //!< Power Save Modes
+#define PHY_TLK110_PHYSCR_SCRAMBLER_BY	0x0800  //!< Scrambler Bypass
+#define PHY_TLK110_PHYSCR_LB_FIFO_DEPTH	0x0300  //!< Far-End Loopback FIFO Depth
+#define PHY_TLK110_PHYSCR_COL_FD 		0x0010  //!< Collision in Full-Duplex Mode
+#define PHY_TLK110_PHYSCR_INT_POL		0x0008  //!< Interrupt Polarity
+#define PHY_TLK110_PHYSCR_TEST_INT		0x0004  //!< Test Interrupt
+#define PHY_TLK110_PHYSCR_INT_EN		0x0002  //!< Enable event based interrupts (MISR register)
+#define PHY_TLK110_PHYSCR_INT_OE		0x0001  //!< INT / PWDN is an Interrupt Output
+
+/// PHY_TLK110_MISR1: 		(phy Offset: 0x12)  RW  MII Interrupt Status Register 1
+#define PHY_TLK110_MISR1_LINK_CHANGED	0x2000	//!< RO COR Change of Link Status interrupt
+#define PHY_TLK110_MISR1_SPEED_CHANGED	0x1000	//!< RO COR Change of Speed Status interrupt
+#define PHY_TLK110_MISR1_DUPLEX_CHANGED	0x0800	//!< RO COR Change of duplex status interrupt
+#define PHY_TLK110_MISR1_NEGO_DONE		0x0400	//!< RO COR Auto-Negotiation Complete interrupt
+#define PHY_TLK110_MISR1_FC_HF_INT		0x0200	//!< RO COR False Carrier Counter half-full interrupt
+#define PHY_TLK110_MISR1_RE_HF_INT		0x0100	//!< RO COR Receive Error Counter half-full interrupt
+#define PHY_TLK110_MISR1_LINK_EN		0x0020	//!< RW Enable Interrupt on change of link status
+#define PHY_TLK110_MISR1_SPEED_EN		0x0010	//!< RW Enable Interrupt on change of speed status
+#define PHY_TLK110_MISR1_DUPLEX_EN		0x0008	//!< RW Enable Interrupt on change of duplex status
+#define PHY_TLK110_MISR1_NEGO_EN		0x0004	//!< RW Enable Interrupt on Auto-negotiation complete event
+#define PHY_TLK110_MISR1_FC_HF_EN		0x0002	//!< RW Enable Interrupt on False Carrier Counter Register half-full event
+#define PHY_TLK110_MISR1_RE_HF_EN		0x0001	//!< RW Enable Interrupt on Receive Error Counter Register half-full event
+#endif
+
 RES_CODE HAL_ETH_Init_PHY(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);
 
 RES_CODE HAL_ETH_PHY_Init_LAN8720(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);
 RES_CODE HAL_ETH_PHY_Init_TLK110(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);
 
-
+RES_CODE HAL_ETH_PHY_INT_LINK_STATUS(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg, uint32_t *Reg);
+RES_CODE HAL_ETH_PHY_INTs(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg);
 
 #endif /* HARDWARE_STM32_STM32F2_ETH_PHY_F2_H_ */
 

@@ -31,6 +31,14 @@
 extern "C" void lwIPHostTimerHandler(void);
 #endif
 
+#ifndef LWIP_TX_L2_QUE
+#define LWIP_TX_L2_QUE 0
+#endif
+
+#ifndef LWIP_RX_L2_QUE
+#define LWIP_RX_L2_QUE 0
+#endif
+
 /**
  * Number of pbufs supported in low-level tx/rx pbuf queue.
  *
@@ -65,6 +73,7 @@ RES_CODE lwip_process_cmd(CSocket* client, struct netif *netif);
 #define IPADDR_USE_AUTOIP       2
 
 
+#if LWIP_RX_L2_QUE || LWIP_TX_L2_QUE
 /* Helper struct to hold a queue of pbufs for transmit and receive. */
 struct pbufq
 {
@@ -73,6 +82,7 @@ struct pbufq
 	unsigned long qread;
 	unsigned long overflow;
 };
+#endif
 
 struct ip_adr_set
 {
@@ -94,9 +104,6 @@ struct LWIP_DRIVER_DATA
 	/** The local time for the lwIP Library Abstraction layer, used to support
 	 * the Host and lwIP periodic callback functions.  **/
 	unsigned long timer_main;
-
-	/** The local time when the soft MDI/MDIX switch will be switched. **/
-	unsigned long timer_mdix;
 
 	/** The local time when the TCP timer will be serviced. **/
 	unsigned long timer_tcp;
@@ -127,8 +134,12 @@ struct LWIP_DRIVER_DATA
 	unsigned long timer_DHCPFine;
 	#endif
 
+	#if LWIP_TX_L2_QUE
 	struct pbufq txq;
+	#endif
+	#if LWIP_RX_L2_QUE
 	struct pbufq rxq;
+	#endif
 
     HANDLE			waiting;
     HANDLE			helper;
@@ -165,6 +176,7 @@ struct LWIP_DRIVER_INFO
 	ETH_TypeDef*			hw_base;	//!< pointer to the hardware peripheral
 	LWIP_DRIVER_DATA* 		drv_data;	//!< pointer to the driver data
 	const PIN_DESC*	  		eth_pins;	//!< zero terminated PIN_DESC list
+	const PIN_DESC*	  		phy_int;	//!< PHY interrupt pin
 	const eth_mac_cfg_t*	mac_cfg;	//!< mac configuration
 };
 
