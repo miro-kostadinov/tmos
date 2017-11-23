@@ -8,8 +8,9 @@
 #include <tmos.h>
 #include <tmos_time.h>
 
-const char day_name[8][4] = {"???", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-const uint8_t month_lengths[] = {0,	  31,   28,    31,    30,    31,    30,    31,     31,   30,     31,   30,   31 };
+const char time_t::day_name[8][4] = {"???", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+const char time_t::mon_name[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+const uint8_t time_t::month_lengths[] = {0,	  31,   28,    31,    30,    31,    30,    31,     31,   30,     31,   30,   31 };
 const uint8_t month_start[]   = {0,	   0,    3,     3,     6,     1,     4,     6,      2,    5,      0,    3,   5 };
 const uint16_t month_base_day[12] =
 {
@@ -27,6 +28,12 @@ const uint16_t month_base_day[12] =
    31+28+31+30+31+30+31+31+30+31+30,
 };
 
+WEAK time_t get_current_time()
+{
+	time_t tm;
+	tm = 0ULL;
+	return tm;
+}
 
 static int is_leap_year (int year)
 {
@@ -47,7 +54,7 @@ bool time_t::is_valid() const
 				days += is_leap_year(year);
 			if(mday >= 1 && mday <= days )
 			{
-				if(hour <= 23 && minute <= 59)
+				if(hour <= 23 && minute <= 59 && second < 60)
 					return true;
 			}
 		}
@@ -55,6 +62,34 @@ bool time_t::is_valid() const
 
 	return false;
 }
+
+/**
+ *
+ * @param change_hour - offset from UTC at which time change occurs
+ *   1 for all Europe, for America change is at 2am local time
+ * @return true when this is in summer time
+ */
+bool time_t::is_DST(unsigned int change_hour)
+{
+	time_t tmp;
+
+	tmp.year = year;    // DST start 1:59:59
+	tmp.mon = 3;
+	tmp.mday = 31 - ((year * 5) / 4 + 4) % 7;
+	tmp.hour = change_hour;
+	tmp.minute = 0;
+	tmp.second = 0;
+
+	if(*this > tmp)
+	{
+		tmp.mon = 10;	// DST end 2:59:59
+		tmp.mday = 31 - ((year * 5) / 4 + 1) % 7;
+		if(*this < tmp)
+			return true;
+	}
+	return false;
+}
+
 
 uint32_t time_t::get_week_day() const
 {
@@ -73,6 +108,331 @@ uint32_t time_t::get_week_day() const
 		return (wday % 7) +1;
 	}
 	return 0;
+}
+
+int time_t::sscanf(const char* buf, const char* format, ... )
+{
+	int scaned = 0, new_pos, tmp, pos=0;
+	va_list lst;
+	va_start(lst, format);
+	bool stop = false;
+	if(buf && format)
+	{
+		while(format[0] && buf[0] && !stop)
+		{
+			if(format[0]== '%')
+			{
+				format++;
+				switch(format[0])
+				{
+				case 't':
+					format++;
+					if(format[0] == 'M')
+					{
+						for(int i=0; i<12; i++)
+						{
+							if(!strncmp(buf, mon_name[i], 3))
+							{
+								new_pos = 3;
+								mon = i+1;
+								break;
+							}
+						}
+						if(new_pos)
+							break;
+					}
+					stop = true;
+					continue;
+					break;
+
+				case 'Y':
+					if( 2 != tmos_sscanf(buf, "%4u%n", &tmp, &new_pos))
+					{
+						stop = true;
+						continue;
+					}
+					year = tmp;
+					break;
+				case 'y':
+				case 'M':
+				case 'D':
+				case 'h':
+				case 'm':
+				case 's':
+					if( 2 != tmos_sscanf(buf, "%02u%n", &tmp, &new_pos))
+					{
+						stop = true;
+						continue;
+					}
+					switch(format[0])
+					{
+					case 'y':
+						year = tmp + 2000;
+						break;
+					case 'M':
+						mon = tmp;
+						if(tmp <1 || tmp > 12)
+							stop = true;
+						break;
+					case 'D':
+						mday = tmp;
+						if(tmp <1 || tmp > 31)
+							stop = true;
+						break;
+					case 'h':
+						hour = tmp;
+						if(tmp < 0 || tmp >= 24 )
+							stop = true;
+						break;
+					case 'm':
+						minute = tmp;
+						if(tmp < 0 || tmp > 59)
+							stop = true;
+						break;
+					case 's':
+						second = tmp;
+						if(tmp < 0 || tmp > 59)
+							stop = true;
+						break;
+					}
+					if(stop)
+						continue;
+					break;
+
+				case 'n':
+				{
+					int* arg;
+					arg = va_arg(lst, int* );
+					*arg = pos;
+					break;
+				}
+				default:
+					stop = true;
+					continue;
+				}
+				scaned++;
+				format++;
+
+				while(buf[0]&& new_pos)
+				{
+					buf++; pos++; new_pos--;
+				}
+				if(!buf[0])
+					continue;
+			}
+			else
+			{
+				if(buf[0] != format[0])
+				{
+					stop = true;
+					continue;
+				}
+				if(buf[0] && buf[0] == ' ')
+				{
+					while(buf[0] && buf[0] == ' ')
+					{
+						buf++; pos++;
+					}
+					while(format[0] && format[0] == ' ')
+						format++;
+				}
+				else
+				{
+					buf++; pos++; format++;
+				}
+			}
+		}
+	}
+	if(!stop && buf[0]== 0 && format[0])
+	{
+		if(format[0] == '%' && format[1] == 'n')
+		{
+			int* arg;
+			arg = va_arg(lst, int* );
+			*arg = pos;
+		}
+	}
+	va_end(lst);
+	return scaned;
+}
+
+static unsigned int read2XX(const char* str, unsigned int& pos, bool&res)
+{
+	if(!str[pos] || !IS_DIGIT(str[pos]) || !IS_DIGIT(str[pos+1]) || !res )
+	{
+		res = false;
+		return 0;
+	}
+
+	unsigned value = (str[pos++]-'0')*10;
+	return (value + str[pos++] - '0');
+}
+
+unsigned int time_t::set_from_xml_datetime(const char* str)
+{
+	//YYYY-MM-DDThh:mm:ss
+	bool res=true;
+	unsigned int pos=0;
+
+	year = read2XX(str, pos, res);
+	mon = read2XX(str, pos, res);
+	year = year*100 +mon;
+	if(str[pos++] != '-')
+		return 0;
+
+	mon = read2XX(str, pos, res);
+	if(str[pos++] != '-')
+		return 0;
+
+	mday = read2XX(str, pos, res);
+	if(str[pos++] != 'T')
+		return 0;
+
+	hour = read2XX(str, pos, res);
+	if(str[pos++] != ':')
+		return 0;
+
+	minute = read2XX(str, pos, res);
+	if(str[pos++] != ':')
+		return 0;
+
+	second = read2XX(str, pos, res);
+
+	//skip any fractional part
+	if(str[pos]=='.')
+	{
+		while(IS_DIGIT(str[++pos]))
+			;
+	}
+
+	//skip time zone
+	if(str[pos]=='Z')
+	{
+		pos++;
+	} else
+	{
+		if((str[pos]=='+') || (str[pos]=='-'))
+		{
+			pos++;
+			read2XX(str, pos, res);
+			if(str[pos++] != ':')
+				res=false;
+			read2XX(str, pos, res);
+		}
+	}
+
+	if(res && is_valid())
+		return pos;
+	return 0;
+}
+
+unsigned int time_t::set_from_xml_date(const char* str)
+{
+	//YYYY-MM-DDThh:mm:ss
+	bool res=true;
+	unsigned int pos=0;
+
+	year = read2XX(str, pos, res);
+	mon = read2XX(str, pos, res);
+	year = year*100 +mon;
+	if(str[pos++] != '-')
+		return CTIME_INVALID_YEAR;
+
+	mon = read2XX(str, pos, res);
+	if(str[pos++] != '-')
+		return CTIME_INVALID_MONTH;
+
+	mday = read2XX(str, pos, res);
+	if(str[pos])
+	{
+		if(str[pos++] != 'T')
+			return CTIME_INVALID_HOUR;
+
+		hour = read2XX(str, pos, res);
+		if(str[pos] != '.' && str[pos] != ':')
+			return CTIME_INVALID_MINUTE;
+
+		minute = read2XX(str, ++pos, res);
+		if(str[pos] != '.' && str[pos] != ':')
+			return 0;
+
+		second = read2XX(str, ++pos, res);
+	}else
+	{
+		hour =0;
+		minute =0;
+		second = 0;
+	}
+
+	//skip any fractional part
+	if(str[pos]=='.')
+	{
+		while(IS_DIGIT(str[++pos]))
+			;
+	}
+
+	//skip time zone
+	if(str[pos]=='Z')
+	{
+		pos++;
+	} else
+	{
+		if((str[pos]=='+') || (str[pos]=='-'))
+		{
+			pos++;
+			read2XX(str, pos, res);
+			if(str[pos] != '.' && str[pos] != ':')
+				res=false;
+			pos++;
+			read2XX(str, pos, res);
+		}
+	}
+
+	if(res && is_valid())
+		return pos;
+	return 0;
+}
+
+static int read(const char* &val)
+{
+	int res = 0;
+	while( (val[0] >='0') && (val[0] <= '9'))
+	{
+		res *= 10;
+		res += val[0] - '0';
+		val++;
+	}
+	if(val[0])
+		val++;
+	return res;
+}
+
+/** Set from various formats such as:
+ * 		 "00/02/02,16:06:11"
+ * 		 "2000*2*2,16:06:11"
+ *
+ * @param val
+ */
+void time_t::set_from_YYMMDDHHMMSSZZ(const char* val)
+{
+
+	year = read(val);
+	if(year <100)
+	{
+		year += 2000;
+	}
+	mon = read(val);
+	mday = read(val);
+	hour = read(val);
+	minute = read(val);
+	second = read(val);
+}
+
+CSTRING time_t::sprintf( const char* format) const
+{
+	CSTRING str;
+	sprintf(str, format);
+	return str;
 }
 
 void time_t::sprintf(CSTRING& str, const char* format) const
@@ -110,6 +470,10 @@ void time_t::sprintf(CSTRING& str, const char* format) const
 			case 'w':
 				str += day_name[get_week_day()];
 				break;
+			case 'b':
+				if(mon && mon < 13)
+					str += mon_name[mon-1];
+				break;
 			default:
 				str += format[0];
 				break;
@@ -122,12 +486,13 @@ void time_t::sprintf(CSTRING& str, const char* format) const
 	}
 }
 
-time_t& time_t::operator= (const time_t& T)
+CSTRING time_t::xml_date_time(void) const
 {
-	__disable_irq();
-	time64 = T.time64;
-	__enable_irq();
-	return *this;
+	CSTRING DateTime;
+
+	DateTime.format("%04.4d-%02.2u-%02.2uT%02.2u:%02.2u:%02.2u",
+			year, mon, mday, hour, minute, second);
+	return DateTime;
 }
 
 time_t& time_t::operator= (unsigned int seconds)
@@ -189,6 +554,15 @@ time_t& time_t::operator= (unsigned int seconds)
 	return *this;
 }
 
+uint64_t time_t::get_atomic()
+{
+	uint64_t time;
+	__disable_irq();
+	time = time64;
+	__enable_irq();
+	return time;
+}
+
 time_t::operator unsigned int() const
 {
 	if(is_valid())
@@ -217,81 +591,3 @@ time_t::operator unsigned int() const
 }
 
 
-static unsigned int read2XX(const char* str, unsigned int& pos, bool&res)
-{
-	if(!str[pos] || !IS_DIGIT(str[pos]) || !IS_DIGIT(str[pos+1]) || !res )
-	{
-		res = false;
-		return 0;
-	}
-
-	unsigned value = (str[pos++]-'0')*10;
-	return (value + str[pos++] - '0');
-}
-
-unsigned int time_t::set_from_xml_date(const char* str)
-{
-	//YYYY-MM-DDThh:mm:ss
-	bool res=true;
-	unsigned int pos=0;
-
-	year = read2XX(str, pos, res);
-	mon = read2XX(str, pos, res);
-	year = year*100 +mon;
-	if(str[pos++] != '-')
-		return 0;
-
-	mon = read2XX(str, pos, res);
-	if(str[pos++] != '-')
-		return 5;
-
-	mday = read2XX(str, pos, res);
-	if(str[pos])
-	{
-		if(str[pos++] != 'T')
-			return 11;
-
-		hour = read2XX(str, pos, res);
-		if(str[pos] != '.' && str[pos] != ':')
-			return 14;
-
-		minute = read2XX(str, ++pos, res);
-		if(str[pos] != '.' && str[pos] != ':')
-			return 0;
-
-		second = read2XX(str, ++pos, res);
-	}else
-	{
-		hour =0;
-		minute =0;
-		second = 0;
-	}
-
-	//skip any fractional part
-	if(str[pos]=='.')
-	{
-		while(IS_DIGIT(str[++pos]))
-			;
-	}
-
-	//skip time zone
-	if(str[pos]=='Z')
-	{
-		pos++;
-	} else
-	{
-		if((str[pos]=='+') || (str[pos]=='-'))
-		{
-			pos++;
-			read2XX(str, pos, res);
-			if(str[pos] != '.' && str[pos] != ':')
-				res=false;
-			pos++;
-			read2XX(str, pos, res);
-		}
-	}
-
-	if(res && is_valid())
-		return pos;
-	return 0;
-}
