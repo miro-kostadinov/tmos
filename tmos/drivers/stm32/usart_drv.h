@@ -36,15 +36,16 @@ struct USART_DRIVER_DATA
 	unsigned int cnt;					//!< number of open handles
 	HANDLE hnd_rcv;						//!< doc!
 	HANDLE hnd_snd;						//!< doc!
-	unsigned char * rx_ptr;				//!< doc!
-	unsigned char * rx_wrptr;			//!< doc!
-//	unsigned int rx_remaining;			//!< doc!
+	void * rx_ptr;						//!< doc!
+	void * rx_wrptr;					//!< doc!
 	unsigned int usart_err;
 	unsigned char rx_buf[USART_DRV_RX_BUF_SIZE];	//!< doc!
 	struct USART_DRIVER_MODE mode;		//!< copy of the current USART mode
 #if USE_UART_DMA_DRIVER
-	CHandle		rx_dma_hnd;
-	CHandle		tx_dma_hnd;
+	CHandle				rx_dma_hnd;
+	CHandle				tx_dma_hnd;
+	DMA_DRIVER_MODE		rx_dma_mode;
+	DMA_DRIVER_MODE		tx_dma_mode;
 #endif
 };
 
