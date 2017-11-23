@@ -256,7 +256,7 @@ RES_CODE usb_remote_msc_t::scan_msc(uint32_t port_indx, USBSubClassCode subcls, 
 							{
 								USBEndpointDescriptor* ped;
 
-								ped = usb_get_enpoint(config_descriptor, i);
+								ped = usb_get_enpoint(config_descriptor, i, pid->bInterfaceNumber);
 								if(ped && ped->bmAttributes == ENDPOINT_TYPE_BULK)
 								{
 									if( ped->bEndpointAddress & 0x80 )

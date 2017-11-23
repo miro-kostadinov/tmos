@@ -164,7 +164,7 @@ RES_CODE usb_remote_prn_t::scan_printer(uint32_t port_indx)
 									USBEndpointDescriptor* ped;
 									int config_fifo;
 
-									ped = usb_get_enpoint(config_descriptor, i);
+									ped = usb_get_enpoint(config_descriptor, i, pid->bInterfaceNumber);
 									if(!ped)
 										return RES_ERROR;
 									if((i+1)<pid->bNumEndpoints)
