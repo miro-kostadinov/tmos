@@ -320,3 +320,34 @@ USBInterfaceDescriptor* usb_get_interface(const USBConfigurationDescriptor* des,
 	return NULL;
 }
 
+#if USB_ENABLE_HID
+const USBHIDDescriptor* usb_get_hid_descriptor(const USBConfigurationDescriptor* des,
+		int interface)
+{
+	if (des && des->as_generic.bDescriptorType == CONFIGURATION_DESCRIPTOR)
+	{
+		int iface = -1;
+		int size = des->GetTotalLength();
+		size -= sizeof(USBConfigurationDescriptor);
+
+		const USBGenericDescriptor *pd = &des->as_generic;
+		while ( size > 0)
+		{
+
+			pd = pd->GetNextDescriptor();
+			size -= pd->GetLength();
+			USBDescriptorType type = pd->GetType();
+			if ( type == INTERFACE_DESCRIPTOR)
+			{
+				iface = ((USBInterfaceDescriptor*)pd)->bInterfaceNumber;
+			}
+			else
+			{
+				if(type == HID_DESCRIPTOR && iface == interface)
+					return (const USBHIDDescriptor *)pd;
+			}
+		}
+	}
+	return NULL;
+}
+#endif

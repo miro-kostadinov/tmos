@@ -20,6 +20,8 @@
 
 #if USB_ENABLE_HID
 #include <usb_hid_dtors.h>
+const USBHIDDescriptor* usb_get_hid_descriptor(const USBConfigurationDescriptor* des,
+		int interface);
 #endif
 
 #if USB_ENABLE_CDC
