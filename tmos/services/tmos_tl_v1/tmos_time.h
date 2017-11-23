@@ -14,6 +14,14 @@
 
 #include <tmos.h>
 
+#define CTIME_IS_VALID			16
+
+#define CTIME_INVALID_YEAR	 	0
+#define CTIME_INVALID_MONTH  	5
+#define CTIME_INVALID_DAY	 	8
+#define CTIME_INVALID_TIME		10
+#define CTIME_INVALID_HOUR		11
+#define CTIME_INVALID_MINUTE	14
 
 struct time_t
 {
@@ -32,49 +40,74 @@ struct time_t
 		};
 		uint64_t time64;
 	};
+	static const char day_name[8][4];
+	static const char mon_name[12][4];
+	static const uint8_t month_lengths[];
 
 	bool is_valid() const;
-	uint32_t get_week_day() const;
-	void sprintf(CSTRING& str, const char* format) const;
-	unsigned int set_from_xml_date(const char* str);
+	bool is_DST(unsigned int change_hour);
 
-	time_t& operator= (const time_t& T);
+	uint32_t get_week_day() const;
+
+	int sscanf(const char* buf, const char* format, ... );
+	unsigned int set_from_xml_datetime(const char* str);
+	unsigned int set_from_xml_date(const char* str);
+	void set_from_YYMMDDHHMMSSZZ(const char* val);
+
+	void sprintf(CSTRING& str, const char* format) const;
+	CSTRING sprintf(const char* format) const;
+	CSTRING xml_date_time(void) const;
+
+	inline time_t& operator= (const time_t& T)
+	{
+		time64 = T.time64;
+		return *this;
+	}
+	inline time_t& operator= (uint64_t time)
+	{
+		time64 = time;
+		return *this;
+	}
+
 	time_t& operator= (unsigned int seconds);
+
+	uint64_t get_atomic();
 
 	operator unsigned int() const;
 
-	bool operator< (const time_t& T) const
+	inline bool operator< (const time_t& T) const
 	{
 		return (time64 < T.time64);
 	}
 
-	bool operator> (const time_t& T) const
+	inline bool operator> (const time_t& T) const
 	{
 		return (time64 > T.time64);
 	}
 
-	bool operator<= (const time_t& T) const
+	inline bool operator<= (const time_t& T) const
 	{
 		return (time64 <= T.time64);
 	}
 
-	bool operator>= (const time_t& T) const
+	inline bool operator>= (const time_t& T) const
 	{
 		return (time64 >= T.time64);
 	}
 
-	bool operator== (const time_t& T) const
+	inline bool operator== (const time_t& T) const
 	{
 		return (time64 == T.time64);
 	}
 
-	bool operator!= (const time_t& T) const
+	inline bool operator!= (const time_t& T) const
 	{
 		return (time64 != T.time64);
 	}
 
 };
 
+time_t get_current_time();
 
 #endif /* TMOS_TIME_H_ */
 /** @} defgroup lib_tmos_time  */

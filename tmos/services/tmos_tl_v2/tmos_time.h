@@ -25,6 +25,9 @@
 
 struct time_t
 {
+	static const char day_name[8][4];
+	static const char mon_name[12][4];
+	static const uint8_t month_lengths[];
 	union
 	{
 		struct
@@ -52,6 +55,7 @@ struct time_t
 	void set_from_YYMMDDHHMMSSZZ(const char* val);
 
 	void sprintf(CSTRING& str, const char* format) const;
+	CSTRING sprintf(const char* format) const;
 	CSTRING xml_date_time(void) const;
 
 	inline time_t& operator= (const time_t& T)
@@ -103,7 +107,7 @@ struct time_t
 
 };
 
-extern const uint8_t month_lengths[];
+time_t get_current_time();
 
 #endif /* TMOS_TIME_H_ */
 /** @} defgroup lib_tmos_time  */

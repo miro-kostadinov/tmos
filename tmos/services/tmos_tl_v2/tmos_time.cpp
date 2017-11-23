@@ -8,9 +8,9 @@
 #include <tmos.h>
 #include <tmos_time.h>
 
-const char day_name[8][4] = {"???", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-const char mon_name[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-const uint8_t month_lengths[] = {0,	  31,   28,    31,    30,    31,    30,    31,     31,   30,     31,   30,   31 };
+const char time_t::day_name[8][4] = {"???", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+const char time_t::mon_name[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+const uint8_t time_t::month_lengths[] = {0,	  31,   28,    31,    30,    31,    30,    31,     31,   30,     31,   30,   31 };
 const uint8_t month_start[]   = {0,	   0,    3,     3,     6,     1,     4,     6,      2,    5,      0,    3,   5 };
 const uint16_t month_base_day[12] =
 {
@@ -28,6 +28,12 @@ const uint16_t month_base_day[12] =
    31+28+31+30+31+30+31+31+30+31+30,
 };
 
+WEAK time_t get_current_time()
+{
+	time_t tm;
+	tm = 0ULL;
+	return tm;
+}
 
 static int is_leap_year (int year)
 {
@@ -420,6 +426,13 @@ void time_t::set_from_YYMMDDHHMMSSZZ(const char* val)
 	hour = read(val);
 	minute = read(val);
 	second = read(val);
+}
+
+CSTRING time_t::sprintf( const char* format) const
+{
+	CSTRING str;
+	sprintf(str, format);
+	return str;
 }
 
 void time_t::sprintf(CSTRING& str, const char* format) const
