@@ -68,7 +68,7 @@ struct Endpoint
  */
 typedef USB_TypeDef USB_CONTROLLER;
 
-#define USB_SETUP_READ_TOUT		200
+#define USB_SETUP_READ_TOUT		500
 #define USB_SETUP_WRITE_TOUT	200
 
 
