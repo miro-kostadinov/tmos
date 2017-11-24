@@ -325,15 +325,20 @@ WEAK RES_CODE HAL_ETH_PHY_Init_TLK110(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg
 WEAK RES_CODE HAL_ETH_PHY_INT_LINK_STATUS(ETH_TypeDef* mac, const eth_mac_cfg_t* cfg, uint32_t *Reg)
 {
 	RES_CODE res;
-	uint32_t status;
+	uint32_t status=0;
 
 	/* Clear interrupt status () */
-	HAL_ETH_ReadPHYRegister(mac, cfg,	PHY_TLK110_MISR1, &status);
-	res = HAL_ETH_ReadPHYRegister(mac, cfg, PHY_REG_BSR, &status);
-	if(res == RES_OK && Reg)
+	HAL_ETH_ReadPHYRegister(mac, cfg,	PHY_TLK110_PHYIDR1, &status);
+	if(status == 0x2000)
 	{
-		*Reg = (status & PHY_REG_BSR_LINKED_STATUS);
-	}
+		HAL_ETH_ReadPHYRegister(mac, cfg,	PHY_TLK110_MISR1, &status);
+		res = HAL_ETH_ReadPHYRegister(mac, cfg, PHY_REG_BSR, &status);
+		if(res == RES_OK && Reg)
+		{
+			*Reg = (status & PHY_REG_BSR_LINKED_STATUS);
+		}
+	} else
+		res = RES_ERROR;
 
 	return res;
 }
