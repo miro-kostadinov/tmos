@@ -278,9 +278,9 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 	 */
 	errval = low_level_transmit(netif, p);
 	TRACELN_LWIP("ETH: tx %x %u res %u", p, p->tot_len, errval);
-#if LWIP_TX_L2_QUE
 	if(errval != ERR_OK)
 	{
+#if LWIP_TX_L2_QUE
 		/* Otherwise place the pbuf on the transmit queue. */
 		if (!enqueue_packet(p, &drv_data->txq))
 		{
@@ -288,9 +288,11 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 			pbuf_free(p);
 			errval = ERR_MEM;
 		}
+#else
+		pbuf_free(p);
+#endif
 
 	}
-#endif
 
 
 	/* Return to prior interrupt state and return. */
@@ -377,11 +379,7 @@ static void low_level_init(struct netif *netif)
 	EthernetMACAddrGet(drv_info->mac_cfg);
 
 	/* configure ethernet peripheral (GPIOs, clocks, MAC, DMA) */
-	if (HAL_ETH_Init(drv_info->hw_base, drv_info->mac_cfg) == RES_OK)
-	{
-		/* Set netif link flag */
-		netif->flags |= NETIF_FLAG_LINK_UP;
-	}
+	HAL_ETH_Init(drv_info->hw_base, drv_info->mac_cfg);
 
 	/* Initialize Tx Descriptors list: Chain Mode */
 	HAL_ETH_DMATxDescListInit(drv_info->hw_base, drv_info->mac_cfg);
@@ -402,9 +400,6 @@ static void low_level_init(struct netif *netif)
 	/* device capabilities */
 	/* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
 	netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
-
-	/* Enable MAC and DMA transmission and reception */
-	HAL_ETH_Start(drv_info->hw_base);
 
 	  /**** Configure PHY to generate an interrupt when Eth Link state changes ****/
 	HAL_ETH_PHY_INTs(drv_info->hw_base, drv_info->mac_cfg);
@@ -561,6 +556,25 @@ err_t ethernetif_init(struct netif *netif)
 	low_level_init(netif);
 
 	return (ERR_OK);
+}
+
+void ethernetif_link_status(LWIP_DRIVER_INFO* drv_info)
+{
+	uint32_t regvalue = 0;
+
+	if(HAL_ETH_PHY_INT_LINK_STATUS(drv_info->hw_base,
+			drv_info->mac_cfg, &regvalue) == RES_OK)
+	{
+		if (regvalue )
+		{
+			netif_set_link_up(&drv_info->drv_data->lwip_netif);
+		}
+		else
+		{
+			netif_set_link_down(&drv_info->drv_data->lwip_netif);
+		}
+
+	}
 }
 
 #if LWIP_NETIF_LINK_CALLBACK
@@ -722,42 +736,9 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
     //
     drv_data->ip_addr_mode = set->ip_addr_mode;
 
+    ethernetif_link_status(drv_info);
 
-    if (netif_is_link_up(&drv_data->lwip_netif))
-	{
-		//
-		// Start DHCP, if enabled.
-		//
-#if LWIP_DHCP
-		if (drv_data->ip_addr_mode == IPADDR_USE_DHCP)
-		{
-			dhcp_start(&drv_data->lwip_netif);
-		}
-#endif
-
-		//
-		// Start AutoIP, if enabled and DHCP is not.
-		//
-#if LWIP_AUTOIP
-		if (drv_data->ip_addr_mode == IPADDR_USE_AUTOIP)
-		{
-			autoip_start(&drv_data->lwip_netif);
-		}
-#endif
-
-		/* When the netif is fully configured this function must be called */
-		netif_set_up(&drv_data->lwip_netif);
-	}
-	else
-	{
-		/* When the netif link is down this function must be called */
-		netif_set_down(&drv_data->lwip_netif);
-	}
-
-#if LWIP_NETIF_LINK_CALLBACK
-    /* Set the link callback function, this function is called on change of link status*/
-    netif_set_link_callback(&drv_data->lwip_netif, ethernetif_update_config);
-#endif
+    ethernetif_update_config(&drv_data->lwip_netif);
 }
 
 //*****************************************************************************
@@ -1141,21 +1122,7 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 		    //process phy interrupts
 			if (sig & phy_int.signal)
 			{
-				uint32_t regvalue = 0;
-
-				if(HAL_ETH_PHY_INT_LINK_STATUS(drv_info->hw_base,
-						drv_info->mac_cfg, &regvalue) == RES_OK)
-				{
-					if (regvalue )
-					{
-						netif_set_link_up(&drv_data->lwip_netif);
-					}
-					else
-					{
-						netif_set_link_down(&drv_data->lwip_netif);
-					}
-
-				}
+				ethernetif_link_status(drv_info);
 
 				phy_int.set_res_cmd(CMD_READ|FLAG_LOCK);
 				phy_int.tsk_start_handle();
