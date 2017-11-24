@@ -208,37 +208,41 @@ RES_CODE lwip_api_write(CSocket* client, struct netif *netif)
 
 				if(sock_data->pcb)
 				{
-					res = RES_SIG_OK;
-					while(client->len)
+					if(netif_is_link_up(netif))
 					{
-						struct pbuf *p;
-						unsigned int len;
-
-						len = client->len;
-						if(len > 508)
-							len = 508;
-
-			            p = pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
-			            if(p == NULL)
-			            {
-							client->error = res;
-							res = RES_SIG_ERROR;
-							break;
-			            }
-						memcpy(p->payload, client->src.as_voidptr , len);
-						client->error = udp_send(sock_data->pcb, p);
-						pbuf_free(p);
-						if(client->error == ERR_OK)
+						res = RES_SIG_OK;
+						while(client->len)
 						{
-							client->src.as_byteptr += len;
-							client->len -= len;
-						} else
-						{
-							res = RES_SIG_ERROR;
-							break;
+							struct pbuf *p;
+							unsigned int len;
+
+							len = client->len;
+							if(len > 508)
+								len = 508;
+
+				            p = pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
+				            if(p == NULL)
+				            {
+								client->error = res;
+								res = RES_SIG_ERROR;
+								break;
+				            }
+							memcpy(p->payload, client->src.as_voidptr , len);
+							client->error = udp_send(sock_data->pcb, p);
+							pbuf_free(p);
+							if(client->error == ERR_OK)
+							{
+								client->src.as_byteptr += len;
+								client->len -= len;
+							} else
+							{
+								res = RES_SIG_ERROR;
+								break;
+							}
+
 						}
-
-					}
+					} else
+						res = RES_SIG_ERROR;
 				}
 			}
 		}
