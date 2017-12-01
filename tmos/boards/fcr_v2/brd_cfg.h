@@ -73,6 +73,7 @@
 #define USE_SDIO_MULTIPLE_SLOTS	1
 
 /// Ethernet
+#define USE_NET				1
 #define USE_LWIP_1_4_1		1
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

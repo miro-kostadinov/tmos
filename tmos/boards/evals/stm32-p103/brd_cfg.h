@@ -40,5 +40,6 @@
 #define USE_EXCEPTION_RECORD 1
 #define USE_MEMORY_TRACKING	1
 
+#define USE_NET				0
 
 #endif /* BRD_CFG_H_ */

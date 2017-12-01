@@ -28,8 +28,10 @@
 #include "adc_f2.h"
 #include "tim_f2.h"
 #include "crc_f2.h"
+#if USE_NET
 #include "eth_f2.h"
 #include "eth_phy_f2.h"
+#endif
 #include "dac_f2.h"
 
 #endif /* SERIES_CPP_H_ */

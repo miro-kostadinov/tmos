@@ -52,6 +52,7 @@
 #define USB_ENABLE_MSC		0
 
 /// Ethernet
+#define USE_NET				1
 #define USE_LWIP_1_4_1		1
 
 #endif /* BRD_CFG_H_ */

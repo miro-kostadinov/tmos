@@ -40,4 +40,6 @@
 #define USE_SDIO_DMA_DRIVER 1
 #define USE_UART_DMA_DRIVER 0
 
+#define USE_NET				0
+
 #endif /* BRD_CFG_H_ */

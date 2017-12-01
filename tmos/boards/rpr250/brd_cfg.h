@@ -50,6 +50,7 @@
 #define USB_ENABLE_HID		0
 
 /// Ethernet
+#define USE_NET				1
 #define USE_LWIP_1_4_1		1
 #define ETH_PHY_TLK110		1
 

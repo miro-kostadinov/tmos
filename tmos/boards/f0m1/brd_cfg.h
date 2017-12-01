@@ -41,4 +41,6 @@
 #define USART_DRV_RX_BUF_SIZE	(48)
 #define USE_SPI_DMA_DRIVER 		0		//Disable DMA by default
 
+#define USE_NET				0
+
 #endif /* BRD_CFG_H_ */

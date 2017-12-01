@@ -105,6 +105,7 @@
 #define USB_ENABLE_PRN		0
 #define USB_ENABLE_HID		0
 
+#define USE_NET				1
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //		USART DRIVER

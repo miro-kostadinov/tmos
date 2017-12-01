@@ -28,4 +28,6 @@
 #define USE_AES_TMOS		1
 #define USE_GPIO_EXPANDER 	1
 
+#define USE_NET				0
+
 #endif /* BRD_CFG_H_ */
