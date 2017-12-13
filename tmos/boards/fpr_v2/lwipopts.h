@@ -182,6 +182,8 @@
 #define LWIP_UDP                        1
 //#define LWIP_UDPLITE                    0
 //#define UDP_TTL                         (IP_DEFAULT_TTL)
+#define LWIP_UPNP 1		// Pass UPNP messages regardless of destination address
+#define LWIP_PTPD 1		// Pass PTPD messages regardless of destination address
 
 //*****************************************************************************
 //
@@ -190,15 +192,15 @@
 //*****************************************************************************
 //#define LWIP_TCP                        1
 //#define TCP_TTL                         (IP_DEFAULT_TTL)
-#define TCP_WND                        	4096   // default is 2048
 #define TCP_MAXRTX                      5		//default is 12
 //#define TCP_SYNMAXRTX                   6
 //#define TCP_QUEUE_OOSEQ                 1
-#define TCP_MSS                    		1500        // default is 128
+#define TCP_MSS                    		(1500 - 40)        // default is 536
 //#define TCP_CALCULATE_EFF_SEND_MSS      1
 #define TCP_SND_BUF                 	(4 * TCP_MSS)
                                                     // default is 256, was 6 *
 //#define TCP_SND_QUEUELEN                (4 * (TCP_SND_BUF/TCP_MSS))
+#define TCP_WND                        	(2*TCP_MSS)   // default is (4 * TCP_MSS)
 //#define TCP_SNDLOWAT                    (TCP_SND_BUF/2)
 //#define TCP_LISTEN_BACKLOG              0
 //#define TCP_DEFAULT_LISTEN_BACKLOG      0xff

@@ -42,7 +42,7 @@ USE_TMOS_STRING	?=y
 
 # TMOS_TL_V2
 USE_TMOS_TL_V2	?=y
-USE_CSTRING		?=1
+USE_CSTRING		?=n
 
 # tmos stdlib -> sys_malloc() sys_realloc() svc_free()
 USE_TMOS_STDLIB	?=y
@@ -62,7 +62,7 @@ USE_CRC16		?=y
 USE_CRC32		?=y
 
 # class CCache
-USE_CACHE		?=n
+USE_CACHE		?=y
 
 # SHA-1 class
 USE_SHA_1		?=y

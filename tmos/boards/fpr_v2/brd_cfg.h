@@ -23,7 +23,7 @@
 #define USE_TMOS_LLONG		1
 #define USE_CRC16			1
 #define USE_CRC32			1
-#define USE_CACHE			0
+#define USE_CACHE			1
 #define USE_SHA_1			1
 #define USE_BASE32			0
 #define USE_GUI				0
@@ -54,5 +54,11 @@
 /// Ethernet
 #define USE_NET				1
 #define USE_LWIP_1_4_1		1
+#define ETH_PHY_TLK110		1
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//		USART DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define USART_DRV_RX_BUF_SIZE	(1024)
 
 #endif /* BRD_CFG_H_ */
