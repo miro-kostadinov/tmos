@@ -75,6 +75,11 @@
 /// Ethernet
 #define USE_NET				1
 #define USE_LWIP_1_4_1		1
+#define ETH_PHY_TLK110		1
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//		USART DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define USART_DRV_RX_BUF_SIZE	(1024)
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //		Wi-Fi ESP8266 DRIVER
@@ -82,5 +87,8 @@
 #define USE_WIFI 			1
 #define USB_WIFI_ESP8266	1
 
+//#define USE_SECURITY		1
+//#define USE_SECURITY_TLS	1
+//#define USE_SECURITY_CRYPTO	1
 
 #endif /* BRD_CFG_H_ */
