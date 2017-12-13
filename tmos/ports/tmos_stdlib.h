@@ -30,6 +30,7 @@ void* svc_malloc(unsigned int size);
 void  svc_free(void* ptr);
 void* svc_realloc(void* ptr, unsigned int size);
 void* tsk_malloc_clear(unsigned int size);
+inline static void* usr_realloc(void* volatile ptr, unsigned int volatile size);
 
 #if TRACE_MEMORY_LEVEL >= TRACE_DEFAULT_LEVEL
 	void* tsk_malloc(unsigned int size);

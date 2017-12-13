@@ -412,8 +412,12 @@ RES_CODE CCachedHandle::load()
 		pos = (char*) buf.c_str();
 		hnd->tsk_resume_read((void*) pos, len);
 		len -= hnd->len;
+#if USE_CSTRING
 		buf.storage.ram->len = len;
 		buf.storage.ram->buf[len] = 0;
+#else
+		buf.m_set_size(len);
+#endif
 		return (hnd->res);
 	}
 

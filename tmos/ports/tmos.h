@@ -44,6 +44,8 @@
 #include <tmos_inc.h>
 #include "tmos_types.h"
 
+#include <brd_cpp.h>
+
 #ifdef __cplusplus
 #	if USE_CSTRING
 #		include <str_list.h>
@@ -56,7 +58,6 @@
 #endif
 
 
-#include <brd_cpp.h>
 
 #include <trace.h>
 #include <port_cpp.h>
