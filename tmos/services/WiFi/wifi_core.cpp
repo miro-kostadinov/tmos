@@ -94,6 +94,8 @@ void wifi_module_type::process_input(unsigned int signals, const char* cmd,
 			return;
 	}
 #endif
+	if(rcv_hnd.res & FLG_CLOSED)
+		return;
 	//if receiver is idle -> start
     if(rcv_hnd.res < FLG_SIGNALED)
     {
