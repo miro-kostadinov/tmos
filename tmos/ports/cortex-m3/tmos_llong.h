@@ -27,7 +27,7 @@ typedef struct
 
 unsigned long long udivdi3(unsigned long long u, unsigned long long v);
 long long divdi3(long long u, long long v);
-unsigned long long llabs(long long u);
+long long int llabs(long long int u);
 
 /* Workaround for __value_in_regs
  *

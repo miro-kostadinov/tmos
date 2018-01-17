@@ -106,7 +106,7 @@ FUNC(   divdi3     )
 ENDF(   divdi3     )
 
 
-//unsigned long long llabs(long long u);
+//long long int llabs(long long int u);
 FUNC(   llabs     )
 
                 cmp             r1, #0

@@ -251,7 +251,7 @@ FUNC(	strrchr		)
 ENDF(	strrchr		)
 
 //*----------------------------------------------------------------------------
-//*		const char * strpbrk ( const char * str1, const char * str2 );
+//*		char * strpbrk ( const char * str1, const char * str2 );
 //*----------------------------------------------------------------------------
 FUNC(	strpbrk		)
 
