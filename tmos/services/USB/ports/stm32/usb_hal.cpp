@@ -1483,7 +1483,6 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 		{
 			endpoint->epd_out.epd_state = ENDPOINT_STATE_IDLE;
 			drv_info->hw_base->core_regs.GINTMSK |= OTG_GINTMSK_RXFLVLM;
-			//TODO: Re-activate channel?
 		}
 
 		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
@@ -2360,6 +2359,16 @@ static void usb_b_gint_rxflvl(USB_DRV_INFO drv_info)
 
 	case OTG_GRXSTSP_PKTSTS_OUT_COMP:
 		TRACE1_USB(" que: in comp");
+#if USB_ENABLE_HOST
+		if(! (drv_info->drv_data->otg_flags & USB_OTG_FLG_HOST_CON) )
+#endif
+		{
+		    uint32_t ept_indx = status & OTG_GRXSTSP_EPNUM_Msk;
+
+		    // restart channel if there is a pending handle
+			stm_start_rx(drv_info, ept_indx, &drv_info->drv_data->endpoints[ept_indx]);
+		}
+
 		break;
 
 	case OTG_GRXSTSP_PKTSTS_SETUP_COMP:
