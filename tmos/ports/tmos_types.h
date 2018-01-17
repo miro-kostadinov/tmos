@@ -13,7 +13,12 @@
 
 #ifndef __ASSEMBLY__
 
-#define IS_NOT_NULL(x) (int(x)+0)		//!< Suppress GCC 6.X warnings
+#ifdef __cplusplus
+static inline int IS_NOT_NULL(const void* x)		//!< Suppress GCC 7.X warnings
+{
+	return (int)x;
+}
+#endif
 
 #define __no_init		__attribute__ ((section (".ramnoinitsec")))
 
