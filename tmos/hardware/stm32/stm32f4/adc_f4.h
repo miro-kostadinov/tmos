@@ -69,6 +69,10 @@ typedef struct
 /** @{ */
 #define ADC_CR1_OVRIE               0x04000000 //!< overrun interrupt enable
 #define ADC_CR1_RES                 0x03000000 //!< RES[2:0] bits (Resolution)
+#define ADC_CR1_RES_12              0x00000000 //!<  12-bit (15 ADCCLK cycles)
+#define ADC_CR1_RES_10              0x01000000 //!<  10-bit (13 ADCCLK cycles)
+#define ADC_CR1_RES_8               0x02000000 //!<  8-bit (11 ADCCLK cycles)
+#define ADC_CR1_RES_6               0x03000000 //!<  6-bit (9 ADCCLK cycles)
 #define ADC_CR1_AWDEN               0x00800000 //!< Analog watchdog enable on regular channels
 #define ADC_CR1_JAWDEN              0x00400000 //!< Analog watchdog enable on injected channels
 #define ADC_CR1_DISCNUM             0x0000E000 //!< DISCNUM[2:0] bits (Discontinuous mode channel count)
@@ -78,7 +82,7 @@ typedef struct
 #define ADC_CR1_AWDSGL              0x00000200 //!< Enable the watchdog on a single channel in scan mode
 #define ADC_CR1_SCAN                0x00000100 //!< Scan mode
 #define ADC_CR1_JEOCIE              0x00000080 //!< Interrupt enable for injected channels
-#define ADC_CR1_AWDIE               0x00000040 //!< AAnalog Watchdog interrupt enable
+#define ADC_CR1_AWDIE               0x00000040 //!< Analog Watchdog interrupt enable
 #define ADC_CR1_EOCIE               0x00000020 //!< Interrupt enable for EOC
 #define ADC_CR1_AWDCH               0x0000001F //!< AWDCH[4:0] bits (Analog watchdog channel select bits)
 /** @} */
@@ -168,11 +172,20 @@ typedef struct
 #define ADC_SQR3_SQ3                0x00007C00 //!< SQ3[4:0] bits (3rd conversion in regular sequence)
 #define ADC_SQR3_SQ2                0x000003E0 //!< SQ2[4:0] bits (2nd conversion in regular sequence)
 #define ADC_SQR3_SQ1                0x0000001F //!< SQ1[4:0] bits (1st conversion in regular sequence)
+
+#define ADC_SQR3_SQ6_Set(x)          ((x)<<25) //!<  SQ6 Set macro
+#define ADC_SQR3_SQ5_Set(x)          ((x)<<20) //!<  SQ5 Set macro
+#define ADC_SQR3_SQ4_Set(x)          ((x)<<15) //!<  SQ4 Set macro
+#define ADC_SQR3_SQ3_Set(x)          ((x)<<10) //!<  SQ3 Set macro
+#define ADC_SQR3_SQ2_Set(x)           ((x)<<5) //!<  SQ2 Set macro
+#define ADC_SQR3_SQ1_Set(x)           ((x)<<0) //!<  SQ1 Set macro
 /** @} */
 
 /** @name ADC_JSQR:		(adc Offset: 0x038) ADC injected sequence register 	  */
 /** @{ */
 #define ADC_JSQR_JL                 0x00300000 //!< JL[1:0] bits (Injected Sequence length)
+#define ADC_JSQR_JL_Get(x)       (((x)>>20)&3) //!<  JL Get macro
+#define ADC_JSQR_JL_Set(x)       (((x)-1)<<20) //!<  JL Set macro
 #define ADC_JSQR_JSQ4               0x000F8000 //!< JSQ4[4:0] bits (4th conversion in injected sequence)
 #define ADC_JSQR_JSQ3               0x00007C00 //!< JSQ3[4:0] bits (3rd conversion in injected sequence)
 #define ADC_JSQR_JSQ2               0x000003E0 //!< JSQ2[4:0] bits (2nd conversion in injected sequence)
@@ -224,10 +237,43 @@ typedef struct
 #define ADC_CCR_TSVREFE             0x00800000 //!< Temperature Sensor and VREFINT Enable
 #define ADC_CCR_VBATE               0x00400000 //!< VBAT Enable
 #define ADC_CCR_ADCPRE              0x00030000 //!< ADCPRE[1:0] bits (ADC prescaler)
+#define ADC_CCR_ADCPRE_2            0x00000000 //!<  PCLK2 divided by 2
+#define ADC_CCR_ADCPRE_4            0x00010000 //!<  PCLK2 divided by 4
+#define ADC_CCR_ADCPRE_6            0x00020000 //!<  PCLK2 divided by 6
+#define ADC_CCR_ADCPRE_8            0x00030000 //!<  PCLK2 divided by 8
 #define ADC_CCR_DMA                 0x0000C000 //!< DMA[1:0] bits (Direct Memory Access mode for multimode)
 #define ADC_CCR_DDS                 0x00002000 //!< DMA disable selection (Multi-ADC mode)
 #define ADC_CCR_DELAY               0x00000F00 //!< DELAY[3:0] bits (Delay between 2 sampling phases)
+#define ADC_CCR_DELAY_5             0x00000000 //!<   5 * TADCCLK
+#define ADC_CCR_DELAY_6             0x00000100 //!<   6 * TADCCLK
+#define ADC_CCR_DELAY_7             0x00000200 //!<   7 * TADCCLK
+#define ADC_CCR_DELAY_8             0x00000300 //!<   8 * TADCCLK
+#define ADC_CCR_DELAY_9             0x00000400 //!<   9 * TADCCLK
+#define ADC_CCR_DELAY_10            0x00000500 //!<   10 * TADCCLK
+#define ADC_CCR_DELAY_11            0x00000600 //!<   11 * TADCCLK
+#define ADC_CCR_DELAY_12            0x00000700 //!<   12 * TADCCLK
+#define ADC_CCR_DELAY_13            0x00000800 //!<   13 * TADCCLK
+#define ADC_CCR_DELAY_14            0x00000900 //!<   14 * TADCCLK
+#define ADC_CCR_DELAY_15            0x00000A00 //!<   15 * TADCCLK
+#define ADC_CCR_DELAY_16            0x00000B00 //!<   16 * TADCCLK
+#define ADC_CCR_DELAY_17            0x00000C00 //!<   17 * TADCCLK
+#define ADC_CCR_DELAY_18            0x00000D00 //!<   18 * TADCCLK
+#define ADC_CCR_DELAY_19            0x00000E00 //!<   19 * TADCCLK
+#define ADC_CCR_DELAY_20            0x00000F00 //!<   20 * TADCCLK
 #define ADC_CCR_MULTI               0x0000001F //!< MULTI[4:0] bits (Multi-ADC mode selection)
+#define ADC_CCR_MULTI_independent   		0x00000000 //!<  All the ADCs independent
+#define ADC_CCR_MULTI_dual_regsim_injsim   	0x00000001 //!<  ADC1-2, regular simultaneous + injected simultaneous
+#define ADC_CCR_MULTI_dual_regsim_alter   	0x00000002 //!<  ADC1-2, regular simultaneous + alternate trigger mode
+#define ADC_CCR_MULTI_dual_injsim		   	0x00000005 //!<  ADC1-2, injected simultaneous mode only
+#define ADC_CCR_MULTI_dual_regsim		   	0x00000006 //!<  ADC1-2, regular simultaneous mode only
+#define ADC_CCR_MULTI_dual_inter		   	0x00000007 //!<  ADC1-2, interleaved mode only
+#define ADC_CCR_MULTI_dual_alter		   	0x00000009 //!<  ADC1-2, alternate trigger mode only
+#define ADC_CCR_MULTI_triple_regsim_injsim 	0x00000011 //!<  ADC1-3, regular simultaneous + injected simultaneous mode
+#define ADC_CCR_MULTI_triple_regsim_alter  	0x00000012 //!<  ADC1-3, regular simultaneous + alternate trigger mode
+#define ADC_CCR_MULTI_triple_injsim		   	0x00000015 //!<  ADC1-3, injected simultaneous mode only
+#define ADC_CCR_MULTI_triple_regsim		   	0x00000016 //!<  ADC1-3, regular simultaneous mode only
+#define ADC_CCR_MULTI_triple_inter		   	0x00000017 //!<  ADC1-3, interleaved mode only
+#define ADC_CCR_MULTI_triple_alter		   	0x00000019 //!<  ADC1-3, alternate trigger mode only
 /** @} */
 
 /** @name ADC_CDR:      (adcs Offset: 0x308) ADC common regular data register for dual and triple modes */
