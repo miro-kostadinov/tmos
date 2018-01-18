@@ -6,7 +6,7 @@
 #
 #-------------------------------------------------------------------------------
 
-OUT_NAME	?= stm32-p103
+OUT_NAME	?= stm32-f4disco
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].

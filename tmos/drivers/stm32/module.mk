@@ -20,15 +20,29 @@ local_h_src-y 	+= tmos_drivers.h exti_drv.h usart_drv.h spi_drv.h dma_drv.h
 local_h_src-y 	+= tim_drv.h sdio_drv.h dac_drv.h
 
 #conditional drivers
+	use_adc1 := n
+	use_adc2 := n
+	use_rtc2 := n
 ifeq "$(CFG_SERIES)" "stm32f2"
-local_cpp_src-y	+= adc2_drv.cpp
-local_h_src-y 	+= adc2_drv.h
-local_cpp_src-$(USE_TIME)	+= rtc2_drv.cpp 
-local_h_src-$(USE_TIME) 	+= rtc2_drv.h 
+	use_adc2 := y
+	use_rtc2 := $(USE_TIME)
 else
-local_cpp_src-y	+= adc1_drv.cpp
-local_h_src-y 	+= adc1_drv.h
+ifeq "$(CFG_SERIES)" "stm32f4"
+	use_adc2 := y
+	use_rtc2 := $(USE_TIME)
+else
+	use_adc1 := y
 endif
+endif
+
+local_cpp_src-$(use_adc2)	+= adc2_drv.cpp
+local_h_src-$(use_adc2) 	+= adc2_drv.h
+
+local_cpp_src-$(use_adc1)	+= adc1_drv.cpp
+local_h_src-$(use_adc1) 	+= adc1_drv.h
+
+local_cpp_src-$(use_rtc2)	+= rtc2_drv.cpp 
+local_h_src-$(use_rtc2) 	+= rtc2_drv.h 
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
