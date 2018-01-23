@@ -31,7 +31,7 @@
 
 #if USE_FIXED_CPAGE
 #if USE_FIXED_CPAGE == 1250
-const key_to_char_ref_t g_key_to_char_ref[] =
+extern const key_to_char_ref_t WEAK g_key_to_char_ref[] =
 {
 	{" ,?!:~^", " ,?!:~^"},						// 0
 	{"àøšœº", "pqrs"},							// 1
@@ -49,7 +49,7 @@ const key_to_char_ref_t g_key_to_char_ref[] =
 };
 #endif // USE_FIXED_CPAGE == 1250
 #if USE_FIXED_CPAGE == 1251
-const key_to_char_ref_t g_key_to_char_ref[] =
+extern const key_to_char_ref_t WEAK g_key_to_char_ref[] =
 {
 	{" ,?!:~^", " ,?!:~^"},							// 0
 	{"ôõö÷", "pqrs"},							// 1
@@ -74,7 +74,7 @@ const key_to_char_ref_t g_key_to_char_ref[] =
 
 #if USE_FIXED_CPAGE
 #if USE_FIXED_CPAGE == 1250
-const MENUTEMPLATE g_keyboard_menu[] =
+extern const MENUTEMPLATE WEAK g_keyboard_menu[] =
 {
 	{ 0, KT_BG_CAPS, 0, "&1.ÀÁÂ"},
 	{ 0, KT_BG, 0, "&2.àáâ"},
@@ -85,7 +85,7 @@ const MENUTEMPLATE g_keyboard_menu[] =
 };
 #endif // USE_FIXED_CPAGE == 1250
 #if USE_FIXED_CPAGE == 1251
-const MENUTEMPLATE g_keyboard_menu[] =
+extern const MENUTEMPLATE WEAK g_keyboard_menu[] =
 {
 	{ 0, KT_BG_CAPS, 0, "&1.ÁÂÃ"},
 	{ 0, KT_BG, 0, "&2.áâã"},

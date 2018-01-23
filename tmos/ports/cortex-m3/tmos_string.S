@@ -309,7 +309,7 @@ ENDF(   strcspn     )
 //*		int islower(unsigned int c)
 //*----------------------------------------------------------------------------
 FUNC(	islower		)
-
+.weak islower
 				uxtb			r2, r0
 				adr				r1, _char_2_type_
 				ldrb			r0, [r2, r1]
@@ -322,7 +322,7 @@ ENDF(	islower		)
 //*		int isupper(unsigned int c)
 //*----------------------------------------------------------------------------
 FUNC(	isupper		)
-
+.weak isupper
 				uxtb			r2, r0
 				adr				r1, _char_2_type_
 				ldrb			r0, [r2, r1]
@@ -435,7 +435,7 @@ ENDF(   strstr     )
 //*----------------------------------------------------------------------------
 #if USE_FIXED_CPAGE == 1250
 FUNC_SECT(  strcasecmp, .text.casecmp   )
-
+.weak strcasecmp
                 push            {r4, r5}
                 adr             r2, _char_2_type_
 1:
@@ -488,7 +488,7 @@ ENDF(   strcasecmp      )
 
 #if USE_FIXED_CPAGE == 1251
 FUNC_SECT(  strcasecmp, .text.casecmp   )
-
+.weak strcasecmp
                 push            {r4, r5}
                 adr             r2, _char_2_type_
 1:
@@ -518,6 +518,7 @@ ENDF(   strcasecmp      )
 //*----------------------------------------------------------------------------
 #if USE_FIXED_CPAGE == 1250
 FUNC_SECT(  strncasecmp,    .text.casecmp   )
+.weak strncasecmp
 
                 cbz             r2, 9f
                 adr             r3, _char_2_type_
@@ -577,6 +578,7 @@ ENDF(   strncasecmp     )
 
 #if USE_FIXED_CPAGE == 1251
 FUNC_SECT(  strncasecmp,    .text.casecmp   )
+.weak strncasecmp
 
                 cbz             r2, 3f
                 adr             r3, _char_2_type_
@@ -613,7 +615,7 @@ ENDF(   strncasecmp     )
 //*----------------------------------------------------------------------------
 #if USE_FIXED_CPAGE == 1250
 FUNC_SECT(  toupper, .text.casecmp      )
-
+.weak toupper
                 adr             r2, _char_2_type_
                 ldrb            r1, [r0, r2]
                 lsls            r1, r1, #31             //islower
@@ -646,6 +648,7 @@ ENDF(   toupper     )
 
 #if USE_FIXED_CPAGE == 1251
 FUNC_SECT(  toupper, .text.casecmp      )
+.weak toupper
 
                 adr             r2, _char_2_type_
                 ldrb            r1, [r0, r2]
@@ -663,6 +666,7 @@ ENDF(   toupper     )
 //*----------------------------------------------------------------------------
 #if USE_FIXED_CPAGE == 1250
 FUNC_SECT(  tolower, .text.casecmp      )
+.weak tolower
 
                 adr             r2, _char_2_type_
                 ldrb            r1, [r0, r2]
@@ -696,6 +700,7 @@ ENDF(   tolower     )
 
 #if USE_FIXED_CPAGE == 1251
 FUNC_SECT(  tolower, .text.casecmp      )
+.weak tolower
 
                 adr             r2, _char_2_type_
                 ldrb            r1, [r0, r2]
@@ -725,6 +730,7 @@ ENDF(   tolower     )
 #define	_B			0x02
 
 				.global G_char_2_type_
+.weak G_char_2_type_
 #if USE_FIXED_CPAGE == 1250
 G_char_2_type_:
 _char_2_type_:

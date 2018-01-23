@@ -45,7 +45,7 @@ const char icond10x21_1[243] = {
 #define FONT(x,y) nFONT(x,y)
 #define GET_CP_FONT(x) FONT(x, USE_FIXED_CPAGE )
 
-const RENDER_MODE FNT5x7 =
+extern const RENDER_MODE WEAK FNT5x7 =
 {
 	GET_CP_FONT(5x7),
     icond5x7_1,			// icon_data
@@ -68,7 +68,7 @@ const RENDER_MODE FNT5x7 =
 };
 
 
-const RENDER_MODE FNT7x9 = {
+extern const RENDER_MODE WEAK FNT7x9 = {
 	GET_CP_FONT(7x9),
     icond7x9_1,			// icon_data
 	8,						// char_bytes;
@@ -90,7 +90,7 @@ const RENDER_MODE FNT7x9 = {
 };
 
 
-const RENDER_MODE FNT10x12 =
+extern const RENDER_MODE WEAK FNT10x12 =
 {
 	GET_CP_FONT(10x12),
     icond5x7_1,			// icon_data
@@ -113,7 +113,7 @@ const RENDER_MODE FNT10x12 =
 };
 
 
-const RENDER_MODE FNT10x14 =
+extern const RENDER_MODE WEAK FNT10x14 =
 {
 	GET_CP_FONT(10x14),
     icond5x7_1,			// icon_data
@@ -136,7 +136,7 @@ const RENDER_MODE FNT10x14 =
 };
 
 
-const RENDER_MODE FNT10x21 =
+extern const RENDER_MODE WEAK FNT10x21 =
 {
 	GET_CP_FONT(10x21),
     icond10x21_1,			// icon_data
