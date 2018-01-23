@@ -167,7 +167,7 @@ public:
 	CSTRING& erase(unsigned int index, unsigned int count);
 	void trim_right();
 
-	unsigned int atoi() const;
+	int atoi() const;
 	long long atoll() const;
 	int itoa(int num);
 	unsigned int find_in_list(STR_LIST sl, unsigned int* dwRead) const;

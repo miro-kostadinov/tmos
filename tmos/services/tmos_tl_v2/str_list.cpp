@@ -1183,7 +1183,7 @@ void CSTRING::trim_right()
  *
  * @return
  */
-unsigned int CSTRING::atoi() const
+int CSTRING::atoi() const
 {
 	unsigned int res=0;
 	const char *ptr = RAM_ADR(storage.adr)?storage.ram->buf: storage.rom;
