@@ -41,15 +41,6 @@ void* CSTRING::storage_realloc(unsigned int size)
 	return mem;
 }
 
-/** Default constructor
- *
- * @return
- */
-CSTRING::CSTRING()
-{
-	storage.adr = NULL;
-}
-
 /** Constructor
  *
  * @param size
@@ -580,20 +571,254 @@ CSTRING& CSTRING::append(char ch)
 	return (*this);
 }
 
+CSTRING& CSTRING::insert (char ch)
+{
+	uint32_t len;
+	char* ptr;
+
+	len = length();
+	if(reserve(len+1))
+	{
+		ptr = storage.ram->buf;
+		do
+		{
+			ptr[len+1] = ptr[len];
+		} while(len--);
+		ptr[0] = ch;
+	}
+
+	return (*this);
+}
+
 CSTRING& CSTRING::insert (char ch, unsigned int index)
 {
-	CSTRING tmp (c_str(), index);
-	tmp.append (ch);
-	tmp.append (substr(index, length() - index));
-	return (*this = tmp);
+//	CSTRING tmp (c_str(), index);
+//	tmp.append (ch);
+//	tmp.append (substr(index, length() - index));
+//	return (*this = tmp);
+
+
+	str_storage *	tmp;
+	uint32_t len;
+
+	if(RAM_ADR(storage.adr))
+	{
+		len = storage.ram->len;
+		if (index > len)
+			index = len;
+		len++;
+		if( storage.ram->refs > 1)
+		{
+			// we need to make a new storage
+
+			tmp = str_malloc1( len + STR_MIN_SIZE);
+			if(tmp)
+			{
+				//copy start
+				if(index)
+					memcpy(tmp->buf, storage.ram->buf, index);
+
+				tmp->buf[index] = ch;
+
+				// copy end
+				strcpy(tmp->buf + index +1, storage.ram->buf + index);
+
+				tmp->len = len;
+				tmp->refs = 1;
+			}
+			else
+			{
+				ASSERT(tmp);
+			}
+			if(locked_dec_short(&storage.ram->refs) <= 0)
+				str_free(storage.ram);	//oops someone released the storage
+			storage.ram = tmp;
+
+		} else
+		{
+			// we are the only owner of the storage
+			if(len >= STR_SIZEOF(storage.ram ))
+			{
+				//but it is too small -> realloc
+				storage_realloc(len + STR_MIN_SIZE);
+				ASSERT(storage.ram);
+			}
+			if (storage.ram)
+			{
+				storage.ram->len = len;
+
+				// make space...
+				while ( len-- > index)
+				{
+					storage.ram->buf[len+1] = storage.ram->buf[len];
+				}
+				storage.ram->buf[index] = ch;
+
+			}
+		}
+
+	} else
+	{
+		if(storage.adr)
+		{
+			len = strlen(storage.rom);
+			if (index > len)
+				index = len;
+			len++;
+
+			tmp = str_malloc1(len + STR_MIN_SIZE);
+			if(tmp)
+			{
+				if(index)
+					memcpy(tmp->buf, storage.rom, index);
+
+				tmp->buf[index] = ch;
+
+				strcpy(tmp->buf + index +1, storage.rom + index);
+
+				tmp->len = len;
+				tmp->refs = 1;
+			}
+			else
+			{
+				ASSERT(tmp);
+			}
+			storage.ram = tmp;
+		} else
+		{
+			if( storage_malloc(1 + STR_MIN_SIZE) )
+			{
+				storage.ram->refs = 1;
+				storage.ram->len = 1;
+				storage.ram->buf[0] = ch;
+				storage.ram->buf[1] = 0;
+			}
+			else
+			{
+				ASSERT(storage.ram);
+			}
+		}
+	}
+
+	return (*this);
 }
 
 CSTRING& CSTRING::insert (const char* s, unsigned int index)
 {
-	CSTRING tmp (c_str(), index);
-	tmp.append (s);
-	tmp.append (substr(index, length() - index));
-	return (*this = tmp);
+//	CSTRING tmp (c_str(), index);
+//	tmp.append (s);
+//	tmp.append (substr(index, length() - index));
+//	return (*this = tmp);
+
+	if(s)
+	{
+		uint32_t s_len;
+
+		s_len = strlen(s);
+		if(s_len)
+		{
+			str_storage *	tmp;
+			uint32_t len;
+
+			if(RAM_ADR(storage.adr))
+			{
+				len = storage.ram->len;
+				if (index > len)
+					index = len;
+				len += s_len;
+				if( storage.ram->refs > 1)
+				{
+					// we need to make a new storage
+
+					tmp = str_malloc1( len + STR_MIN_SIZE);
+					if(tmp)
+					{
+						if(index)
+							memcpy(tmp->buf, storage.ram->buf, index);
+
+						memcpy(tmp->buf + index, s, s_len);
+
+						strcpy(tmp->buf + index + s_len, storage.ram->buf + index);
+
+						tmp->len = len;
+						tmp->refs = 1;
+					}
+					else
+					{
+						ASSERT(tmp);
+					}
+					if(locked_dec_short(&storage.ram->refs) <= 0)
+						str_free(storage.ram);	//oops someone released the storage
+					storage.ram = tmp;
+
+				} else
+				{
+					// we are the only owner of the storage
+					if(len >= STR_SIZEOF(storage.ram ))
+					{
+						//but it is too small -> realloc
+						storage_realloc(len + STR_MIN_SIZE);
+						ASSERT(storage.ram);
+					}
+					if (storage.ram)
+					{
+						storage.ram->len = len;
+						len -= s_len;
+						while ( len-- > index)
+						{
+							storage.ram->buf[len+s_len] = storage.ram->buf[len];
+						}
+						memcpy(storage.ram->buf + index, s, s_len);
+
+					}
+				}
+
+			} else
+			{
+				if(storage.adr)
+				{
+					len = strlen(storage.rom);
+					if (index > len)
+						index = len;
+					len += s_len;
+
+					tmp = str_malloc1(len + STR_MIN_SIZE);
+					if(tmp)
+					{
+						tmp->len = len;
+						tmp->refs = 1;
+
+						if(index)
+							memcpy(tmp->buf, storage.rom, index);
+
+						memcpy(tmp->buf + index, s, s_len);
+
+						strcpy(tmp->buf + index + s_len, storage.rom + index);
+
+					}
+					else
+					{
+						ASSERT(tmp);
+					}
+					storage.ram = tmp;
+				} else
+				{
+					if( storage_malloc(s_len + STR_MIN_SIZE) )
+					{
+						storage.ram->refs = 1;
+						storage.ram->len = s_len;
+						strcpy(storage.ram->buf, s);
+					}
+					else
+					{
+						ASSERT(storage.ram);
+					}
+				}
+			}
+		}
+	}
+
+	return (*this);
 }
 
 

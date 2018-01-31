@@ -86,7 +86,10 @@ public:
 	CSTRING(const char *str);
 	CSTRING(const char *str, unsigned int len);
 	CSTRING(unsigned int size);
-	CSTRING();
+	inline CSTRING() __attribute__((always_inline))
+	{
+		storage.adr = NULL;
+	}
 	~CSTRING();
 	// free allocated memory
 	void free(void);
@@ -120,7 +123,8 @@ public:
 	CSTRING& append(const char* s);
 	CSTRING& append(const char* s, unsigned int l);
 	CSTRING& append(char ch);
-	CSTRING& insert(char ch, unsigned int index = 0);
+	CSTRING& insert(char ch);
+	CSTRING& insert(char ch, unsigned int index);
 	CSTRING& insert(const char* s, unsigned int index = 0);
 	/**
 	 * Append CSTRING operator
