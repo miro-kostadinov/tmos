@@ -646,6 +646,7 @@ CSTRING& CSTRING::insert (char ch, unsigned int index)
 			if (storage.ram)
 			{
 				storage.ram->len = len;
+				storage.ram->buf[len] = 0;
 
 				// make space...
 				while ( len-- > index)
@@ -763,6 +764,7 @@ CSTRING& CSTRING::insert (const char* s, unsigned int index)
 					if (storage.ram)
 					{
 						storage.ram->len = len;
+						storage.ram->buf[len] = 0;
 						len -= s_len;
 						while ( len-- > index)
 						{
