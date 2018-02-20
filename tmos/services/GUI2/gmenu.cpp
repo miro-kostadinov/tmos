@@ -475,7 +475,8 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 			lcd->pos_y = client_rect.y0 - text_font->vspacing;
 			RECT_T rc(client_rect);
 			client_rect = rect;
-			draw_text(lcd, str.c_str());
+			//draw_text(lcd, str.c_str());
+			draw_text_line(lcd, str.c_str(), str.length());
 			draw_hline(	rect.x0 +rect.width()/8,
 						rect.x1 -rect.width()/8,
 						lcd->pos_y);
