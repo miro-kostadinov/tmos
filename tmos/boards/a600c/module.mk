@@ -69,7 +69,7 @@ USE_CACHE		?=y
 USE_SHA_1		?=y
 
 # base 32 
-USE_BASE32		?=n
+USE_BASE32		?=y
 
 # GUI
 USE_GUI2		?=y

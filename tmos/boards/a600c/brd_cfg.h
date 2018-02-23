@@ -33,7 +33,7 @@
 #define USE_CRC32			1
 #define USE_CACHE			1
 #define USE_SHA_1			1
-#define USE_BASE32			0
+#define USE_BASE32			1
 #define USE_GUI				0
 #define USE_GUI2			1
 #define USE_AES_TMOS		0 // 1
