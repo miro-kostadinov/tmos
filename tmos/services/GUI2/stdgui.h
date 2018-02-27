@@ -174,8 +174,9 @@ typedef unsigned char GId;
 #define ES_PASSWORD		(1<<9)
 #define ES_WANTRETURN   (1<<10)
 #define ES_HIDE_CURSOR	(1<<11)
-#define ES_AUTO_SCROLL	(1<<12)
+#define ES_AUTO_SCROLL	SS_AUTO_SCROLL
 #define ES_LEAD_ZERO	(1<<14)
+#define ES_NUMERIC		(1<<15)
 
 #define ES_DEFAULT		(ES_CENTER|ES_MIDDLE|ES_MULTILINE|ES_AUTO_SCROLL)
 
