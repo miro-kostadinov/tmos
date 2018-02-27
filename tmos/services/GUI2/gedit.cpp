@@ -76,22 +76,22 @@ extern const key_to_char_ref_t WEAK g_key_to_char_ref[] =
 #if USE_FIXED_CPAGE == 1250
 extern const MENUTEMPLATE WEAK g_keyboard_menu[] =
 {
-	{ 0, KT_BG_CAPS, 	GMENU_FLG_SHOW_SELECTED_ITEM, "&1.¿¡¬"},
-	{ 0, KT_BG, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&2.‡·‚"},
+	{ 0, KT_BG_CAPS, 	GMENU_FLG_SHOW_SELECTED_ITEM, "&1.¡¬√"},
+	{ 0, KT_BG, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&2.·‚„"},
 	{ 0, KT_EN_CAPS, 	GMENU_FLG_SHOW_SELECTED_ITEM, "&3.ABC"},
 	{ 0, KT_EN, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&4.abc"},
-	{ 0, KT_DIGIT,	 	GMENU_FLG_SHOW_SELECTED_ITEM, "&5.123"},
+	{ 0, KT_DIGIT, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&5.123"},
 	{ 0, 0, 0, nullptr}
 };
 #endif // USE_FIXED_CPAGE == 1250
 #if USE_FIXED_CPAGE == 1251
 extern const MENUTEMPLATE WEAK g_keyboard_menu[] =
 {
-	{ 0, KT_BG_CAPS, 	GMENU_FLG_SHOW_SELECTED_ITEM, "&1.¡¬√"},
-	{ 0, KT_BG, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&2.·‚„"},
+	{ 0, KT_BG_CAPS, 	GMENU_FLG_SHOW_SELECTED_ITEM, "&1.¿¡¬"},
+	{ 0, KT_BG, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&2.‡·‚"},
 	{ 0, KT_EN_CAPS, 	GMENU_FLG_SHOW_SELECTED_ITEM, "&3.ABC"},
 	{ 0, KT_EN, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&4.abc"},
-	{ 0, KT_DIGIT, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&5.123"},
+	{ 0, KT_DIGIT,	 	GMENU_FLG_SHOW_SELECTED_ITEM, "&5.123"},
 	{ 0, 0, 0, nullptr}
 };
 #endif // USE_FIXED_CPAGE == 1251
