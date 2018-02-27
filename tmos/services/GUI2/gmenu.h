@@ -11,8 +11,9 @@
 #include <gobject.h>
 #include <gscroll.h>
 
-#define GMENU_FLG_CHECK_ITEM		0x0100
-#define GMENU_FLG_DISABLE_ITEM		0x0200
+#define GMENU_FLG_CHECK_ITEM			0x0100
+#define GMENU_FLG_DISABLE_ITEM			0x0200
+#define GMENU_FLG_SHOW_SELECTED_ITEM	0x0400 //!< always shows the selected item, independent of menu flags
 
 struct MENUTEMPLATE
 {

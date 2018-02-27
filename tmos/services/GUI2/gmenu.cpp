@@ -389,7 +389,7 @@ bool GMenu::LoadMenu(const MENUTEMPLATE* pat)
 //		while(!p->item_name.empty() && p->item)
 		while(!IsEmpty(p))
 		{
-			if( ! AppendMenu(p->parent, p->item, p->item_name) )
+			if( ! AppendMenu(p->parent, p->item, p->item_name, p->flags) )
 				return false;
 			p++;
 		}
@@ -536,7 +536,7 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 					}
 					else
 						lcd->pos_y += text_font->vspacing;
-					if(tmp==item && (flags & GO_FLG_SELECTED))
+					if(tmp==item && ((flags & GO_FLG_SELECTED)||(item->flags & GMENU_FLG_SHOW_SELECTED_ITEM)))
 					{
 						for (int i = lcd->pos_y - row_height; i < lcd->pos_y; i++)
 							dc.invert_hline (client_rect.x0, client_rect.x1, i);
