@@ -76,22 +76,22 @@ extern const key_to_char_ref_t WEAK g_key_to_char_ref[] =
 #if USE_FIXED_CPAGE == 1250
 extern const MENUTEMPLATE WEAK g_keyboard_menu[] =
 {
-	{ 0, KT_BG_CAPS, 0, "&1.ÀÁÂ"},
-	{ 0, KT_BG, 0, "&2.àáâ"},
-	{ 0, KT_EN_CAPS, 0, "&3.ABC"},
-	{ 0, KT_EN, 0, "&4.abc"},
-	{ 0, KT_DIGIT, 0, "&5.123"},
+	{ 0, KT_BG_CAPS, 	GMENU_FLG_SHOW_SELECTED_ITEM, "&1.ÀÁÂ"},
+	{ 0, KT_BG, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&2.àáâ"},
+	{ 0, KT_EN_CAPS, 	GMENU_FLG_SHOW_SELECTED_ITEM, "&3.ABC"},
+	{ 0, KT_EN, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&4.abc"},
+	{ 0, KT_DIGIT,	 	GMENU_FLG_SHOW_SELECTED_ITEM, "&5.123"},
 	{ 0, 0, 0, nullptr}
 };
 #endif // USE_FIXED_CPAGE == 1250
 #if USE_FIXED_CPAGE == 1251
 extern const MENUTEMPLATE WEAK g_keyboard_menu[] =
 {
-	{ 0, KT_BG_CAPS, 0, "&1.ÁÂÃ"},
-	{ 0, KT_BG, 0, "&2.áâã"},
-	{ 0, KT_EN_CAPS, 0, "&3.ABC"},
-	{ 0, KT_EN, 0, "&4.abc"},
-	{ 0, KT_DIGIT, 0, "&5.123"},
+	{ 0, KT_BG_CAPS, 	GMENU_FLG_SHOW_SELECTED_ITEM, "&1.ÁÂÃ"},
+	{ 0, KT_BG, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&2.áâã"},
+	{ 0, KT_EN_CAPS, 	GMENU_FLG_SHOW_SELECTED_ITEM, "&3.ABC"},
+	{ 0, KT_EN, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&4.abc"},
+	{ 0, KT_DIGIT, 		GMENU_FLG_SHOW_SELECTED_ITEM, "&5.123"},
 	{ 0, 0, 0, nullptr}
 };
 #endif // USE_FIXED_CPAGE == 1251
@@ -118,6 +118,8 @@ unsigned int GEdit::initialize (GMessage& msg)
 			text_size = SetTextAlign(align);
 		}
 	}
+	if(align & ES_NUMERIC)
+		shift = KT_DIGIT;
 	pos = txt.length();
 	cursor = scroll_rect;
 	cursor.y0 --;
@@ -402,14 +404,38 @@ unsigned int GEdit::process_key (GMessage& msg)
 		case KEY_3:
 		case KEY_4:
 		case KEY_5:
-		case KEY_OK:
-			if(msg.param != KEY_OK)
-			 shift = (key_mode)(TranslateKey(msg.param) -'0');
-			else
+		case KEY_6:
+		case KEY_7:
+		case KEY_8:
+		case KEY_9:
+		{
+			menu_template_t* tmp;
+			char  ch = TranslateKey(msg.param);
+			char* hot_pos;
+			if(ch && !(msg.param & KEY_ASCII_CODE))
 			{
-				if(edit_menu->item)
-					shift = (key_mode)edit_menu->item->item;
+				tmp = edit_menu->menu;
+				while(tmp)
+				{
+					hot_pos = strchr(tmp->item_name.c_str(), '&');
+					if(hot_pos && hot_pos[1] == ch)
+					{
+						shift = (key_mode)tmp->item;
+						break;
+					}
+					tmp = edit_menu->GetMenu(edit_menu->menu->parent, tmp +1);
+				}
+				if(!tmp)
+					return 0;
 			}
+			else
+				return 0;
+		}
+		break;
+
+		case KEY_OK:
+			if(edit_menu->item)
+				shift = (key_mode)edit_menu->item->item;
 			break;
 
 		case KEY_ESC:
@@ -447,7 +473,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 		return 1;
 	case KEY_SHIFT:
 		//changes the shift status
-		if(!edit_menu)
+		if(!edit_menu && !(align & ES_NUMERIC))
 		{
 			edit_menu = new GMenu(10, rect, nullptr, GO_FLG_DEFAULT|GO_FLG_BORDER);
 			if(edit_menu)
@@ -460,17 +486,18 @@ unsigned int GEdit::process_key (GMessage& msg)
 					edit_menu->rect.x1 = edit_menu->rect.x0 + max;
 				}
 
-				max = edit_menu->text_font->vspacing + 3*edit_menu->text_font->vdistance + 2*bs.y;
+				edit_menu->LoadMenu(g_keyboard_menu);
+				max = max(edit_menu->size, 1);
+				max = max*(edit_menu->text_font->vspacing + edit_menu->text_font->vdistance) + 2*bs.y;
 				if(rect.height() > max)
 				{
 					edit_menu->rect.y0 = rect.y0 +((rect.height() - max)>>1);
 					edit_menu->rect.y1 = edit_menu->rect.y0 + max;
 				}
-				else
-				{
-					edit_menu->rect.Deflate(0, max - rect.height());
-				}
-				edit_menu->LoadMenu(g_keyboard_menu);
+//				else
+//				{
+//					edit_menu->rect.Deflate(0, max - rect.height());
+//				}
 				parent->addChild(edit_menu);
 				edit_menu->initialize(msg);
 				if(!(edit_menu->item = edit_menu->FindItem(shift)))
