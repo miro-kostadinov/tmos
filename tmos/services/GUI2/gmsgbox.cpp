@@ -566,6 +566,7 @@ int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style, text_met
 	GMsgBox box;
 	box.displays = 1;
 	box.type = 	MBF_EDIT|
+				MBF_EDIT_FLAGS(ES_NUMERIC) |
 				MBF_INPUT_TYPE(KT_DIGIT)|Style;
 	box.body =  value;
 	box.title = Caption;
