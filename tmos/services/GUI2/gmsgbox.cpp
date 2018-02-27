@@ -86,6 +86,7 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 
 	if(body.empty() && !init_size.as_int )
 	{
+		lcd->set_font(font);
 		for(int i=0; i < lcd->chars_per_row/2; i++)
 			body += '.';
 		type |= MBF_CLR;
