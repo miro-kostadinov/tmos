@@ -330,7 +330,9 @@ void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area 
     		{
 				while(tmp)
 				{
+#if GUI_DISPLAYS > 1
 					if(((GWindow*)tmp)->displays & 	display	)
+#endif
 						res |= object->overlapped(tmp, frame);
 					tmp = tmp->nextObj;
 				}

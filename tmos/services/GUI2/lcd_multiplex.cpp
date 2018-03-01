@@ -13,7 +13,9 @@ void LCD_MULT::invalidate (GObject* object, RECT_T area)
 {
 	for (int i = 0; i < GUI_DISPLAYS; i++)
 	{
+#if GUI_DISPLAYS > 1
 		if (lcd[i]->display & ((GWindow*)object)->displays)
+#endif
 		{
 			parent = lcd[i];
 			rect = lcd[i]->rect;
@@ -27,7 +29,9 @@ void LCD_MULT::redraw_screen(GObject* object, RECT_T area)
 {
 	for (int i = 0; i < GUI_DISPLAYS; i++)
 	{
+#if GUI_DISPLAYS > 1
 		if (lcd[i]->display & ((GWindow*)object)->displays)
+#endif
 		{
 			parent = lcd[i];
 			rect = lcd[i]->rect;

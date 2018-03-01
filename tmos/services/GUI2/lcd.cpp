@@ -85,7 +85,11 @@ void LCD_MODULE::invalidate (GObject* object, RECT_T area)						//goes through t
 	}
 	while (tmp)
 	{
-		if ( (((GWindow*)tmp)->displays & display) && (tmp->flags & GO_FLG_SHOW) && !(tmp->flags & GO_FLG_TRANSPARENT) )
+		if (
+#if GUI_DISPLAYS > 1
+				(((GWindow*)tmp)->displays & display) &&
+#endif
+				(tmp->flags & GO_FLG_SHOW) && !(tmp->flags & GO_FLG_TRANSPARENT) )
 		{
 			if (area.x0 >= tmp->rect.x0 && area.x1 <= tmp->rect.x1)
 			{
@@ -108,7 +112,9 @@ void LCD_MODULE::invalidate (GObject* object, RECT_T area)						//goes through t
 	adjust_for_screen(&object, area);											//change the area and object to desktop if the display draws only rows or columns
 	for (tmp = object; tmp; tmp = tmp->nextObj)
 	{
+#if GUI_DISPLAYS > 1
 		if (((GWindow*)tmp)->displays & display)
+#endif
 		{
 			if (tmp->flags & GO_FLG_SHOW)
 			{

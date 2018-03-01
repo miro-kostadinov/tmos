@@ -21,13 +21,20 @@ protected:
 	CHandle hnd;
 	mqueue<GMessage, MAX_MESSAGES> Queue;
 public:
+#if GUI_DISPLAYS > 1
 	GWindow (): displays(0xFF)
+#else
+	GWindow ()
+#endif
 	{
 		hnd.mode1 = GUI_HND_UNUSED;
 	};
 	GWindow (GId id_t, const RECT_T& rect_t,
 			unsigned char displays_t, GFlags flags_t = GO_FLG_DEFAULT)
-	:GContainer (id_t, rect_t, flags_t), displays (displays_t)
+	:GContainer (id_t, rect_t, flags_t)
+#if GUI_DISPLAYS > 1
+	, displays (displays_t)
+#endif
 	{
 		hnd.mode1 = GUI_HND_UNUSED;
 	};

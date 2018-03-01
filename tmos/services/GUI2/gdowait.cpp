@@ -22,7 +22,9 @@ unsigned int GWait::initialize (GMessage& msg)
 	flags = GO_FLG_TRANSPARENT;
 	last_state = 0;
 	new_state = 0x3;
+#if GUI_DISPLAYS > 1
 	displays = 1;
+#endif
 	R = 10;
 	POINT_T r(R,R);
 	DPtoLP(r);
@@ -129,7 +131,11 @@ void GWait::hide(void)
 		GWindow* win = (GWindow *)(GWait::dowait_win->parent->children);
 		while(win)
 		{
-			if((win->flags & GO_FLG_SHOW) && (win->displays & GWait::dowait_win->displays))
+			if((win->flags & GO_FLG_SHOW)
+#if GUI_DISPLAYS > 1
+					&& (win->displays & GWait::dowait_win->displays)
+#endif
+					)
 				send_message(WM_DRAW, 0, GWait::dowait_win->rect.as_int, win);
 			win = (GWindow *)win->nextObj;
 		}
