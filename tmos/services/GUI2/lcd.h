@@ -40,6 +40,17 @@
 #define BKLT_PIN_INDX	0
 #define RST_PIN_INDX	1
 
+#define MSB2LSB(x)			(						  \
+								(((x)&0x001)?0x100:0) | \
+								(((x)&0x002)?0x080:0) | \
+								(((x)&0x004)?0x040:0) | \
+								(((x)&0x008)?0x020:0) | \
+								(((x)&0x010)?0x010:0) | \
+								(((x)&0x020)?0x008:0) | \
+								(((x)&0x040)?0x004:0) | \
+								(((x)&0x080)?0x002:0) | \
+								(((x)&0x100)?0x001:0)   \
+							)
 typedef void (* GSplash )(LCD_MODULE* lcd);
 
 struct LCD_MODULE: public GContainer
