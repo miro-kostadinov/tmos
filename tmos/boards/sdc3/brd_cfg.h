@@ -45,6 +45,7 @@
 
 #define GUI_DISPLAYS		1
 #define GUI_DEFAULT_DISP	1
+#define GUI_MONOCHROME  	0
 
 #define URL_CUSTOM_ROUTING	1
 
