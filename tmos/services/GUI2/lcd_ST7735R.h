@@ -78,7 +78,6 @@ struct ST7735R : public SPFD5414D
 
 	//virtual functions
 	virtual void lcd_reset();
-	virtual void redraw_screen(GObject* object, RECT_T area);
 
 };
 

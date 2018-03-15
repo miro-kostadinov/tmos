@@ -42,6 +42,9 @@ static const unsigned short spdf5414d_lsb_init[] =
 
 static const unsigned short spdf5414d_lsb_row_address[] =
 {
+	MSB2LSB(SPFD5414D_CASET),
+		MSB2LSB(SPFD5414D_DATA(0)),MSB2LSB(SPFD5414D_DATA(0)),
+		MSB2LSB(SPFD5414D_DATA(0)),MSB2LSB(SPFD5414D_DATA(0)),
 	MSB2LSB(SPFD5414D_RASET),
 		MSB2LSB(SPFD5414D_DATA(0)),MSB2LSB(SPFD5414D_DATA(0)),
 		MSB2LSB(SPFD5414D_DATA(0)),MSB2LSB(SPFD5414D_DATA(0)),
@@ -73,28 +76,31 @@ static inline uint16_t rotate(uint16_t value)
 	return value;
 }
 
-void SPFD5414D_UART::tft_write_row(unsigned short address_cmd[], unsigned short row)
+void SPFD5414D_UART::tft_init_address_cmd(unsigned short address_cmd[])
 {
-	if(row == 0xFFFF) // initialize row_address buffer
-	{
-		memcpy(address_cmd, spdf5414d_lsb_row_address, sizeof(spdf5414d_lsb_row_address));
-	}
-	else
-	{
-		address_cmd[2] = address_cmd[4] = rotate(row|0x100);
-		lcd_hnd->tsk_write(address_cmd, sizeof(spdf5414d_lsb_row_address)/sizeof(unsigned short));
-		for(int i=0; i< 128; i++)
-		{
-			rotate(disp_buf +i);
-		}
+	memcpy(address_cmd, spdf5414d_lsb_row_address, sizeof(spdf5414d_lsb_row_address));
+}
 
-		lcd_hnd->tsk_write(disp_buf, 256);
-		if(disp_buf == video_buf)
-			disp_buf += 128;
-		else
-			disp_buf = video_buf;
+void SPFD5414D_UART::tft_write_row(unsigned short address_cmd[])
+{
+/*		0					1					2				3					4
+	SPFD5414D_CASET, SPFD5414D_DATA(0), SPFD5414D_DATA(0), SPFD5414D_DATA(0), SPFD5414D_DATA(127),
+		5					6					7				8					9
+	SPFD5414D_RASET, SPFD5414D_DATA(0), SPFD5414D_DATA(0), SPFD5414D_DATA(0), SPFD5414D_DATA(0),
+	SPFD5414D_RAMWR
+ */
+	address_cmd[2] = rotate(SPFD5414D_DATA(frame.x0)); address_cmd[4] = rotate(SPFD5414D_DATA(frame.x1));
+	address_cmd[7] = address_cmd[9] = rotate(SPFD5414D_DATA(frame.y0));
+	unsigned int * dst = tft_buf;
+	for(int x= 0; x < 64; x++)
+	{
+		*dst = lut_to_tft_color[(disp_buf[frame.y0][x] & 0xF0)>>4];
+		rotate(dst++);
+		*dst = lut_to_tft_color[disp_buf[frame.y0][x] & 0x0F];
+		rotate(dst++);
 	}
-
+	lcd_hnd->tsk_write(address_cmd, sizeof(spdf5414d_lsb_row_address)/2);
+	lcd_hnd->tsk_write(tft_buf+frame.x0, (frame.x1 - frame.x0 +1)*2);
 }
 
 void SPFD5414D_UART::lcd_reset()

@@ -62,7 +62,7 @@ unsigned int GFloating_Button::initialize (GMessage& msg)
 
 void GFloating_Button::draw_this (LCD_MODULE* lcd)
 {
-	lcd->color = PIX_WHITE;
+	lcd->set_color(PIX_WHITE);
 
 	if(flags & GO_FLG_BORDER)
 		draw_border(rect);

@@ -36,13 +36,12 @@ void GButton::draw_border(RECT_T& frame)
 
 void GButton::draw_this (LCD_MODULE* lcd)
 {
-	lcd->color = PIX_WHITE;
+	lcd->set_color(PIX_WHITE);
 
 	if(flags & GO_FLG_BORDER)
 		draw_border(rect);
 
 	lcd->set_font(&FNT5x7);
-	lcd->color = PIX_WHITE;
 	set_xy_all(lcd, ((client_rect.y1 - client_rect.y0) >> 1) - (lcd->font->height >> 1), TA_CENTER);
 	if(type)
 	{

@@ -39,7 +39,7 @@ WEAK void backlight_thread(LCD_MODULE *lcd)
     }
 }
 
-TASK_DECLARE_STATIC(backlight_task, "BLIT", (void (*)(void))backlight_thread, 10, 40+TRACE_SIZE);
+TASK_DECLARE_STATIC(backlight_task, "BLIT", (void (*)(void))backlight_thread, 10, 140+TRACE_SIZE);
 
 
 void LCD_MODULE::lcd_init(GSplash splash)

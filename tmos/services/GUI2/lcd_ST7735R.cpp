@@ -103,8 +103,3 @@ void ST7735R::lcd_reset()
 	lcd_hnd->tsk_write(ST7735R_init+1, sizeof(ST7735R_init)/2 -1);
 }
 
-void ST7735R::redraw_screen (GObject* object, RECT_T area)
-{
-	redraw_rect(object, area);
-}
-

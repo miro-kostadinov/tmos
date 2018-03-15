@@ -66,13 +66,14 @@ struct LCD_MODULE: public GContainer
 	unsigned short chars_per_row;
 	unsigned short allign;
 	const RENDER_MODE* font;
-	unsigned int color;
 	HANDLE lcd_hnd;
 	const PIN_DESC* pins;
 #if GUI_DISPLAYS > 1
 	unsigned char	display;
 #endif
+	unsigned int color;
 
+public:
 	LCD_MODULE(	unsigned int x, unsigned int y,
 				unsigned int dx, unsigned int dy,
 				HANDLE hnd, const PIN_DESC* p) :
@@ -92,8 +93,8 @@ struct LCD_MODULE: public GContainer
 
 	virtual void update_screen()=0;
 	virtual void clear_screen()=0;
-	void redraw_screen(GObject* object, RECT_T area)=0;
-	void invalidate(GObject* object, RECT_T area);
+	virtual void redraw_screen(GObject* object, RECT_T area)=0;
+	virtual void invalidate(GObject* object, RECT_T area);
 	virtual void redraw_rect (GObject* object, RECT_T area){};
 	virtual void adjust_for_screen (GObject** object, RECT_T &area){};
 
@@ -108,6 +109,10 @@ struct LCD_MODULE: public GContainer
 	virtual void direct_write(GSplash draw_cb){};
 	virtual void LPtoDP(POINT_T& size, unsigned char lcd_index=0);
 	virtual void DPtoLP(POINT_T& size, unsigned char lcd_index=0);
+	void set_color(unsigned int fg_color)
+	{
+		color = fg_color;
+	}
 };
 
 struct GClientLcd : GObject

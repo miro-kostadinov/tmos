@@ -16,7 +16,11 @@ POINT_T PolarToDevXY(int deg, int r, LCD_MODULE* lcd);
 
 unsigned int GWait::initialize (GMessage& msg)
 {
+#if GUI_DISPLAYS > 1
 	LCD_MODULE* lcd = ((LCD_MODULE **)msg.lparam)[0];
+#else
+	LCD_MODULE* lcd = (LCD_MODULE *)msg.lparam;
+#endif
 
 	client_rect = rect = lcd->rect;
 	flags = GO_FLG_TRANSPARENT;
@@ -83,9 +87,9 @@ void GWait::draw_this(LCD_MODULE* lcd)
 			p += base;
 			if(last_state & mask)
 			{
-				lcd->color = PIX_BLACK;
+				lcd->set_color(PIX_BLACK);
 				fill_circle(p, 2);
-				lcd->color = PIX_WHITE;
+				lcd->set_color(PIX_WHITE);
 				draw_circle(p, 2);
 				continue;
 			}
@@ -155,7 +159,11 @@ void GWait::GUIDoWait(int code)
 				dowait_win->nextObj =Gdesktop->parent->focus->nextObj;
 				Gdesktop->parent->focus->nextObj = dowait_win;								//adds the new item to the Z list
 				dowait_win->parent = Gdesktop->parent;										//LCD
+#if GUI_DISPLAYS > 1
 				GQueue.push(GMessage(WM_INIT, 0, (long long)((LCD_MULT *)(Gdesktop->parent))->lcd, dowait_win));
+#else
+				GQueue.push(GMessage(WM_INIT, 0, (long long)((LCD_MODULE *)(Gdesktop->parent)), dowait_win));
+#endif
 			}
 			if(!dowait_win)
 				dowait_cnt = 0;

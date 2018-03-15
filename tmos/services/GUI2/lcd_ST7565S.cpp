@@ -213,7 +213,11 @@ void ST7565S::redraw_screen (GObject* object, RECT_T area)
 		frame = area;
 #if GUI_DEBUG
 		uint32_t t = CURRENT_TIME;
+#if GUI_DISPLAYS > 1
 		GUI_TRACELN("LCD%u update {%u,%u %u,%u}", display, frame.x0, area.y0, frame.x1, area.y1);
+#else
+		GUI_TRACELN("LCD update {%u,%u %u,%u}", frame.x0, area.y0, frame.x1, area.y1);
+#endif
 #endif
 		for (frame.y0=(area.y0 - (area.y0&7)); frame.y0 <= area.y1; frame.y0 += 8)
 		{
@@ -343,7 +347,11 @@ void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area 
 
 				if(res)
 				{
+#if GUI_DISPLAYS > 1
 					GUI_TRACELN("LCD%u draw {%u,%u %u,%u}", display, frame.x0, area.y0, frame.x1, area.y1);
+#else
+					GUI_TRACELN("LCD draw {%u,%u %u,%u}", frame.x0, area.y0, frame.x1, area.y1);
+#endif
 					frame.x0 = frame.x1+1;
 					frame.x1 = area.x1;
 					tmp = initial->nextObj;
@@ -370,7 +378,13 @@ void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area 
 //    TRACE(" %u ms", ms_since(t));
 #if GUI_DEBUG
 	if(frame.x0 <= frame.x1)
+	{
+#if GUI_DISPLAYS > 1
 		GUI_TRACELN("LCD%u draw {%u,%u %u,%u}", display, frame.x0, area.y0, frame.x1, area.y1);
+#else
+		GUI_TRACELN("LCD draw {%u,%u %u,%u}", frame.x0, area.y0, frame.x1, area.y1);
+#endif
+	}
     GUI_TRACE(" %d ms\e[m", ms_since(t0));
 #endif
 }

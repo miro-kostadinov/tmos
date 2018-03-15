@@ -57,11 +57,11 @@ void GListBox::draw_this (LCD_MODULE* lcd)
 {
 	if(client_rect.height() > 0 && client_rect.width() > 0)
 	{
+		lcd->set_color(PIX_WHITE);
 		if(flags & GO_FLG_BORDER)
 			draw_border(rect);
 
 		lcd->set_font(text_font);
-		lcd->color = PIX_WHITE;
 		lcd->allign = (align & (TA_HORIZONTAL|TA_VERTICAL));
 
 		draw_caption(lcd);

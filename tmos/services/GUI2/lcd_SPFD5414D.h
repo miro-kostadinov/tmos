@@ -53,38 +53,39 @@
 struct SPFD5414D: public LCD_MODULE
 {
 	unsigned int reset_timeout;
-	unsigned int* disp_buf;
-    unsigned int video_buf[256];
+//	unsigned int* disp_buf;
+//    unsigned int disp_buf[256];
 
 	SPFD5414D(	unsigned int x, unsigned int y,
 				unsigned int dx, unsigned int dy,
 				HANDLE hnd, const PIN_DESC* p) :
 		LCD_MODULE(x, y, dx, dy, hnd, p), reset_timeout(0)
-	{
-	}
-	;
+	{;}
 
 	//virtual functions
-	virtual void lcd_reset();
-	virtual void redraw_screen(GObject* object, RECT_T area);
-
-	void draw_bitmap( int x0,  int y0,
-			const  char* src,  int width,  int rows);
+	void lcd_reset();
+	void clear_screen();
+	void draw_bitmap(int x0, int y0, const char* src,  int width,  int rows);
 	void draw_point( int x,  int y);
 	void draw_hline( int x0,  int x1,  int y);
 	void draw_bline( int x0,  int x1,  int y);
 	void draw_vline( int y0,  int y1,  int x);
 	void invert_vline( int y0,  int y1,  int x);
 	void invert_hline( int x0,  int x1,  int y);
-	void update_screen()
-	{};
-	void clear_screen();
-	void redraw_rect (GObject* object, RECT_T area);
-	void direct_write (GSplash draw_cb);
-	void adjust_for_screen (GObject** object, RECT_T &area);
+	virtual void update_screen()
+	{;}
+	virtual void redraw_screen(GObject* object, RECT_T area);
+	virtual void redraw_rect (GObject* object, RECT_T area);
+	virtual void direct_write (GSplash draw_cb);
+	virtual void adjust_for_screen (GObject** object, RECT_T &area);
 
 protected:
-	virtual void tft_write_row(unsigned short address_cmd[], unsigned short row);
+    unsigned char disp_buf[128][64];
+    unsigned int  tft_buf[128];
+    static const unsigned int lut_to_tft_color[16];
+    virtual void tft_write_row(unsigned short address_cmd[]);
+	virtual void tft_init_address_cmd(unsigned short address_cmd[]);
+	virtual void tft_encode_color(const int x_pos, bool invert = false);
 };
 
 #ifndef CSX_PIN_INDX

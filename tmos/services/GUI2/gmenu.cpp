@@ -441,7 +441,7 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 	CSTRING str;
 	menu_template_t* tmp;
 
-	lcd->color = PIX_WHITE;
+	lcd->set_color(PIX_WHITE);
 
 	if(flags & GO_FLG_BORDER)
 		draw_border(rect);
@@ -452,7 +452,6 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 		if(scroll)
 			scroll->draw_scroll(lcd);
 
-		lcd->color = PIX_WHITE;
 		lcd->allign = TA_CENTER;
 		lcd->set_font(text_font);
 

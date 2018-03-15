@@ -38,7 +38,7 @@ unsigned int GFloating_Text::initialize(GMessage& msg)
 void GFloating_Text::draw_this (LCD_MODULE* lcd)
 {
 	lcd->set_font(font);
-	lcd->color = PIX_WHITE;
+	lcd->set_color(PIX_WHITE);
 	lcd->pos_x = text_rect.x0 + (signed)lcd->font->hdistance;
 	lcd->pos_y = text_rect.y0 + (signed)lcd->font->vdistance;
 	lcd->allign = TA_LEFT;
