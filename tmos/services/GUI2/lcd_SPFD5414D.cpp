@@ -8,6 +8,7 @@
 #include <tmos.h>
 #include <lcd_SPFD5414D.h>
 #include <fam_cpp.h>
+#include <gwindow.h>
 
 
 #define LCD_DEF_FONT		&FNT7x9
