@@ -579,6 +579,7 @@ CSTRING& CSTRING::insert (char ch)
 	len = length();
 	if(reserve(len+1))
 	{
+		storage.ram->len = len+1;
 		ptr = storage.ram->buf;
 		do
 		{
