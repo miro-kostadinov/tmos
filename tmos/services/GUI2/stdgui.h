@@ -100,7 +100,7 @@ enum WM_MESSAGE:unsigned int
 	WM_KEY
 };
 
-#if GUI_DEBUG
+#if GUI_DEBUG || GUI_DEBUG_MESSAGES
 struct GMessage;
 extern STR_LIST wm_dbg_str;
 void trace_message(const GMessage& msg);

@@ -31,7 +31,7 @@ void trace_message(const GMessage& msg)
 		return;
 
 	TRACELN1("\e[4;1;32m");
-	if(msg.dst)
+	if(msg.dst && msg.code != WM_DELETED)
 	{
 		TRACE("%X[%d]%s ( %s 0x%X/%d\e[m", msg.dst, msg.dst->id,
 				szlist_at(obj_type_str, msg.dst->get_object_type()),
