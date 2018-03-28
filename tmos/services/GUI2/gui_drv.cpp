@@ -95,6 +95,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 
     //prevent these signals not to be used from task handles
     ALLOCATE_SIGNAL(SIG_GUI_TASK);
+    drv_info->drv_data->helper = &gui_hnd;
 
     //wait for static constructors (lcd object)
     while(!detect_displays(drv_info))
@@ -173,54 +174,55 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 		if(sig & gui_hnd.signal)												//checks for new items
         {
 			sig &= ~gui_hnd.signal;
-//			drv_info->lcd[0]->backlight_signal();
         	gui_hnd.res &= ~FLG_SIGNALED;
-
-        	if(((HANDLE)gui_hnd.dst.as_voidptr)->cmd & FLAG_COMMAND)
+        	if(gui_hnd.dst.as_int)
         	{
-        		GWait::GUIDoWait(((HANDLE)gui_hnd.dst.as_voidptr)->src.as_int);
-        		usr_HND_SET_STATUS((HANDLE)gui_hnd.dst.as_voidptr, RES_SIG_OK);
-        	}
-        	else
-        	{
-            	GWindow* win = (GWindow*)((HANDLE)gui_hnd.dst.as_voidptr)->mode.as_voidptr;
-            	RES_CODE hnd_ret = RES_SIG_ERROR;
-    			if(win->hnd.cmd & FLAG_WRITE)
-    			{
-    				if(win->hnd.mode1 == GUI_HND_ATTACH)
-    				{
-    					msg = *(GMessage *)(((HANDLE)gui_hnd.dst.as_voidptr))->src.as_voidptr;
-    					GQueue.push(msg);
-    					if(msg.code == WN_DESTROY)
-    						win->hnd.mode1 = GUI_HND_DETACH;
-    					hnd_ret = RES_SIG_OK;
-    				}
-    				if(win->hnd.mode1 == GUI_HND_OPEN)
-    				{
-    					drv_info->lcd[0]->backlight_signal();
-    					win->nextObj =Gdesktop->parent->focus->nextObj;
-    					Gdesktop->parent->focus->nextObj = win;								//adds the new item to the Z list
-    					win->parent = Gdesktop->parent;										//LCD
-    					GQueue.push(GMessage(WM_INIT, 0, (long long)drv_info->lcd, win));	//send WM_INIT to the new window
-    					win->hnd.mode1 = GUI_HND_ATTACH;
-    					hnd_ret = RES_SIG_OK;												//signals the window thread
-    				}
-    			}
-    			else
-    			{
-    				if((win->hnd.cmd & FLAG_READ) && win->hnd.mode1 != GUI_HND_OPEN)
-    				{
-    					if(!win->Queue.empty())
-    						hnd_ret = RES_SIG_OK;
-    					else
-    					{
-    						hnd_ret = RES_IDLE;
-    						win->hnd.res = FLG_BUSY | FLG_OK;
-    					}
-    				}
-    			}
-    			if(hnd_ret & FLG_SIGNALED)
-    				usr_HND_SET_STATUS(&win->hnd, hnd_ret);
+            	if(((HANDLE)gui_hnd.dst.as_voidptr)->cmd & FLAG_COMMAND)
+            	{
+            		GWait::GUIDoWait(((HANDLE)gui_hnd.dst.as_voidptr)->src.as_int);
+            		usr_HND_SET_STATUS((HANDLE)gui_hnd.dst.as_voidptr, RES_SIG_OK);
+            	}
+            	else
+            	{
+                	GWindow* win = (GWindow*)((HANDLE)gui_hnd.dst.as_voidptr)->mode.as_voidptr;
+                	RES_CODE hnd_ret = RES_SIG_ERROR;
+        			if(win->hnd.cmd & FLAG_WRITE)
+        			{
+        				if(win->hnd.mode1 == GUI_HND_ATTACH)
+        				{
+        					msg = *(GMessage *)(((HANDLE)gui_hnd.dst.as_voidptr))->src.as_voidptr;
+        					GQueue.push(msg);
+        					if(msg.code == WN_DESTROY)
+        						win->hnd.mode1 = GUI_HND_DETACH;
+        					hnd_ret = RES_SIG_OK;
+        				}
+        				if(win->hnd.mode1 == GUI_HND_OPEN)
+        				{
+        					drv_info->lcd[0]->backlight_signal();
+        					win->nextObj =Gdesktop->parent->focus->nextObj;
+        					Gdesktop->parent->focus->nextObj = win;								//adds the new item to the Z list
+        					win->parent = Gdesktop->parent;										//LCD
+        					GQueue.push(GMessage(WM_INIT, 0, (long long)drv_info->lcd, win));	//send WM_INIT to the new window
+        					win->hnd.mode1 = GUI_HND_ATTACH;
+        					hnd_ret = RES_SIG_OK;												//signals the window thread
+        				}
+        			}
+        			else
+        			{
+        				if((win->hnd.cmd & FLAG_READ) && win->hnd.mode1 != GUI_HND_OPEN)
+        				{
+        					if(!win->Queue.empty())
+        						hnd_ret = RES_SIG_OK;
+        					else
+        					{
+        						hnd_ret = RES_IDLE;
+        						win->hnd.res = FLG_BUSY | FLG_OK;
+        					}
+        				}
+        			}
+        			if(hnd_ret & FLG_SIGNALED)
+        				usr_HND_SET_STATUS(&win->hnd, hnd_ret);
+            	}
         	}
 			gui_hnd.tsk_start_read(nullptr, 0);
         }
@@ -291,7 +293,7 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 	    	break;
 
 	    case DCR_HANDLE:
-	    	if(param->mode.as_int)
+	    	if(param != drv_data->helper)
 	    	{
 	    		locked_set_byte(&param->mode0, FLG_OK);
 	    		svc_send_signal(&gui_task, SIG_GUI_TASK);
@@ -299,23 +301,13 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 	    	break;
 
 	    case DCR_CANCEL:
-	    	if(param->mode.as_int)
+	    	if(param != drv_data->helper)
 	    	{
 	    		// this is WINDOW handle...
-	    		locked_set_byte(&param->mode0, FLG_SIGNALED);
 	    		if(!param->svc_list_cancel(drv_data->waiting))
 	    		{
+		    		locked_set_byte(&param->mode0, FLG_SIGNALED);
 		    		svc_send_signal(&gui_task, SIG_GUI_TASK);
-	    		}
-	    	} else
-	    	{
-	    		// not a WINDOW
-	    		if(param == drv_data->helper)
-	    		{
-					//the helper task is waiting for object...
-					drv_data->helper = nullptr;
-					param->dst.as_voidptr = nullptr;
-					svc_HND_SET_STATUS(param, RES_SIG_OK);
 	    		}
 	    	}
 	    	break;
@@ -329,40 +321,34 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 //*----------------------------------------------------------------------------
 void GUI_DSR(GUI_DRIVER_INFO* drv_info, HANDLE hnd)
 {
-	GUI_DRIVER_DATA* drv_data = drv_info->drv_data;
 	HANDLE tmp;
+	GUI_DRIVER_DATA* drv_data= drv_info->drv_data;
 
-	if(hnd->mode.as_int)
+	hnd->res = RES_BUSY;
+	if(hnd == drv_data->helper)
 	{
-		// this is GUI_OBJECT handle...
-		hnd->res = RES_BUSY;
+		// Request from the helper task...
+		tmp = drv_data->waiting;		//  first waiting handle
+		if( tmp )
+		{
+			//return one handle at a time
+			drv_data->waiting = tmp->next;
+			hnd->dst.as_voidptr = tmp;
+			svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+		}
+	} else
+	{
+		// this is a client handle...
 		hnd->mode0 = 0;
-		if( (tmp=drv_data->helper) )
+		tmp = drv_data->helper;
+		if( tmp->res == RES_BUSY )
 		{
 			//the helper task is waiting for object...
-			hnd->next = nullptr;
-			drv_data->helper = nullptr;
 			tmp->dst.as_voidptr = hnd;
 			svc_HND_SET_STATUS(tmp, RES_SIG_OK);
 		} else
 		{
-			//queue the WINDOW object while helper task is busy
-			hnd->next = drv_data->waiting;
-			drv_data->waiting = hnd;
-		}
-	} else
-	{
-		// not a WINDOW object
-		// this should be the helper task reading the waiting WINDOW objects
-		if( (tmp=drv_data->waiting) )
-		{
-			drv_data->waiting = nullptr;
-			hnd->dst.as_voidptr = tmp;
-			svc_HND_SET_STATUS(hnd, RES_SIG_OK);
-		} else
-		{
-			hnd->res = RES_BUSY;
-			drv_data->helper = hnd;
+        	hnd->list_add(drv_data->waiting);
 		}
 	}
 }
