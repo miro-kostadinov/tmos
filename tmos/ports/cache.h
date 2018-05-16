@@ -43,11 +43,12 @@ struct CCache
 	/** Construct with custom buffer size **/
 	CCache(unsigned int sz) :
 #if USE_CSTRING
-		buf(sz), next(), pos(0), size(sz)
+		next(), pos(0), size(sz)
 #else
 		buf(), next(), pos(0), size(sz)
 #endif
 	{
+		buf.reserve(sz);
 	}
 	;
 	virtual ~CCache(){};

@@ -85,7 +85,14 @@ public:
 	}
 	CSTRING(const char *str);
 	CSTRING(const char *str, unsigned int len);
+protected:
+	friend CSTRING operator+(const CSTRING& s1, const CSTRING& s2 );
+	friend CSTRING operator+(const char* s, const CSTRING& s2 );
+	friend CSTRING operator+( char c, const CSTRING& s2 );
+	friend CSTRING operator+( const CSTRING& s1, const char* s );
+	friend CSTRING operator+( const CSTRING& s1, char c );
 	CSTRING(unsigned int size);
+public:
 	inline CSTRING() __attribute__((always_inline))
 	{
 		storage.adr = NULL;
