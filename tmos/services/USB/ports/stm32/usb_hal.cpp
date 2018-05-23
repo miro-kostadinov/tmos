@@ -2165,6 +2165,9 @@ static void usb_b_gint_wkupint(USB_DRV_INFO drv_info)
 {
 	USB_TypeDef* otg = drv_info->hw_base;
 
+	/* Clear interrupt */
+	otg->core_regs.GINTSTS = OTG_GINTSTS_WKUPINT;
+
 	if(drv_info->cfg->stm32_otg & CFG_STM32_OTG_LOW_POWER)
 	{
 		/* un-gate USB Core clock */
@@ -2178,9 +2181,7 @@ static void usb_b_gint_wkupint(USB_DRV_INFO drv_info)
 	usb_drv_event(drv_info, e_resume);
 	TRACELN1_USB("usb resume");
 
-	/* Clear interrupt */
-	otg->core_regs.GINTSTS = OTG_GINTSTS_WKUPINT;
-
+	otg->device_regs.DCTL |= OTG_DCTL_POPRGDNE;
 }
 
 /**
@@ -2903,6 +2904,11 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 				TRACELN_USB("DSTS = %08x", otg->device_regs.DSTS);
 				TRACELN_USB("PCGCCTL = %08x", otg->PCGCCTL);
 				otg->core_regs.GINTSTS = OTG_GINTSTS_RESETDET;
+				if(otg->PCGCCTL & OTG_PCGCCTL_STPPCLK)
+				{
+					/* un-gate USB Core clock */
+					otg->PCGCCTL &= ~(OTG_PCGCCTL_GATEHCLK | OTG_PCGCCTL_STPPCLK);
+				}
 			}
 
 			if(status & OTG_GINTSTS_FETSUSP)
