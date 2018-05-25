@@ -42,7 +42,7 @@ static void SPI_START_TRANSACTION(SPI_DRIVER_INFO* drv_info, SPI_DRIVER_MODE* mo
 	//		SPI_CR1 register. If the NSS pin is required in output	mode, the
 	//		SSOE bit only should be set. This step is not required when the TI
 	//		mode is	selected.
-	pSPI->SPI_CR1 = mode->spi_cr1;
+	pSPI->SPI_CR1 = mode->spi_cr1 & (~SPI_CR1_SPE);
 
 	//	6. Set the FRF bit in SPI_CR2 to select the TI protocol for serial communications.
 	//	7. The MSTR and SPE bits must be set (they remain set only if the NSS pin is connected
@@ -59,7 +59,11 @@ static void SPI_START_TRANSACTION(SPI_DRIVER_INFO* drv_info, SPI_DRIVER_MODE* mo
 		pSPI->SPI_CR2 = (pSPI->SPI_CR2 & (SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN)) | mode->spi_cr2 | SPI_CR2_RXNEIE;
 	}
     //enable
-    pSPI->SPI_CR1 = mode->spi_cr1 | SPI_CR1_SPE;
+	if(!(mode->spi_cr1 & SPI_CR1_SPE)) // if set SPI_CR1_SPE disable SPI
+	{
+
+		pSPI->SPI_CR1 = mode->spi_cr1 | SPI_CR1_SPE;
+	}
 
     // Assert CS
     PIO_Assert(mode->cs_pin);
