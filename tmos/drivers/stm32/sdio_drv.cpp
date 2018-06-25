@@ -197,52 +197,62 @@ static RES_CODE SDIO_START_HND(SDIO_INFO drv_info, HANDLE hnd, SDIO_DRIVER_DATA 
 #if DEBUG_SDIO_DRV
 				TRACE("[c %u]", cmd_indx);
 #endif
-				if( (hnd->len > 4) && !(cmd & SDIO_CMD_WAITRESP_no1) )
+				if( cmd_indx == SD_CMD42_LOCK_UNLOCK && hnd->len)
 				{
-					// Commands like ACMD51 (read SCR), CMD6 (SWITCH func) ->R1 + read
-					hw_base->SDIO_DLEN = hnd->len;
-					switch(hnd->len)
-					{
-					case 8:
-						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_8b | SDIO_DCTRL_DTDIR
-								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
-						break;
-					case 16:
-						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_16b | SDIO_DCTRL_DTDIR
-								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
-						break;
-					case 32:
-						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_32b | SDIO_DCTRL_DTDIR
-								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
-						break;
-					case 64:
-						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_64b | SDIO_DCTRL_DTDIR
-								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
-						break;
-					case 128:
-						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_128b | SDIO_DCTRL_DTDIR
-								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
-						break;
-					case 256:
-						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_256b | SDIO_DCTRL_DTDIR
-								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
-						break;
-					default: //512
-						hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_512b | SDIO_DCTRL_DTDIR
-								| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
-						break;
-					}
-					drv_data->sdio_op = SDIO_OP_READ | SDIO_OP_R1;
-				} else
-				{
-					// R3 response for ACMD41 and CMD58 (CMD51 and ACMD58 are reserved)
-					if( (cmd_indx==41) || (cmd_indx==58))
-						drv_data->sdio_op = SDIO_OP_CMD | SDIO_OP_R3;
-					else
-						drv_data->sdio_op = SDIO_OP_CMD;
+					hw_base->SDIO_ARG =  hnd->src.as_intptr[1];
+					hw_base->SDIO_CMD = cmd;
+					//wait for cmdend (R1) or error
+					drv_data->sdio_op = SDIO_OP_CMD | SDIO_OP_R1;
 				}
-				hw_base->SDIO_ARG = hnd->src.as_intptr[1];
-				hw_base->SDIO_CMD = cmd;
+				else
+				{
+					if( (hnd->len > 4) && !(cmd & SDIO_CMD_WAITRESP_no1) )
+					{
+						// Commands like ACMD51 (read SCR), CMD6 (SWITCH func) ->R1 + read
+						hw_base->SDIO_DLEN = hnd->len;
+						switch(hnd->len)
+						{
+						case 8:
+							hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_8b | SDIO_DCTRL_DTDIR
+									| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+							break;
+						case 16:
+							hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_16b | SDIO_DCTRL_DTDIR
+									| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+							break;
+						case 32:
+							hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_32b | SDIO_DCTRL_DTDIR
+									| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+							break;
+						case 64:
+							hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_64b | SDIO_DCTRL_DTDIR
+									| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+							break;
+						case 128:
+							hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_128b | SDIO_DCTRL_DTDIR
+									| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+							break;
+						case 256:
+							hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_256b | SDIO_DCTRL_DTDIR
+									| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+							break;
+						default: //512
+							hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_512b | SDIO_DCTRL_DTDIR
+									| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+							break;
+						}
+						drv_data->sdio_op = SDIO_OP_READ | SDIO_OP_R1;
+					} else
+					{
+						// R3 response for ACMD41 and CMD58 (CMD51 and ACMD58 are reserved)
+						if( (cmd_indx==41) || (cmd_indx==58))
+							drv_data->sdio_op = SDIO_OP_CMD | SDIO_OP_R3;
+						else
+							drv_data->sdio_op = SDIO_OP_CMD;
+					}
+					hw_base->SDIO_ARG = hnd->src.as_intptr[1];
+					hw_base->SDIO_CMD = cmd;
+				}
 				//wait for something..
 			} else
 			{
@@ -536,13 +546,42 @@ void SDIO_ISR(SDIO_INFO drv_info)
 						{
 							hw_base->SDIO_DLEN = hnd->len;
 							hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_512b
-									| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+										| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
 						}
 
 						if(drv_data->sdio_op & SDIO_OP_CMD)
 						{
 							switch(hnd->src.as_intptr[0] & 0x3f)
 							{
+							case SD_CMD42_LOCK_UNLOCK:
+								hnd->src.as_intptr += 2;
+								hw_base->SDIO_DLEN = hnd->len;
+								switch(hnd->len)
+								{
+								case 4:
+									hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_4b
+											| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+									break;
+								case 8:
+									hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_8b
+											| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+									break;
+								case 16:
+									hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_16b
+											| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+									break;
+								case 32:
+									hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_32b
+											| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+									break;
+								default:
+									hw_base->SDIO_DCTRL = SDIO_DCTRL_DBLOCKSIZE_64b
+											| SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
+									break;
+								}
+								drv_data->sdio_op = SDIO_OP_WRITE | SDIO_OP_R1;
+								break;
+
 							case SD_CMD00_GO_IDLE_STATE:
 								//reset bus width
 								break;
