@@ -135,20 +135,20 @@ void sha256_algo_t::process_block(const uint32_t* block)
 		if (t >= 16)
 			W(t)+= SIGMA4(W(t + 14)) + W(t + 9) + SIGMA3(W(t + 1));
 
-			//Calculate T1 and T2
-			temp1 = hh + SIGMA2(e) + CH(e, f, g) + k[t] + W(t);
-			temp2 = SIGMA1(a) + MAJ(a, b, c);
+		//Calculate T1 and T2
+		temp1 = hh + SIGMA2(e) + CH(e, f, g) + k[t] + W(t);
+		temp2 = SIGMA1(a) + MAJ(a, b, c);
 
-			//Update the working registers
-			hh = g;
-			g = f;
-			f = e;
-			e = d + temp1;
-			d = c;
-			c = b;
-			b = a;
-			a = temp1 + temp2;
-		}
+		//Update the working registers
+		hh = g;
+		g = f;
+		f = e;
+		e = d + temp1;
+		d = c;
+		c = b;
+		b = a;
+		a = temp1 + temp2;
+	}
 
 		//Update the hash value
 	h[0] += a;

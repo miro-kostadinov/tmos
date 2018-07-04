@@ -373,11 +373,11 @@
 //*			Trace
 //*----------------------------------------------------------------------------
 #ifndef TRACE_TLS_LEVEL
-#define TRACE_TLS_LEVEL TRACE_LEVEL_TRACE
+#define TRACE_TLS_LEVEL TRACE_LEVEL_NONE
 #endif
 
 #ifndef TRACE_MPI_LEVEL
-#define TRACE_MPI_LEVEL TRACE_LEVEL_TRACE
+#define TRACE_MPI_LEVEL TRACE_LEVEL_NONE
 #endif
 
 #define TRACE_TLS(...) 			TRACE_LEVEL(TRACE_TLS_LEVEL, __VA_ARGS__)
