@@ -1123,22 +1123,26 @@ void tls_dump_record(const record_ctxt_t* rc)
 	case TLS_TYPE_CHANGE_CIPHER_SPEC:
 		TRACELN1_TLS("CHANGE_CIPHER_SPEC");
 		{
+#if TRACE_TLS_LEVEL >= TRACE_LEVEL_DEBUG
 			const tls_change_cipherspec_t* message;
 
 			//Point to the buffer where to format the message
 			message = (tls_change_cipherspec_t*) rc->msg_start();
 			TRACELN_TLS("type = %u", message->type);
+#endif
 		}
 		break;
 
 	case TLS_TYPE_ALERT:
 		TRACELN1_TLS("ALERT");
 		{
+#if TRACE_TLS_LEVEL >= TRACE_LEVEL_DEBUG
 			const tls_alert_t* message;
 
 			message = (tls_alert_t*) rc->msg_start();
 			TRACELN_TLS("level=%u description=%u", message->level, message->description);
 
+#endif
 		}
 		break;
 
