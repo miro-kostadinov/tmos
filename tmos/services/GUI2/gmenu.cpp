@@ -336,7 +336,7 @@ bool GMenu::InsertItem(int item_id, int new_item_id, const CSTRING& new_item_nam
 
 }
 
-bool GMenu::Select(int item_id)
+bool GMenu::Select(int item_id, bool redraw)
 {
 	menu_template_t* ptr = FindItem(item_id);
 	if(ptr)
@@ -344,6 +344,11 @@ bool GMenu::Select(int item_id)
 		item = ptr;
 		menu = GetMenu(item->parent);
 		size = GetMenuSize(item->parent);
+		if(redraw)
+		{
+			set_scroll();
+			send_message(WM_DRAW, 0, 0L, this);
+		}
 		return true;
 	}
 	return false;

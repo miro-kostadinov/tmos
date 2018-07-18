@@ -108,7 +108,7 @@ struct GMenu: GObject
 	menu_template_t* GetMenu(int parent_id, menu_template_t* start = nullptr);
 	int GetMenuSize(int menu_id);
 	bool SetReplaceItem(int item_id, const CSTRING& item_name, short unsigned int flg =0);
-	bool Select(int item_id);
+	bool Select(int item_id, bool redraw = false);
 	virtual bool RemoveItem(int item_id);
 	bool InsertItem(int item_id, int new_item_id, const CSTRING& new_item_name, short unsigned int new_flg =0);
 
