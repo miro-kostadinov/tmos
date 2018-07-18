@@ -635,7 +635,8 @@ RES_CODE usb_remote_hid_t::scan_hid(uint32_t port_indx, USBSubClassCode subcls, 
 							{
 								if(hid->hid_descriptors[i].bDescriptorType == HIDREPORT_DESCRIPTOR)
 								{
-									if(RES_OK ==is_keypad_report(hid, i))
+									if(RES_OK ==is_keypad_report(hid, i) ||
+											(hid->bNumDescriptors == 1 && config_descriptor->bNumInterfaces == 1)) // scanner DATALOGIC don't return report descriptor
 									{
 										// set the configuration
 										res = set_configuration(config_descriptor->bConfigurationValue);
