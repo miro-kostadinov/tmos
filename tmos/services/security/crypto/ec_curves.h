@@ -12,6 +12,73 @@
 #include <crypto.h>
 #include <mpi.h>
 
+#ifndef ECC112_SUPPORT
+#define ECC112_SUPPORT 1
+#endif
+#ifndef ECC128_SUPPORT
+#define ECC128_SUPPORT 1
+#endif
+#ifndef ECC160_SUPPORT
+#define ECC160_SUPPORT 1
+#endif
+#ifndef ECC192_SUPPORT
+#define ECC192_SUPPORT 1
+#endif
+#ifndef ECC224_SUPPORT
+#define ECC224_SUPPORT 1
+#endif
+#ifndef ECC239_SUPPORT
+#define ECC239_SUPPORT 0
+#endif
+#ifndef ECC256_SUPPORT
+#define ECC256_SUPPORT 1
+#endif
+#ifndef ECC320_SUPPORT
+#define ECC320_SUPPORT 1
+#endif
+#ifndef ECC384_SUPPORT
+#define ECC384_SUPPORT 1
+#endif
+#ifndef ECC512_SUPPORT
+#define ECC512_SUPPORT 1
+#endif
+#ifndef ECC521_SUPPORT
+#define ECC521_SUPPORT 1
+#endif
+
+/* Determine max ECC bits based on enabled curves */
+#if ECC521_SUPPORT
+    #define MAX_ECC_BITS    521
+#elif ECC512_SUPPORT
+    #define MAX_ECC_BITS    512
+#elif ECC384_SUPPORT
+    #define MAX_ECC_BITS    384
+#elif ECC320_SUPPORT
+    #define MAX_ECC_BITS    320
+#elif ECC256_SUPPORT
+    #define MAX_ECC_BITS    256
+#elif ECC239_SUPPORT
+    #define MAX_ECC_BITS    239
+#elif ECC224_SUPPORT
+    #define MAX_ECC_BITS    224
+#elif ECC192_SUPPORT
+    #define MAX_ECC_BITS    192
+#elif ECC160_SUPPORT
+    #define MAX_ECC_BITS    160
+#elif ECC128_SUPPORT
+    #define MAX_ECC_BITS    128
+#elif ECC112_SUPPORT
+    #define MAX_ECC_BITS    112
+#endif
+
+/* calculate max ECC bytes */
+#if ((MAX_ECC_BITS * 2) % 8) == 0
+    #define MAX_ECC_BYTES     (MAX_ECC_BITS / 8)
+#else
+    /* add byte if not aligned */
+    #define MAX_ECC_BYTES     ((MAX_ECC_BITS / 8) + 1)
+#endif
+
 //Constants
 extern const uint8_t SECP112R1_OID[5];
 extern const uint8_t SECP112R2_OID[5];
