@@ -27,7 +27,7 @@ local_h_src-y 	+= asn1.h base64.h chacha.h chacha20_poly1305.h crypto.h dh.h
 local_h_src-y 	+= dsa.h ec_curves.h ec.h ecdh.h ecdsa.h hmac.h md5.h mpi.h 
 local_h_src-y 	+= oid.h pem.h poly1305.h rc4.h rsa.h sha1.h sha224.h sha256.h 
 local_h_src-y 	+= sha384.h sha512.h x509.h idea.h des.h des3.h aes.h camellia.h
-local_h_src-y 	+= aria.h seed.h common.h crypto_opt.h yarrow.h
+local_h_src-y 	+= aria.h seed.h common.h crypto_opt.h yarrow.h whirlpool.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
