@@ -155,6 +155,8 @@ RES_CODE usb_remote_msc_t::init_msd()
 		{
 				break;
 		}
+		if(res == RES_FATAL && i > 3)
+			break;
 	}
 
 	// get capacity of volume
