@@ -36,7 +36,7 @@
 #define USE_BASE32			1
 #define USE_GUI				0
 #define USE_GUI2			1
-#define USE_AES_TMOS		0 // 1
+#define USE_AES_TMOS		1
 #define STATIC_AES_TABLES	1
 #define	USE_GPIO_EXPANDER 	0
 
