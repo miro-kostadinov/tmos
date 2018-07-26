@@ -107,14 +107,20 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 		message_rect.y1 -= (button_rect.height())?(button_rect.height()):1;		// message to buttons spacing 1 dot
 
 		int width=0;
-		int dec = message_rect.width();
-		if(type & MBF_EDIT)
-			dec -= 2*bs.x;
+		int dec;
 
 		if(init_size.as_int)
+		{
+			dec = 0; // do not adjust width...
 			msg_size.as_int = init_size.as_int;
+		}
 		else
+		{
+			dec = message_rect.width();
+			if(type & MBF_EDIT)
+				dec -= 2*bs.x;
 			msg_size = get_text_metrics(body.c_str(), dec, font);
+		}
 
 		if(msg_size.height + font->vspacing < message_rect.height())
 		{
