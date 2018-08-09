@@ -914,6 +914,13 @@ RES_CODE usb_hal_start(USB_DRV_INFO drv_info, uint32_t mode)
 			TRACE1_USB(" Init done");
 
 		}
+		else
+		{
+#if USB_ENABLE_HOST
+		if(mode == USB_OTG_FLG_HOST && !(drv_data->otg_flags & USB_OTG_FLG_HOST))
+			res = FLG_SIGNALED | RES_FATAL;
+#endif
+		}
 	}
 
 	return res;
