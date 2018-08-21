@@ -66,6 +66,55 @@ void TRACE_TEXT(const void* buf, unsigned int len);
 void TRACE_TEXT(const void* buf, unsigned int len, unsigned int color);
 void TRACE_COLOR(unsigned int color);
 void TRACE_COLOR_END();
+
+struct lock_t
+{
+private:
+	uint32_t lock_locker;
+	uint32_t lock_cnt;
+
+public:
+	lock_t(): lock_locker(0), lock_cnt(0)
+	{;}
+
+	void lock()
+	{
+		while(locked_set_if_null(&lock_locker, CURRENT_TASK))
+		{
+			if(lock_locker == (uint32_t)CURRENT_TASK)
+				break;
+			tsk_sleep(1);
+		}
+		lock_cnt++;
+	}
+
+	bool try_lock()
+	{
+		if(locked_set_if_null(&lock_locker, CURRENT_TASK))
+		{
+			if(lock_locker != (uint32_t)CURRENT_TASK)
+				return false;
+		}
+		lock_cnt++;
+		return true;
+	}
+
+	void unlock()
+	{
+		if(lock_locker == (uint32_t)CURRENT_TASK)
+		{
+			if(lock_cnt)
+				lock_cnt--;
+			if(!lock_cnt)
+				lock_locker = 0;
+		}
+	}
+	uint32_t is_locked()
+	{
+		return lock_locker;
+	}
+};
+
 #endif
 
 #define TC_BRIGHT				1
