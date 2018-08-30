@@ -120,7 +120,7 @@ void GScroll::SetScrollPos(GFlags sb, unsigned short p, bool redraw)
 		view_size -=2;  //size of bottom/right cover
 		//pos = 2 + ((p * ratio)>>10) + ((((p*ratio)&0x3FF) >= 512)?1:0);
 		p = p * ratio;
-		pos = 2 + p/1000 + ((p%500) >= 500 ? 1: 0);
+		pos = 2 + (p+500)/1000;
 		if( pos + page  > view_size )
 			pos = view_size - page;
 	}
