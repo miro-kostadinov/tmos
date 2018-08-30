@@ -280,7 +280,7 @@ unsigned int GMsgBox::process_command (GMessage& msg)
 	return 0;
 }
 
-bool GMsgBox::SelectDefaultButton(GObject* button)
+bool GMsgBox::SelectDefaultButton(GObject* button) const
 {
 	while(button)
 	{

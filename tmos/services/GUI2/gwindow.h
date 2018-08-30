@@ -48,10 +48,10 @@ public:
 protected:
 	friend void gui_thread(GUI_DRIVER_INFO* drv_info);
 
-	virtual void draw_this(LCD_MODULE* lcd);
-	virtual unsigned int initialize (GMessage& msg);
-	virtual unsigned int process_key (GMessage& msg);
-	virtual unsigned int process_destroy(GMessage& msg);
+	void draw_this(LCD_MODULE* lcd) override;
+	unsigned int initialize (GMessage& msg) override;
+	unsigned int process_key (GMessage& msg) override;
+	unsigned int process_destroy(GMessage& msg) override;
 
 
 public:

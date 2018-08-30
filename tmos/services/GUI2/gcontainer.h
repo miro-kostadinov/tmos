@@ -25,29 +25,29 @@ struct GContainer:GObject {
 	GUI_GET_OBJECT_TYPE(OBJECT_CONTAINER);
 
 	virtual GObject* addChild (GObject* child);
-	virtual GObject* get_object(GId xid);
+	GObject* get_object(GId xid) override;
 	GObject* addChildRef(GObject* child);
 
 protected:
-	virtual unsigned int initialize (GMessage& msg);
-	virtual unsigned int process_idle(GMessage& msg);
-	virtual unsigned int process_default(GMessage& msg);
-	virtual unsigned int process_command(GMessage& msg);
+	unsigned int initialize (GMessage& msg) override;
+	unsigned int process_idle(GMessage& msg) override;
+	unsigned int process_default(GMessage& msg) override;
+	unsigned int process_command(GMessage& msg) override;
 
-	virtual void draw (LCD_MODULE* lcd, RECT_T area);
-	virtual void draw_this (LCD_MODULE* lcd);
-	virtual bool get_focus (bool notify_msg = true);
-	virtual bool is_available();
+	void draw (LCD_MODULE* lcd, RECT_T area) override;
+	void draw_this (LCD_MODULE* lcd) override;
+	bool get_focus (bool notify_msg = true) override;
+	bool is_available() override;
 
-	virtual bool set_flag(GFlags val);
-	virtual bool clr_flag(GFlags val);
+	bool set_flag(GFlags val) override;
+	bool clr_flag(GFlags val) override;
 	// container specific
-	bool focus_on_previous();
-	bool focus_on_next();
+	bool focus_on_previous() const;
+	bool focus_on_next() const;
 	GObject* first_available();
 	GObject* last_available();
 	bool close (GObject* toClose);
-	virtual bool close ();
+	bool close () override;
 
 private:
 	bool set_focus_first();

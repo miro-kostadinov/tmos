@@ -144,20 +144,20 @@ struct GObject
 	// Draw methods
 
 	void clear_rect(const RECT_T& area);
-	bool cut_hline(int& x0, int& x1, int& y);
-	bool cut_vline(int& y0, int& y1, int& x);
-	void set_xy_all(LCD_MODULE* lcd, unsigned int xy, unsigned int all);
+	bool cut_hline(int& x0, int& x1, int& y) const;
+	bool cut_vline(int& y0, int& y1, int& x) const;
+	void set_xy_all(LCD_MODULE* lcd, unsigned int xy, unsigned int all) const;
 	int  draw_text(LCD_MODULE* lcd, const char* txt);
 	void draw_text_line(LCD_MODULE* lcd, const char* txt, unsigned int len);
-	void draw_line(int x1, int y1, int x2, int y2);
+	void draw_line(int x0, int y0, int x1, int y1);
 	void draw_line(POINT_T a, POINT_T b){draw_line(a.x, a.y, b.x, b.y);}
-	void draw_circle(int x0, int y0, int r, int sectors = 0xFF);
+	void draw_circle(int x0, int y0, int radius, int sectors = 0xFF);
 	void draw_circle(POINT_T center, int r, int sectors = 0xFF)
 		{draw_circle(center.x, center.y, r, sectors);}
 	void draw_ellipse (int x0, int y0, int width, int height, int sectors = 0xFF);
 	void draw_ellipse (POINT_T center, int width, int height, int sectors = 0xFF)
 		{draw_ellipse(center.x, center.y, width, height, sectors);}
-	void fill_circle(int x0, int y0, int r);
+	void fill_circle(int x0, int y0, int radius);
 	void fill_circle(POINT_T center, int r) {fill_circle(center.x, center.y, r);}
 	void draw_poligon(const RECT_T& frame, bool fill = false);
 	void draw_rectangle(const RECT_T& frame, bool fill = false);
@@ -224,7 +224,7 @@ protected:
 private:
 	// Timer methods
 	GTimer* FindTimer(GId event);
-	void KillObjectTimers(void);
+	void KillObjectTimers(void) const;
 };
 
 // Draw utility

@@ -56,12 +56,12 @@ public:
 
 	GUI_GET_OBJECT_TYPE(OBJECT_DOWAIT);
 
-static void GUIDoWait(int code);
-	void hide(void);
+	static void GUIDoWait(int code);
+	static void hide(void);
 protected:
-	virtual unsigned int initialize (GMessage& msg);
-	virtual void draw_this(LCD_MODULE* lcd);
-	virtual unsigned int process_default (GMessage& msg);
+	unsigned int initialize (GMessage& msg) override;
+	void draw_this(LCD_MODULE* lcd) override;
+	unsigned int process_default (GMessage& msg) override;
 	virtual void add_owner(void);
 };
 

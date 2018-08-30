@@ -107,7 +107,7 @@ bool GContainer::is_available()
 	return false;
 }
 
-bool GContainer::focus_on_previous()
+bool GContainer::focus_on_previous() const
 {
 	GObject* tmp;
 	if (!focus)
@@ -155,7 +155,7 @@ bool GContainer::focus_on_previous()
 	return false;
 }
 
-bool GContainer::focus_on_next()
+bool GContainer::focus_on_next() const
 {
 	GObject* tmp;
 	if (focus)

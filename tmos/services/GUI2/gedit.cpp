@@ -540,7 +540,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 	default:
 		{
 			 unsigned char  ch = TranslateKey(msg.param) -'0';
-			 if(ch >= 0 && ch <= 9 && !(msg.param & KEY_ASCII_CODE))
+			 if(ch <= 9 && !(msg.param & KEY_ASCII_CODE))
 			 {
 				 switch(shift)
 				 {

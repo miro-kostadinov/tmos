@@ -35,16 +35,16 @@ struct GDialog : GWindow
 
 	GUI_GET_OBJECT_TYPE(OBJECT_DIALOG);
 
-	virtual void move(int x, int y);
+	void move(int x, int y) override;
 
 protected:
-	virtual unsigned int process_key (GMessage& msg);
-	virtual unsigned int process_default (GMessage& msg);
-	virtual unsigned int process_command(GMessage& msg);
-	virtual void draw_this (LCD_MODULE* lcd);
-	virtual unsigned int initialize (GMessage& msg);
+	unsigned int process_key (GMessage& msg) override;
+	unsigned int process_default (GMessage& msg) override;
+	unsigned int process_command(GMessage& msg) override;
+	void draw_this (LCD_MODULE* lcd) override;
+	unsigned int initialize (GMessage& msg) override;
 private:
-	int move_objects(int offset, int& selected_indx);
+	int move_objects(int offset, int& selected_indx) const;
 };
 
 

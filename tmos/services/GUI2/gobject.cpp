@@ -66,7 +66,7 @@ bool process_timers(void)
 	return res;
 }
 
-void GObject::KillObjectTimers(void)
+void GObject::KillObjectTimers(void) const
 {
 	GTimer *timer = GTimer::base_timer;
 	while(timer)
@@ -147,7 +147,7 @@ void GObject::clear_rect (const RECT_T& area)
         draw_bline(area.x0, area.x1, y++);
 }
 
-bool GObject::cut_hline ( int& x0, int& x1, int& y)
+bool GObject::cut_hline ( int& x0, int& x1, int& y) const
 {
 	if ((int)y < rect.y0 || (int)y > rect.y1 || (int)x0 > rect.x1)
 		return false;
@@ -160,7 +160,7 @@ bool GObject::cut_hline ( int& x0, int& x1, int& y)
 	return true;
 }
 
-bool GObject::cut_vline ( int& y0, int& y1, int& x)
+bool GObject::cut_vline ( int& y0, int& y1, int& x) const
 {
 	if ((int)x < rect.x0 || (int)x > rect.x1 || (int)y0 > rect.y1)
 		return false;
@@ -173,7 +173,7 @@ bool GObject::cut_vline ( int& y0, int& y1, int& x)
 	return true;
 }
 
-void GObject::set_xy_all(LCD_MODULE* lcd, unsigned int xy, unsigned int all)
+void GObject::set_xy_all(LCD_MODULE* lcd, unsigned int xy, unsigned int all) const
 {
 	lcd->pos_y = xy + client_rect.y0;
 	lcd->pos_x = (xy >> 16) + client_rect.x0;

@@ -21,11 +21,11 @@ struct SPFD5414D_UART: public SPFD5414D
 	{
 	}
 	;
-	virtual void lcd_reset();
+	void lcd_reset() override;
 
 protected:
-	virtual void tft_write_row(unsigned short address_cmd[]);
-	virtual void tft_init_address_cmd(unsigned short address_cmd[]);
+	void tft_write_row(unsigned short address_cmd[]) override;
+	void tft_init_address_cmd(unsigned short address_cmd[]) override;
 };
 
 

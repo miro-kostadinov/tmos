@@ -8,7 +8,7 @@
 #include <gdialog.h>
 
 
-int GDialog::move_objects(int offset, int& selected_indx)
+int GDialog::move_objects(int offset, int& selected_indx) const
 {
 	GObject* tmp = children;
 	int num_of_items=0;

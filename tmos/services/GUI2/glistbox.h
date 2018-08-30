@@ -17,15 +17,15 @@
 
 struct GListBoxMenu : GMenu
 {
-	GListBoxMenu (GId id_t, RECT_T rect_t, const char* title_t, GFlags flags_t = GO_FLG_DEFAULT)
+	GListBoxMenu (GId id_t, const RECT_T& rect_t, const char* title_t, GFlags flags_t = GO_FLG_DEFAULT)
 		:GMenu( id_t, rect_t, title_t, flags_t)
 	{}
 
 	GListBoxMenu():GMenu()
 	{}
 
-	virtual POINT_T get_border_size(void);
-	virtual void draw_border(RECT_T& frame);
+	POINT_T get_border_size(void) override;
+	void draw_border(RECT_T& frame) override;
 };
 
 struct GListBox:GText
@@ -48,11 +48,11 @@ public:
 	bool addItem(int num, const char* name);
 	bool select(int num);
 
-	virtual POINT_T get_border_size(void);
-	virtual void draw_border(RECT_T& frame);
-	virtual unsigned int initialize (GMessage& msg);
-	virtual unsigned int process_key (GMessage& msg);
-	virtual void draw_this (LCD_MODULE* lcd);
+	POINT_T get_border_size(void) override;
+	void draw_border(RECT_T& frame) override;
+	unsigned int initialize (GMessage& msg) override;
+	unsigned int process_key (GMessage& msg) override;
+	void draw_this (LCD_MODULE* lcd) override;
 
 };
 

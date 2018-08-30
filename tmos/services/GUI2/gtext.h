@@ -56,14 +56,14 @@ struct GText: GObject
 
 	GUI_GET_OBJECT_TYPE(OBJECT_TEXT);
 
-	virtual unsigned int process_default (GMessage& msg);
-	virtual unsigned int initialize (GMessage& msg);
-	virtual unsigned int process_key (GMessage& msg);
-	virtual void draw_this (LCD_MODULE* lcd);
+	unsigned int process_default (GMessage& msg) override;
+	unsigned int initialize (GMessage& msg) override;
+	unsigned int process_key (GMessage& msg) override;
+	void draw_this (LCD_MODULE* lcd) override;
 
 	text_metrics_t SetTextAlign(unsigned int new_align );
 	void alloc_scrollbars( void );
-	virtual void move(int x, int y);
+	void move(int x, int y) override;
 protected:
 	void draw_caption(LCD_MODULE* lcd);
 };
@@ -82,8 +82,8 @@ struct GTitle: GText
 	virtual ~GTitle()
 	{;}
 
-	virtual unsigned int process_default (GMessage& msg);
-	virtual void draw_this (LCD_MODULE* lcd);
+	unsigned int process_default (GMessage& msg) override;
+	void draw_this (LCD_MODULE* lcd) override;
 };
 
 #endif /* GTEXT_H_ */

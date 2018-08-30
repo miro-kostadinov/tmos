@@ -21,9 +21,9 @@ struct GRadio: GContainer
 
 	GUI_GET_OBJECT_TYPE(OBJECT_RADIO);
 
-	virtual GObject* addChild (GObject* child);
-	virtual unsigned int process_key (GMessage& msg);
-	virtual unsigned int process_default(GMessage& msg);
+	GObject* addChild (GObject* child) override;
+	unsigned int process_key (GMessage& msg) override;
+	unsigned int process_default(GMessage& msg) override;
 };
 
 

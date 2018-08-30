@@ -65,12 +65,12 @@ struct GEdit:GText
 
 	GUI_GET_OBJECT_TYPE(OBJECT_EDIT);
 
-	virtual unsigned int initialize (GMessage& msg);
-	virtual unsigned int process_key (GMessage& msg);
-	virtual unsigned int process_default(GMessage& msg);
+	unsigned int initialize (GMessage& msg) override;
+	unsigned int process_key (GMessage& msg) override;
+	unsigned int process_default(GMessage& msg) override;
 
-	virtual void draw_this (LCD_MODULE* lcd);
-	virtual void move(int x, int y);
+	void draw_this (LCD_MODULE* lcd) override;
+	void move(int x, int y) override;
 
 protected:
 	void process_alpha_key(char pressed_key, const char* key_val);

@@ -24,16 +24,16 @@ struct ST7565S_RS: public ST7565S
 
 
 	//virtual functions
-	virtual void lcd_command(unsigned int cmd);
-	void draw_point( int x,  int y);
-	void draw_bitmap( int x0, int y0, const char* src, int width, int rows);
-	void draw_hline( int x0,  int x1,  int y);
-	void draw_bline( int x0,  int x1,  int y);
-	void draw_vline( int y0,  int y1,  int x);
-	void invert_vline( int y0,  int y1,  int x);
-	void invert_hline( int x0,  int x1,  int y);
-	virtual void update_screen();
-	char inline revert_char (char ch);
+	void lcd_command(unsigned int cmd) override;
+	void draw_point( int x,  int y) override;
+	void draw_bitmap( int x0, int y0, const char* src, int width, int rows) override;
+	void draw_hline( int x0,  int x1,  int y) override;
+	void draw_bline( int x0,  int x1,  int y) override;
+	void draw_vline( int y0,  int y1,  int x) override;
+	void invert_vline( int y0,  int y1,  int x) override;
+	void invert_hline( int x0,  int x1,  int y) override;
+	virtual void update_screen() override;
+	static char inline revert_char (char ch);
 };
 
 

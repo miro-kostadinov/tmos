@@ -23,7 +23,7 @@ struct GScroll
 	bool ShowScroll(GFlags sb, bool visible);
 	void draw_scroll(LCD_MODULE* lcd);
 	void SetScrollPos(GFlags sb, unsigned short p, bool redraw = false);
-	void SetScrollRange(GFlags sb, unsigned int r);
+	void SetScrollRange(GFlags sb, unsigned int p);
 };
 
 #endif /* GSCROLL_H_ */

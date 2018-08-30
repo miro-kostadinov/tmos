@@ -63,21 +63,21 @@ struct SPFD5414D: public LCD_MODULE
 	{;}
 
 	//virtual functions
-	void lcd_reset();
-	void clear_screen();
-	void draw_bitmap(int x0, int y0, const char* src,  int width,  int rows);
-	void draw_point( int x,  int y);
-	void draw_hline( int x0,  int x1,  int y);
-	void draw_bline( int x0,  int x1,  int y);
-	void draw_vline( int y0,  int y1,  int x);
-	void invert_vline( int y0,  int y1,  int x);
-	void invert_hline( int x0,  int x1,  int y);
-	virtual void update_screen()
+	void lcd_reset() override;
+	void clear_screen() override;
+	void draw_bitmap(int x0, int y0, const char* src,  int width,  int rows) override;
+	void draw_point( int x,  int y) override;
+	void draw_hline( int x0,  int x1,  int y) override;
+	void draw_bline( int x0,  int x1,  int y) override;
+	void draw_vline( int y0,  int y1,  int x) override;
+	void invert_vline( int y0,  int y1,  int x) override;
+	void invert_hline( int x0,  int x1,  int y) override;
+	virtual void update_screen() override
 	{;}
-	virtual void redraw_screen(GObject* object, RECT_T area);
-	virtual void redraw_rect (GObject* object, RECT_T area);
-	virtual void direct_write (GSplash draw_cb);
-	virtual void adjust_for_screen (GObject** object, RECT_T &area);
+	void redraw_screen(GObject* object, RECT_T area) override;
+	void redraw_rect (GObject* object, RECT_T area) override;
+	void direct_write (GSplash draw_cb) override;
+	void adjust_for_screen (GObject** object, RECT_T &area) override;
 
 protected:
     unsigned char disp_buf[128][64];
@@ -113,7 +113,7 @@ struct TFT_CHECK
 	}
 	;
 
-	void delay(unsigned int time = 0);
+	static void delay(unsigned int time = 0);
 	void tft_write(unsigned int value);
 	unsigned int tft_read();
 

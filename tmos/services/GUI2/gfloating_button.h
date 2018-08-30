@@ -26,10 +26,10 @@ struct GFloating_Button: GContainer
 	GUI_GET_OBJECT_TYPE(OBJECT_FBUTTON);
 
 //	virtual void allocate_border(void);
-	virtual void draw_border(RECT_T& frame);
-	virtual unsigned int initialize (GMessage& msg);
-	virtual unsigned int process_key (GMessage& msg);
-	virtual void draw_this (LCD_MODULE* lcd);
+	void draw_border(RECT_T& frame) override;
+	unsigned int initialize (GMessage& msg) override;
+	unsigned int process_key (GMessage& msg) override;
+	void draw_this (LCD_MODULE* lcd) override;
 };
 
 

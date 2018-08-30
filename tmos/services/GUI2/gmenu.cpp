@@ -56,7 +56,7 @@ menu_template_t* GMenu::GetMenu(int parent_id, menu_template_t* start)
 	}
 	return nullptr;
 }
-int GMenu::get_base_size()
+int GMenu::get_base_size() const
 {
 	menu_template_t* tmp = base;
 	int res = 0;
@@ -71,7 +71,7 @@ int GMenu::get_base_size()
 	return res;
 }
 
-int GMenu::GetMenuSize(int menu_id)
+int GMenu::GetMenuSize(int menu_id) const
 {
 	menu_template_t* tmp = base;
 	int res = 0;

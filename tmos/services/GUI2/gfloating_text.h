@@ -26,9 +26,9 @@ struct GFloating_Text: GObject
 
 	GUI_GET_OBJECT_TYPE(OBJECT_FTEXT);
 
-	virtual unsigned int process_default(GMessage& msg);
-	virtual unsigned int initialize(GMessage& msg);
-	virtual void draw_this (LCD_MODULE* lcd);
+	unsigned int process_default(GMessage& msg) override;
+	unsigned int initialize(GMessage& msg) override;
+	void draw_this (LCD_MODULE* lcd) override;
 };
 
 

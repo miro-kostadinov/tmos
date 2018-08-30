@@ -18,11 +18,11 @@ struct LCD_MULT: GContainer
 
 	GUI_GET_OBJECT_TYPE(OBJECT_DISPLAY_MULTIPLEXER);
 
-	void invalidate (GObject* object, RECT_T area);
-	virtual void LPtoDP(POINT_T& size, unsigned char lcd_index=0);
-	virtual void DPtoLP(POINT_T& size, unsigned char lcd_index=0);
+	void invalidate (GObject* object, RECT_T area) override;
+	void LPtoDP(POINT_T& size, unsigned char lcd_index=0) override;
+	void DPtoLP(POINT_T& size, unsigned char lcd_index=0) override;
 protected:
-	virtual void redraw_screen(GObject* object, RECT_T area);
+	void redraw_screen(GObject* object, RECT_T area) override;
 };
 
 

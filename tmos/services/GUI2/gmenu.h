@@ -48,7 +48,7 @@ struct GMenu: GObject
 	GScroll* 		scroll;
 	const RENDER_MODE*	text_font;
 
-	GMenu (GId id_t, RECT_T rect_t, const char* title_t, GFlags flags_t = GO_FLG_DEFAULT)
+	GMenu (GId id_t, const RECT_T& rect_t, const char* title_t, GFlags flags_t = GO_FLG_DEFAULT)
 		:GObject (id_t, rect_t, flags_t),
 		 base(nullptr), menu(nullptr), item(nullptr), title(title_t),
 		 size(0), scroll(nullptr), text_font(&FNT5x7)
@@ -100,24 +100,24 @@ struct GMenu: GObject
 
 	GUI_GET_OBJECT_TYPE(OBJECT_MENU);
 
-	virtual bool AppendMenu(int parent_id, int menu_id, const CSTRING& menu_name, short unsigned int flg =0);
+	virtual bool AppendMenu(int parent_id, int item_id, const CSTRING& item_name, short unsigned int flg =0);
 	bool LoadMenu(const MENUTEMPLATE* pat);
 
-	menu_template_t* GetItem(int parent_id, int menu_id);
+	menu_template_t* GetItem(int parent_id, int item_id);
 	menu_template_t* FindItem(int item_id);
 	menu_template_t* GetMenu(int parent_id, menu_template_t* start = nullptr);
-	int GetMenuSize(int menu_id);
+	int GetMenuSize(int menu_id) const;
 	bool SetReplaceItem(int item_id, const CSTRING& item_name, short unsigned int flg =0);
 	bool Select(int item_id, bool redraw = false);
 	virtual bool RemoveItem(int item_id);
 	bool InsertItem(int item_id, int new_item_id, const CSTRING& new_item_name, short unsigned int new_flg =0);
 
 protected:
-	virtual void draw_this (LCD_MODULE* lcd);
-	virtual unsigned int process_key (GMessage& msg);
-	virtual unsigned int initialize (GMessage& msg);
+	void draw_this (LCD_MODULE* lcd) override;
+	unsigned int process_key (GMessage& msg) override;
+	unsigned int initialize (GMessage& msg) override;
 
-	bool IsEmpty(menu_template_t* ptr)
+	static bool IsEmpty(menu_template_t* ptr)
 	{
 		return (!ptr->item && !ptr->parent && ptr->item_name.empty());
 	}
@@ -127,7 +127,7 @@ protected:
 	virtual bool set_scroll(void);
 	bool add_item(int parent_id, int item_id, const CSTRING& name, short unsigned int flg =0);
 	void adjust_item_names();
-	int get_base_size();
+	int get_base_size() const;
 };
 
 unsigned int remove_amp(CSTRING& str);

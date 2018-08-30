@@ -82,18 +82,18 @@ struct GMsgBox : GDialog
 	GUI_GET_OBJECT_TYPE(OBJECT_MESSAGEBOX);
 
 protected:
-	virtual void draw_this(LCD_MODULE* lcd);
-	virtual unsigned int initialize (GMessage& msg);
-	virtual unsigned int process_command(GMessage& msg);
-	virtual unsigned int process_key(GMessage& msg);
-	virtual bool is_available()
+	void draw_this(LCD_MODULE* lcd) override;
+	unsigned int initialize (GMessage& msg) override;
+	unsigned int process_command(GMessage& msg) override;
+	unsigned int process_key(GMessage& msg) override;
+	bool is_available() override
 	{
 		return true;
 	}
 private:
 	RECT_T GetButtonRect(void);
 	RECT_T GetTitleRect(void);
-	bool   SelectDefaultButton(GObject* button);
+	bool   SelectDefaultButton(GObject* button) const;
 
 };
 
