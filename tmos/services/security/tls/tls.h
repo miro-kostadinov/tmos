@@ -747,7 +747,7 @@ struct tls_context_t
 	RES_CODE tls_parse_certificate(record_ctxt_t* rc);
 	RES_CODE tlsParseFinished(record_ctxt_t* rc);
 	RES_CODE tlsSendCertificate();
-	uint32_t tls_get_alert_len();
+	static uint32_t tls_get_alert_len();
 	RES_CODE tls_certificate_msg_len(record_ctxt_t* rc);
 	RES_CODE tls_make_certificate_msg(tls_certificate_msg_t* message, uint32_t len);
 	RES_CODE tlsSendChangeCipherSpec();

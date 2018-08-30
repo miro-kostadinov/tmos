@@ -1269,8 +1269,6 @@ RES_CODE tls_context_t::tlsParseServerKeyExchange(record_ctxt_t* rc)
 		if (res != RES_OK)
 			return res;
 
-		//Point to the next field
-		p += n;
 		//Remaining bytes to process
 		rc->msg_len -= n;
 	}

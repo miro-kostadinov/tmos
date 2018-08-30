@@ -22,9 +22,7 @@ RES_CODE tls_randoms_t::tls_random_generate(tls_random_t& random)
 	if (prng_algo.get())
 	{
 		time = get_gmt_seconds();
-#if 1
-		time = 0;
-#endif
+
 		if (time != 0)
 		{
 			random.gmt_unix_time = __REV(time);
