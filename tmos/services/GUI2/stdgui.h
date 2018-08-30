@@ -285,7 +285,7 @@ struct RECT_T
 	RECT_T (const POINT_T& p0_t, const POINT_T& p1_t);
 	RECT_T (const POINT_T& p0_t, const short int& xs, const short int& ys );
 
-    bool normalize (const RECT_T& rect_t);
+    bool normalize (const RECT_T& rect);
     bool normalize (short int x0_t, short int y0_t, short int x1_t, short int y1_t);
 
     RECT_T& operator= (const RECT_T& rect_t);
@@ -308,7 +308,7 @@ struct RECT_T
 		TRACE("[x(%d, %d), y(%d, %d)]", x0, x1, y0, y1);
 	}
 #else
-	void dump() {};
+	static void dump() {};
 #endif
 };
 

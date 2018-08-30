@@ -25,7 +25,7 @@ struct ST7735R_UART : public SPFD5414D_UART
 	}
 	;
 
-	virtual void lcd_reset();
+	void lcd_reset() override;
 };
 
 

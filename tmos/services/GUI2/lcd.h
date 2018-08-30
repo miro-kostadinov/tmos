@@ -93,22 +93,22 @@ public:
 
 	virtual void update_screen()=0;
 	virtual void clear_screen()=0;
-	virtual void redraw_screen(GObject* object, RECT_T area)=0;
-	virtual void invalidate(GObject* object, RECT_T area);
+	void redraw_screen(GObject* object, RECT_T area) override =0 ;
+	void invalidate(GObject* object, RECT_T area) override;
 	virtual void redraw_rect (GObject* object, RECT_T area){};
 	virtual void adjust_for_screen (GObject** object, RECT_T &area){};
 
 	void set_font(const RENDER_MODE* afont);
 	void set_xy_all(unsigned int xy, unsigned int all);
 	void clear_rect (const RECT_T& area);
-	const char* get_next_txt_row(const char *txt);
+	const char* get_next_txt_row(const char *txt) const;
 	const char* draw_text(const char *txt);
 	const char* draw_text_no_space(const char *txt);
 	void draw_icon (unsigned char icon);
 	const char* draw_row(const char *txt);
 	virtual void direct_write(GSplash draw_cb){};
-	virtual void LPtoDP(POINT_T& size, unsigned char lcd_index=0);
-	virtual void DPtoLP(POINT_T& size, unsigned char lcd_index=0);
+	void LPtoDP(POINT_T& size, unsigned char lcd_index=0) override;
+	void DPtoLP(POINT_T& size, unsigned char lcd_index=0) override;
 	void set_color(unsigned int fg_color)
 	{
 		color = fg_color;

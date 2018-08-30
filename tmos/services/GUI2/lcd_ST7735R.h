@@ -77,7 +77,7 @@ struct ST7735R : public SPFD5414D
 	;
 
 	//virtual functions
-	virtual void lcd_reset();
+	void lcd_reset() override;
 
 };
 
