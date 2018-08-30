@@ -79,7 +79,7 @@ void TIM_DCR(TIM_DRV_INF drv_info, unsigned int reason, HANDLE hnd)
 
 				if(drv_data->cnt)
 				{
-					if(timer_mode->ch_indx == 0 && timer_mode->ch_indx > 4)
+					if(timer_mode->ch_indx == 0 || timer_mode->ch_indx > 4)
 					{
 						break; // control already open
 					}
