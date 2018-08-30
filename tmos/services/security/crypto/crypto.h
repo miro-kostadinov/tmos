@@ -110,7 +110,7 @@ struct hash_algo_t: public algo_base_t
 
 	hash_algo_t(const hash_info_t* info): algo_base_t(&info->algo_info)
 	{
-		Reset();
+		hash_algo_t::Reset();
 	};
 
 	union

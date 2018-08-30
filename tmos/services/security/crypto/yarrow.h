@@ -43,9 +43,9 @@ struct prng_yarrow_algo_t: public prng_algo_t
 		cipherContext(&aes_cipher_info)
 	{};
 
-	virtual RES_CODE prng_init();
-	virtual RES_CODE prng_seed(const void* input, size_t length);
-	virtual RES_CODE prng_read(void* output, size_t length);
+	RES_CODE prng_init() override;
+	RES_CODE prng_seed(const void* input, size_t length) override;
+	RES_CODE prng_read(void* output, size_t length) override;
 
 	void yarrowFastReseed();
 	void yarrowGenerateBlock(uint8_t *output);

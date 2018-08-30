@@ -192,7 +192,7 @@ struct hmac_ctxt_t
 	uint8_t hmac_key[MAX_HASH_BLOCK_SIZE];
 	uint8_t hmac_digest[MAX_HASH_DIGEST_SIZE];
 
-	void Reset(hash_algo_t* hash, const void *key, uint32_t len);
+	void Reset(hash_algo_t* hash, const void *key, uint32_t key_len);
 	void Input(const void* data, size_t len);
 	void Result(void* digest);
 

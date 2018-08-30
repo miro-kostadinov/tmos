@@ -26,7 +26,7 @@ struct sha384_algo_t: public sha512_algo_t
 	}
 
 
-	virtual void Reset();
+	void Reset() override;
 };
 
 hash_algo_t* new_sha384_hash();

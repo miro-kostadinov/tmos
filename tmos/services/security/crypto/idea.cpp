@@ -114,7 +114,7 @@ RES_CODE idea_cipher_algo_t::init_key(const uint8_t* key, size_t key_size)
 
 		dk[i + 3] = ideaInv(ek[51 - i]);
 
-		if (i < 48)
+		if (i < 46)
 		{
 			dk[i + 4] = ek[46 - i];
 			dk[i + 5] = ek[47 - i];

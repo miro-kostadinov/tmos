@@ -21,13 +21,13 @@ struct sha1_algo_t: public hash_algo_t
 
 	sha1_algo_t():	hash_algo_t(SHA1_HASH_ALGO)
 	{
-		Reset();
+		sha1_algo_t::Reset();
 	};
 
 
-	virtual void Reset();
-	virtual void Result(void* digest);
-	virtual void process_block(const uint32_t* block);
+	void Reset() override;
+	void Result(void* digest) override;
+	void process_block(const uint32_t* block) override;
 
 };
 

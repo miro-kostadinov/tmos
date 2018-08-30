@@ -23,9 +23,9 @@ struct rc4_cipher_algo_t: cipher_algo_t
 	{
 	};
 
-	virtual RES_CODE init_key(const uint8_t* key, size_t key_size);
-	virtual void encrypt(const void* input, void* output, size_t blocks);
-	virtual void decrypt(const void* input, void* output, size_t blocks);
+	RES_CODE init_key(const uint8_t* key, size_t key_size) override;
+	void encrypt(const void* input, void* output, size_t blocks) override;
+	void decrypt(const void* input, void* output, size_t blocks) override;
 };
 
 cipher_algo_t* new_cipher_rc4();

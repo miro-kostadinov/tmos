@@ -554,7 +554,7 @@ RES_CODE asn1DumpObject(const uint8_t* data, size_t length, uint32_t level)
 		if (tag.constructed)
 		{
 			//Check whether the maximum level of recursion is reached
-			if (level < 7)
+			if (level < 6)
 			{
 				//Recursive decoding of the ASN.1 tag
 				res = asn1DumpObject(tag.value, tag.length, level + 1);

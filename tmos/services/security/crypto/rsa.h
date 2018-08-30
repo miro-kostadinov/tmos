@@ -37,7 +37,7 @@ struct RsaPublicKey
 
 	RES_CODE rsavp1(const Mpi* s, Mpi* m) const;
 
-	RES_CODE rsassaPkcs1v15Verify(const hash_info_t* hash, const uint8_t* digest,
+	RES_CODE rsassaPkcs1v15Verify(const hash_info_t* hinfo, const uint8_t* digest,
 			const uint8_t* signature, size_t signatureLength) const;
 
 	RES_CODE rsaesPkcs1v15Encrypt(prng_algo_t* prngAlgo, const uint8_t* message,

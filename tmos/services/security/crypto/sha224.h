@@ -22,10 +22,10 @@ struct sha224_algo_t: public sha256_algo_t
 
     sha224_algo_t() : sha256_algo_t(SHA224_HASH_ALGO)
 	{
-		Reset();
+    	sha224_algo_t::Reset();
 	}
 
-	virtual void Reset();
+	void Reset() override;
 };
 
 hash_algo_t* new_sha224_hash();
