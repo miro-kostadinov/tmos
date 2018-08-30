@@ -407,7 +407,7 @@ NET_CODE wifi_module_type::wifi_net_error(int err)
 	return err;
 }
 
-void wifi_module_type::hnd_error(HANDLE hnd)
+void wifi_module_type::hnd_error(HANDLE hnd) const
 {
 	hnd->error = drv_info->drv_data->wifi_error;
 }

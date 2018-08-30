@@ -140,14 +140,14 @@ struct wifi_module_type
     friend void wifi_thread(WIFI_DRIVER_INFO* drv_info);
 
 protected:
-    bool cmd_match(const char* cmd, const char* row);
-    bool cmd_submatch(const char* cmd, const char* row);
+    static bool cmd_match(const char* cmd, const char* row);
+    static bool cmd_submatch(const char* cmd, const char* row);
 
     NET_CODE wifi_check_reg();
     void wifi_sleep(unsigned int time);
     RES_CODE wifi_error(int err);
     NET_CODE wifi_net_error(int err);
-    void hnd_error(HANDLE hnd);
+    void hnd_error(HANDLE hnd) const;
 };
 
 // type definition for the commands
