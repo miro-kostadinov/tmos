@@ -86,7 +86,7 @@ class SHA1
         /*
          *  Performs a circular left shift operation
          */
-        inline unsigned CircularShift(int bits, unsigned word);
+        static inline unsigned CircularShift(int bits, unsigned word);
 
         unsigned H[5];                      // Message digest buffers
 

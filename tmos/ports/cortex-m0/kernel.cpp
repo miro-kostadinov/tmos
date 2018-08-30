@@ -66,10 +66,14 @@ static void process_exception()
     exception_record.CFSR = 0;
 	msp = (TASK_STACKED_CTX_STRU*)__get_PSP();
 	if ((uint32_t)msp < BASE_SRAM || (uint32_t)msp >= (BASE_SRAM + RAM_SIZE) || ((uint32_t)msp & 3))
-		msp = NULL;
-	exception_record.MMFAR = msp->pc.as_int;
-
-	exception_record.BFAR = msp->lr.as_int;
+	{
+		exception_record.MMFAR = msp;
+		exception_record.BFAR = 0;
+	} else
+	{
+		exception_record.MMFAR = msp->pc.as_int;
+		exception_record.BFAR = msp->lr.as_int;
+	}
     exception_record.cur_task = (unsigned int)CURRENT_TASK;
     if (((unsigned int) CURRENT_TASK > BASE_SRAM)
 			&& ((unsigned int) CURRENT_TASK < (BASE_SRAM + RAM_SIZE)))
@@ -267,7 +271,7 @@ Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
 		task = (Task*)((unsigned int)svc_malloc(stack_words+4)+4);
 	}
 
-	if(task)
+	if(task != (void *)4)
 	{
 		TASK_STACKED_CTX ctx;
 		ctx = (TASK_STACKED_CTX) (((unsigned int)task) + stack_words);
@@ -286,6 +290,8 @@ Task* usr_task_create_dynamic(const char* name, TASK_FUNCTION func,
 		task->state = TSKSTATE_SUSPEND;
 		strcpy(task->name, name);
 	}
+	else
+		task = NULL;
 
 	return (task);
 }

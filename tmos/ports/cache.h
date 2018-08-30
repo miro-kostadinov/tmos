@@ -84,7 +84,7 @@ struct CCachedHandle: CCache
 	;
 
 protected:
-	RES_CODE load();
+	RES_CODE load() override;
 
 };
 
