@@ -69,7 +69,7 @@ bool time_t::is_valid() const
  *   1 for all Europe, for America change is at 2am local time
  * @return true when this is in summer time
  */
-bool time_t::is_DST(unsigned int change_hour)
+bool time_t::is_DST(unsigned int change_hour) const
 {
 	time_t tmp;
 
@@ -227,13 +227,13 @@ int time_t::sscanf(const char* buf, const char* format, ... )
 					stop = true;
 					continue;
 				}
-				if(buf[0] && buf[0] == ' ')
+				if(buf[0] == ' ')
 				{
-					while(buf[0] && buf[0] == ' ')
+					while(buf[0] == ' ')
 					{
 						buf++; pos++;
 					}
-					while(format[0] && format[0] == ' ')
+					while(format[0] == ' ')
 						format++;
 				}
 				else
@@ -554,7 +554,7 @@ time_t& time_t::operator= (unsigned int seconds)
 	return *this;
 }
 
-uint64_t time_t::get_atomic()
+uint64_t time_t::get_atomic() const
 {
 	uint64_t time;
 	__disable_irq();

@@ -46,19 +46,19 @@ public:
 	}
 
 	// Number of elements.
-	constexpr size_type size()
+	constexpr size_type size() const
 	{
 		return _M_len;
 	}
 
 	// First element.
-	constexpr const_iterator begin()
+	constexpr const_iterator begin() const
 	{
 		return _M_array;
 	}
 
 	// One past the last element.
-	constexpr const_iterator end()
+	constexpr const_iterator end() const
 	{
 		return begin() + size();
 	}

@@ -37,7 +37,7 @@ namespace ttl
       static constexpr _Tp                  value = __v;
       typedef _Tp                           value_type;
       typedef integral_constant<_Tp, __v>   type;
-      constexpr operator value_type() { return value; }
+      constexpr operator value_type() const { return value; }
     };
 
   /// The type used as a compile-time boolean with true value.

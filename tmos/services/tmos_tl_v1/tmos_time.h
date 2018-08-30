@@ -45,7 +45,7 @@ struct time_t
 	static const uint8_t month_lengths[];
 
 	bool is_valid() const;
-	bool is_DST(unsigned int change_hour);
+	bool is_DST(unsigned int change_hour) const;
 
 	uint32_t get_week_day() const;
 
@@ -71,7 +71,7 @@ struct time_t
 
 	time_t& operator= (unsigned int seconds);
 
-	uint64_t get_atomic();
+	uint64_t get_atomic() const;
 
 	operator unsigned int() const;
 

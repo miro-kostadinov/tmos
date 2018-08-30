@@ -65,7 +65,11 @@ public:
 
 	tree_head& operator=(const tree_head& other)
 	{
-		memcpy(this, &other, sizeof(tree_head));
+		parent = other.parent;
+		first_child = other.first_child;
+		last_child = other.last_child;
+		prev_sibling = other.prev_sibling;
+		next_sibling = other.next_sibling;
 		return *this;
 	}
 
@@ -444,7 +448,7 @@ public:
 	void erase_children(const iterator_base&);
 
 	/// Insert empty node as last/first child of node pointed to by position.
-	template<typename iter> iter append_child(iter position);
+	template<typename iter> iter append_child(iter position) const;
 	template<typename iter> iter prepend_child(iter position);
 	/// Insert node as last/first child of node pointed to by position.
 	template<typename iter, typename Tr>
@@ -457,16 +461,16 @@ public:
 	iter prepend_child(iter position, Tr&& x);
 	/// Append the node (plus its children) at other_position as last/first child of position.
 	template<typename iter>
-	iter append_child(iter position, iter other_position);
+	iter append_child(iter position, iter other);
 	template<typename iter>
-	iter prepend_child(iter position, iter other_position);
+	iter prepend_child(iter position, iter other);
 	/// Append the nodes in the from-to range (plus their children) as last/first children of position.
 	template<typename iter>
 	iter append_children(iter position, sibling_iterator from,
-			sibling_iterator to);
+			const sibling_iterator& to);
 	template<typename iter>
 	iter prepend_children(iter position, sibling_iterator from,
-			sibling_iterator to);
+			const sibling_iterator& to);
 
 	/// Short-hand to insert topmost node in otherwise empty tree.
 	template<typename Tr>
@@ -505,7 +509,7 @@ public:
 
 	/// Insert node (with children) pointed to by subtree as previous sibling of node pointed to by position.
 	template<typename iter>
-	iter insert_subtree(iter position, const iterator_base& subtree);
+	iter insert_subtree(iter position, const iterator_base& subtr);
 	/// Insert node as next sibling of node pointed to by position.
 	template<typename iter, typename Tr>
 	iter insert_after(iter position, const Tr& x);
@@ -513,14 +517,14 @@ public:
 	iter insert_after(iter position, Tr&& x);
 	/// Insert node (with children) pointed to by subtree as next sibling of node pointed to by position.
 	template<typename iter>
-	iter insert_subtree_after(iter position, const iterator_base& subtree);
+	iter insert_subtree_after(iter position, const iterator_base& subtr);
 //Replace
 	/// Replace node at 'position' with other node (keeping same children); 'position' becomes invalid.
 	template<typename iter, typename Tr>
 	iter replace(iter position, const Tr& x, ttl::false_type);
 	/// Replace node at 'position' with subtree starting at 'from' (do not erase subtree at 'from'); see above.
 	template<typename iter, typename Tr>
-	iter replace(iter position, const Tr& x, ttl::true_type);
+	iter replace(iter position, const Tr& from, ttl::true_type);
 
 	template<typename iter, typename Tr>
 	iter replace(iter position, const Tr& x)
@@ -545,14 +549,14 @@ public:
 
 	/// Replace string of siblings (plus their children) with copy of a new string (with children); see above
 	sibling_iterator replace(sibling_iterator orig_begin,
-			sibling_iterator orig_end, sibling_iterator new_begin,
-			sibling_iterator new_end);
+			const sibling_iterator& orig_end, sibling_iterator new_begin,
+			const sibling_iterator& new_end);
 //
 	/// Move all children of node at 'position' to be siblings, returns position.
 	template<typename iter> iter flatten(iter position);
 	/// Move nodes in range to be children of 'position'.
 	template<typename iter>
-	iter reparent(iter position, sibling_iterator bg, sibling_iterator en);
+	iter reparent(iter position, sibling_iterator bg, const sibling_iterator& en);
 	/// Move all child nodes of 'from' to be children of 'position'.
 	template<typename iter>
 	iter reparent(iter position, iter from);
@@ -563,34 +567,34 @@ public:
 
 	/// Move 'source' node (plus its children) to become the next sibling of 'target'.
 	template<typename
-	iter> iter move_after(iter target, iter source);
+	iter> iter move_after(iter target, iter source) const;
 	/// Move 'source' node (plus its children) to become the previous sibling of 'target'.
 	template<typename iter>
-	iter move_before(iter target, iter source);
+	iter move_before(iter target, iter source) const;
 
-	sibling_iterator move_before(sibling_iterator target, sibling_iterator source);
+	sibling_iterator move_before(sibling_iterator target, sibling_iterator source) const;
 	/// Move 'source' node (plus its children) to become the node at 'target' (erasing the node at 'target').
 	template<typename iter>
 	iter move_ontop(iter target, iter source);
 
 	/// Merge with other tree, creating new branches and leaves only if they are not already present.
 	void merge(sibling_iterator, sibling_iterator, sibling_iterator,
-			sibling_iterator, bool duplicate_leaves = false);
+			const sibling_iterator&, bool duplicate_leaves = false);
 
 
 	/// Compare two ranges of nodes (compares nodes as well as tree structure).
 	template<typename iter>
-	bool equal(const iter& one, const iter& two, const iter& three) const;
+	bool equal(const iter& one_, const iter& two, const iter& three_) const;
 
 	template<typename iter, class BinaryPredicate>
-	bool equal(const iter& one, const iter& two, const iter& three,
+	bool equal(const iter& one_, const iter& two, const iter& three_,
 			BinaryPredicate) const;
 
 	template<typename iter>
-	bool equal_subtree(const iter& one, const iter& two) const;
+	bool equal_subtree(const iter& one_, const iter& two_) const;
 
 	template<typename iter, class BinaryPredicate>
-	bool equal_subtree(const iter& one, const iter& two, BinaryPredicate) const;
+	bool equal_subtree(const iter& one_, const iter& two_, BinaryPredicate) const;
 
 	/// Extract a new tree formed by the range of siblings plus all their children.
 	tree subtree(sibling_iterator from, sibling_iterator to) const;
@@ -620,7 +624,7 @@ public:
 	/// Count the number of siblings (left and right) of node at iterator. Total nodes at this level is +1.
 	unsigned int number_of_siblings(const iterator_base&) const;
 	/// Determine whether node at position is in the subtrees with root in the range.
-	bool is_in_subtree(const iterator_base& position,
+	bool is_in_subtree(const iterator_base& it,
 			const iterator_base& bg, const iterator_base& en) const;
 	/// Determine whether the iterator is an 'end' iterator and thus not actually pointing to a node.
 	bool is_valid(const iterator_base&) const;
@@ -628,9 +632,9 @@ public:
 	/// Determine the index of a node in the range of siblings to which it belongs.
 	unsigned int index(sibling_iterator it) const;
 	/// Inverse of 'index': return the n-th child of the node at position.
-	static sibling_iterator child(const iterator_base& position, unsigned int);
+	static sibling_iterator child(const iterator_base& it, unsigned int);
 	/// Return iterator to the sibling indicated by index
-	sibling_iterator sibling(const iterator_base& position, unsigned int);
+	sibling_iterator sibling(const iterator_base& it, unsigned int);
 
 	/// For debugging only: verify internal consistency by inspecting all pointers in the tree
 	/// (which will also trigger a valgrind error in case something got corrupted).
@@ -657,9 +661,9 @@ private:
 	template<typename Tr>
 	tree_head* m_create_new_node(Tr&& x);
 	template<class iter>
-	iter m_append_child_node(iter position, tree_head* node);
+	iter m_append_child_node(iter position, tree_head* node) const;
 	template<class iter>
-	iter m_prepend_child_node(iter position, tree_head* node);
+	iter m_prepend_child_node(iter position, tree_head* node) const;
 //	template<class iter>
 	tree_head* m_copy_children(tree_head* it, const tree_head* subtr);
 	bool m_is_valid_node(tree_head* node) const
@@ -1015,7 +1019,7 @@ iter tree<T>::next_at_same_depth(iter position) const
 
 template<class T>
 template<typename iter>
-iter tree<T>::append_child(iter position)
+iter tree<T>::append_child(iter position) const
 {
 	if(!m_is_valid_node(position.node))
 		return position;
@@ -1053,7 +1057,7 @@ iter tree<T>::append_child(iter position, iter other)
 
 template<class T>
 template<class iter>
-iter tree<T>::m_append_child_node(iter position, tree_head* node)
+iter tree<T>::m_append_child_node(iter position, tree_head* node) const
 {
 	node->parent = position.node;
 	if (position.node->last_child != 0)
@@ -1109,7 +1113,7 @@ iter tree<T>::prepend_child(iter position, iter other)
 
 template<class T>
 template<class iter>
-iter tree<T>::m_prepend_child_node(iter position, tree_head* node)
+iter tree<T>::m_prepend_child_node(iter position, tree_head* node) const
 {
 	node->parent = position.node;
 	if (position.node->first_child != 0)
@@ -1131,7 +1135,7 @@ iter tree<T>::m_prepend_child_node(iter position, tree_head* node)
 template<class T>
 template<class iter>
 iter tree<T>::append_children(iter position, sibling_iterator from,
-		sibling_iterator to)
+		const sibling_iterator& to)
 {
 	if(!m_is_valid_node(position.node))
 		return position;
@@ -1149,7 +1153,7 @@ iter tree<T>::append_children(iter position, sibling_iterator from,
 template<class T>
 template<class iter>
 iter tree<T>::prepend_children(iter position, sibling_iterator from,
-		sibling_iterator to)
+		const sibling_iterator& to)
 {
 	if(!m_is_valid_node(position.node))
 		return position;
@@ -1460,8 +1464,8 @@ iter tree<T>::replace(iter position, Tr&& x, ttl::false_type)
 
 template<class T>
 typename tree<T>::sibling_iterator tree<T>::replace(
-		sibling_iterator orig_begin, sibling_iterator orig_end,
-		sibling_iterator new_begin, sibling_iterator new_end)
+		sibling_iterator orig_begin, const sibling_iterator& orig_end,
+		sibling_iterator new_begin, const sibling_iterator& new_end)
 {
 	tree_node *orig_first = orig_begin.node;
 	tree_node *new_first = new_begin.node;
@@ -1538,7 +1542,7 @@ iter tree<T>::flatten(iter position)
 template<class T>
 template<typename iter>
 iter tree<T>::reparent(iter position, sibling_iterator bg,
-		sibling_iterator en)
+		const sibling_iterator& en)
 {
 	tree_head *first = bg.node;
 	tree_head *last = first;
@@ -1617,7 +1621,7 @@ template<typename iter, typename Tr> iter tree<T>::wrap(iter position, const Tr&
 }
 
 template<class T>
-template<typename iter> iter tree<T>::move_after(iter target, iter source)
+template<typename iter> iter tree<T>::move_after(iter target, iter source) const
 {
 	tree_head *dst = target.node;
 	tree_head *src = source.node;
@@ -1654,7 +1658,7 @@ template<typename iter> iter tree<T>::move_after(iter target, iter source)
 }
 
 template<class T>
-template<typename iter> iter tree<T>::move_before(iter target, iter source)
+template<typename iter> iter tree<T>::move_before(iter target, iter source) const
 {
 	tree_head *dst = target.node;
 	tree_head *src = source.node;
@@ -1693,7 +1697,7 @@ template<typename iter> iter tree<T>::move_before(iter target, iter source)
 // specialisation for sibling_iterators
 template<class T>
 typename tree<T>::sibling_iterator tree<T>::move_before(
-		sibling_iterator target, sibling_iterator source)
+		sibling_iterator target, sibling_iterator source) const
 {
 	tree_head *dst = target.node;
 	tree_head *src = source.node;
@@ -1792,7 +1796,7 @@ template<typename iter> iter tree<T>::move_ontop(iter target, iter source)
 
 template<class T>
 void tree<T>::merge(sibling_iterator to1, sibling_iterator to2,
-		sibling_iterator from1, sibling_iterator from2, bool duplicate_leaves)
+		sibling_iterator from1, const sibling_iterator& from2, bool duplicate_leaves)
 {
 	sibling_iterator fnd;
 	while (from1 != from2)

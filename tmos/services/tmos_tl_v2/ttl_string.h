@@ -1796,6 +1796,7 @@ int basic_string<CharT>::format(const CharT *fmt, ...)
 	{
 		len = 0;
 	}
+	va_end(args);
 
 	return len;
 }
@@ -1817,6 +1818,7 @@ int basic_string<CharT>::appendf(const CharT *fmt, ...)
 	{
 		len2 = 0;
 	}
+	va_end(args);
 
 	return len2;
 }
