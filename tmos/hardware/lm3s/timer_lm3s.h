@@ -44,7 +44,7 @@ struct TIMER_Type
 	__I  uint32_t TAV;              //!< GPTM Timer A Value
 	__I  uint32_t TBV;              //!< GPTM Timer B Value
 
-	unsigned long  GetPeripheral(void);
+	unsigned long  GetPeripheral(void) const;
 	void Reset(void);
 	void Enable(unsigned long ulTimer);
 	void Disable(unsigned long ulTimer);
@@ -56,15 +56,15 @@ struct TIMER_Type
 	void RTCEnable(void);
 	void RTCDisable(void);
 	void PrescaleSet(unsigned long ulTimer,unsigned long ulValue);
-	unsigned long PrescaleGet(unsigned long ulTimer);
+	unsigned long PrescaleGet(unsigned long ulTimer) const;
 	void LoadSet(unsigned long ulTimer,unsigned long ulValue);
-	unsigned long LoadGet(unsigned long ulTimer);
-	unsigned long ValueGet(unsigned long ulTimer);
+	unsigned long LoadGet(unsigned long ulTimer) const;
+	unsigned long ValueGet(unsigned long ulTimer) const;
 	void MatchSet(unsigned long ulTimer,unsigned long ulValue);
-	unsigned long MatchGet(unsigned long ulTimer);
+	unsigned long MatchGet(unsigned long ulTimer) const;
 	void IntEnable(unsigned long ulIntFlags);
 	void IntDisable(unsigned long ulIntFlags);
-	unsigned long IntStatus(int bMasked);
+	unsigned long IntStatus(int bMasked) const;
 	void IntClear(unsigned long ulIntFlags);
 
 };

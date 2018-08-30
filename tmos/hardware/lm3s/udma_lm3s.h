@@ -48,17 +48,17 @@ struct UDMA_Type
 
 	void uDMAEnable(void);
 	void uDMADisable(void);
-	unsigned long uDMAErrorStatusGet(void);
+	unsigned long uDMAErrorStatusGet(void) const;
 	void uDMAErrorStatusClear(void);
 	void uDMAChannelEnable(unsigned long ulChannel);
 	void uDMAChannelDisable(unsigned long ulChannel);
-	int uDMAChannelIsEnabled(unsigned long ulChannel);
+	int uDMAChannelIsEnabled(unsigned long ulChannel) const;
 	void uDMAControlBaseSet(void *pControlTable);
 	void *uDMAControlBaseGet(void);
 	void uDMAChannelRequest(unsigned long ulChannel);
 	void uDMAChannelAttributeEnable(unsigned long ulChannel, unsigned long ulAttr);
 	void uDMAChannelAttributeDisable(unsigned long ulChannel, unsigned long ulAttr);
-	unsigned long uDMAChannelAttributeGet(unsigned long ulChannel);
+	unsigned long uDMAChannelAttributeGet(unsigned long ulChannel) const;
 	void uDMAChannelControlSet(unsigned long ulChannel, unsigned long ulControl);
 	void uDMAChannelTransferSet(unsigned long ulChannel, unsigned long ulMode,
 									   void *pvSrcAddr,

@@ -38,7 +38,7 @@ struct SSI_Type
 	void SSIDisable(void);
 	void SSIIntEnable(unsigned long ulIntFlags);
 	void SSIIntDisable(unsigned long ulIntFlags);
-	unsigned long SSIIntStatus(int bMasked);
+	unsigned long SSIIntStatus(int bMasked) const;
 	void SSIIntClear(unsigned long ulIntFlags);
 	void SSIDataPut(unsigned long ulData);
 	long SSIDataPutNonBlocking( unsigned long ulData);
@@ -46,7 +46,7 @@ struct SSI_Type
 	long SSIDataGetNonBlocking( unsigned long *pulData);
 	void SSIDMAEnable(unsigned long ulDMAFlags);
 	void SSIDMADisable(unsigned long ulDMAFlags);
-	int SSIBusy(void);
+	int SSIBusy(void) const;
 
 
 };

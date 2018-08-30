@@ -371,7 +371,7 @@ void ADC_Type::ADCSequenceStepConfigure(unsigned long ulSequenceNum, unsigned lo
 //! was.
 //
 //*****************************************************************************
-unsigned long ADC_Type::ADCSequenceOverflow(unsigned long ulSequenceNum)
+unsigned long ADC_Type::ADCSequenceOverflow(unsigned long ulSequenceNum) const
 {
     ASSERT(ulSequenceNum < 4);
     // Determine if there was an overflow on this sequence.
@@ -411,7 +411,7 @@ void ADC_Type::ADCSequenceOverflowClear(unsigned long ulSequenceNum)
 //! was.
 //
 //*****************************************************************************
-unsigned long ADC_Type::ADCSequenceUnderflow(unsigned long ulSequenceNum)
+unsigned long ADC_Type::ADCSequenceUnderflow(unsigned long ulSequenceNum) const
 {
     ASSERT(ulSequenceNum < 4);
     // Determine if there was an underflow on this sequence.
@@ -878,7 +878,7 @@ void ADC_Type::ADCComparatorIntEnable(unsigned long ulSequenceNum)
 //! \return The current comparator interrupt status.
 //
 //*****************************************************************************
-unsigned long ADC_Type::ADCComparatorIntStatus(void)
+unsigned long ADC_Type::ADCComparatorIntStatus(void) const
 {
     // Return the digitial comparator interrupt status.
     return(this->DCISC);

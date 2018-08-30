@@ -197,7 +197,7 @@ void SSI_Type::SSIIntDisable(unsigned long ulIntFlags)
 //! \b SSI_TXFF, \b SSI_RXFF, \b SSI_RXTO, and \b SSI_RXOR.
 //
 //*****************************************************************************
-unsigned long SSI_Type::SSIIntStatus(int bMasked)
+unsigned long SSI_Type::SSIIntStatus(int bMasked) const
 {
     if(bMasked)
         return(this->MIS);
@@ -420,7 +420,7 @@ void SSI_Type::SSIDMADisable(unsigned long ulDMAFlags)
 //! transmissions are complete.
 //
 //*****************************************************************************
-int SSI_Type::SSIBusy(void)
+int SSI_Type::SSIBusy(void) const
 {
     return((this->SR & SSI_SR_BSY) ? true : false);
 }

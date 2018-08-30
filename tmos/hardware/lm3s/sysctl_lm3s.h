@@ -104,9 +104,9 @@ struct SYSCTL_Type
 	__IO uint32_t USER_REG3;		//!< User Register 3
 
     unsigned long SysCtlClockGet();
-    unsigned long SysCtlSRAMSizeGet(void);
-    unsigned long SysCtlFlashSizeGet(void);
-    int SysCtlPeripheralPresent(unsigned long ulPeripheral);
+    unsigned long SysCtlSRAMSizeGet(void) const;
+    unsigned long SysCtlFlashSizeGet(void) const;
+    int SysCtlPeripheralPresent(unsigned long ulPeripheral) const;
     void SysCtlPeripheralSleepEnable(unsigned long ulPeripheral);
     void SysCtlPeripheralSleepDisable(unsigned long ulPeripheral);
     void SysCtlPeripheralDeepSleepEnable(unsigned long ulPeripheral);
@@ -115,11 +115,11 @@ struct SYSCTL_Type
     void SysCtlIntEnable(unsigned long ulInts);
     void SysCtlIntDisable(unsigned long ulInts);
     void SysCtlIntClear(unsigned long ulInts);
-    unsigned long SysCtlIntStatus(int bMasked);
+    unsigned long SysCtlIntStatus(int bMasked) const;
     void SysCtlLDOSet(unsigned long ulVoltage);
-    unsigned long SysCtlLDOGet(void);
+    unsigned long SysCtlLDOGet(void) const;
     void SysCtlLDOConfigSet(unsigned long ulConfig);
-    unsigned long SysCtlResetCauseGet(void);
+    unsigned long SysCtlResetCauseGet(void) const;
     void SysCtlResetCauseClear(unsigned long ulCauses);
     void SysCtlBrownOutConfigSet(unsigned long ulConfig, unsigned long ulDelay);
     void SysCtlClockSet(unsigned long ulConfig);

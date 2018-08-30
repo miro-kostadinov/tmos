@@ -56,7 +56,7 @@ void UDMA_Type::uDMADisable(void)
 //! \return Returns non-zero if a uDMA error is pending.
 //
 //*****************************************************************************
-unsigned long UDMA_Type::uDMAErrorStatusGet(void)
+unsigned long UDMA_Type::uDMAErrorStatusGet(void) const
 {
     // Return the uDMA error status.
     return(this->ERRCLR);
@@ -198,7 +198,7 @@ void UDMA_Type::uDMAChannelDisable(unsigned long ulChannel)
 //! \return Returns \b true if the channel is enabled, \b false if disabled.
 //
 //*****************************************************************************
-int UDMA_Type::uDMAChannelIsEnabled(unsigned long ulChannel)
+int UDMA_Type::uDMAChannelIsEnabled(unsigned long ulChannel) const
 {
     ASSERT(ulChannel < 32);
     // AND the specified channel bit with the enable register, and return the result.
@@ -463,7 +463,7 @@ void UDMA_Type::uDMAChannelAttributeDisable(unsigned long ulChannel, unsigned lo
 //!   peripheral for this channel.
 //
 //*****************************************************************************
-unsigned long UDMA_Type::uDMAChannelAttributeGet(unsigned long ulChannel)
+unsigned long UDMA_Type::uDMAChannelAttributeGet(unsigned long ulChannel) const
 {
     unsigned long ulAttr = 0;
     ASSERT(ulChannel < 32);

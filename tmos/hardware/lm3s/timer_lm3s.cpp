@@ -23,7 +23,7 @@
  *			ulPeripheral parameter.
  *
  */
-unsigned long  TIMER_Type::GetPeripheral(void)
+unsigned long  TIMER_Type::GetPeripheral(void) const
 {
 	if( this == TIMER0 )
 		return ID_PERIPH_TIMER0;
@@ -320,7 +320,7 @@ void TIMER_Type::PrescaleSet(unsigned long ulTimer, unsigned long ulValue)
 //! \return The value of the timer prescaler.
 //
 //*****************************************************************************
-unsigned long TIMER_Type::PrescaleGet(unsigned long ulTimer)
+unsigned long TIMER_Type::PrescaleGet(unsigned long ulTimer) const
 {
     ASSERT((ulTimer == TIMER_A) || (ulTimer == TIMER_B) ||
            (ulTimer == TIMER_BOTH));
@@ -369,7 +369,7 @@ void TIMER_Type::LoadSet(unsigned long ulTimer, unsigned long ulValue)
 //! \return Returns the load value for the timer.
 //
 //*****************************************************************************
-unsigned long TIMER_Type::LoadGet(unsigned long ulTimer)
+unsigned long TIMER_Type::LoadGet(unsigned long ulTimer) const
 {
     ASSERT((ulTimer == TIMER_A) || (ulTimer == TIMER_B));
     // Return the appropriate load value.
@@ -389,7 +389,7 @@ unsigned long TIMER_Type::LoadGet(unsigned long ulTimer)
 //! \return Returns the current value of the timer.
 //
 //*****************************************************************************
-unsigned long TIMER_Type::ValueGet(unsigned long ulTimer)
+unsigned long TIMER_Type::ValueGet(unsigned long ulTimer) const
 {
     ASSERT((ulTimer == TIMER_A) || (ulTimer == TIMER_B));
     // Return the appropriate timer value.
@@ -437,7 +437,7 @@ void TIMER_Type::MatchSet(unsigned long ulTimer, unsigned long ulValue)
 //! \return Returns the match value for the timer.
 //
 //*****************************************************************************
-unsigned long TIMER_Type::MatchGet(unsigned long ulTimer)
+unsigned long TIMER_Type::MatchGet(unsigned long ulTimer) const
 {
     ASSERT((ulTimer == TIMER_A) || (ulTimer == TIMER_B));
     // Return the appropriate match value.
@@ -511,7 +511,7 @@ void TIMER_Type::IntDisable(unsigned long ulIntFlags)
 //! values described in TimerIntEnable().
 //
 //*****************************************************************************
-unsigned long TIMER_Type::IntStatus(int bMasked)
+unsigned long TIMER_Type::IntStatus(int bMasked) const
 {
     // Return either the interrupt status or the raw interrupt status as
     // requested.

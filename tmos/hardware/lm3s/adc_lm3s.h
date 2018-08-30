@@ -123,13 +123,13 @@ struct ADC_Type
 	 void ADCSequenceDisable(unsigned long ulSequenceNum);
 	 void ADCSequenceConfigure(unsigned long ulSequenceNum, unsigned long ulTrigger, unsigned long ulPriority);
 	 void ADCSequenceStepConfigure(unsigned long ulSequenceNum, unsigned long ulStep, unsigned long ulConfig);
-	 unsigned long ADCSequenceOverflow(unsigned long ulSequenceNum);
+	 unsigned long ADCSequenceOverflow(unsigned long ulSequenceNum) const;
 	 void ADCSequenceOverflowClear(unsigned long ulSequenceNum);
-	 unsigned long ADCSequenceUnderflow(unsigned long ulSequenceNum);
+	 unsigned long ADCSequenceUnderflow(unsigned long ulSequenceNum) const;
 	 void ADCSequenceUnderflowClear(unsigned long ulSequenceNum);
 	 unsigned long ADCSequenceDataGet(unsigned long ulSequenceNum, unsigned long *pulBuffer);
 	 void ADCProcessorTrigger(unsigned long ulSequenceNum);
-	 void ADCSoftwareOversampleConfigure(unsigned long ulSequenceNum, unsigned long ulFactor);
+	 static void ADCSoftwareOversampleConfigure(unsigned long ulSequenceNum, unsigned long ulFactor);
 	 void ADCSoftwareOversampleStepConfigure(unsigned long ulSequenceNum, unsigned long ulStep, unsigned long ulConfig);
 	 void ADCSoftwareOversampleDataGet(unsigned long ulSequenceNum, unsigned long *pulBuffer, unsigned long ulCount);
 	 void ADCHardwareOversampleConfigure(unsigned long ulFactor);
@@ -138,7 +138,7 @@ struct ADC_Type
 	 void ADCComparatorReset(unsigned long ulComp,	bool bTrigger, bool bInterrupt);
 	 void ADCComparatorIntDisable(unsigned long ulSequenceNum);
 	 void ADCComparatorIntEnable(unsigned long ulSequenceNum);
-	 unsigned long ADCComparatorIntStatus(void);
+	 unsigned long ADCComparatorIntStatus(void) const;
 	 void ADCComparatorIntClear(unsigned long ulStatus);
 
 };

@@ -377,7 +377,7 @@ unsigned long SYSCTL_Type::SysCtlClockGet()
 //! \return The total number of bytes of SRAM.
 //
 //*****************************************************************************
-unsigned long SYSCTL_Type::SysCtlSRAMSizeGet(void)
+unsigned long SYSCTL_Type::SysCtlSRAMSizeGet(void) const
 {
     //
     // Compute the size of the SRAM.
@@ -394,7 +394,7 @@ unsigned long SYSCTL_Type::SysCtlSRAMSizeGet(void)
 //! \return The total number of bytes of flash.
 //
 //*****************************************************************************
-unsigned long SYSCTL_Type::SysCtlFlashSizeGet(void)
+unsigned long SYSCTL_Type::SysCtlFlashSizeGet(void) const
 {
     //
     // Compute the size of the flash.
@@ -434,7 +434,7 @@ unsigned long SYSCTL_Type::SysCtlFlashSizeGet(void)
 //
 //*****************************************************************************
 
-int SYSCTL_Type::SysCtlPeripheralPresent(unsigned long ulPeripheral)
+int SYSCTL_Type::SysCtlPeripheralPresent(unsigned long ulPeripheral) const
 {
 
     //
@@ -951,7 +951,7 @@ void SYSCTL_Type::SysCtlIntClear(unsigned long ulInts)
 //! \b SYSCTL_INT_PLL_FAIL.
 //
 //*****************************************************************************
-unsigned long SYSCTL_Type::SysCtlIntStatus(int bMasked)
+unsigned long SYSCTL_Type::SysCtlIntStatus(int bMasked) const
 {
     //
     // Return either the interrupt status or the raw interrupt status as
@@ -1020,7 +1020,7 @@ void SYSCTL_Type::SysCtlLDOSet(unsigned long ulVoltage)
 //! \b SYSCTL_LDO_2_70V, or \b SYSCTL_LDO_2_75V.
 //
 //*****************************************************************************
-unsigned long SYSCTL_Type::SysCtlLDOGet(void)
+unsigned long SYSCTL_Type::SysCtlLDOGet(void) const
 {
     //
     // Return the LDO voltage setting.
@@ -1071,7 +1071,7 @@ void SYSCTL_Type::SysCtlLDOConfigSet(unsigned long ulConfig)
 //! \return Returns the reason(s) for a reset.
 //
 //*****************************************************************************
-unsigned long SYSCTL_Type::SysCtlResetCauseGet(void)
+unsigned long SYSCTL_Type::SysCtlResetCauseGet(void) const
 {
     //
     // Return the reset reasons.

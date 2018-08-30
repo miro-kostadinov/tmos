@@ -44,7 +44,7 @@ struct UART_Type
 	__I  uint32_t LSS;              //!< UART LIN Snap Shot
 	__I  uint32_t LTIM;             //!< UART LIN Timer
 	void UARTParityModeSet(unsigned long ulParity);
-	unsigned long UARTParityModeGet(void);
+	unsigned long UARTParityModeGet(void) const;
 	void UARTFIFOLevelSet(unsigned long ulTxLevel, unsigned long ulRxLevel);
 	void UARTFIFOLevelGet( unsigned long *pulTxLevel, unsigned long *pulRxLevel );
 	void UARTConfigSetExpClk(unsigned long ulUARTClk, unsigned long ulBaud, unsigned long ulConfig);
@@ -59,34 +59,34 @@ struct UART_Type
 	void UARTSmartCardDisable(void);
 	void UARTModemControlSet(unsigned long ulControl);
 	void UARTModemControlClear(unsigned long ulControl);
-	unsigned long UARTModemControlGet(void);
-	unsigned long UARTModemStatusGet(void);
+	unsigned long UARTModemControlGet(void) const;
+	unsigned long UARTModemStatusGet(void) const;
 	void UARTFlowControlSet(unsigned long ulMode);
-	unsigned long UARTFlowControlGet(void);
+	unsigned long UARTFlowControlGet(void) const;
 	void UARTTxIntModeSet(unsigned long ulMode);
-	unsigned long UARTTxIntModeGet(void);
-	int UARTCharsAvail(void);
-	int UARTSpaceAvail(void);
-	long UARTCharGetNonBlocking(void);
-	long UARTCharGet(void);
+	unsigned long UARTTxIntModeGet(void) const;
+	int UARTCharsAvail(void) const;
+	int UARTSpaceAvail(void) const;
+	long UARTCharGetNonBlocking(void) const;
+	long UARTCharGet(void) const;
 	int UARTCharPutNonBlocking(unsigned char ucData);
 	void UARTCharPut(unsigned char ucData);
 	void UARTBreakCtl(int bBreakState);
-	int UARTBusy(void);
+	int UARTBusy(void) const;
 	void UARTIntEnable(unsigned long ulIntFlags);
 	void UARTIntDisable(unsigned long ulIntFlags);
-	unsigned long UARTIntStatus(int bMasked);
+	unsigned long UARTIntStatus(int bMasked) const;
 	void UARTIntClear(unsigned long ulIntFlags);
 	void UARTDMAEnable(unsigned long ulDMAFlags);
 	void UARTDMADisable(unsigned long ulDMAFlags);
-	unsigned long UARTRxErrorGet(void);
+	unsigned long UARTRxErrorGet(void) const;
 	void UARTRxErrorClear(void);
 	void RxEnable(void);
 	void RxDisable(void);
 	void TxEnable(void);
 	void TxDisable(void);
-	unsigned long DMA_GetRxChannel(void);
-	unsigned long DMA_GetTxChannel(void);
+	unsigned long DMA_GetRxChannel(void) const;
+	unsigned long DMA_GetTxChannel(void) const;
 };
 
 //*****************************************************************************

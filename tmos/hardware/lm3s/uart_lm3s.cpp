@@ -54,7 +54,7 @@
  * DMA_GetRxChannel
  * @return
  */
-unsigned long UART_Type::DMA_GetRxChannel(void)
+unsigned long UART_Type::DMA_GetRxChannel(void) const
 {
 	if( this == UART0 )
 		return (UDMA_CHANNEL_UART0RX);
@@ -69,7 +69,7 @@ unsigned long UART_Type::DMA_GetRxChannel(void)
  *
  * @return
  */
-unsigned long UART_Type::DMA_GetTxChannel(void)
+unsigned long UART_Type::DMA_GetTxChannel(void) const
 {
 	if( this == UART0 )
 		return (UDMA_CHANNEL_UART0TX);
@@ -130,7 +130,7 @@ void UART_Type::UARTParityModeSet(unsigned long ulParity)
 * \b UART_CONFIG_PAR_ONE, or \b UART_CONFIG_PAR_ZERO.
 *
 */
-unsigned long UART_Type::UARTParityModeGet(void)
+unsigned long UART_Type::UARTParityModeGet(void) const
 {
     return(this->LCRH & (UART_LCRH_SPS | UART_LCRH_EPS | UART_LCRH_PEN));
 }
@@ -567,7 +567,7 @@ void UART_Type::UARTModemControlClear(unsigned long ulControl)
 * associated signal is asserted.
 *
 */
-unsigned long UART_Type::UARTModemControlGet(void)
+unsigned long UART_Type::UARTModemControlGet(void) const
 {
     ASSERT(!CLASS_IS_SANDSTORM && !CLASS_IS_FURY && !CLASS_IS_DUSTDEVIL);
 
@@ -591,7 +591,7 @@ unsigned long UART_Type::UARTModemControlGet(void)
 * presence of each flag indicates that the associated signal is asserted.
 *
 */
-unsigned long UART_Type::UARTModemStatusGet(void)
+unsigned long UART_Type::UARTModemStatusGet(void) const
 {
     ASSERT(!CLASS_IS_SANDSTORM && !CLASS_IS_FURY && !CLASS_IS_DUSTDEVIL);
 
@@ -646,7 +646,7 @@ void UART_Type::UARTFlowControlSet(unsigned long ulMode)
 * UART_FLOWCONTROL_NONE will be returned.
 *
 */
-unsigned long UART_Type::UARTFlowControlGet(void)
+unsigned long UART_Type::UARTFlowControlGet(void) const
 {
     ASSERT(!CLASS_IS_SANDSTORM && !CLASS_IS_FURY && !CLASS_IS_DUSTDEVIL);
 
@@ -703,7 +703,7 @@ void UART_Type::UARTTxIntModeSet(unsigned long ulMode)
 * \return Returns \b UART_TXINT_MODE_FIFO or \b UART_TXINT_MODE_EOT.
 *
 */
-unsigned long UART_Type::UARTTxIntModeGet(void)
+unsigned long UART_Type::UARTTxIntModeGet(void) const
 {
     return(this->CTL & (UART_TXINT_MODE_EOT | UART_TXINT_MODE_FIFO));
 }
@@ -719,7 +719,7 @@ unsigned long UART_Type::UARTTxIntModeGet(void)
 * if there is no data in the receive FIFO.
 *
 */
-int UART_Type::UARTCharsAvail(void)
+int UART_Type::UARTCharsAvail(void) const
 {
     return((this->FR & UART_FR_RXFE) ? false : true);
 }
@@ -735,7 +735,7 @@ int UART_Type::UARTCharsAvail(void)
 * and \b false if there is no space available in the transmit FIFO.
 *
 */
-int UART_Type::UARTSpaceAvail(void)
+int UART_Type::UARTSpaceAvail(void) const
 {
     return((this->FR & UART_FR_TXFF) ? false : true);
 }
@@ -756,7 +756,7 @@ int UART_Type::UARTSpaceAvail(void)
 * attempting to call this function.
 *
 */
-long UART_Type::UARTCharGetNonBlocking(void)
+long UART_Type::UARTCharGetNonBlocking(void) const
 {
     if(!(this->FR & UART_FR_RXFE))
         return(this->DR);
@@ -775,7 +775,7 @@ long UART_Type::UARTCharGetNonBlocking(void)
 * \e long.
 *
 */
-long UART_Type::UARTCharGet(void)
+long UART_Type::UARTCharGet(void) const
 {
     while(this->FR & UART_FR_RXFE)
     {
@@ -868,7 +868,7 @@ void UART_Type::UARTBreakCtl(int bBreakState)
 * transmissions are complete.
 *
 */
-int UART_Type::UARTBusy(void)
+int UART_Type::UARTBusy(void) const
 {
     return((this->FR & UART_FR_BUSY) ? true : false);
 }
@@ -941,7 +941,7 @@ void UART_Type::UARTIntDisable(unsigned long ulIntFlags)
 * values described in UARTIntEnable().
 *
 */
-unsigned long UART_Type::UARTIntStatus(int bMasked)
+unsigned long UART_Type::UARTIntStatus(int bMasked) const
 {
     if(bMasked)
         return(this->MIS);
@@ -1041,7 +1041,7 @@ void UART_Type::UARTDMADisable(unsigned long ulDMAFlags)
 * and \b UART_RXERROR_OVERRUN.
 *
 */
-unsigned long UART_Type::UARTRxErrorGet(void)
+unsigned long UART_Type::UARTRxErrorGet(void) const
 {
     return(this->RSR & 0x0000000F);
 }
