@@ -46,7 +46,7 @@ void usb_remote_prn_t::clean()
 
 RES_CODE usb_remote_prn_t::get_device_id()
 {
-	RES_CODE res= RES_OK;
+	RES_CODE res;
 	uint32_t len=0;
 
 	//read descriptor

@@ -21,7 +21,7 @@ struct usb_remote_prn_t: public usb_remote_dev_t
 
 	usb_remote_prn_t(HANDLE h1): usb_remote_dev_t(h1), port_status(0), pid(NULL) {};
 
-	virtual void clean();
+	void clean() override;
 
 	RES_CODE get_device_id();
 	RES_CODE get_port_status();

@@ -31,7 +31,10 @@ struct usb_remote_dev_t
 	};
 	virtual ~usb_remote_dev_t()
 	{
-		clean();
+		if(config_descriptor)
+		{
+			delete config_descriptor;
+		}
 	}
 
 	virtual void clean();
