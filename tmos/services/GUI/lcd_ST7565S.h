@@ -37,18 +37,18 @@ struct ST7565S: public LCD_MODULE
 	virtual void lcd_command(unsigned int cmd);
 
 	//virtual functions
-	void lcd_init(GUI_CB splash);
-	void lcd_reset();
+	void lcd_init(GUI_CB splash) override;
+	void lcd_reset() override;
 	void draw_bitmap(unsigned int x0, unsigned int y0,
-			const unsigned char* src, unsigned int width, unsigned int rows);
-	void draw_hline(unsigned int x0, unsigned int x1, unsigned int y);
-	void draw_bline(unsigned int x0, unsigned int x1, unsigned int y);
-	void draw_vline(unsigned int y0, unsigned int y1, unsigned int x);
-	void invert_vline(unsigned int y0, unsigned int y1, unsigned int x);
-	void invert_hline(unsigned int x0, unsigned int x1, unsigned int y);
-	virtual void update_screen();
-	void clear_screen();
-	void redraw_screen(WINDOW desktop);
+			const unsigned char* src, unsigned int width, unsigned int rows) override;
+	void draw_hline(unsigned int x0, unsigned int x1, unsigned int y) override;
+	void draw_bline(unsigned int x0, unsigned int x1, unsigned int y) override;
+	void draw_vline(unsigned int y0, unsigned int y1, unsigned int x) override;
+	void invert_vline(unsigned int y0, unsigned int y1, unsigned int x) override;
+	void invert_hline(unsigned int x0, unsigned int x1, unsigned int y) override;
+	virtual void update_screen() override;
+	void clear_screen() override;
+	void redraw_screen(WINDOW desktop) override;
 };
 
 #endif /* LCD_ST7565S_H_ */

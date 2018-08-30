@@ -72,7 +72,7 @@ struct ST7735R : public SPFD5414D
 	;
 	//The TFT modules hardware interface methods
 protected:
-	virtual void tft_reset();
+	void tft_reset() override;
 	// Base class (SPFD5414D) virtual void tft_write_row(unsigned short address_cmd[], unsigned short row);
 };
 

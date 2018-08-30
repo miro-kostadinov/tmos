@@ -23,7 +23,7 @@ struct ST7735R_UART : public SPFD5414D_UART
 	;
 
 protected:
-	virtual void tft_reset();
+	void tft_reset() override;
 };
 
 

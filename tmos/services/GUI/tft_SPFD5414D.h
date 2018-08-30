@@ -63,23 +63,23 @@ struct SPFD5414D: public LCD_MODULE
 	;
 
 	//virtual functions
-	virtual void lcd_init(GUI_CB splash);
-	virtual void lcd_reset(); // call tft_reset()
+	void lcd_init(GUI_CB splash) override;
+	void lcd_reset() override; // call tft_reset()
 	void draw_bitmap(unsigned int x0, unsigned int y0,
-			const unsigned char* src, unsigned int width, unsigned int rows);
-	void draw_hline(unsigned int x0, unsigned int x1, unsigned int y);
-	void draw_bline(unsigned int x0, unsigned int x1, unsigned int y);
-	void draw_vline(unsigned int y0, unsigned int y1, unsigned int x);
-	void invert_vline(unsigned int y0, unsigned int y1, unsigned int x);
-	void invert_hline(unsigned int x0, unsigned int x1, unsigned int y);
-	void update_screen() // not used into TFT modules
+			const unsigned char* src, unsigned int width, unsigned int rows) override;
+	void draw_hline(unsigned int x0, unsigned int x1, unsigned int y) override;
+	void draw_bline(unsigned int x0, unsigned int x1, unsigned int y) override;
+	void draw_vline(unsigned int y0, unsigned int y1, unsigned int x) override;
+	void invert_vline(unsigned int y0, unsigned int y1, unsigned int x) override;
+	void invert_hline(unsigned int x0, unsigned int x1, unsigned int y) override;
+	void update_screen() override // not used into TFT modules
 		{;};
-	void clear_screen();
-	void redraw_screen(WINDOW desktop);
+	void clear_screen() override;
+	void redraw_screen(WINDOW desktop) override;
 	//The TFT modules hardware interface methods
 protected:
 	virtual void tft_reset();
-	virtual void tft_write_row(unsigned short address_cmd[], unsigned short row);
+	virtual void tft_write_row(unsigned short row_address_cmd[], unsigned short row);
 };
 
 #ifndef CSX_PIN_INDX
@@ -107,7 +107,7 @@ struct TFT_CHECK
 	}
 	;
 
-	void delay(unsigned int time = 0);
+	static void delay(unsigned int time = 0);
 	void tft_write(unsigned int value);
 	unsigned int tft_read();
 

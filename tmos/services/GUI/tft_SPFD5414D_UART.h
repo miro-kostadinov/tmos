@@ -21,8 +21,8 @@ struct SPFD5414D_UART: public SPFD5414D
 	;
 
 protected:
-	virtual void tft_write_row(unsigned short address_cmd[], unsigned short row);
-	virtual void tft_reset();
+	void tft_write_row(unsigned short address_cmd[], unsigned short row) override;
+	void tft_reset() override;
 };
 
 

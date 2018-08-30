@@ -22,8 +22,8 @@ struct ST7565S_RS: public ST7565S
 
 
 	//virtual functions
-	virtual void lcd_command(unsigned int cmd);
-	virtual void update_screen();
+	void lcd_command(unsigned int cmd) override;
+	void update_screen() override;
 };
 
 

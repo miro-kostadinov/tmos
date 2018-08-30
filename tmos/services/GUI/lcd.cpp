@@ -80,7 +80,7 @@ void LCD_MODULE::set_xy_all(unsigned int xy, unsigned int all)
 	pos_x = xy >> 16;
 	allign = all;
 }
-const char* LCD_MODULE::get_next_txt_row(const char *txt)
+const char* LCD_MODULE::get_next_txt_row(const char *txt) const
 {
     unsigned int width,len, pos;
 	unsigned int c;
