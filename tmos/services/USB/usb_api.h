@@ -22,6 +22,7 @@ RES_CODE usb_api_device_config(USB_DRV_INFO drv_info, HANDLE client);
 
 #if USB_ENABLE_HOST
 RES_CODE usb_api_otg_config(USB_DRV_INFO drv_info, HANDLE client);
+RES_CODE usb_api_otg_config2(USB_DRV_INFO drv_info, HANDLE client);
 RES_CODE usb_api_otg_off(USB_DRV_INFO drv_info, HANDLE client);
 RES_CODE usb_api_get_hdev(USB_DRV_INFO drv_info, HANDLE client);
 RES_CODE usb_api_host_resume(USB_DRV_INFO drv_info, HANDLE client);
@@ -32,6 +33,7 @@ RES_CODE usb_api_host_resume(USB_DRV_INFO drv_info, HANDLE client);
 
 #if USB_ENABLE_HOST
 #define USB_CMD_OTG_CONFIG 		((void*)usb_api_otg_config)
+#define USB_CMD_OTG_CONFIG2 	((void*)usb_api_otg_config2)
 #define USB_CMD_OTG_OFF			((void*)usb_api_otg_off)
 #define USB_CMD_GET_HDEV		((void*)usb_api_get_hdev)
 #define USB_CMD_HOST_RESUME		((void*)usb_api_host_resume)

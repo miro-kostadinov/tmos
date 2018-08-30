@@ -123,6 +123,30 @@ RES_CODE usb_api_otg_config(USB_DRV_INFO drv_info, HANDLE client)
 	return res;
 }
 
+/**
+ * Non blocking version
+ * @param drv_info
+ * @param client
+ * @return
+ */
+RES_CODE usb_api_otg_config2(USB_DRV_INFO drv_info, HANDLE client)
+{
+	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+	RES_CODE res = RES_IDLE;
+
+	TRACE_USB_NAME(drv_info);
+	TRACE1_USB(" cfg");
+
+	//initialize the hardware
+	res = usb_hal_start(drv_info, USB_OTG_FLG_HOST) | FLG_SIGNALED;
+
+	if(res == RES_SIG_OK)
+		client->mode.as_ushort[1] = drv_data->drv_state_cnt;
+
+	TRACELN_USB("USB cfg res %u", res);
+	return res;
+}
+
 RES_CODE usb_api_otg_off(USB_DRV_INFO drv_info, HANDLE client)
 {
 	usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST_CON | USB_OTG_FLG_HOST_PWR
