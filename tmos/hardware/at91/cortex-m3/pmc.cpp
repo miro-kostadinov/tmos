@@ -167,9 +167,9 @@ extern uint32_t PMC_IsPeriphEnabled( uint32_t dwId )
 
     if ( dwId < 32 )
     {
-        return ( PMC->PMC_PCSR0 & (1 << dwId) ) ;
+        return ( PMC->PMC_PCSR0 & (1u << dwId) ) ;
     }
     else {
-        return ( PMC->PMC_PCSR1 & (1 << (dwId - 32)) ) ;
+        return ( PMC->PMC_PCSR1 & (1u << (dwId - 32)) ) ;
     }
 }

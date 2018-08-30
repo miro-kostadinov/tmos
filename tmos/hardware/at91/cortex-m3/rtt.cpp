@@ -64,7 +64,7 @@ void RTT_SetPrescaler(Rtt *rtt, uint16_t prescaler)
  *
  * \param rtt  Pointer to a Rtt instance.
  */
-uint32_t RTT_GetTime(Rtt *rtt)
+uint32_t RTT_GetTime(Rtt* rtt)
 {
     return (rtt->RTT_VR);
 }
@@ -75,7 +75,7 @@ uint32_t RTT_GetTime(Rtt *rtt)
  * \param rtt  Pointer to a Rtt instance.
  * \param sources  Bitmask of interrupts to enable.
  */
-void RTT_EnableIT(Rtt *rtt, uint32_t sources)
+void RTT_EnableIT(Rtt* rtt, uint32_t sources)
 {
     ASSERT( (sources & 0x0004FFFF) == 0 ) ;
     rtt->RTT_MR |= sources;
@@ -86,7 +86,7 @@ void RTT_EnableIT(Rtt *rtt, uint32_t sources)
  *
  * \param rtt  Pointer to an Rtt instance.
  */
-uint32_t RTT_GetStatus(Rtt *rtt)
+uint32_t RTT_GetStatus(Rtt* rtt)
 {
     return (rtt->RTT_SR);
 }

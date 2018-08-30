@@ -122,15 +122,15 @@ typedef struct {
 #define RTT_SR_RTTINC (0x1u << 1) //!< (RTT_SR) Real-time Timer Increment */
 
 
-extern void RTT_SetPrescaler( Rtt* pRtt, uint16_t wPrescaler ) ;
+extern void RTT_SetPrescaler( Rtt* rtt, uint16_t prescaler ) ;
 
-extern uint32_t RTT_GetTime( Rtt* pRtt ) ;
+extern uint32_t RTT_GetTime( Rtt* rtt ) ;
 
-extern void RTT_EnableIT( Rtt* pRtt, uint32_t dwSources ) ;
+extern void RTT_EnableIT( Rtt* rtt, uint32_t sources ) ;
 
-extern uint32_t RTT_GetStatus( Rtt *pRtt ) ;
+extern uint32_t RTT_GetStatus( Rtt* rtt ) ;
 
-extern void RTT_SetAlarm( Rtt *pRtt, uint32_t dwTime ) ;
+extern void RTT_SetAlarm( Rtt *pRtt, uint32_t time ) ;
 
 #ifdef __cplusplus
 }

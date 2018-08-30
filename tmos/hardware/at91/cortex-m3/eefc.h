@@ -155,9 +155,9 @@ extern void EFC_EnableFrdyIt( Efc* efc ) ;
 
 extern void EFC_DisableFrdyIt( Efc* efc ) ;
 
-extern void EFC_SetWaitState( Efc* efc, uint8_t cycles ) ;
+extern void EFC_SetWaitState( Efc* efc, uint8_t ucCycles ) ;
 
-extern void EFC_TranslateAddress( Efc** pEfc, uint32_t dwAddress, uint16_t *pwPage, uint16_t *pwOffset ) ;
+extern void EFC_TranslateAddress( Efc** ppEfc, uint32_t dwAddress, uint16_t *pwPage, uint16_t *pwOffset ) ;
 
 extern void EFC_ComputeAddress( Efc* efc, uint16_t wPage, uint16_t wOffset, uint32_t *pdwAddress ) ;
 

@@ -53,8 +53,8 @@ struct UART_DRIVER_INFO
 	UART_DRIVER_DATA* drv_data;		//!< driver data
 };
 
-void dcr_SerialDriver(UART_DRIVER_INFO* driver, unsigned int reason, HANDLE hnd);
-void dsr_SerialDriver(UART_DRIVER_INFO* driver, HANDLE hnd);
-void isr_SerilaDriver(UART_DRIVER_INFO* driver );
+void dcr_SerialDriver(UART_DRIVER_INFO* drv_info, unsigned int reason, HANDLE hnd);
+void dsr_SerialDriver(UART_DRIVER_INFO* drv_info, HANDLE hnd);
+void isr_SerilaDriver(UART_DRIVER_INFO* drv_info );
 
 #endif /* UART_DRIVER_H_ */

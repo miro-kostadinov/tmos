@@ -330,7 +330,7 @@ extern uint32_t SPI_Read( Spi* spi ) ;
 extern void SPI_Write( Spi* spi, uint32_t dwNpcs, uint16_t wData ) ;
 
 extern uint32_t SPI_GetStatus( Spi* spi ) ;
-extern uint32_t SPI_IsFinished( Spi* pSpi ) ;
+extern uint32_t SPI_IsFinished( Spi* spi ) ;
 
 extern void SPI_PdcEnableTx( Spi* spi ) ;
 extern void SPI_PdcDisableTx( Spi* spi ) ;
