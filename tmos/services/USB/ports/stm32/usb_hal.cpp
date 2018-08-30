@@ -1735,12 +1735,12 @@ RES_CODE usb_hal_host_start(USB_DRV_INFO drv_info)
 	{
 		tsk_sleep(200);
 	}
-	if(!(otg->HPRT & OTG_HPRT_PENA))
-	{
-		otg->core_regs.GAHBCFG &= ~OTG_GAHBCFG_GINTMSK;
-		usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_RST);
-		otg->core_regs.GAHBCFG |= OTG_GAHBCFG_GINTMSK;
-	}
+//	if(!(otg->HPRT & OTG_HPRT_PENA))
+//	{
+//		otg->core_regs.GAHBCFG &= ~OTG_GAHBCFG_GINTMSK;
+//		usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_RST);
+//		otg->core_regs.GAHBCFG |= OTG_GAHBCFG_GINTMSK;
+//	}
 	return RES_SIG_OK;
 }
 
@@ -1753,9 +1753,6 @@ RES_CODE usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
 	TRACE_USB_NAME(drv_info);
 	TRACE1_USB(" start reset");
 
-	if(otg->HPRT & OTG_HPRT_PENA)
-		res = RES_OK;
-
 	stm_otg_core_init_host(drv_info);
 
 	reg = otg->HPRT & ~OTG_HPRT_rc_w1_bits;
@@ -1767,6 +1764,10 @@ RES_CODE usb_hal_host_bus_reset(USB_DRV_INFO drv_info)
 	reg = otg->HPRT & ~(OTG_HPRT_rc_w1_bits | OTG_HPRT_PRST);
 	otg->HPRT = reg;	// deassert reset
 	tsk_sleep(10);
+
+	if(otg->HPRT & OTG_HPRT_PENA)
+		res = RES_OK;
+
 	return res;
 }
 
@@ -2805,16 +2806,21 @@ static void usb_a_gint_rxflvl(USB_DRV_INFO drv_info)
 
 void USB_OTG_ISR(USB_DRV_INFO drv_info)
 {
-	uint32_t status, host_mode;
+	uint32_t status;
 	USB_TypeDef* otg = drv_info->hw_base;
 #if USB_ENABLE_HOST
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
+#endif
+#if USB_ENABLE_DEVICE
+	uint32_t host_mode;
 #endif
 
 	status = otg->core_regs.GINTSTS;
 	TRACE_USB_NAME(drv_info);
 	TRACE_USB(": [%08X]", status);
+#if USB_ENABLE_DEVICE
 	host_mode = status & OTG_GINTSTS_CMOD;
+#endif
 	status &= otg->core_regs.GINTMSK;
 
 #if USB_ENABLE_HOST
@@ -2849,7 +2855,8 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 			usb_otg_clr_flags(drv_info, USB_OTG_FLG_DEV);
 			if(drv_data->otg_flags & USB_OTG_FLG_HOST)
 			{
-				if(drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
+				if(otg->HPRT & OTG_HPRT_PENA)
+//				if(drv_data->otg_flags & USB_OTG_FLG_HOST_CON)
 					usb_otg_set_flags(drv_info, USB_OTG_FLG_HOST_RST);
 			}
 #endif //USB_ENABLE_HOST
@@ -3013,7 +3020,8 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 	    		}
 	    		else
 	    		{
-					usb_otg_clr_flags(drv_info, USB_OTG_FLG_ALL);
+	    			drv_data->drv_state_cnt  |= USB_STATE_CNT_INVALID;
+					usb_otg_clr_flags(drv_info, USB_OTG_FLG_HOST_OK);
 	    		}
 		    }
 

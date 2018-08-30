@@ -649,7 +649,15 @@ RES_CODE usb_remote_hid_t::scan_hid(uint32_t port_indx, USBSubClassCode subcls, 
 								}
 							}
 						}
+					} 
+#if 0					
+					else
+					{
+						if(pid  && pid->bDeviceClass == VENDOR_SPECIFIC_CLASS && dev_descriptor.idVendor == 0x1234  )
+							set_configuration(config_descriptor->bConfigurationValue);
+
 					}
+#endif
 				}
 			}
 		}
@@ -804,7 +812,7 @@ WEAK_C unsigned int usb_scan_to_ascii(uint32_t code, uint32_t modifier, uint32_t
 	return code;
 }
 
-uint32_t usb_remote_kbd_t::get_modifier(uint32_t modifier)
+uint32_t usb_remote_kbd_t::get_modifier(uint32_t modifier) const
 {
 	// ignore left/right
 	modifier = (modifier&0xF) | (modifier>>4);

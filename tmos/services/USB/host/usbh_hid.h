@@ -217,7 +217,7 @@ struct usb_remote_kbd_t: public usb_remote_hid_t
 	uint8_t 		def_lang;
 	uint32_t		key_time;
 
-	uint32_t get_modifier(uint32_t modifier);
+	uint32_t get_modifier(uint32_t modifier) const;
 	void key_press(uint32_t code);
 	void key_release(uint32_t code);
 	usb_remote_kbd_t(HANDLE h1, HANDLE hi1, HANDLE hi2): usb_remote_hid_t(h1, hi1, hi2),
