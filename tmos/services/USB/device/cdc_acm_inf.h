@@ -38,9 +38,9 @@ struct usb_cdc_acm_interface: usb_interface
 	}
 	;
 
-	virtual void Initialize(const USBInterfaceDescriptor* ds, int size);
-	virtual void RequestHandler(const void* drv,
-			const USBGenericRequest *pRequest, HANDLE hnd);
+	void Initialize(const USBInterfaceDescriptor* ds, int size) override;
+	void RequestHandler(const void* drv,
+			const USBGenericRequest *pRequest, HANDLE hnd) override;
 
 	virtual void set_line_coding(const void* drv) {};
 	virtual void set_control_line_state(const void* drv) {};

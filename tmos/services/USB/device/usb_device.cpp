@@ -103,7 +103,7 @@ void usb_device::Initialize(const USBDDriverDescriptors *descriptors)
  * \param index  Index of the requested descriptor.
  * \param length  Maximum number of bytes to return.
  */
-void usb_device::GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd)
+void usb_device::GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd) const
 {
     uint32_t length;
     const void* res_ptr;
@@ -137,7 +137,7 @@ void usb_device::GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd)
     }
 
     /* Check the descriptor type */
-    length = pRequest->GetLength();
+//    length = pRequest->GetLength();
     length = 0;
     res_ptr = NULL;
     switch (pRequest->GetDescriptorType())
@@ -226,7 +226,7 @@ void usb_device::GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd)
  * @param cfg
  * @return
  */
-const USBConfigurationDescriptor* usb_device::GetConfiguration(uint8_t cfg)
+const USBConfigurationDescriptor* usb_device::GetConfiguration(uint8_t cfg) const
 {
 	const USBConfigurationDescriptor *pConfiguration;
 
@@ -294,7 +294,7 @@ void usb_device::SetConfiguration(const void* drv, uint8_t cfg, HANDLE hnd)
 /**
  * Sends the current status of the device to the host.
  */
-void usb_device::GetDeviceStatus(HANDLE hnd)
+void usb_device::GetDeviceStatus(HANDLE hnd) const
 {
     static unsigned short data;
     const USBConfigurationDescriptor *pConfiguration;

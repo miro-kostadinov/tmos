@@ -75,16 +75,16 @@ struct usb_device
 	unsigned char otg_features_supported;
 #endif
 
-	void Initialize(const USBDDriverDescriptors *pDescriptors);
+	void Initialize(const USBDDriverDescriptors *descriptors);
 	void RequestHandler(const void* drv,
 			const USBGenericRequest *pRequest, HANDLE hnd);
 
 private:
-	const USBConfigurationDescriptor* GetConfiguration(uint8_t cfg);
-	void GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd);
+	const USBConfigurationDescriptor* GetConfiguration(uint8_t cfg) const;
+	void GetDescriptor(const USBGenericRequest *pRequest, HANDLE hnd) const;
 	void SetConfiguration(const void* drv, uint8_t cfg, HANDLE hnd);
-	void GetDeviceStatus(HANDLE hnd);
-	void GetEndpointStatus(const void* drv, uint8_t eptnum, HANDLE hnd);
+	void GetDeviceStatus(HANDLE hnd) const;
+	static void GetEndpointStatus(const void* drv, uint8_t eptnum, HANDLE hnd);
 	void SetInterface(uint8_t infnum, uint8_t setting, HANDLE hnd);
 	void GetInterface(uint8_t infnum, HANDLE hnd);
 	void ShutdownInterfaces();

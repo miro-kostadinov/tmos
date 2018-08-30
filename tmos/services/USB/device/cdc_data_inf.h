@@ -19,9 +19,9 @@ struct usb_cdc_data_interface: usb_interface
 {
 	usb_cdc_data_interface(unsigned char bAS): usb_interface(bAS){};
 
-	virtual void Initialize(const USBInterfaceDescriptor* ds, int size);
-	virtual void RequestHandler(const void* drv,
-			const USBGenericRequest *pRequest, HANDLE hnd);
+	void Initialize(const USBInterfaceDescriptor* ds, int size) override;
+	void RequestHandler(const void* drv,
+			const USBGenericRequest *pRequest, HANDLE hnd) override;
 
 };
 
