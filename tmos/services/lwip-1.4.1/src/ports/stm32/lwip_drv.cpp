@@ -431,7 +431,9 @@ WEAK_C void lwIPHostTimerHandler(void)
 //*****************************************************************************
 static void lwIPServiceTimers(struct netif *netif)
 {
+#if HOST_TMR_INTERVAL || LWIP_ARP || LWIP_TCP || LWIP_AUTOIP || LWIP_DHCP
 	LWIP_DRIVER_DATA* drv_data = (LWIP_DRIVER_DATA*)netif;
+#endif
 
     //
     // Service the host timer.

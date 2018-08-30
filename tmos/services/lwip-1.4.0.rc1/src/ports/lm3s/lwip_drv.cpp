@@ -618,40 +618,42 @@ static void lwIPServiceTimers(struct netif *netif)
 err_t ethernetif_init(struct netif *netif)
 {
 	LWIP_DRIVER_DATA* drv_data = (LWIP_DRIVER_DATA*)netif;
-	LWIP_ASSERT("netif != NULL", (netif != NULL));
-
+	if(netif)
+	{
 #if LWIP_NETIF_HOSTNAME
-	/* Initialize interface hostname */
-	netif->hostname = "lwip";
+		/* Initialize interface hostname */
+		netif->hostname = "lwip";
 #endif /* LWIP_NETIF_HOSTNAME */
 
-	/*
-	 * Initialize the snmp variables and counters inside the struct netif.
-	 * The last argument should be replaced with your link speed, in units
-	 * of bits per second.
-	 */
-	NETIF_INIT_SNMP(netif, snmp_ifType_ethernet_csmacd, 1000000);
+		/*
+		 * Initialize the snmp variables and counters inside the struct netif.
+		 * The last argument should be replaced with your link speed, in units
+		 * of bits per second.
+		 */
+		NETIF_INIT_SNMP(netif, snmp_ifType_ethernet_csmacd, 1000000);
 
 //	netif->state = &ethernetif_data;
-	netif->name[0] = IFNAME0;
-	netif->name[1] = IFNAME1;
-	/* We directly use etharp_output() here to save a function call.
-	 * You can instead declare your own function an call etharp_output()
-	 * from it if you have to do some checks before sending (e.g. if link
-	 * is available...) */
-	netif->output = etharp_output;
-	netif->linkoutput = low_level_output;
+		netif->name[0] = IFNAME0;
+		netif->name[1] = IFNAME1;
+		/* We directly use etharp_output() here to save a function call.
+		 * You can instead declare your own function an call etharp_output()
+		 * from it if you have to do some checks before sending (e.g. if link
+		 * is available...) */
+		netif->output = etharp_output;
+		netif->linkoutput = low_level_output;
 
 //	drv_data->ethaddr = (struct eth_addr *) &(netif->hwaddr[0]);
-	drv_data->txq.qread = drv_data->txq.qwrite = 0;
-	drv_data->txq.overflow = 0;
-	drv_data->rxq.qread = drv_data->rxq.qwrite = 0;
-	drv_data->rxq.overflow = 0;
+		drv_data->txq.qread = drv_data->txq.qwrite = 0;
+		drv_data->txq.overflow = 0;
+		drv_data->rxq.qread = drv_data->rxq.qwrite = 0;
+		drv_data->rxq.overflow = 0;
 
-	/* initialize the hardware */
-	low_level_init(netif);
+		/* initialize the hardware */
+		low_level_init(netif);
 
-	return (ERR_OK);
+		return (ERR_OK);
+	}
+	return ERR_MEM;
 }
 
 //*****************************************************************************
