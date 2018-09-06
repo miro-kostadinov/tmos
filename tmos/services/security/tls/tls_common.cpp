@@ -943,7 +943,7 @@ RES_CODE tls_context_t::tlsSendChangeCipherSpec()
 RES_CODE tls_context_t::tlsSendFinished()
 {
 	RES_CODE res;
-	tls_finished_t* message;
+	tls_finished_t* message=nullptr;
 
 
 	//The verify data is generated from all messages in this handshake

@@ -548,10 +548,10 @@ RES_CODE tls_context_t::tls_client_send_hello()
 
 RES_CODE tls_context_t::tls_clent_handshake()
 {
-	RES_CODE res;
+	RES_CODE res = RES_TLS_HANDSHAKE_FAILED;
 
 	if(tls_state != TLS_STATE_INIT)
-		return RES_TLS_HANDSHAKE_FAILED;
+		return res;
 
 
 	tls_state = TLS_STATE_CLIENT_HELLO;
@@ -802,7 +802,7 @@ RES_CODE tls_context_t::tlsParseServerKeyParams(const uint8_t* p, size_t length,
 		size_t n;
 		uint8_t curveType;
 		tls_ecnamedcurve_t namedCurve;
-		const EcCurveInfo *curveInfo;
+		const EcCurveInfo *curveInfo=nullptr;
 
 		//Malformed ServerKeyExchange message?
 		if (length < sizeof(curveType))
@@ -1191,7 +1191,7 @@ RES_CODE tls_context_t::tlsParseServerKeyExchange(record_ctxt_t* rc)
 	size_t n;
 	size_t paramsLen;
 	const uint8_t *p;
-	const uint8_t *params;
+	const uint8_t *params=nullptr;
 	const tls_server_keyexchange_t* message = (const tls_server_keyexchange_t*)rc->msg_start();;
 
 	//Debug message
