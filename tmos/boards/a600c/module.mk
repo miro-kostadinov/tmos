@@ -10,7 +10,7 @@ OUT_NAME	?= a600c
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].
-OPT			?= -O0
+OPT			?= -Og
 
 # Build library/binary/hex. can be [y, n]
 BUILD_LIB	?= y
@@ -83,6 +83,7 @@ USB_ENABLE_CDC	 	?=y
 USB_ENABLE_PRN	 	?=n
 USB_ENABLE_HID	 	?=y
 USB_ENABLE_MSC		?=y
+USB_ENABLE_VID		?=y
 
 # AES TMOS
 USE_AES_TMOS	?=y
