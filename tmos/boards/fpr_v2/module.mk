@@ -9,7 +9,7 @@ OUT_NAME	?= fpr_v2
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].
-OPT			?= -O1
+OPT			?= -Og
 
 # Build library/binary/hex. can be [y, n]
 BUILD_LIB	?= y

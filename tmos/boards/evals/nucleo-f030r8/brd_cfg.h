@@ -42,8 +42,8 @@
 
 #define USE_UART_DMA_DRIVER 0
 
-#define USE_WIFI 			1
-#define USB_WIFI_ESP8266	1
+#define USE_WIFI 			0
+#define USB_WIFI_ESP8266	0
 
 #define USART_DRV_RX_BUF_SIZE	(48)
 #define USE_SPI_DMA_DRIVER 		0		//Disable DMA by defaulr
