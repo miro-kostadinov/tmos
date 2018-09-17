@@ -109,10 +109,18 @@ public:
 				lock_locker = 0;
 		}
 	}
+
 	uint32_t is_locked()
 	{
 		return lock_locker;
 	}
+
+	uint32_t get_lock_cnt()
+	{
+		return lock_cnt;
+	}
+
+
 };
 
 #endif
