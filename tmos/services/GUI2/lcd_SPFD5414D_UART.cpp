@@ -71,7 +71,7 @@ static inline uint16_t rotate(uint16_t value)
 	asm volatile (
     "       rbit            %0, %0			 \n\t"
     "       lsr           	%0, %0, #23		 \n\t"
-		  : "=r" (value)
+		  : "+r" (value)
 	);
 	return value;
 }

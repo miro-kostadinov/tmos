@@ -131,7 +131,7 @@ static inline uint64_t __REV64(uint64_t value)
 			"	movs %1, %H0 				\n\t"
 			"	rev %H0, %0 				\n\t"
 			"	rev %0, %1 					\n\t"
-			: "=r" (value), "=r" (temp)
+			: "+r" (value), "=r" (temp)
 			:
 			:  );
 	return (value);
