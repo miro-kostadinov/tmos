@@ -16,6 +16,11 @@
 #ifdef __cplusplus
 static inline int IS_NOT_NULL(const void* x)		//!< Suppress GCC 7.X warnings
 {
+	asm volatile (
+			""
+			: "+r" (x)
+			:
+			:  );
 	return (int)x;
 }
 #endif
