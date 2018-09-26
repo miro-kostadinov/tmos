@@ -100,12 +100,12 @@ void SPFD5414D_UART::tft_write_row(unsigned short address_cmd[])
 		rotate(dst++);
 	}
 	lcd_hnd->tsk_write(address_cmd, sizeof(spdf5414d_lsb_row_address)/2);
-	lcd_hnd->tsk_write(tft_buf+frame.x0, (frame.x1 - frame.x0 +1)*2);
+	lcd_hnd->tsk_write_locked(tft_buf+frame.x0, (frame.x1 - frame.x0 +1)*2);
 }
 
 void SPFD5414D_UART::lcd_reset()
 {
-	lcd_hnd->tsk_write(spdf5414d_lsb_init, sizeof(spdf5414d_lsb_init)/2);
+	lcd_hnd->tsk_write_locked(spdf5414d_lsb_init, sizeof(spdf5414d_lsb_init)/2);
 }
 
 
