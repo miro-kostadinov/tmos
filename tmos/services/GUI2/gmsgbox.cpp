@@ -12,7 +12,7 @@
 #include <gbutton.h>
 #include <lcd.h>
 
-const char* MB_IDS[] =
+static const char* MB_IDS[] =
 {
 	"Ok",
 	"Retry",
@@ -20,6 +20,11 @@ const char* MB_IDS[] =
 	"No",
 	"Cancel"
 };
+
+WEAK const char* weak_Button_str(unsigned char id)
+{
+	return MB_IDS[id];
+}
 
 WEAK void weak_gui_message_beep(int code)
 {
@@ -46,7 +51,7 @@ RECT_T GMsgBox::GetButtonRect(void)
 	for(unsigned char mask =1, i=0; mask < MBF_LAST_BTN; mask <<=1, i++)
 	{
 		if(type & mask)
-			brect.x1 += (strlen(MB_IDS[i]) * font->hspacing) + distance;
+			brect.x1 += (strlen(weak_Button_str(i)) * font->hspacing) + distance;
 	}
 	brect.y1 = font->vspacing + 2*font->vdistance + 2*bs.y;
 	brect.Deflate(0, 2);
@@ -237,8 +242,8 @@ unsigned int GMsgBox::initialize (GMessage& msg)
 					default_button = mask;
 
 				button_rect.x0 += bdistance;
-				button_rect.x1 = button_rect.x0 + (strlen(MB_IDS[i]) * font->hspacing) + distance;
-				addChild(new GButton(mask/*ret_codes[i]*/, button_rect, ret_codes[i], MB_IDS[i],
+				button_rect.x1 = button_rect.x0 + (strlen(weak_Button_str(i)) * font->hspacing) + distance;
+				addChild(new GButton(mask/*ret_codes[i]*/, button_rect, ret_codes[i], weak_Button_str(i),
 						GO_FLG_DEFAULT|GO_FLG_BORDER|GO_FLG_TRANSPARENT|
 						((default_button&mask)?GO_FLG_SELECTED:0 )));
 				button_rect.x0 += button_rect.width();

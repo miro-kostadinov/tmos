@@ -61,7 +61,7 @@
 
 // simple edit dialog
 #define EB_
-extern const char* MB_IDS[];
+//extern const char* MB_IDS[];
 
 
 struct GMsgBox : GDialog
