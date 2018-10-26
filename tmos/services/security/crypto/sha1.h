@@ -31,6 +31,11 @@ struct sha1_algo_t: public hash_algo_t
 
 };
 
+struct static_sha1_t: public sha1_algo_t
+{
+	uint8_t		static_buf[SHA1_DIGEST_SIZE + SHA1_BLOCK_SIZE];
+};
+
 hash_algo_t* new_sha1_hash();
 
 #endif /* SERVICES_SECURITY_CRYPTO_SHA1_H_ */
