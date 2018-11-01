@@ -11,6 +11,7 @@
 #include <gedit.h>
 #include <gbutton.h>
 #include <lcd.h>
+#include <memory.h>
 
 static const char* MB_IDS[] =
 {
@@ -579,37 +580,40 @@ int MessageBox(const char* Text, const char* Caption, unsigned int Style, unsign
 
 int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style, text_metrics_t size)
 {
-	GMsgBox box;
-#if GUI_DISPLAYS > 1
-	box.displays = 1;
-#endif
-	box.type = 	MBF_EDIT|
-				MBF_EDIT_FLAGS(ES_NUMERIC) |
-				MBF_INPUT_TYPE(KT_DIGIT)|Style;
-	box.body =  value;
-	box.title = Caption;
-	box.init_size = size;
+	auto_ptr<GMsgBox> box;
 
-	GMessage msg;
-
-	if(box.Create())
+	box = new GMsgBox;
+	if(box.get())
 	{
-		while(1)
+#if GUI_DISPLAYS > 1
+		box->displays = 1;
+#endif
+		box->type = 	MBF_EDIT|
+					MBF_EDIT_FLAGS(ES_NUMERIC) |
+					MBF_INPUT_TYPE(KT_DIGIT)|Style;
+		box->body =  value;
+		box->title = Caption;
+		box->init_size = size;
+
+		GMessage msg;
+		if(box.get() && box->Create())
 		{
-			if(box.GetMessage(msg))
+			while(1)
 			{
-				if(msg.code == WM_CLOSE && (msg.param == GO_IDOK || msg.param == GO_IDYES))
+				if(box->GetMessage(msg))
 				{
-					if(box.edit_box)
-						value = box.edit_box->txt;
+					if(msg.code == WM_CLOSE && (msg.param == GO_IDOK || msg.param == GO_IDYES))
+					{
+						if(box->edit_box)
+							value = box->edit_box->txt;
+					}
+					if(box->DefWinProc(msg))
+						return msg.param;
 				}
-				if(box.DefWinProc(msg))
-					return msg.param;
 			}
 		}
 	}
 	return 0;
-
 }
 
 int EditBox(CSTRING& value, const char* Caption, unsigned int Style, text_metrics_t size)
