@@ -27,7 +27,8 @@
 #define USE_BASE32			1
 #define USE_GUI				0
 #define USE_GUI2			0
-#define USE_AES_TMOS		0
+#define USE_AES_TMOS		1
+#define STATIC_AES_TABLES	1
 #define	USE_GPIO_EXPANDER 	0
 
 #define USE_EXCEPTION_RECORD 1
@@ -53,10 +54,13 @@
 #define USE_NET				1
 #define USE_LWIP_1_4_1		1
 #define ETH_PHY_TLK110		1
-
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //		USART DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #define USART_DRV_RX_BUF_SIZE	(1024)
+
+#define USE_SECURITY		1
+#define USE_SECURITY_TLS	1
+#define USE_SECURITY_CRYPTO	1
 
 #endif /* BRD_CFG_H_ */

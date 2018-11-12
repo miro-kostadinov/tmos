@@ -83,7 +83,7 @@ USB_ENABLE_PRN	 	?=n
 USB_ENABLE_HID	 	?=n
 
 # AES TMOS
-USE_AES_TMOS	?=n
+USE_AES_TMOS	?=y
 
 # GPIO output expander (shift register)
 USE_GPIO_EXPANDER ?=n
@@ -94,6 +94,10 @@ USE_NET			?=y
 # Ethernet
 USE_LWIP_1_4_1	?=y
 
+#security
+USE_SECURITY		?=y
+USE_SECURITY_TLS	?=y
+USE_SECURITY_CRYPTO	?=y
 
 ################################################################################
 
