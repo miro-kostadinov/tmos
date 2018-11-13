@@ -129,6 +129,24 @@ struct hash_algo_t: public algo_base_t
     virtual void process_block(const uint32_t* block)=0;
 
 
+	void Input(const CSTRING& message)
+	{
+		Input(message.c_str(), message.length());
+	}
+
+	void Result(CSTRING& message_digest)
+	{
+		uint8_t* ptr;
+
+		message_digest.clear();
+		Result(nullptr);
+		ptr = digest8();
+		for(uint32_t i=0; i < hash_info->digest_size; i++)
+		{
+			message_digest.appendf("%02X", ptr[i]);
+		}
+	}
+
     uint8_t* digest8()
     {
     	return buf8 + hash_info->algo_info.block_size;

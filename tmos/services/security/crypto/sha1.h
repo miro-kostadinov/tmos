@@ -18,6 +18,7 @@ extern const hash_info_t SHA1_HASH_ALGO[1];
 
 struct sha1_algo_t: public hash_algo_t
 {
+	using hash_algo_t::Result;
 
 	sha1_algo_t():	hash_algo_t(SHA1_HASH_ALGO)
 	{
