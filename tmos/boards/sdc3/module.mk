@@ -98,6 +98,12 @@ USE_LWIP_1_4_1	?=n
 USE_WIFI			?=y
 USB_WIFI_ESP8266 	?=y
 
+#security
+USE_SECURITY		?=y
+USE_SECURITY_TLS	?=y
+USE_SECURITY_CRYPTO	?=y
+
+
 ################################################################################
 
 # local sources
