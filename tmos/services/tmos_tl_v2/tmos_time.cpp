@@ -27,7 +27,8 @@ const uint16_t month_base_day[12] =
    31+28+31+30+31+30+31+31+30+31,
    31+28+31+30+31+30+31+31+30+31+30,
 };
-const uint64_t	time_t::MAX_TIME = 591110778765654784ULL; // 2100-31-12 23:59:59
+
+const time_t time_t::MAX_TIME = {0,59,59,23,31,12,2100 }; // 2100-31-12 23:59:59/591110778765654784ULL
 
 WEAK time_t get_current_time()
 {

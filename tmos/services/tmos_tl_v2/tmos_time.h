@@ -40,10 +40,11 @@ struct time_t
 		};
 		uint64_t time64;
 	};
+
 	static const char day_name[8][4];
 	static const char mon_name[12][4];
 	static const uint8_t month_lengths[];
-	static const uint64_t	MAX_TIME;
+	static const time_t	MAX_TIME;
 	bool is_valid() const;
 	bool is_DST(unsigned int change_hour) const;
 
