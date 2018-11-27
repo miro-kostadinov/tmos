@@ -89,5 +89,6 @@
 #define USE_SECURITY		1
 #define USE_SECURITY_TLS	1
 #define USE_SECURITY_CRYPTO	1
+#define USE_SECURITY_TLS_DRV 1
 
 #endif /* BRD_CFG_H_ */

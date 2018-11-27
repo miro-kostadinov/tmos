@@ -119,7 +119,9 @@
     PRN_DRV_INDX,					//85
     GSM_BT_DRV_INDX,				//86  Blue tooth
 	WIFI_DRV_INDX,					//87  WiFi
-//	TLS_DRV_INDX,					//88  TLS
+#if USE_SECURITY_TLS_DRV
+	TLS_DRV_INDX,					//88  TLS
+#endif
 	INALID_DRV_INDX	                /*!<  invalid	                         */
 };
 
