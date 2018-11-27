@@ -1270,7 +1270,7 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 	unsigned size;//, newsize, id;
 //	unsigned int start_size, write_size, sock_state;
 	CSTRING cmd;
-	unsigned char snd_pending;
+	const char* snd_pending=nullptr;
 
 #if WIFI_FLOW_CONTROL
 	if(stop_rcv)
@@ -1311,7 +1311,7 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 	    }
 
 	    // Send data
-		snd_pending = '>';
+		snd_pending = "> ";
 #if !USE_DEPRECATED_AT_CMD
 		cmd_state = 0;
 #endif
@@ -1326,7 +1326,7 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 					unsigned int mytime;
 
 					cmd_state &= ~WIFI_CMD_STATE_HND;
-					snd_pending = 0;
+					snd_pending = nullptr;
 
 					rcv_hnd.tsk_start_read(&received_ch, 1);
 					mytime = CURRENT_TASK->time;

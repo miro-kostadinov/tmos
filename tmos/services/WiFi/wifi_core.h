@@ -96,7 +96,7 @@ struct wifi_module_type
     virtual NET_CODE wifi_drv_level()=0;
 
     virtual void process_input(unsigned int signals, const char* cmd,
-    		unsigned char hnd_start=0);
+    		const char* hnd_start=nullptr);
     virtual int  wifi_notification(const char* row);
     virtual void wifi_notificatoin_response()
     {;}

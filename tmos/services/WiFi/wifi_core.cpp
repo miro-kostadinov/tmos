@@ -72,7 +72,7 @@ bool wifi_module_type::cmd_submatch(const char* cmd, const char* row)
 }
 
 void wifi_module_type::process_input(unsigned int signals, const char* cmd,
-									unsigned char hnd_start)
+									const char* hnd_start)
 {
 	unsigned char ch;
 #if WIFI_FLOW_CONTROL
@@ -156,7 +156,7 @@ void wifi_module_type::process_input(unsigned int signals, const char* cmd,
 					TRACE_CHAR_WIFI_DEBUG(ch);
 					TRACE1_WIFI_DEBUG("\e[m");
 					cmd_state |= WIFI_CMD_STATE_STARTED;
-					if( hnd_start == ch )
+					if(hnd_start && strchr(hnd_start,ch) )
 					{
 						cmd_state ^= WIFI_CMD_STATE_STARTED;
 						buf[row_end] = 0;
