@@ -115,8 +115,10 @@
     FILE_DRV_INDX,					//81
     GSM_DRV_INDX,					//82
     PRN_DRV_INDX,					//83
-
-    INALID_DRV_INDX	                /*!<  invalid	                         */
+#if USE_SECURITY_TLS_DRV
+	TLS_DRV_INDX,					//84  TLS
+#endif
+	INALID_DRV_INDX	                /*!<  invalid	                         */
 };
 
 }
