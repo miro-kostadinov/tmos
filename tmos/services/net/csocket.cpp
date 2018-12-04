@@ -7,6 +7,7 @@
 
 #include <tmos.h>
 #include "csocket.h"
+#include "url.h"
 
 NET_CODE CSocket::open(const sock_mode_t* smode)
 {

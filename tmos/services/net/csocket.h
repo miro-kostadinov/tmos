@@ -9,7 +9,7 @@
 #define CSOCKET_H_
 
 #include <tmos.h>
-#include "url.h"
+#include "net_err.h"
 
 /// Socket commands
 /// must be implemented from each socket compatible driver
@@ -56,6 +56,7 @@ struct redir_sock_mode_t
  * CSocket class
  *
  */
+struct CURL;
 struct CSocket: public CHandle
 {
 	unsigned char sock_state;

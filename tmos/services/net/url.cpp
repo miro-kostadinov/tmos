@@ -1040,3 +1040,51 @@ void CURL::url_print(CSTRING& str)
 		str += fragment;
 	}
 }
+
+RES_CODE mapped_sock_mode_t::resolve_mode(const iface_map_t* iface_map)
+{
+	RES_CODE res = RES_IDLE;
+
+	if(mapped_url.start_with("/~") && iface_map)
+	{
+		uint32_t len;
+		unsigned short url_flags;
+		const char* path = mapped_url.c_str();
+
+		while(iface_map->iface_name)
+		{
+    		len = strlen(iface_map->iface_name);
+			if(!strncmp(path+2, iface_map->iface_name+2, len-2))
+			{
+    			if( path[len] == 0 || path[len] == '/')
+    			{
+					if( path[len] == '/')
+						len++;
+
+					mapped_url.erase(0, len);
+
+					url_scheme(mapped_url.c_str(),  &url_flags);
+#if USE_SECURITY_TLS_DRV
+					if(url_flags == URL_FLAG_SCHEME_HTTPS)
+					{
+						  mapped_mode = &mapped_redir.mode;
+						  mapped_redir.redir_mode = iface_map->iface_mode;
+
+						  mapped_redir.mode.driver = TLS_DRV_INDX;
+						  mapped_redir.mode.interface = 0;
+						  mapped_redir.mode.port = DEFAULT_HTTPS_PORT;
+						  mapped_redir.mode.sock_type = IP_SOCKET_TCP | REDIRECTED_SOCKET;
+
+					}
+					  else
+#endif
+						  mapped_mode = iface_map->iface_mode;
+					res = RES_OK;
+					break;
+    			}
+			}
+			iface_map++;
+		}
+	}
+	return res;
+}

@@ -9,7 +9,7 @@
 #define URL_H_
 
 #include <tmos.h>
-#include "net_err.h"
+#include <csocket.h>
 
 /* Default port definitions */
 #define DEFAULT_HTTP_PORT 		80
@@ -77,4 +77,20 @@ static CSTRING encode_escapes(CSTRING & src){return encode_escapes(src.c_str());
 static CSTRING uencode_quotes(CSTRING & src){return uencode_quotes(src.c_str());};
 };
 
+struct iface_map_t
+{
+	const char* 		iface_name;
+	const sock_mode_t* 	iface_mode;
+};
+
+struct mapped_sock_mode_t
+{
+	CSTRING 			mapped_url;
+	const sock_mode_t*	mapped_mode;
+	redir_sock_mode_t	mapped_redir;
+
+	mapped_sock_mode_t(): mapped_mode(nullptr) {};
+
+	RES_CODE resolve_mode(const iface_map_t* iface_map);
+};
 #endif /* URL_H_ */
