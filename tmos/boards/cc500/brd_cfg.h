@@ -73,7 +73,14 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // 		 KEY DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#define KEY_COUNT			6
+//#define KEY_COUNT			6
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 		 KEY DRIVER
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define KEY_RD_COUNT		0
+#define KEY_DRV_COUNT		0
+#define KEY_FIX_COUNT		6
+#define KEY_RD_ACTIV_LEVEL	0
 
 #define KEY_POLLING_TIME	10
 #define KEY_DEBOUNCE_TIME 	50 //30 //300
