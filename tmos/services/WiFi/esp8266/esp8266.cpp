@@ -20,6 +20,20 @@
 #define DEC_ALLOC_SIZE(size)
 #endif
 
+WEAK_C void wifi_on_pwron_config(wifi_module_type* mod)
+{
+	//TODO: configure AP and Station (IP,MAC,DHCP...)
+	CSTRING cmd;
+	// config Station
+	mod->wifi_send_cmd("+CWDHCP_CUR=1,1", 5); // DHCP=On
+	// config AP
+	mod->wifi_send_cmd(WIFI_SET_AP_IP"=\"192.168.1.100\"", 5);
+	mod->wifi_send_cmd("+CWDHCPS_CUR=1,60,\"192.168.1.1\",\"192.168.1.99\"", 2);
+	// enable use of router DNS server
+	mod->wifi_send_cmd("+CIPDNS_CUR=0", 2);
+	mod->wifi_watchdog_cnt = WIFI_WDT_PERIOD;
+}
+
 WEAK_C void wifi_on_pwron(wifi_module_type* mod)
 {
 	//TODO: Trace various info
@@ -33,7 +47,8 @@ WEAK_C void wifi_on_pwron(wifi_module_type* mod)
 WEAK bool wifi_name_pass(CSTRING& name)
 {
 	name += "\"ESP8266 NET\"";
-	return false;
+//	name_pass += ",\"1234asdf\""; // Set password
+	return false; // No psaasword, true if password required
 }
 
 bool wifi_get_param(const char*row, CSTRING& param, unsigned int num)
@@ -209,10 +224,16 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 		// 1. Enable the module to act as “Station”
 		// 2. AP mode
 		// 3  AP + Station mode
-		wifi_send_cmd(WIFI_SET_AP_IP"=\"192.168.1.1\"", 5);
+
+		wifi_on_pwron_config(this);
+
 		res = wifi_send_cmd(WIFI_MODE"=3", 5);
 		if(WIFI_CMD_STATE_OK == res)
 		{
+#if USE_WIFI_ESP8266 >= 3
+			res = wifi_send_cmd("+CIPRECVMODE=1", 2);
+			if(WIFI_CMD_STATE_OK == res)
+#endif
 		// 2.Enable multiple connections or not (1-multiple/ 0- Single
 		//	Note: 	This mode can only be changed after all connections are
 		//	 		disconnected. If server is started, reboot is required.
@@ -221,7 +242,6 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 			{
 				drv_data->wifi_flags_ok = WIFI_FLAG_ON;
 				drv_data->wifi_flags_bad &= ~WIFI_FLAG_ON;
-				wifi_on_pwron(this);
 				// configure AP
 				CSTRING ssid(WIFI_CFG_AP"=");
 				if(wifi_name_pass(ssid))
@@ -232,6 +252,7 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 				if(WIFI_CMD_STATE_OK == res)
 				{
 					wifi_send_cmd(WIFI_CFG_AP"?", 5);
+					wifi_on_pwron(this);
 					return NET_OK;
 				}
 			}
@@ -256,10 +277,10 @@ RES_CODE esp8266_module::wifi_drv_off()
 
 #if USE_WIFI_LISTEN
 	if(listen_socket)
-		wifi_close_listen(listen_socket, NET_ERR_SOCK_DISCONNECT);
+		wifi_close_listen(listen_socket, NET_ERR_SOCK_ABORT);
 #endif
 	for(unsigned int sid=0; sid < WIFI_ESP8266_MAX_SOCKETS; sid++)
-		wifi_driver_socket_close(sid, NET_ERR_SOCK_DISCONNECT);
+		wifi_driver_socket_close(sid, NET_ERR_SOCK_ABORT);
 
 	//TODO: try to stop
 	//check power state
@@ -302,8 +323,12 @@ int esp8266_module::wifi_notification(const char* row)
 			{
 				if(alloc_sockets[id])
 				{
-					alloc_sockets[id]->sock_state = SOCKET_CLOSED;
-					if(!received_size[id] || !received_data[id])
+					closed_sockets[id] = true;
+					if(!received_size[id]
+#if USE_WIFI_ESP8266 < 3 // version 3.0
+					   || !received_data[id]
+#endif
+					)
 						wifi_driver_socket_close(id, NET_ERR_SOCK_DISCONNECT);
 					accept_id[id] = WIFI_ESP8266_MAX_SOCKETS;
 				}
@@ -311,6 +336,7 @@ int esp8266_module::wifi_notification(const char* row)
 			}
 			if(cmd_submatch("CONNECT", row+2))
 			{
+				closed_sockets[id] = false;
 				if(pending_connection && pending_connection->sock_id == id)
 				{
 					TRACELN("STATION conn:%u", id);
@@ -345,6 +371,11 @@ int esp8266_module::wifi_notification(const char* row)
 				return 1;
 			}
 		}
+	}
+	if(cmd_match("+IPD", row))
+	{
+		wifi_data_received(row);
+		return 1;
 	}
 /*
 	if(cmd_submatch("Linked", row))
@@ -715,6 +746,7 @@ NET_CODE esp8266_module::wifi_esp8266_socket_open(CSocket* sock)
 					sock->sock_id = sid;
 					sock->sock_state = SOCKET_OPEN;
 					alloc_sockets[sid] = sock;
+					closed_sockets[sid] = false;
 					used_sockets++;
 					return NET_OK;
 				}
@@ -827,11 +859,12 @@ void esp8266_module::module_accepted_socket(unsigned int sock_id)
 		CSocket *new_socket = (CSocket *)(listen_socket->dst.as_voidptr);
 		if(new_socket)
 		{
-			new_socket->sock_id = sock_id;
-			new_socket->sock_state = SOCKET_CONECTED;
 			if(alloc_sockets[sock_id])
 				wifi_driver_socket_close(sock_id, NET_ERR_SOCK_DISCONNECT);
+			new_socket->sock_id = sock_id;
+			new_socket->sock_state = SOCKET_CONECTED;
 			alloc_sockets[sock_id] = new_socket;
+			closed_sockets[sock_id] = false;
 			used_sockets++;
 			res = RES_SIG_OK;
 		}
@@ -930,7 +963,13 @@ unsigned int esp8266_module::get_socket_state(unsigned int sock_id)
 			if(scaned & (1<<i))
 				continue;
 			// missing socket
-			if(alloc_sockets[i] && (!received_size[i] || !received_data[i]))
+			if(alloc_sockets[i] &&
+				(!received_size[i]
+#if USE_WIFI_ESP8266 < 3 // version 3.0
+				 || !received_data[i]
+#endif
+				)
+			)
 				wifi_driver_socket_close(i, NET_ERR_SOCK_DISCONNECT);
 			accept_id[i] = WIFI_ESP8266_MAX_SOCKETS;
 		}
@@ -953,8 +992,8 @@ void esp8266_module::wifi_driver_socket_close(unsigned int sid, unsigned int rea
 			delete received_data[sid];
 			received_data[sid] = NULL;
 			DEC_ALLOC_SIZE(received_size[sid]);
-			received_size[sid] = 0;
 		}
+		received_size[sid] = 0;
 		sock->sock_id = SOCKET_ID_INVALID;
 		sock->sock_state = SOCKET_CLOSED;
 
@@ -989,6 +1028,7 @@ void esp8266_module::wifi_driver_socket_close(unsigned int sid, unsigned int rea
 	}
 }
 
+#if USE_DEPRECATED_AT_CMD
 RES_CODE esp8266_module::wifi_receive_check(char sym)
 {
 	char ch;
@@ -1006,8 +1046,10 @@ RES_CODE esp8266_module::wifi_receive_check(char sym)
 	}
 	return rcv_hnd.res;
 }
+#endif
 
 bool esp8266_module::wifi_data_received(const char* row)
+#if USE_WIFI_ESP8266 < 3 // version 3.0
 {
 	uint32_t id, size, len;
 	if(2 == tmos_sscanf(row,"+IPD,%u,%u", &id, &size))
@@ -1136,7 +1178,75 @@ bool esp8266_module::wifi_data_received(const char* row)
 	return false;
 #endif
 }
+#else
+{
+	uint32_t id, size;
+	if(2 == tmos_sscanf(row,"+IPD,%u,%u", &id, &size))
+	{
+		CSocket* sock;
+		if(id < WIFI_ESP8266_MAX_SOCKETS && (sock = alloc_sockets[id]))
+		{
+			sock_mode_t* mode = (sock_mode_t*)sock->mode.as_voidptr;
+			if(mode)
+			{
+				if(mode->sock_type == IP_SOCKET_UDP)
+				{
+					if(size)
+					{
+						char *mem = (char*)tsk_realloc(received_data[id], received_size[id]+size);
+						if(mem)
+						{
+							received_data[id] = mem;
+							INC_ALLOC_SIZE(size);
+							if( rcv_hnd.tsk_read_pkt(mem+received_size[id], size, WIFI_READ_TOT) == RES_OK)
+							{
+								TRACE1("read Ok");
+	//							TRACE_BUF(received_data[id]+received_size[id], size, TC_TXT_CYAN);
+								received_size[id] += size;
+#if WIFI_FLOW_CONTROL
+								if( mem_alloc_size > WIFI_FLOW_HOLD_SIZE )
+								{
+									PIO_Assert(wifi_pin_rts);
+									stop_rcv = true;
+								}
+#endif
+								if( sock->sock_state == SOCKET_CONECTED)
+								{
+									if ((sock->res & RES_BUSY_WAITING) == RES_BUSY_WAITING)
+										sock->tsk_start_handle();
+								}
+							}
+						} else
+						{
+							//ops out of memory..
+							// drain the data and close socket?
+							while(size)
+							{
+								if( rcv_hnd.tsk_read_pkt(buf, min(size, sizeof(buf)), WIFI_READ_TOT) != RES_OK)
+									break;
 
+								size -= min(size, sizeof(buf));
+							}
+						}
+					}
+				}
+				else
+				{
+					received_size[id] = size;
+					if( sock->sock_state == SOCKET_CONECTED)
+					{
+						if ((sock->res & RES_BUSY_WAITING) == RES_BUSY_WAITING)
+							sock->tsk_start_handle();
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+#endif
+
+#if USE_WIFI_ESP8266 < 3 // version 3.0
 bool esp8266_module::is_data_received(unsigned char sock_state)
 {
 #if WIFI_FLOW_CONTROL
@@ -1161,8 +1271,10 @@ bool esp8266_module::is_data_received(unsigned char sock_state)
 #endif
 	return false;
 }
+#endif
 
 RES_CODE esp8266_module::process_read(CSocket* sock)
+#if USE_WIFI_ESP8266 < 3 // version 3.0
 {
 	unsigned size, id;
 	CSTRING cmd;
@@ -1224,6 +1336,151 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 	TRACE_ERROR("\r\nWIFI:%s read INVALID", sock->client.task->name);
 	return RES_FATAL|FLG_SIGNALED;
 }
+#else
+{
+	unsigned size, available_len, id;
+	const char *rcv_pending;
+	CSTRING cmd;
+
+    TRACELN("WIFI: read %d?", sock->len);
+	while(sock->sock_id < WIFI_ESP8266_MAX_SOCKETS && sock->sock_state == SOCKET_CONECTED)
+	{
+		if(!received_size[sock->sock_id] && closed_sockets[sock->sock_id])
+		{
+			wifi_driver_socket_close(sock->sock_id, NET_ERR_SOCK_DISCONNECT);
+			if(!(sock->res & FLG_OK))
+				return FLG_EOF | FLG_SIGNALED;
+			return RES_SIG_OK;
+		}
+
+		if(!sock->len)
+		{
+			TRACE1(" done!");
+			return (sock->res & FLG_OK)| FLG_SIGNALED;
+		}
+
+		if(!received_size[sock->sock_id])
+		{
+			if(!(sock->res & FLG_OK))
+			{
+				// ако няма нотификация го слага в списъка с чакащи
+				TRACE1(" wait!");
+				sock->res |= RES_BUSY_WAITING;
+				return RES_IDLE;
+			}
+			return  RES_SIG_OK;
+		}
+		if(sock->mode.as_voidptr && ((sock_mode_t *)sock->mode.as_voidptr)->sock_type == IP_SOCKET_UDP)
+		{
+			id = sock->sock_id;
+			if(!received_data[id])
+				break;
+
+			size = sock->len;
+			if(size > received_size[id])
+				size = received_size[id];
+			memcpy(sock->dst.as_voidptr, received_data[id], size);
+			sock->dst.as_byteptr += size;
+			sock->len -= size;
+			if(received_size[id] > size)
+			{
+				memmove(received_data[id], received_data[id] + size, received_size[id] - size);
+				DEC_ALLOC_SIZE(size);
+				received_size[id] -= size;
+			}
+			else
+			{
+				DEC_ALLOC_SIZE(received_size[id]);
+				received_size[id] = 0;
+				delete received_data[id];
+				received_data[id] = NULL;
+				TRACE1(" EOF done!");
+			}
+			return RES_SIG_OK;
+		}
+		size = sock->len;
+		if(size > 1024)
+			size = 1024;
+
+		cmd.format("+CIPRECVDATA=%u,%u", sock->sock_id, size);
+	    TRACELN("WIFI: read %d from %d", size, received_size[sock->sock_id]);
+
+	    rcv_pending = ":";
+	    // изпраща командата за четене
+	    cmd_state |= WIFI_CMD_STATE_HND;
+	    if(wifi_send_cmd(cmd.c_str(), 15) == WIFI_CMD_STATE_RETURNED)
+	    {
+	    	do
+	    	{
+				process_input(rcv_hnd.signal, cmd.c_str(), rcv_pending); // чака да се върне ОК,ERROR или начало на данните
+    			if ( cmd_state >= WIFI_CMD_STATE_HND )
+    			{
+        			if ( cmd_state & WIFI_CMD_STATE_HND )
+        			{
+        				cmd_state &= ~WIFI_CMD_STATE_HND;
+        				rcv_pending = 0;
+						// колко са действителните байтове които ще се четат
+						if(tmos_sscanf(buf,"+CIPRECVDATA,%u", &available_len) == 1)
+						{
+							if(size > available_len)
+								size = available_len; // промяна на дължината с деиствителният размер на четене
+
+							if(size)
+							{
+								unsigned int mytime;
+
+								mytime = CURRENT_TASK->time;
+								if( rcv_hnd.tsk_read_pkt(sock->dst.as_voidptr, size, WIFI_READ_TOT) == RES_OK)
+								{
+									size -= rcv_hnd.len;
+									TRACE("(%d)\r\n", size);
+									sock->dst.as_byteptr += size;
+									sock->len -= size;
+									if(received_size[sock->sock_id] >= size)
+										received_size[sock->sock_id] -= size;
+									else
+										received_size[sock->sock_id] = 0;
+									sock->res |= FLG_OK;
+
+								}
+								CURRENT_TASK->time = mytime;
+							}
+							else
+								received_size[sock->sock_id] = 0;
+
+							rcv_hnd.tsk_start_read(&received_ch, 1);
+
+						}
+						else
+						{
+							TRACELN1("WIFI:Invalid data params STOP!");
+							break;
+						}
+
+        			} else
+        			{
+    					if ( cmd_state >= WIFI_CMD_STATE_OK )
+    						break; // командата е завършила с OK, ERROR ..
+        			}
+
+    			}
+				// продължава да чака отговор
+	    	} while(tsk_resume_wait_signal(rcv_hnd.signal));
+	    }
+
+
+
+		if (!(cmd_state & WIFI_CMD_STATE_OK))
+		{
+			break;
+		}
+	}// има още за четене и ако няма приети данни ще го прати да чака
+	wifi_sleep(120);
+	wifi_net_error(NET_ERR_SOCK_READ);
+	TRACE_ERROR("\r\nWIFI:%s read INVALID", sock->client.task->name);
+	return RES_FATAL|FLG_SIGNALED;
+}
+#endif
 
 RES_CODE esp8266_module::process_cmd(HANDLE client)
 {
@@ -1292,9 +1549,13 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 		}
 		if(size > 2048)
 			size = 2048;
-
 		if(sock->sock_state != SOCKET_CONECTED)
 			break;
+		if(closed_sockets[sock->sock_id])
+		{
+			wifi_driver_socket_close(sock->sock_id, NET_ERR_SOCK_DISCONNECT);
+			break;
+		}
 
 		// Send command
 		cmd.format(WIFI_SEND_DATA"=%u,%u", sock->sock_id, size);

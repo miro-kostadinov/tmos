@@ -73,6 +73,7 @@ struct esp8266_module: public wifi_module_type
 
     unsigned int received_size[WIFI_ESP8266_MAX_SOCKETS];
     char* 		 received_data[WIFI_ESP8266_MAX_SOCKETS];
+    bool closed_sockets[WIFI_ESP8266_MAX_SOCKETS];
 #if USE_WIFI_LISTEN
     CSocket*	 listen_socket;
     unsigned short listen_port;
@@ -84,13 +85,7 @@ struct esp8266_module: public wifi_module_type
     unsigned int  wifi_pin_pwr;
 
     esp8266_module(const WIFI_DRIVER_INFO* pinfo, unsigned int pwr_pin =0, unsigned int rst_pin=0 )
-    	:wifi_module_type
-    	 	    (
-    	 	    		pinfo
-    			#if WIFI_FLOW_CONTROL
-    	 	    		, rst_pin
-    			#endif
-    			)
+    	:wifi_module_type(pinfo, rst_pin)
 		{
 				used_sockets = 0;
 				wifi_tout = 0;
@@ -110,6 +105,7 @@ struct esp8266_module: public wifi_module_type
 #if USE_WIFI_LISTEN
 					accept_id[i] = WIFI_ESP8266_MAX_SOCKETS;
 #endif
+					closed_sockets[i] = true;
 				}
 				wifi_pin_pwr = pwr_pin;
 		};
@@ -119,7 +115,9 @@ struct esp8266_module: public wifi_module_type
     virtual RES_CODE wifi_drv_off();
     virtual NET_CODE wifi_reset(bool force);
     NET_CODE wifi_drv_level();
+#if USE_DEPRECATED_AT_CMD
     RES_CODE wifi_receive_check(char sym);
+#endif
     virtual bool wifi_data_received(const char* row);
 
     NET_CODE wifi_esp8266_init_net(CSocket * sock);
@@ -150,13 +148,11 @@ struct esp8266_module: public wifi_module_type
     virtual void wifi_cancelation(bool all_station, bool all_softAP);
 
     NET_CODE wifi_get_network_name(CSTRING& name);
-
-    bool unacknowledged_data(unsigned int sock_id, unsigned int& size);
     unsigned int get_socket_state(unsigned int sock_id);
-    unsigned int get_socket_err(unsigned int sock_id);
-    unsigned int socket_send_size(unsigned int sock_id, unsigned int& writen);
 
+#if USE_WIFI_ESP8266 < 3 // version 3.0
     bool is_data_received(unsigned char sock_state);
+#endif
 };
 
 bool wifi_get_param(const char*row, CSTRING& param, unsigned int num);

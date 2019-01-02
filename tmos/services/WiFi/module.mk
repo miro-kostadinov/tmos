@@ -28,7 +28,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 inc_dirs += $(subdirectory) 
 
 #submodules
-local_modules-$(USB_WIFI_ESP8266) += esp8266
+local_modules-$(USE_WIFI_ESP8266) += esp8266
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)

@@ -65,23 +65,22 @@ struct wifi_module_type
     bool 		  stop_rcv;
     unsigned int  mem_alloc_size;
     HANDLE	 	 pending_read_data;
-    unsigned int  wifi_pin_rts;
 #endif
+    unsigned int  wifi_pin_rts;
     char buf[WIFI_BUF_SIZE];
 
     wifi_module_type
     	(
     		const WIFI_DRIVER_INFO* pinfo
-#if WIFI_FLOW_CONTROL
     		,unsigned int PIN_RTS
-#endif
     	)
     	:drv_info(pinfo), row_start(0),
     		row_end(0), cmd_state(0), received_ch(0), wifi_watchdog_cnt(0)
 #if WIFI_FLOW_CONTROL
     		, stop_rcv(false), mem_alloc_size(0),
-    		pending_read_data(nullptr), wifi_pin_rts(PIN_RTS)
+    		pending_read_data(nullptr)
 #endif
+    	, wifi_pin_rts(PIN_RTS)
     {
     }
 
