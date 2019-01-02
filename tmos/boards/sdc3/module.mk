@@ -96,7 +96,7 @@ USE_LWIP_1_4_1	?=n
 
 # WiFi
 USE_WIFI			?=y
-USB_WIFI_ESP8266 	?=y
+USE_WIFI_ESP8266 	?=y
 
 #security
 USE_SECURITY		?=y

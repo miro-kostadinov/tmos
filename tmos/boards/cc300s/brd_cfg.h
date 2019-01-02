@@ -116,7 +116,7 @@
 //		Wi-Fi ESP8266 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #define USE_WIFI 			1
-#define USB_WIFI_ESP8266	1
+#define USE_WIFI_ESP8266	1
 
 
 #endif /* BRD_CFG_H_ */

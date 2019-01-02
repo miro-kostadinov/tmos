@@ -10,7 +10,7 @@ OUT_NAME	?= a600c
 OUT_DIR		?= out/$(OUT_NAME)/
 
 #  optimisation level  can be [0, 1, 2, 3, s].
-OPT			?= -Og
+OPT			?= -O0
 
 # Build library/binary/hex. can be [y, n]
 BUILD_LIB	?= y
@@ -99,7 +99,7 @@ USE_LWIP_1_4_1	?=y
 
 # WiFi
 USE_WIFI			?=y
-USB_WIFI_ESP8266 	?=y
+USE_WIFI_ESP8266 	?=y
 
 #security
 USE_SECURITY		?=y

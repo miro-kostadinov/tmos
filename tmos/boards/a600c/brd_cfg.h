@@ -84,7 +84,8 @@
 //		Wi-Fi ESP8266 DRIVER
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #define USE_WIFI 			1
-#define USB_WIFI_ESP8266	1
+#define USE_WIFI_ESP8266	3
+#define WIFI_FLOW_CONTROL   0	// use AT+CIPRECVMODE
 
 #define USE_SECURITY		1
 #define USE_SECURITY_TLS	1
