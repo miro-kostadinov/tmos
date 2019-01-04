@@ -89,7 +89,7 @@ RES_CODE X509Name::x509ParseName(const uint8_t *data, size_t length, size_t *tot
 	Asn1Tag attrValue;
 
 	//Debug message
-	TRACE_DEBUG("    Parsing Name...\r\n");
+	TRACELN1_TLS("    Parsing Name...");
 
 	//Read the contents of the Name structure
 	res = tag.asn1ReadTag(data, length);
@@ -287,7 +287,7 @@ RES_CODE X509CertificateInfo::x509ParseVersion(const uint8_t *data, size_t lengt
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("    Parsing Version...\r\n");
+	TRACELN1_TLS("    Parsing Version...");
 
 	//Explicit tagging shall be used to encode version
 	res = tag.asn1ReadTag(data, length);
@@ -343,7 +343,7 @@ RES_CODE X509CertificateInfo::x509ParseSerialNumber(const uint8_t *data, size_t 
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("    Parsing SerialNumber...\r\n");
+	TRACELN1_TLS("    Parsing SerialNumber...");
 
 	//Read the contents of the SerialNumber structure
 	res = tag.asn1ReadTag(data, length);
@@ -374,7 +374,7 @@ RES_CODE X509CertificateInfo::x509ParseSignature(const uint8_t *data, size_t len
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("    Parsing Signature...\r\n");
+	TRACELN1_TLS("    Parsing Signature...");
 
 	//Read the contents of the Signature structure
 	res = tag.asn1ReadTag(data, length);
@@ -443,7 +443,7 @@ RES_CODE x509ParseTime(const uint8_t *data, size_t length, size_t *totalLength, 
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("      Parsing Time...\r\n");
+	TRACELN1_TLS("      Parsing Time...");
 
 	//Read current ASN.1 tag
 	res = tag.asn1ReadTag(data, length);
@@ -555,7 +555,7 @@ RES_CODE X509CertificateInfo::x509ParseValidity(const uint8_t *data, size_t leng
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("    Parsing Validity...\r\n");
+	TRACELN1_TLS("    Parsing Validity...");
 
 	//Read the contents of the Validity structure
 	res = tag.asn1ReadTag(data, length);
@@ -598,7 +598,7 @@ RES_CODE X509CertificateInfo::x509ParseDsaParameters(const uint8_t *data, size_t
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("        Parsing DSAParameters...\r\n");
+	TRACELN1_TLS("        Parsing DSAParameters...");
 
 	//Read DSAParameters structure
 	res = tag.asn1ReadTag(data, length);
@@ -679,7 +679,7 @@ RES_CODE X509CertificateInfo::x509ParseEcParameters(const uint8_t *data, size_t 
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("        Parsing ECParameters...\r\n");
+	TRACELN1_TLS("        Parsing ECParameters...");
 
 	//Read namedCurve field
 	res = tag.asn1ReadTag(data, length);
@@ -711,7 +711,7 @@ RES_CODE X509CertificateInfo::x509ParseAlgorithmIdentifier(const uint8_t *data, 
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("      Parsing AlgorithmIdentifier...\r\n");
+	TRACELN1_TLS("      Parsing AlgorithmIdentifier...");
 
 	//Read AlgorithmIdentifier field
 	res = tag.asn1ReadTag(data, length);
@@ -793,7 +793,7 @@ RES_CODE X509CertificateInfo::x509ParseRsaPublicKey(const uint8_t *data, size_t 
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("      Parsing RSAPublicKey...\r\n");
+	TRACELN1_TLS("      Parsing RSAPublicKey...");
 
 	//Read RSAPublicKey structure
 	res = tag.asn1ReadTag(data, length);
@@ -856,7 +856,7 @@ RES_CODE X509CertificateInfo::x509ParseDsaPublicKey(const uint8_t *data, size_t 
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("      Parsing DSAPublicKey...\r\n");
+	TRACELN1_TLS("      Parsing DSAPublicKey...");
 
 	//Read DSAPublicKey structure
 	res = tag.asn1ReadTag(data, length);
@@ -885,7 +885,7 @@ RES_CODE X509CertificateInfo::x509ParseEcPublicKey(const uint8_t *data, size_t l
 {
 #if EC_SUPPORT
    //Debug message
-   TRACE_DEBUG("      Parsing ECPublicKey...\r\n");
+   TRACELN1_TLS("      Parsing ECPublicKey...");
 
    //Make sure the EC public key is valid
    if(!length)
@@ -911,7 +911,7 @@ RES_CODE X509CertificateInfo::x509ParseSubjectPublicKeyInfo(const uint8_t *data,
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("    Parsing SubjectPublicKeyInfo...\r\n");
+	TRACELN1_TLS("    Parsing SubjectPublicKeyInfo...");
 
 	//Read SubjectPublicKeyInfo field
 	res = tag.asn1ReadTag(data, length);
@@ -1029,7 +1029,7 @@ RES_CODE X509CertificateInfo::x509ParseIssuerUniqueId(const uint8_t *data, size_
 	*totalLength = tag.totalLength;
 
 	//Debug message
-	TRACE_DEBUG("    Parsing IssuerUniqueID...\r\n");
+	TRACELN1_TLS("    Parsing IssuerUniqueID...");
 
 	//This field must only appear if the version is 2 or 3
 	if (version < X509_VERSION_2)
@@ -1069,7 +1069,7 @@ RES_CODE X509CertificateInfo::x509ParseSubjectUniqueId(const uint8_t *data, size
 	*totalLength = tag.totalLength;
 
 	//Debug message
-	TRACE_DEBUG("    Parsing SubjectUniqueID...\r\n");
+	TRACELN1_TLS("    Parsing SubjectUniqueID...");
 
 	//This field must only appear if the version is 2 or 3
 	if (version < X509_VERSION_2)
@@ -1086,7 +1086,7 @@ RES_CODE X509CertificateInfo::x509ParseBasicConstraints(const uint8_t *data, siz
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("      Parsing BasicConstraints...\r\n");
+	TRACELN1_TLS("      Parsing BasicConstraints...");
 
 	//The BasicConstraints structure shall contain a valid sequence
 	res = tag.asn1ReadTag(data, length);
@@ -1155,7 +1155,7 @@ RES_CODE X509CertificateInfo::x509ParseKeyUsage(const uint8_t *data, size_t leng
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("      Parsing KeyUsage...\r\n");
+	TRACELN1_TLS("      Parsing KeyUsage...");
 
 	//The key usage extension defines the purpose of the key contained in the
 	//certificate
@@ -1195,7 +1195,7 @@ RES_CODE X509CertificateInfo::x509ParseKeyUsage(const uint8_t *data, size_t leng
 RES_CODE X509CertificateInfo::x509ParseExtendedKeyUsage(const uint8_t *data, size_t length)
 {
 	//Debug message
-	TRACE_DEBUG("      Parsing ExtendedKeyUsage...\r\n");
+	TRACELN1_TLS("      Parsing ExtendedKeyUsage...");
 
 	//Successful processing
 	return RES_OK;
@@ -1207,7 +1207,7 @@ RES_CODE X509CertificateInfo::x509ParseSubjectKeyId(const uint8_t *data, size_t 
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("      Parsing SubjectKeyIdentifier...\r\n");
+	TRACELN1_TLS("      Parsing SubjectKeyIdentifier...");
 
 	//The subject key identifier extension provides a means of identifying
 	//certificates that contain a particular public key
@@ -1233,7 +1233,7 @@ RES_CODE X509CertificateInfo::x509ParseAuthorityKeyId(const uint8_t *data, size_
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("      Parsing AuthorityKeyIdentifier...\r\n");
+	TRACELN1_TLS("      Parsing AuthorityKeyIdentifier...");
 
 	//The AuthorityKeyIdentifier structure shall contain a valid sequence
 	res = tag.asn1ReadTag(data, length);
@@ -1289,7 +1289,7 @@ RES_CODE X509CertificateInfo::x509ParseNsCertType(const uint8_t *data, size_t le
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("      Parsing NetscapeCertType...\r\n");
+	TRACELN1_TLS("      Parsing NetscapeCertType...");
 
 	//The NetscapeCertType extension limit the use of a certificate
 	res = tag.asn1ReadTag(data, length);
@@ -1355,7 +1355,7 @@ RES_CODE X509CertificateInfo::x509ParseExtensions(const uint8_t *data, size_t le
 	*totalLength = tag.totalLength;
 
 	//Debug message
-	TRACE_DEBUG("    Parsing Extensions...\r\n");
+	TRACELN1_TLS("    Parsing Extensions...");
 
 	//This field must only appear if the version is 3
 	if (version < X509_VERSION_3)
@@ -1517,7 +1517,7 @@ RES_CODE X509CertificateInfo::x509ParseTbsCertificate(const uint8_t *data, size_
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("  Parsing TBSCertificate...\r\n");
+	TRACELN1_TLS("  Parsing TBSCertificate...");
 
 	//Read the contents of the TBSCertificate structure
 	res = tag.asn1ReadTag(data, length);
@@ -1629,7 +1629,7 @@ RES_CODE X509CertificateInfo::x509ParseSignatureAlgo(const uint8_t *data, size_t
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("  Parsing SignatureAlgorithm...\r\n");
+	TRACELN1_TLS("  Parsing SignatureAlgorithm...");
 
 	//Read the contents of the SignatureAlgorithm field
 	res = tag.asn1ReadTag(data, length);
@@ -1662,7 +1662,7 @@ RES_CODE X509CertificateInfo::x509ParseSignatureValue(const uint8_t *data, size_
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("  Parsing SignatureValue...\r\n");
+	TRACELN1_TLS("  Parsing SignatureValue...");
 
 	//Read the contents of the SignatureValue structure
 	res = tag.asn1ReadTag(data, length);
