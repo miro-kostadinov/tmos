@@ -345,7 +345,7 @@ uint32_t asn1WriteTagLen(Asn1Type objType, size_t len)
 }
 
 #ifndef TRACE_TLS_LEVEL
-#define TRACE_TLS_LEVEL TRACE_LEVEL_TRACE
+#define TRACE_TLS_LEVEL TRACE_LEVEL_NONE
 #endif
 
 #if (TRACE_AND_LEVEL >= TRACE_LEVEL_DEBUG)
