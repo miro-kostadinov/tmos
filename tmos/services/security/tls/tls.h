@@ -78,7 +78,7 @@ struct tls_handshake_t
 		*(uint32_t*)(void*)this = __REV(len) | type;
 	}
 
-	uint32_t get() const
+	uint32_t get_handshake_len() const
 	{
 		return (length[0] << 16) + (length[1] << 8) + length[2];
 	}
@@ -510,11 +510,41 @@ struct record_ctxt_t
 
 	uint8_t* msg_start() const
 	{
-		return data.get() + iv_len;
+		uint8_t* ptr;
+
+		ptr = data.get();
+		if(ptr)
+			ptr += iv_len;
+		return ptr;
 	}
 	uint8_t* msg_end() const
 	{
-		return data.get() + msg_len + iv_len;
+		uint8_t* ptr;
+
+		ptr = data.get();
+		if(ptr)
+			ptr += + msg_len + iv_len;
+		return ptr;
+	}
+
+	uint8_t* msg_reserve(uint32_t size)
+	{
+		uint8_t* ptr;
+
+		ptr = data.get();
+		if(size)
+		{
+			if(ptr == nullptr || size >= (uint32_t)dyn_sizeof((uint16_t*)(void*)ptr))
+			{
+				ptr = (uint8_t*)tsk_realloc(ptr, size);
+				if(ptr)
+				{
+					data.release();
+					data = ptr;
+				}
+			}
+		}
+		return ptr;
 	}
 
 };
@@ -710,7 +740,7 @@ struct tls_context_t
 	RES_CODE tlsParseServerKeyExchange(record_ctxt_t* rc);
 	RES_CODE tlsParseCertificateRequest(record_ctxt_t* rc);
 	RES_CODE tlsParseServerHelloDone(record_ctxt_t* rc);
-	RES_CODE tls_parse_server_message();
+	RES_CODE tls_parse_server_message(record_ctxt_t& rc);
 	RES_CODE tls_parse_server_hello(record_ctxt_t* rc);
 	RES_CODE tlsSendClientKeyExchange();
 	RES_CODE tls_client_key_exchange_msg_len(record_ctxt_t* rc);

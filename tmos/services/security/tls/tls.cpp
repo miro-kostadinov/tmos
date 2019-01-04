@@ -271,6 +271,7 @@ RES_CODE tls_context_t::tls_read(void* data, size_t size, size_t* received, uint
 			if (last_rxrc.msg_len == 0)
 			{
 				last_rxrc.iv_len = 0;
+				last_rxrc.rec_len = 0;
 				res = tls_message_read(&last_rxrc);
 			}
 

@@ -110,7 +110,7 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 {
 	RES_CODE res;
 	const uint8_t *p;
-	size_t n;
+	size_t n, msg_len;
 	const char *pemCert;
 	size_t pemCertLength;
 	uint8_t *derCert;
@@ -124,7 +124,8 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 	message = (const tls_certificate_msg_t*)rc->msg_start();
 
 	//Check the length of the Certificate message
-	if (rc->msg_len < sizeof(tls_certificate_msg_t))
+	msg_len = rc->msg_len;
+	if (msg_len < sizeof(tls_certificate_msg_t))
 		return RES_TLS_DECODING_FAILED;
 
 	//TLS operates as a client or a server?
@@ -142,19 +143,19 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 	}
 
 	//Update the hash value with the incoming handshake message
-	tls_handshake_hash_update(message, rc->msg_len);
+	tls_handshake_hash_update(message, msg_len);
 
 	//Get the size occupied by the certificate list
 	n = LOAD24BE(message->certificate_list_Length);
 	//Remaining bytes to process
-	rc->msg_len -= sizeof(tls_certificate_msg_t);
+	msg_len -= sizeof(tls_certificate_msg_t);
 
 	//Ensure that the chain of certificates is valid
-	if (n > rc->msg_len)
+	if (n > msg_len)
 		return RES_TLS_DECODING_FAILED;
 
 	//Compute the length of the certificate list
-	rc->msg_len = n;
+	msg_len = n;
 
 	//The sender's certificate must come first in the list
 	p = message->certificate_list;
@@ -179,7 +180,7 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 		if (entity == TLS_CONNECTION_END_SERVER)
 		{
 			//Empty certificate list?
-			if (!rc->msg_len)
+			if (!msg_len)
 			{
 				//Check whether mutual authentication is required
 				if (client_auth_mode == TLS_CLIENT_AUTH_REQUIRED)
@@ -200,7 +201,7 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 		}
 
 		//Each certificate is preceded by a 3-byte length field
-		if (rc->msg_len < 3)
+		if (msg_len < 3)
 		{
 			//Report an error
 			res = RES_TLS_DECODING_FAILED;
@@ -211,10 +212,10 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 		n = LOAD24BE(p);
 		//Jump to the beginning of the DER encoded certificate
 		p += 3;
-		rc->msg_len -= 3;
+		msg_len -= 3;
 
 		//Make sure that the certificate is valid
-		if (n > rc->msg_len)
+		if (n > msg_len)
 		{
 			//Report an error
 			res = RES_TLS_DECODING_FAILED;
@@ -386,13 +387,13 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 
 		//Next certificate
 		p += n;
-		rc->msg_len -= n;
+		msg_len -= n;
 
 		//PKIX path validation
-		while (rc->msg_len > 0)
+		while (msg_len > 0)
 		{
 			//Each certificate is preceded by a 3-byte length field
-			if (rc->msg_len < 3)
+			if (msg_len < 3)
 			{
 				//Report an error
 				res = RES_TLS_DECODING_FAILED;
@@ -403,10 +404,10 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 			n = LOAD24BE(p);
 			//Jump to the beginning of the DER encoded certificate
 			p += 3;
-			rc->msg_len -= 3;
+			msg_len -= 3;
 
 			//Ensure that the certificate is valid
-			if (n > rc->msg_len)
+			if (n > msg_len)
 			{
 				//Report an error
 				res = RES_TLS_DECODING_FAILED;
@@ -437,7 +438,7 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 
 			//Next certificate
 			p += n;
-			rc->msg_len -= n;
+			msg_len -= n;
 		}
 
 		//Propagate exception if necessary...
@@ -535,8 +536,8 @@ RES_CODE tls_context_t::tlsParseFinished(record_ctxt_t* rc)
 	const tls_finished_t* message = (tls_finished_t*)rc->msg_start();
 
 	//Debug message
-	TRACE_TLS("Finished message received (%u bytes)...\r\n", rc->msg_len);
-	TRACE_TLS_ARRAY("  ", message, rc->msg_len);
+	TRACELN_TLS("Finished message received (%u bytes)...", rc->msg_len);
+//	TRACE_TLS_ARRAY("  ", message, rc->msg_len);
 
 	//Check the length of the Finished message
 	if (rc->msg_len < sizeof(tls_finished_t))
@@ -569,7 +570,7 @@ RES_CODE tls_context_t::tlsParseFinished(record_ctxt_t* rc)
 		return res;
 
 	//Check message length
-	if (message->header.get() != verify_data_len)
+	if (message->header.get_handshake_len() != verify_data_len)
 		return RES_TLS_DECODING_FAILED;
 
 	//Check the resulting verify data
@@ -634,7 +635,7 @@ RES_CODE tls_context_t::tlsSendCertificate()
 					message->level = TLS_ALERT_LEVEL_WARNING;
 					message->description = TLS_ALERT_NO_CERTIFICATE;
 
-					TRACE_TLS("Sending Alert message (%u bytes)...\r\n", last_txrc.msg_len);
+					TRACELN_TLS("Sending Alert message (%u bytes)...", last_txrc.msg_len);
 					TRACE_TLS_ARRAY("  ", message, last_txrc.msg_len);
 
 					//Send Alert message
@@ -660,8 +661,8 @@ RES_CODE tls_context_t::tlsSendCertificate()
 					if (res == RES_OK)
 					{
 						//Debug message
-						TRACE_TLS("Sending Certificate message (%u bytes)...\r\n", last_txrc.msg_len);
-						TRACE_TLS_ARRAY("  ", message, last_txrc.msg_len);
+						TRACELN_TLS("Sending Certificate message (%u bytes)...", last_txrc.msg_len);
+//						TRACE_TLS_ARRAY("  ", message, last_txrc.msg_len);
 
 						tls_handshake_hash_update(message, last_txrc.msg_len);
 
@@ -698,8 +699,8 @@ RES_CODE tls_context_t::tlsSendCertificate()
 				if (res == RES_OK)
 				{
 					//Debug message
-					TRACE_TLS("Sending Certificate message (%u bytes)...\r\n", last_txrc.msg_len);
-					TRACE_TLS_ARRAY("  ", message, last_txrc.msg_len);
+					TRACELN_TLS("Sending Certificate message (%u bytes)...", last_txrc.msg_len);
+//					TRACE_TLS_ARRAY("  ", message, last_txrc.msg_len);
 
 					tls_handshake_hash_update(message, last_txrc.msg_len);
 
@@ -893,7 +894,7 @@ RES_CODE tls_context_t::tlsSendChangeCipherSpec()
 		message->type = 1;
 
 		//Debug message
-		TRACE1_TLS("Sending ChangeCipherSpec message (1 bytes)...\r\n");
+		TRACELN1_TLS("Sending ChangeCipherSpec message (1 bytes)...");
 		TRACE_TLS_ARRAY("  ", message, 1);
 
 		//Send ChangeCipherSpec message
@@ -971,7 +972,7 @@ RES_CODE tls_context_t::tlsSendFinished()
 	if (res == RES_OK)
 	{
 		//Debug message
-		TRACE_TLS("Sending Finished message (%u bytes)...\r\n", last_txrc.msg_len);
+		TRACELN_TLS("Sending Finished message (%u bytes)...", last_txrc.msg_len);
 		TRACE_TLS_ARRAY("  ", message, last_txrc.msg_len);
 
 		//Send handshake message
@@ -1031,8 +1032,8 @@ RES_CODE tls_context_t::tlsSendAlert(tls_alert_level_t level, tls_alert_descript
 		message->description = description;
 
 		//Debug message
-		TRACE_TLS("Sending Alert message (%u bytes)...\r\n", sizeof(tls_alert_t));
-		TRACE_TLS_ARRAY("  ", message, sizeof(tls_alert_t));
+		TRACELN_TLS("Sending Alert message (%u bytes)...", sizeof(tls_alert_t));
+//		TRACE_TLS_ARRAY("  ", message, sizeof(tls_alert_t));
 
 		//Send Alert message
 		last_txrc.tls_record.rec_type = TLS_TYPE_ALERT;
@@ -1128,7 +1129,8 @@ void tls_dump_record(const record_ctxt_t* rc)
 
 			//Point to the buffer where to format the message
 			message = (tls_change_cipherspec_t*) rc->msg_start();
-			TRACELN_TLS("type = %u", message->type);
+			if(message)
+				TRACELN_TLS("type = %u", message->type);
 #endif
 		}
 		break;
@@ -1140,7 +1142,8 @@ void tls_dump_record(const record_ctxt_t* rc)
 			const tls_alert_t* message;
 
 			message = (tls_alert_t*) rc->msg_start();
-			TRACELN_TLS("level=%u description=%u", message->level, message->description);
+			if(message)
+				TRACELN_TLS("level=%u description=%u", message->level, message->description);
 
 #endif
 		}
@@ -1152,197 +1155,205 @@ void tls_dump_record(const record_ctxt_t* rc)
 			const tls_handshake_t* header;
 
 			header = (tls_handshake_t*) rc->msg_start();
-			TRACELN_TLS("header msgtype=%u len=%u", header->msgType, header->get());
-			switch(header->msgType)
+			if(header)
 			{
-			   case TLS_TYPE_HELLO_REQUEST        :
-					TRACELN1_TLS("HELLO_REQUEST");
-					break;
+				TRACELN_TLS("header msgtype=%u len=%u", header->msgType, header->get_handshake_len());
+				switch(header->msgType)
+				{
+				   case TLS_TYPE_HELLO_REQUEST        :
+						TRACELN1_TLS("HELLO_REQUEST");
+						break;
 
-			   case TLS_TYPE_CLIENT_HELLO         :
-					TRACELN1_TLS("CLIENT_HELLO");
-					{
-						const tls_client_hello_t* message;
-
-						message = (tls_client_hello_t*)rc->msg_start();
-						TRACELN_TLS("cver=%x, slen=%u", message->clientVersion, message->sessionIdLen);
-						if (rc->msg_len < sizeof(tls_client_hello_t))
+				   case TLS_TYPE_CLIENT_HELLO         :
+						TRACELN1_TLS("CLIENT_HELLO");
 						{
-							TRACELN1_TLS("bad len");
-						} else
-						{
-							const uint8_t *p;
-							size_t n, k;
+							const tls_client_hello_t* message;
 
-							p = message->sessionId + message->sessionIdLen;
-							n = rc->msg_len - sizeof(tls_client_hello_t);
-							if (message->sessionIdLen > n || message->sessionIdLen > 32)
+							message = (tls_client_hello_t*)rc->msg_start();
+							TRACELN_TLS("cver=%x, slen=%u", message->clientVersion, message->sessionIdLen);
+							if (rc->msg_len < sizeof(tls_client_hello_t))
 							{
 								TRACELN1_TLS("bad len");
 							} else
 							{
-								n -= message->sessionIdLen;
+//								const uint8_t *p;
+								size_t n/*, k*/;
 
-								//Malformed ClientHello message?
-								if (n < sizeof(tls_cipher_suites_t))
-									TRACELN1_TLS("bad len");
-								else
+//								p = message->sessionId + message->sessionIdLen;
+								n = rc->msg_len - sizeof(tls_client_hello_t);
+								if (message->sessionIdLen > n || message->sessionIdLen > 32)
 								{
-									const tls_cipher_suites_t* cipherSuites;
+									TRACELN1_TLS("bad len");
+								} else
+								{
+/*
+									n -= message->sessionIdLen;
 
-									cipherSuites = (tls_cipher_suites_t *) p;
-									//Remaining bytes to process
-									n -= sizeof(tls_cipher_suites_t);
-
-									k = __REV16(cipherSuites->length);
-									if (k < 2 || k > n)
-										TRACELN1_TLS("bad chipsuite");
+									//Malformed ClientHello message?
+									if (n < sizeof(tls_cipher_suites_t))
+										TRACELN1_TLS("bad len");
 									else
 									{
-										//Point to the next field
-										p += sizeof(tls_cipher_suites_t) + k;
+										const tls_cipher_suites_t* cipherSuites;
+
+										cipherSuites = (tls_cipher_suites_t *) p;
 										//Remaining bytes to process
-										n -= k;
+										n -= sizeof(tls_cipher_suites_t);
 
-										//Get the number of cipher suite identifiers present in the list
-										k  /= sizeof(tls_suite_id_t);
-
-										//Debug message
-										TRACELN1_TLS("Cipher suites:\r\n");
-
-										//Dump the list of cipher suites
-										for (uint32_t i = 0; i < k; i++)
-										{
-											//Debug message
-											TRACE_TLS("  0x%04x (%s)\r\n", __REV16(cipherSuites->value[i]),
-													tlsGetCipherSuiteName(__REV16(cipherSuites->value[i])));
-											tsk_sleep(3);
-										}
-
-										//Malformed ClientHello message?
-										if (n < sizeof(tls_compression_methods_t))
-											TRACELN1_TLS("bad compression");
+										k = __REV16(cipherSuites->length);
+										if (k < 2 || k > n)
+											TRACELN1_TLS("bad chipsuite");
 										else
 										{
-											//Check the length of the list
-											k = ((tls_compression_methods_t *)p)->length;
-											if (k < 1 || k > n)
+											//Point to the next field
+											p += sizeof(tls_cipher_suites_t) + k;
+											//Remaining bytes to process
+											n -= k;
+
+											//Get the number of cipher suite identifiers present in the list
+											k  /= sizeof(tls_suite_id_t);
+
+											//Debug message
+											TRACELN1_TLS("Cipher suites:\r\n");
+
+											//Dump the list of cipher suites
+											for (uint32_t i = 0; i < k; i++)
+											{
+												//Debug message
+												TRACE_TLS("  0x%04x (%s)\r\n", __REV16(cipherSuites->value[i]),
+														tlsGetCipherSuiteName(__REV16(cipherSuites->value[i])));
+												tsk_sleep(3);
+											}
+
+											//Malformed ClientHello message?
+											if (n < sizeof(tls_compression_methods_t))
 												TRACELN1_TLS("bad compression");
 											else
 											{
-												tls_extensions_t* extensions;
-
-												//Remaining bytes to process
-												n -= sizeof(tls_compression_methods_t) +k;
-												//Point to the next field
-												p += sizeof(tls_compression_methods_t) + k;
-
-												extensions = (tls_extensions_t*)p;
-
-												k = __REV16(extensions->length);
-												TRACELN_TLS("extensions len=%u", k);
-												if(k)
+												//Check the length of the list
+												k = ((tls_compression_methods_t *)p)->length;
+												if (k < 1 || k > n)
+													TRACELN1_TLS("bad compression");
+												else
 												{
-													if((k + sizeof(tls_extensions_t)) > n || k < sizeof(tls_extensions_t))
-														TRACE1_TLS(" bad ext list!!");
-													else
+													tls_extensions_t* extensions;
+
+													//Remaining bytes to process
+													n -= sizeof(tls_compression_methods_t) +k;
+													//Point to the next field
+													p += sizeof(tls_compression_methods_t) + k;
+
+													extensions = (tls_extensions_t*)p;
+
+													k = __REV16(extensions->length);
+													TRACELN_TLS("extensions len=%u", k);
+													if(k)
 													{
-														while(k)
+														if((k + sizeof(tls_extensions_t)) > n || k < sizeof(tls_extensions_t))
+															TRACE1_TLS(" bad ext list!!");
+														else
 														{
-															n = __REV16(extensions->value[0].length);
-															TRACELN_TLS("ext len=%u type=%u", n, __REV16(extensions->value[0].type));
+															while(k)
+															{
+																n = __REV16(extensions->value[0].length);
+																TRACELN_TLS("ext len=%u type=%u", n, __REV16(extensions->value[0].type));
 
-															n += sizeof(tls_extension_t);
-															if( n > k )
-															{
-																TRACE1_TLS(" bad ext!!");
-																break;
+																n += sizeof(tls_extension_t);
+																if( n > k )
+																{
+																	TRACE1_TLS(" bad ext!!");
+																	break;
+																}
+																else
+																{
+																	p += n;
+																	k -= n;
+																	extensions = (tls_extensions_t*)p;
+																}
 															}
-															else
-															{
-																p += n;
-																k -= n;
-																extensions = (tls_extensions_t*)p;
-															}
+
 														}
-
 													}
+
+
 												}
 
-
 											}
+
 
 										}
 
 
 									}
-
+*/
 
 								}
-
 							}
+
 						}
+						break;
 
-					}
-					break;
+				   case TLS_TYPE_SERVER_HELLO         :
+						TRACELN1_TLS("SERVER_HELLO");
+						break;
 
-			   case TLS_TYPE_SERVER_HELLO         :
-					TRACELN1_TLS("SERVER_HELLO");
-					break;
+				   case TLS_TYPE_HELLO_VERIFY_REQUEST :
+						TRACELN1_TLS("VERIFY_REQUEST");
+						break;
 
-			   case TLS_TYPE_HELLO_VERIFY_REQUEST :
-					TRACELN1_TLS("VERIFY_REQUEST");
-					break;
+				   case TLS_TYPE_NEW_SESSION_TICKET   :
+						TRACELN1_TLS("SESSION_TICKET");
+						break;
 
-			   case TLS_TYPE_NEW_SESSION_TICKET   :
-					TRACELN1_TLS("SESSION_TICKET");
-					break;
+				   case TLS_TYPE_CERTIFICATE          :
+						TRACELN1_TLS("CERTIFICATE");
+						break;
 
-			   case TLS_TYPE_CERTIFICATE          :
-					TRACELN1_TLS("CERTIFICATE");
-					break;
+				   case TLS_TYPE_SERVER_KEY_EXCHANGE  :
+						TRACELN1_TLS("KEY_EXCHANGE");
+						break;
 
-			   case TLS_TYPE_SERVER_KEY_EXCHANGE  :
-					TRACELN1_TLS("KEY_EXCHANGE");
-					break;
+				   case TLS_TYPE_CERTIFICATE_REQUEST  :
+						TRACELN1_TLS("CERTIFICATE_REQUEST");
+						break;
 
-			   case TLS_TYPE_CERTIFICATE_REQUEST  :
-					TRACELN1_TLS("CERTIFICATE_REQUEST");
-					break;
+				   case TLS_TYPE_SERVER_HELLO_DONE    :
+						TRACELN1_TLS("HELLO_DONE");
+						break;
 
-			   case TLS_TYPE_SERVER_HELLO_DONE    :
-					TRACELN1_TLS("HELLO_DONE");
-					break;
+				   case TLS_TYPE_CERTIFICATE_VERIFY   :
+						TRACELN1_TLS("CERTIFICATE_VERIFY");
+						break;
 
-			   case TLS_TYPE_CERTIFICATE_VERIFY   :
-					TRACELN1_TLS("CERTIFICATE_VERIFY");
-					break;
+				   case TLS_TYPE_CLIENT_KEY_EXCHANGE  :
+						TRACELN1_TLS("CLIENT_KEY_EXCHANGE");
+						break;
 
-			   case TLS_TYPE_CLIENT_KEY_EXCHANGE  :
-					TRACELN1_TLS("CLIENT_KEY_EXCHANGE");
-					break;
+				   case TLS_TYPE_FINISHED             :
+						TRACELN1_TLS("FINISHED");
+						break;
 
-			   case TLS_TYPE_FINISHED             :
-					TRACELN1_TLS("FINISHED");
-					break;
+				   case TLS_TYPE_CERTIFICATE_URL      :
+						TRACELN1_TLS("CERTIFICATE_URL");
+						break;
 
-			   case TLS_TYPE_CERTIFICATE_URL      :
-					TRACELN1_TLS("CERTIFICATE_URL");
-					break;
+				   case TLS_TYPE_CERTIFICATE_STATUS   :
+						TRACELN1_TLS("CERTIFICATE_STATUS");
+						break;
 
-			   case TLS_TYPE_CERTIFICATE_STATUS   :
-					TRACELN1_TLS("CERTIFICATE_STATUS");
-					break;
+				   case TLS_TYPE_SUPPLEMENTAL_DATA    :
+						TRACELN1_TLS("SUPPLEMENTAL_DATA");
+						break;
 
-			   case TLS_TYPE_SUPPLEMENTAL_DATA    :
-					TRACELN1_TLS("SUPPLEMENTAL_DATA");
-					break;
-
-			   default:
-					TRACELN1_TLS("UNKNOWN msgType!!!");
-					break;
+				   default:
+						TRACELN1_TLS("UNKNOWN msgType!!!");
+						break;
 
 
+				}
+			} else
+			{
+				TRACELN1_TLS("header =nullptr!");
 			}
 		}
 		break;

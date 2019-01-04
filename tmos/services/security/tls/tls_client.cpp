@@ -549,6 +549,7 @@ RES_CODE tls_context_t::tls_client_send_hello()
 RES_CODE tls_context_t::tls_clent_handshake()
 {
 	RES_CODE res = RES_TLS_HANDSHAKE_FAILED;
+	record_ctxt_t rc;
 
 	if(tls_state != TLS_STATE_INIT)
 		return res;
@@ -615,7 +616,7 @@ RES_CODE tls_context_t::tls_clent_handshake()
 		case TLS_STATE_SERVER_CHANGE_CIPHER_SPEC:
 		case TLS_STATE_SERVER_FINISHED:
             //Parse incoming handshake message
-			res = tls_parse_server_message();
+			res = tls_parse_server_message(rc);
             break;
          //Sending Alert message?
          case TLS_STATE_CLOSING:
@@ -625,7 +626,7 @@ RES_CODE tls_context_t::tls_clent_handshake()
          //TLS connection closed?
          case TLS_STATE_CLOSED:
             //Debug message
-            TRACE1_TLS("TLS handshake failure!\r\n");
+            TRACELN1_TLS("TLS handshake failure!");
             //Report an error
             res = RES_TLS_HANDSHAKE_FAILED;
             break;
@@ -780,13 +781,13 @@ RES_CODE tls_context_t::tlsParseServerKeyParams(const uint8_t* p, size_t length,
 		if (res == RES_OK)
 		{
 			//Debug message
-			TRACE_TLS("Diffie-Hellman parameters:\r\n");
-			TRACE_TLS("  Prime modulus:\r\n");
-			TRACE_MPI("    ", &dhContext.params.p);
-			TRACE_TLS("  Generator:\r\n");
-			TRACE_MPI("    ", &dhContext.params.g);
-			TRACE_TLS("  Server public value:\r\n");
-			TRACE_MPI("    ", &dhContext.yb);
+			TRACELN_TLS("Diffie-Hellman parameters:");
+//			TRACELN_TLS("  Prime modulus: ");
+//			TRACE_MPI("    ", &dhContext.params.p);
+//			TRACE_TLS("  Generator:\r\n");
+//			TRACE_MPI("    ", &dhContext.params.g);
+//			TRACE_TLS("  Server public value:\r\n");
+//			TRACE_MPI("    ", &dhContext.yb);
 		}
 	}
 	else
@@ -878,6 +879,7 @@ RES_CODE tls_context_t::tlsParseServerKeyParams(const uint8_t* p, size_t length,
 		}
 
 		//Check status code
+/*
 		if (res == RES_OK)
 		{
 			//Debug message
@@ -886,6 +888,7 @@ RES_CODE tls_context_t::tlsParseServerKeyParams(const uint8_t* p, size_t length,
 			TRACE_TLS("  Server public key Y:\r\n");
 			TRACE_MPI("    ", &ecdhContext.qb.y);
 		}
+*/
 	}
 	else
 #endif
@@ -1188,18 +1191,19 @@ RES_CODE tls_context_t::tlsVerifyServerKeySignature(const uint8_t* p,
 RES_CODE tls_context_t::tlsParseServerKeyExchange(record_ctxt_t* rc)
 {
 	RES_CODE res;
-	size_t n;
+	size_t n, msg_len;
 	size_t paramsLen;
 	const uint8_t *p;
 	const uint8_t *params=nullptr;
 	const tls_server_keyexchange_t* message = (const tls_server_keyexchange_t*)rc->msg_start();;
 
 	//Debug message
-	TRACE_TLS("ServerKeyExchange message received (%u bytes)...\r\n  ", rc->msg_len);
-	TRACE_BUF(message, rc->msg_len);
+	msg_len = rc->msg_len;
+	TRACELN_TLS("ServerKeyExchange message received (%u bytes)...", msg_len);
+//	TRACE_BUF(message, msg_len);
 
 	//Check the length of the ServerKeyExchange message
-	if (rc->msg_len < sizeof(tls_server_keyexchange_t))
+	if (msg_len < sizeof(tls_server_keyexchange_t))
 		return RES_TLS_DECODING_FAILED;
 
 	//Check current state
@@ -1207,12 +1211,12 @@ RES_CODE tls_context_t::tlsParseServerKeyExchange(record_ctxt_t* rc)
 		return RES_TLS_UNEXPECTED_MESSAGE;
 
 	//Update the hash value with the incoming handshake message
-	tls_handshake_hash_update(message, rc->msg_len);
+	tls_handshake_hash_update(message, msg_len);
 
 	//Point to the body of the handshake message
 	p = message->data;
 	//Remaining bytes to process
-	rc->msg_len -= sizeof(tls_server_keyexchange_t);
+	msg_len -= sizeof(tls_server_keyexchange_t);
 
 	//PSK key exchange method?
 	if (cipher_info->suite_key_exch == TLS_KEY_EXCH_PSK
@@ -1222,14 +1226,14 @@ RES_CODE tls_context_t::tlsParseServerKeyExchange(record_ctxt_t* rc)
 	{
 		//To help the client in selecting which identity to use, the server
 		//can provide a PSK identity hint in the ServerKeyExchange message
-		res = tlsParsePskIdentityHint(p, rc->msg_len, &n);
+		res = tlsParsePskIdentityHint(p, msg_len, &n);
 		if (res != RES_OK)
 			return res;
 
 		//Point to the next field
 		p += n;
 		//Remaining bytes to process
-		rc->msg_len -= n;
+		msg_len -= n;
 	}
 
 	//Diffie-Hellman or ECDH key exchange method?
@@ -1246,7 +1250,7 @@ RES_CODE tls_context_t::tlsParseServerKeyExchange(record_ctxt_t* rc)
 		params = p;
 
 		//Parse server's key exchange parameters
-		res = tlsParseServerKeyParams(p, rc->msg_len, &paramsLen);
+		res = tlsParseServerKeyParams(p, msg_len, &paramsLen);
 		//Any error to report?
 		if (res != RES_OK)
 			return res;
@@ -1254,7 +1258,7 @@ RES_CODE tls_context_t::tlsParseServerKeyExchange(record_ctxt_t* rc)
 		//Point to the next field
 		p += paramsLen;
 		//Remaining bytes to process
-		rc->msg_len -= paramsLen;
+		msg_len -= paramsLen;
 	}
 
 	//Non-anonymous Diffie-Hellman and ECDH key exchange method?
@@ -1265,17 +1269,17 @@ RES_CODE tls_context_t::tlsParseServerKeyExchange(record_ctxt_t* rc)
 	{
 		//For non-anonymous Diffie-Hellman and ECDH key exchanges, the signature
 		//over the server's key exchange parameters shall be verified
-		res = tlsVerifyServerKeySignature(p, rc->msg_len, params, paramsLen, &n);
+		res = tlsVerifyServerKeySignature(p, msg_len, params, paramsLen, &n);
 		if (res != RES_OK)
 			return res;
 
 		//Remaining bytes to process
-		rc->msg_len -= n;
+		msg_len -= n;
 	}
 
 	//If the amount of data in the message does not precisely match the format
 	//of the ServerKeyExchange message, then send a fatal alert
-	if (rc->msg_len != 0)
+	if (msg_len != 0)
 		return RES_TLS_DECODING_FAILED;
 
 	//Anomynous server?
@@ -1314,7 +1318,7 @@ RES_CODE tls_context_t::tlsParseServerKeyExchange(record_ctxt_t* rc)
 RES_CODE tls_context_t::tlsParseCertificateRequest(record_ctxt_t* rc)
 {
 	uint32_t i;
-	size_t n;
+	size_t n, msg_len;
 	uint8_t *p;
 	bool acceptable;
 	tls_sign_algos_t* supportedSignAlgos;
@@ -1322,11 +1326,12 @@ RES_CODE tls_context_t::tlsParseCertificateRequest(record_ctxt_t* rc)
 	const tls_certificate_request_t* message;
 
 	//Debug message
-	TRACE_TLS("CertificateRequest message received (%u bytes)...\r\n", rc->msg_len);
-	TRACE_TLS_ARRAY("  ", rc->msg_start(), rc->msg_len);
+	msg_len = rc->msg_len;
+	TRACELN_TLS("CertificateRequest message received (%u bytes)...", msg_len);
+//	TRACE_TLS_ARRAY("  ", rc->msg_start(), msg_len);
 
 	//Check the length of the ServerKeyExchange message
-	if (rc->msg_len < sizeof(tls_certificate_request_t))
+	if (msg_len < sizeof(tls_certificate_request_t))
 		return RES_TLS_DECODING_FAILED;
 
 	//Check key exchange method
@@ -1361,7 +1366,7 @@ RES_CODE tls_context_t::tlsParseCertificateRequest(record_ctxt_t* rc)
 	message = (tls_certificate_request_t*)rc->msg_start();
 
 	//Update the hash value with the incoming handshake message
-	tls_handshake_hash_update(rc->msg_start(), rc->msg_len);
+	tls_handshake_hash_update(rc->msg_start(), msg_len);
 
 	//The server requests a certificate from the client, so that
 	//the connection can be mutually authenticated
@@ -1370,43 +1375,43 @@ RES_CODE tls_context_t::tlsParseCertificateRequest(record_ctxt_t* rc)
 	//Point to the beginning of the message
 	p = rc->msg_start();
 	//Remaining bytes to process
-	rc->msg_len -= sizeof(tls_certificate_request_t);
+	msg_len -= sizeof(tls_certificate_request_t);
 
 	//Retrieve the size of the list of supported certificate types
 	n = message->certificateTypesLength;
 	//Make sure the length field is valid
-	if (n > rc->msg_len)
+	if (n > msg_len)
 		return RES_TLS_DECODING_FAILED;
 
 	//Point to the next field
 	p += sizeof(tls_certificate_request_t) + n;
 	//Remaining bytes to process
-	rc->msg_len -= n;
+	msg_len -= n;
 
 #if (TLS_MAX_VERSION >= TLS_VERSION_1_2 && TLS_MIN_VERSION <= TLS_VERSION_1_2)
 	//TLS 1.2 currently selected?
 	if (tls_version == TLS_VER12)
 	{
 		//Malformed CertificateRequest message?
-		if (rc->msg_len < sizeof(tls_sign_algos_t))
+		if (msg_len < sizeof(tls_sign_algos_t))
 			return RES_TLS_DECODING_FAILED;
 
 		//Point to the list of the hash/signature algorithm pairs that
 		//the server is able to verify
 		supportedSignAlgos = (tls_sign_algos_t *) p;
 		//Remaining bytes to process
-		rc->msg_len -= sizeof(tls_sign_algos_t);
+		msg_len -= sizeof(tls_sign_algos_t);
 
 		//Get the size of the list
 		n = __REV16(supportedSignAlgos->length);
 		//Make sure the length field is valid
-		if (n > rc->msg_len)
+		if (n > msg_len)
 			return RES_TLS_DECODING_FAILED;
 
 		//Point to the next field
 		p += sizeof(tls_sign_algos_t) + n;
 		//Remaining bytes to process
-		rc->msg_len -= n;
+		msg_len -= n;
 	}
 	//SSL 3.0, TLS 1.0 or TLS 1.1 currently selected?
 	else
@@ -1418,19 +1423,19 @@ RES_CODE tls_context_t::tlsParseCertificateRequest(record_ctxt_t* rc)
 	}
 
 	//Malformed CertificateRequest message?
-	if (rc->msg_len < sizeof(TlsCertAuthorities))
+	if (msg_len < sizeof(TlsCertAuthorities))
 		return RES_TLS_DECODING_FAILED;
 
 	//Point to the list of the distinguished names of acceptable
 	//certificate authorities
 	certAuthorities = (TlsCertAuthorities *) p;
 	//Remaining bytes to process
-	rc->msg_len -= sizeof(TlsCertAuthorities);
+	msg_len -= sizeof(TlsCertAuthorities);
 
 	//Get the size of the list
 	n = __REV16(certAuthorities->length);
 	//Make sure the length field is valid
-	if (n > rc->msg_len)
+	if (n > msg_len)
 		return RES_TLS_DECODING_FAILED;
 
 	//No suitable certificate has been found for the moment
@@ -1487,8 +1492,8 @@ RES_CODE tls_context_t::tlsParseServerHelloDone(record_ctxt_t* rc)
 	const tls_server_hellodone_t* message = (const tls_server_hellodone_t*)rc->msg_start();
 
 	//Debug message
-	TRACE_TLS("ServerHelloDone message received (%u bytes)...\r\n", rc->msg_len);
-	TRACE_TLS_ARRAY("  ", message, rc->msg_len);
+	TRACELN_TLS("ServerHelloDone message received (%u bytes)...", rc->msg_len);
+//	TRACE_TLS_ARRAY("  ", message, rc->msg_len);
 
 	//Check the length of the ServerHelloDone message
 	if (rc->msg_len != sizeof(tls_server_hellodone_t))
@@ -1549,10 +1554,9 @@ RES_CODE tls_context_t::tlsParseServerHelloDone(record_ctxt_t* rc)
 	return RES_OK;
 }
 
-RES_CODE tls_context_t::tls_parse_server_message()
+RES_CODE tls_context_t::tls_parse_server_message(record_ctxt_t& rc)
 {
 	RES_CODE res;
-	record_ctxt_t rc;
 
     TRACELN1_TLS("TLS parse server message");
 
@@ -1649,6 +1653,15 @@ RES_CODE tls_context_t::tls_parse_server_message()
 	}
 
     TRACELN_TLS("TLS parse server message res %u", res);
+    if(rc.msg_len < rc.rec_len && rc.msg_len && rc.data.get())
+    {
+    	memmove(rc.data.get(), rc.data.get()+rc.msg_len, rc.rec_len - rc.msg_len);
+    	rc.rec_len -= rc.msg_len;
+    } else
+    {
+    	rc.rec_len = 0;
+    }
+
 	return res;
 }
 
@@ -1666,6 +1679,7 @@ RES_CODE tls_context_t::tls_parse_server_hello(record_ctxt_t* rc)
 		return RES_TLS_DECODING_FAILED;
 	n = rc->msg_len - sizeof(tls_server_hello_t);
 	message = static_cast<const tls_server_hello_t*>((void*)rc->data.get());
+	TRACELN_TLS("Server ver %04X", message->serverVersion);
 
 	//Check current state
 	if (tls_state != TLS_STATE_SERVER_HELLO)
@@ -1689,6 +1703,7 @@ RES_CODE tls_context_t::tls_parse_server_hello(record_ctxt_t* rc)
 	//Get the negotiated cipher suite
 	suite = (tls_suite_id_t)__REV16(*(tls_suite_id_t*)(void*)p);
 	p += sizeof(tls_suite_id_t);
+	TRACELN_TLS("cipher suite %04X", suite);
 
 	//Get the negotiated compression method
 	compression = (tls_compression_method_t)*p;
@@ -1735,6 +1750,9 @@ RES_CODE tls_context_t::tls_parse_server_hello(record_ctxt_t* rc)
 	   res = tls_set_ciphersuite(suite);
 	   if(res == RES_OK)
 	   {
+		   TRACELN1_TLS("suite name: ");
+		   TRACE1_TLS(cipher_info->suite_name);
+
 		   //Set compression method
 		   res = tls_set_compression_method(compression);
 		   if(res == RES_OK)
@@ -1818,8 +1836,8 @@ RES_CODE tls_context_t::tlsSendClientKeyExchange()
 		if (res == RES_OK)
 		{
 			//Debug message
-			TRACE_TLS("Sending ClientKeyExchange message (%u bytes)...\r\n", last_txrc.msg_len);
-			TRACE_TLS_ARRAY("  ", message, last_txrc.msg_len);
+			TRACELN_TLS("Sending ClientKeyExchange message (%u bytes)...", last_txrc.msg_len);
+//			TRACE_TLS_ARRAY("  ", message, last_txrc.msg_len);
 
 			tls_handshake_hash_update(message, last_txrc.msg_len);
 
@@ -2196,8 +2214,8 @@ RES_CODE tls_context_t::tlsSendCertificateVerify()
 					tls_handshake_hash_update(last_txrc.msg_start(), last_txrc.msg_len);
 
 					//Debug message
-					TRACE_TLS("Sending CertificateVerify message (%u bytes)...\r\n", last_txrc.msg_len);
-					TRACE_TLS_ARRAY("  ", last_txrc.msg_start(), last_txrc.msg_len);
+					TRACELN_TLS("Sending CertificateVerify message (%u bytes)...n", last_txrc.msg_len);
+//					TRACE_TLS_ARRAY("  ", last_txrc.msg_start(), last_txrc.msg_len);
 
 					res = tls_record_write(&last_txrc);
 				}

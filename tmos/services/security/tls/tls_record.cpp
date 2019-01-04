@@ -112,8 +112,7 @@ RES_CODE tls_context_t::tls_record_get_lens(record_ctxt_t* lens)
 	lens->rec_len = rec_len;
 
 	// Allocate
-	lens->data = (uint8_t*) tsk_malloc(last_txrc.rec_len);
-	if(lens->data.get() == nullptr)
+	if(lens->msg_reserve(last_txrc.rec_len) == nullptr)
 			return RES_OUT_OF_MEMORY;
 
 	lens->tls_record.rec_version = tls_version;
@@ -406,6 +405,8 @@ RES_CODE tls_context_t::tls_record_decrypt(record_ctxt_t* rc)
 
 #if (TLS_MAX_VERSION >= TLS_VERSION_1_1 && TLS_MIN_VERSION <= TLS_VERSION_1_2)
 
+			uint32_t iv_len;
+
 			//TLS 1.1 and 1.2 use an explicit IV
 			if(tls_version >= TLS_VER11)
 			{
@@ -415,18 +416,20 @@ RES_CODE tls_context_t::tls_record_decrypt(record_ctxt_t* rc)
 
 
 				//Adjust the length of the message
-				rc->rec_len -= cipher_info->recordIV_len;
+				iv_len = cipher_info->recordIV_len;
+				rc->rec_len -= iv_len;
 				res = rdc.cipher_algo->cbc_decrypt(rdc.iv, rc->data.get(),
-						rc->data.get(), cipher_info->recordIV_len);
+						rc->data.get(), iv_len);
 				if (res != RES_OK)
 					return res;
+			} else
+				iv_len = 0;
 
-			}
 #endif
 			{
 				//CBC decryption
-				res = rdc.cipher_algo->cbc_decrypt(rdc.iv, rc->data.get() +
-						cipher_info->recordIV_len,	rc->data.get(), rc->rec_len);
+				res = rdc.cipher_algo->cbc_decrypt(rdc.iv, rc->data.get() +	iv_len,
+						rc->data.get(), rc->rec_len);
 				if (res != RES_OK)
 					return res;
 			}
@@ -452,7 +455,8 @@ RES_CODE tls_context_t::tls_record_decrypt(record_ctxt_t* rc)
 			}
 
 			//Remove padding bytes
-			rc->rec_len -= rc->pad_len + 1;
+			rc->pad_len++;
+			rc->rec_len -= rc->pad_len;
 			//Fix the length field of the TLS record
 			rc->tls_record.rec_length = __REV16(rc->rec_len);
 
@@ -653,22 +657,26 @@ RES_CODE tls_context_t::tls_record_read(record_ctxt_t* rc)
 	RES_CODE res;
 
 
+	rc->iv_len = 0;
+	rc->pad_len = 0;
+	rc->tag_len = 0;
+
 	// 1. Read the TLS record header
 	res = tls_read_cbk(&rc->tls_record, sizeof(tls_record_t));
 	if(res == RES_OK)
 	{
 		//2.  check the allocation size
 		rc->rec_len = __REV16(rc->tls_record.rec_length);
+		rc->dig_len = rc->rec_len;
 		if(rc->rec_len)
 		{
-			rc->data = (uint8_t*)tsk_malloc(rc->rec_len);
-			if(!rc->data.get())
-				return RES_OUT_OF_MEMORY;
+			if(rc->msg_reserve(rc->rec_len))
+			{
+				// 3. Read TLS Record contents
+				res = tls_read_cbk(rc->data.get(), rc->rec_len);
+			} else
+				res = RES_OUT_OF_MEMORY;
 		}
-
-		// 3. Read TLS Record contents
-		if(rc->rec_len)
-			res = tls_read_cbk(rc->data.get(), rc->rec_len);
 
 		// 4. Checking
 		if(res == RES_OK)
@@ -680,7 +688,7 @@ RES_CODE tls_context_t::tls_record_read(record_ctxt_t* rc)
 				//Once the server has sent the ServerHello message, enforce
 				//incoming record versions
 				if (rc->tls_record.rec_version != tls_version)
-					return RES_TLS_INVALID_VERSION;
+					res = RES_TLS_INVALID_VERSION;
 			}
 
 			if(change_cipher_received)
@@ -742,32 +750,32 @@ RES_CODE tls_context_t::sslComputeMac(record_ctxt_t* rc, tls_xfer_ctxt_t& xfer, 
 RES_CODE tls_context_t::tls_message_read(record_ctxt_t* rc)
 {
 	RES_CODE res;
-	uint32_t len;
 
 	// Read a TLS record
-	res = tls_record_read(rc);
+	if(rc->rec_len)
+		res = RES_OK;
+	else
+		res = tls_record_read(rc);
 	rc->msg_len = rc->rec_len;
 
 	// Check and loop reading fragments
 	while(res == RES_OK)
 	{
-		len = 0;
-
 		switch(rc->tls_record.rec_type)
 		{
 		case TLS_TYPE_CHANGE_CIPHER_SPEC:
-			len = sizeof(tls_change_cipherspec_t);
+			rc->msg_len = sizeof(tls_change_cipherspec_t);
 			break;
 
 		case TLS_TYPE_ALERT:
-			len = sizeof(tls_alert_t);
+			rc->msg_len = sizeof(tls_alert_t);
 			break;
 
 		case TLS_TYPE_HANDSHAKE:
-			if(rc->msg_len < sizeof(tls_handshake_t))
-				len = sizeof(tls_handshake_t);
+			if(rc->rec_len < sizeof(tls_handshake_t))
+				rc->msg_len = sizeof(tls_handshake_t);
 			else
-				len = sizeof(tls_handshake_t) + static_cast<tls_handshake_t*>((void*)rc->data.get())->get();
+				rc->msg_len = sizeof(tls_handshake_t) + static_cast<tls_handshake_t*>((void*)rc->data.get())->get_handshake_len();
 			break;
 
 		case TLS_TYPE_APPLICATION_DATA:
@@ -778,7 +786,7 @@ RES_CODE tls_context_t::tls_message_read(record_ctxt_t* rc)
 		}
 
 		// read more?
-		if(rc->msg_len >= len)
+		if(rc->rec_len >= rc->msg_len)
 			break;
 		else
 		{
@@ -791,19 +799,15 @@ RES_CODE tls_context_t::tls_message_read(record_ctxt_t* rc)
 					res = RES_TLS_UNEXPECTED_MESSAGE;
 				else
 				{
-					if(rc2.msg_len)
+					if(rc2.rec_len)
 					{
 						uint8_t* data;
 
-						data = rc->data.get();
-						data = (uint8_t*)tsk_realloc(data, rc->msg_len + rc2.msg_len);
+						data = rc->msg_reserve(rc->rec_len + rc2.rec_len);
 						if(data)
 						{
-							rc->data.release();
-							rc->data = data;
-							memcpy(data + rc->msg_len, rc2.data.get(), rc2.msg_len);
-							rc->rec_len += rc2.msg_len;
-							rc->msg_len = rc->rec_len;
+							memcpy(data + rc->rec_len, rc2.data.get(), rc2.rec_len);
+							rc->rec_len += rc2.rec_len;
 						} else
 							res = RES_OUT_OF_MEMORY;
 					}
