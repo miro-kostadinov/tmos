@@ -24,6 +24,17 @@ void TRACE_BUF(const void* buf, unsigned int len)
 	}
 }
 
+void TRACE_HEX(const void* buf, unsigned int len)
+{
+	const char* str = (const char*)buf;
+
+	while(len--)
+	{
+		TRACE("%02X ", *str);
+		str++;
+	}
+}
+
 void TRACE_BUF(const void* buf, unsigned int len, unsigned int color)
 {
 	TRACE1("\e[");

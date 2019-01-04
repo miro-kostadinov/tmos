@@ -23,6 +23,7 @@ void svc_drv_icontrol(DRIVER_INDEX drv_index, unsigned int reason, void * param)
 void usr_trace_str(const char *buf);
 void usr_trace_char(unsigned c);
 void TRACE_BUF(const void* buf, unsigned int len);
+void TRACE_HEX(const void* buf, unsigned int len);
 
 int  locked_inc_byte(volatile unsigned char* Addend);
 int  locked_add_byte(volatile unsigned char* Addend, unsigned int);
