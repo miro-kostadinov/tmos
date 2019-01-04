@@ -171,7 +171,7 @@ RES_CODE EcdhContext::ecdhComputeSharedSecret(uint8_t* output, size_t outputSize
 	EcPoint z;
 
 	//Debug message
-	TRACE1_TLS("Computing Diffie-Hellman shared secret...\r\n");
+	TRACELN1_TLS("Computing Diffie-Hellman shared secret...");
 
 	//Get the length in octets of the prime modulus
 	k = params.p.mpiGetByteLength();
@@ -192,8 +192,8 @@ RES_CODE EcdhContext::ecdhComputeSharedSecret(uint8_t* output, size_t outputSize
 	*outputLength = k;
 
 	//Debug message
-	TRACE_TLS("  Shared secret (%u bytes):\r\n", *outputLength);
-	TRACE_TLS_ARRAY("    ", output, *outputLength);
+	TRACELN_TLS("  Shared secret (%u bytes)", *outputLength);
+//	TRACE_TLS_ARRAY("    ", output, *outputLength);
 
 end:
 	return res;

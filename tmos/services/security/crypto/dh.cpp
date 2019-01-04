@@ -107,7 +107,7 @@ RES_CODE DhContext::dhComputeSharedSecret(uint8_t* output, size_t outputSize, si
 	Mpi z;
 
 	//Debug message
-	TRACE1_TLS("Computing Diffie-Hellman shared secret...\r\n");
+	TRACELN1_TLS("Computing Diffie-Hellman shared secret...");
 
 	//Get the length in octets of the prime modulus
 	k = params.p.mpiGetByteLength();
@@ -133,8 +133,8 @@ RES_CODE DhContext::dhComputeSharedSecret(uint8_t* output, size_t outputSize, si
 		*outputLength = k;
 
 		//Debug message
-		TRACE_TLS("  Shared secret (%u bytes):\r\n", *outputLength);
-		TRACE_TLS_ARRAY("    ", output, *outputLength);
+		TRACELN_TLS("  Shared secret (%u bytes)", *outputLength);
+//		TRACE_TLS_ARRAY("    ", output, *outputLength);
 
 		//End of exception handling block
 	} while (0);

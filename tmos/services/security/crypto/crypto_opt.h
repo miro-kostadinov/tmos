@@ -386,7 +386,7 @@
 #if TRACE_TLS_LEVEL >= TRACE_LEVEL_DEBUG
 #	define TRACELN_TLS(...)			TRACELN(__VA_ARGS__)
 #	define TRACELN1_TLS(...)		TRACELN1(__VA_ARGS__)
-#	define TRACE_TLS_ARRAY(str, ptr, len) {TRACELN1(""); TRACE1(str); TRACE_BUF(ptr, len);}
+#	define TRACE_TLS_ARRAY(str, ptr, len) {TRACELN1(""); TRACE1(str); TRACE_HEX(ptr, len); tsk_sleep(2);}
 #else
 #	define TRACELN_TLS(str,...)
 #	define TRACELN1_TLS(str)
