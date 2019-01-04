@@ -389,6 +389,15 @@ RES_CODE tlsPrf(const uint8_t* secret, size_t secretLength, const char* label,
 		s2 = secret + secretLength - sLength;
 
 	   //First compute A(1) = HMAC_MD5(S1, label + seed)
+		TRACELN_TLS("  hash secret[%u]:", sLength);
+		TRACE_TLS_ARRAY("    ", s1, sLength);
+
+		TRACELN_TLS("  hash seed[%u]:", labelLength+seed1Length+seed2Length);
+		TRACE_TLS_ARRAY("    ", label, labelLength);
+		TRACE_TLS_ARRAY("    ", seed1, seed1Length);
+		if(seed2Length)
+			TRACE_TLS_ARRAY("    ", seed2, seed2Length);
+
 		hmac->Reset(md5.get(), s1, sLength);
 		hmac->Input(label, labelLength);
 		hmac->Input(seed1, seed1Length);
@@ -417,6 +426,8 @@ RES_CODE tlsPrf(const uint8_t* secret, size_t secretLength, const char* label,
 			hmac->Input(a, MD5_DIGEST_SIZE);
 			hmac->Result(a);
 		}
+		TRACELN1_TLS("  md5:");
+		TRACE_TLS_ARRAY("    ", output, outputLength);
 
 		//First compute A(1) = HMAC_SHA1(S2, label + seed)
 		hmac->Reset(sha1.get(), s2, sLength);
@@ -447,6 +458,8 @@ RES_CODE tlsPrf(const uint8_t* secret, size_t secretLength, const char* label,
 			hmac->Input(a, SHA1_DIGEST_SIZE);
 			hmac->Result(a);
 		}
+		TRACELN1_TLS("  sha:");
+		TRACE_TLS_ARRAY("    ", output, outputLength);
 		res = RES_OK;
 	} else
 		res = RES_OUT_OF_MEMORY;
@@ -529,12 +542,19 @@ RES_CODE tls_context_t::tls_generate_keys()
 	if (n > sizeof(keyBlock))
 		return RES_ERROR;
 
+	//Debug message
+	TRACELN1_TLS("Generating keys...");
+	TRACELN1_TLS("  Client random bytes:");
+	TRACE_TLS_ARRAY("    ", &tls_randoms.client_random, 32);
+	TRACELN1_TLS("  Server random bytes:");
+	TRACE_TLS_ARRAY("    ", &tls_randoms.server_random, 32);
+
 	//If a full handshake is being performed, the premaster secret
 	//shall be first converted to the master secret
 	if (!tls_resume)
 	{
 		//Debug message
-		TRACE1_TLS("  Premaster secret:\r\n");
+		TRACELN1_TLS("  Premaster secret:");
 		TRACE_TLS_ARRAY("    ", premasterSecret, premasterSecretLen);
 
 		//Convert the premaster secret to the master secret
@@ -571,7 +591,7 @@ RES_CODE tls_context_t::tls_generate_keys()
 	}
 
 	//Debug message
-	TRACE_TLS("  Master secret:\r\n");
+	TRACELN1_TLS("  Master secret:");
 	TRACE_TLS_ARRAY("    ", masterSecret, 48);
 
 	//Perform key expansion
@@ -602,7 +622,7 @@ RES_CODE tls_context_t::tls_generate_keys()
 
 
 	//Debug message
-	TRACE_TLS("  Key block:\r\n");
+	TRACELN1_TLS("  Key block:");
 	TRACE_TLS_ARRAY("    ", keyBlock, n);
 
 	//TLS operates as a client?
@@ -635,24 +655,24 @@ RES_CODE tls_context_t::tls_generate_keys()
 	//Dump MAC keys for debugging purpose
 	if (cipher_info->mac_key_len > 0)
 	{
-		TRACE1_TLS("  Write MAC key:\r\n");
+		TRACELN1_TLS("  Write MAC key:");
 		TRACE_TLS_ARRAY("    ", wrc.mac_key, cipher_info->mac_key_len);
-		TRACE1_TLS("  Read MAC key:\r\n");
+		TRACELN1_TLS("  Read MAC key:");
 		TRACE_TLS_ARRAY("    ", rdc.mac_key, cipher_info->mac_key_len);
 	}
 
 	//Dump encryption keys for debugging purpose
-	TRACE1_TLS("  Write encryption key:\r\n");
+	TRACELN1_TLS("  Write encryption key:");
 	TRACE_TLS_ARRAY("    ", wrc.enc_key, cipher_info->enc_key_len);
-	TRACE1_TLS("  Read encryption key:\r\n");
+	TRACELN1_TLS("  Read encryption key:");
 	TRACE_TLS_ARRAY("    ", rdc.enc_key, cipher_info->enc_key_len);
 
 	//Dump initialization vectors for debugging purpose
 	if (cipher_info->fixedIV_len > 0)
 	{
-		TRACE1_TLS("  Write IV:\r\n");
+		TRACELN1_TLS("  Write IV:");
 		TRACE_TLS_ARRAY("    ", wrc.iv, cipher_info->fixedIV_len);
-		TRACE1_TLS("  Read IV:\r\n");
+		TRACELN1_TLS("  Read IV:");
 		TRACE_TLS_ARRAY("    ", rdc.iv, cipher_info->fixedIV_len);
 	}
 
@@ -1013,7 +1033,7 @@ RES_CODE tls_context_t::tlsComputeVerifyData(tls_connection_end_t ce)
 	}
 
 	//Debug message
-	TRACE1_TLS("Verify data:\r\n");
+	TRACELN1_TLS("Verify data:");
 	TRACE_TLS_ARRAY("  ", verifyData, verify_data_len);
 
 	//Successful processing
@@ -1390,15 +1410,15 @@ RES_CODE tlsVerifyRsaSignature(const RsaPublicKey* key, const uint8_t* digest,
 	signatureLength = __REV16(signature->length);
 
 	//Debug message
-	TRACE_TLS("RSA signature verification...\r\n");
-	TRACE_TLS("  Modulus:\r\n");
-	TRACE_MPI("    ", &key->n);
-	TRACE_TLS("  Public exponent:\r\n");
-	TRACE_MPI("    ", &key->e);
-	TRACE_TLS("  Message digest:\r\n");
-	TRACE_TLS_ARRAY("    ", digest, MD5_DIGEST_SIZE + SHA1_DIGEST_SIZE);
-	TRACE_TLS("  Signature:\r\n");
-	TRACE_TLS_ARRAY("    ", signature, signatureLength);
+	TRACE_TLS("RSA signature verification...");
+//	TRACE_TLS("  Modulus:\r\n");
+//	TRACE_MPI("    ", &key->n);
+//	TRACE_TLS("  Public exponent:\r\n");
+//	TRACE_MPI("    ", &key->e);
+//	TRACE_TLS("  Message digest:\r\n");
+//	TRACE_TLS_ARRAY("    ", digest, MD5_DIGEST_SIZE + SHA1_DIGEST_SIZE);
+//	TRACE_TLS("  Signature:\r\n");
+//	TRACE_TLS_ARRAY("    ", signature, signatureLength);
 
 	//Get the length in octets of the modulus n
 	k = key->n.mpiGetByteLength();
@@ -1432,8 +1452,8 @@ RES_CODE tlsVerifyRsaSignature(const RsaPublicKey* key, const uint8_t* digest,
 			break;
 
 		//Debug message
-		TRACE_TLS("  Encoded message\r\n");
-		TRACE_TLS_ARRAY("    ", em, k);
+//		TRACE_TLS("  Encoded message\r\n");
+//		TRACE_TLS_ARRAY("    ", em, k);
 
 		//Assume an error...
 		res = RES_TLS_INVALID_SIGNATURE;
