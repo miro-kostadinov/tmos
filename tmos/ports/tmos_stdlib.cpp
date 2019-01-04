@@ -345,11 +345,10 @@ unsigned int ahextoi(const char *ptr )
 	return (res);
 }
 
-unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead)
+unsigned int find_in_list(const char* str, const char* sl, unsigned int* dwRead)
 {
 	unsigned int pos;
 	unsigned int index=1;
-
 
 	while(*sl)
 	{
@@ -374,7 +373,7 @@ unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead)
 	return (0);
 }
 
-const char* szlist_at(STR_LIST sl, unsigned int pos)
+const char* szlist_at(const char * sl, unsigned int pos)
 {
 	while(*sl && pos--)
 	{

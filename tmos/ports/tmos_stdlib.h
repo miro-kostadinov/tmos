@@ -71,7 +71,7 @@ unsigned int ahextoi(const char *ptr );
  *	 -	0, 0  - empty list ("")
  *	 -	'h', 'e', 'l', 'l', 'o', 0, 0 - list with one element ("hello", "")
  */
-typedef const char* STR_LIST;
+typedef char const * const STR_LIST;
 
 /**
  * Macro to create STR_LIST item
@@ -92,7 +92,7 @@ typedef const char* STR_LIST;
  * @param dwRead matched symbols (position in the string)
  * @return index of the matched item or 0
  */
-unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead);
+unsigned int find_in_list(const char* str, const char* sl, unsigned int* dwRead);
 
 /**
  * Return the position of the list item at specific position
@@ -100,7 +100,7 @@ unsigned int find_in_list(const char* str, STR_LIST sl, unsigned int* dwRead);
  * @param pos position
  * @return
  */
-const char* szlist_at(STR_LIST sl, unsigned int pos);
+const char* szlist_at(const char* sl, unsigned int pos);
 
 unsigned int seconds_since(unsigned int time);
 unsigned int ms_since(unsigned int time);
