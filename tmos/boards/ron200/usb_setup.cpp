@@ -194,7 +194,7 @@ const unsigned char productStringDescriptor[] = {
 };
 
 /** List of string descriptors used by the device */
-const unsigned char *stringDescriptors[] = {
+const unsigned char* const stringDescriptors[] = {
 
     languageIdStringDescriptor,
     productStringDescriptor,
