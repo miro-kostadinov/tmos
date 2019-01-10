@@ -226,7 +226,7 @@ _end_loop:
 _flag_n:
         ldr         r2, [r12], #4
         ldr         r3, [sp]
-        subs        r3, r0
+        subs        r3, r0, r3
         str         r3, [r2]
         b           _loop
 
@@ -648,7 +648,7 @@ _dbg_end_loop:
 _dbg_flag_n:
         ldr         r2, [r12], #4
         ldr         r3, [sp]
-        subs        r3, r0
+        subs        r3, r0, r3
         str         r3, [r2]
         b           _dbg_loop
 
