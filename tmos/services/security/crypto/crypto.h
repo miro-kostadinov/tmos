@@ -107,6 +107,7 @@ struct hash_algo_t: public algo_base_t
 {
 	uint8_t 	indx;
 	uint32_t 	total_blocks;
+	bool		Computed;
 
 	hash_algo_t(const hash_info_t* info): algo_base_t(&info->algo_info)
 	{
@@ -122,7 +123,7 @@ struct hash_algo_t: public algo_base_t
 
 	virtual void Reset()
 	{
-
+		Computed = false;
 	};
 	virtual void Input(const void* data, size_t len);
 	virtual void Result(void* digest)=0;
@@ -139,7 +140,11 @@ struct hash_algo_t: public algo_base_t
 		uint8_t* ptr;
 
 		message_digest.clear();
-		Result(nullptr);
+		if(!Computed)
+		{
+			Result(nullptr);
+			Computed = true;
+		}
 		ptr = digest8();
 		for(uint32_t i=0; i < hash_info->digest_size; i++)
 		{
