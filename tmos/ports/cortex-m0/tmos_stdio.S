@@ -372,7 +372,7 @@ _get_precision_val:
 
 _flag_n:
         ldr         r3, [sp, #VSPRINTF_BUF_SIZE]
-        subs        r3, r0
+        subs        r3, r0, r3
         str         r3, [r5]
         b           _loop
 
