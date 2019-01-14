@@ -67,7 +67,7 @@ static void process_exception()
 	msp = (TASK_STACKED_CTX_STRU*)__get_PSP();
 	if ((uint32_t)msp < BASE_SRAM || (uint32_t)msp >= (BASE_SRAM + RAM_SIZE) || ((uint32_t)msp & 3))
 	{
-		exception_record.MMFAR = msp;
+		exception_record.MMFAR = (uint32_t)msp;
 		exception_record.BFAR = 0;
 	} else
 	{
