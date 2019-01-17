@@ -13,7 +13,7 @@
 #include <lcd.h>
 #include <memory.h>
 
-static const char* MB_IDS[] =
+const char* const MB_IDS[] =
 {
 	"Ok",
 	"Retry",
