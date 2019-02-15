@@ -162,5 +162,5 @@ void isr_GPIO_driver(GPIO_DRIVER_INFO* drv_info )
 	status = drv_info->hw_base->GPIOMIS;
 	drv_info->hw_base->GPIOICR = status;
 
-	usr_drv_icontrol(drv_info->info.drv_index, DCR_ISR, (void *)status);
+	svc_drv_icontrol(drv_info->info.drv_index, DCR_ISR, (void *)status);
 }

@@ -1350,7 +1350,7 @@ void LWIP_ISR(LWIP_DRIVER_INFO* drv_info )
     //
     if(ulStatus)
     {
-    	usr_send_signal(&lwipdrv_task, LWIP_THREAD_RXTXSIG);
+    	svc_send_signal(&lwipdrv_task, LWIP_THREAD_RXTXSIG);
     	mac->MACIM &= ~  (ETH_INT_TX |  ETH_INT_RX);
     }
 
