@@ -38,6 +38,7 @@ void sha384_algo_t::Reset()
 
 	indx = 0;
 	total_blocks = 0;
+	Computed = false;
 }
 
 hash_algo_t* new_sha384_hash()

@@ -63,6 +63,7 @@ void sha256_algo_t::Reset()
 
 	indx = 0;
 	total_blocks = 0;
+	Computed = false;
 }
 
 void sha256_algo_t::Result(void* digest)
