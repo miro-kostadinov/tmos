@@ -92,6 +92,12 @@ struct usbmsc_csw_t
 	uint8_t bCSWStatus;               //!< success or failure of the command
 } __attribute__ ((packed)); // GCC
 
+// Usb BOT command block status values
+//
+#define USBMSC_BOT_COMMAND_OK       0x00 ///< Command passed, good status
+#define USBMSC_BOT_COMMAND_FAILED   0x01 ///< Command failed
+#define USBMSC_BOT_COMMAND_ERROR    0x02 ///< Phase error, need to reset the device
+
 struct usbmsc_cs_t
 {
 	usbmsc_cbw_t cbw;				//!< command block wrapper

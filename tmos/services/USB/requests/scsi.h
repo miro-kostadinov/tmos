@@ -140,6 +140,57 @@ struct scsi_cmd_test_unit_ready_t
 
 #define SCSI_TRLEN_TEST_UNIT_READY		0
 
+/// SCSI_CMD_REQUEST_SENSE			0x03
+struct scsi_cmd_request_sense_t
+{
+	uint8_t opcode;
+	uint8_t lun;            ///< Lun (High 3 bits)
+	uint8_t reserved0[2];
+	uint8_t alloc_len;       ///< Allocation length
+	uint8_t reserved1;
+	uint8_t pad[6];
+} __attribute__ ((packed)); // GCC
+
+struct scsi_data_request_sense_t
+{
+	uint8_t error_code;
+	uint8_t reserved0;
+	uint8_t sense_key;       ///< Sense key (low 4 bits)
+	uint8_t information[4];
+	uint8_t add_len;         ///< Additional Sense length, 10
+	uint8_t reserved1[4];
+	uint8_t asc;            ///< Additional Sense Code
+	uint8_t ascq;           ///< Additional Sense Code Qualifier
+	uint8_t reserverd2[4];
+} __attribute__ ((packed)); // GCC
+
+// Convert a LUN number to that in the command
+#define USB_BOOT_LUN(Lun) ((Lun) << 5)
+
+//
+// The Sense Key part of the sense data. Sense data has three levels:
+// Sense key, Additional Sense Code and Additional Sense Code Qualifier
+#define USB_BOOT_SENSE_NO_SENSE         0x00 ///< No sense key
+#define USB_BOOT_SENSE_RECOVERED        0x01 ///< Last command succeed with recovery actions
+#define USB_BOOT_SENSE_NOT_READY        0x02 ///< Device not ready
+#define USB_BOOT_SNESE_MEDIUM_ERROR     0X03 ///< Failed probably because flaw in the media
+#define USB_BOOT_SENSE_HARDWARE_ERROR   0X04 ///< Non-recoverable hardware failure
+#define USB_BOOT_SENSE_ILLEGAL_REQUEST  0X05 ///< Illegal parameters in the request
+#define USB_BOOT_SENSE_UNIT_ATTENTION   0X06 ///< Removable medium may have been changed
+#define USB_BOOT_SENSE_DATA_PROTECT     0X07 ///< Write protected
+#define USB_BOOT_SENSE_BLANK_CHECK      0X08 ///< Blank/non-blank medium while reading/writing
+#define USB_BOOT_SENSE_VENDOR           0X09 ///< Vendor specific sense key
+#define USB_BOOT_SENSE_ABORTED          0X0B ///< Command aborted by the device
+#define USB_BOOT_SENSE_VOLUME_OVERFLOW  0x0D ///< Partition overflow
+#define USB_BOOT_SENSE_MISCOMPARE       0x0E ///< Source data mis-match while verfying.
+
+#define USB_BOOT_ASC_NO_ADDITIONAL_SENSE_INFORMATION  0x00
+#define USB_BOOT_ASC_NOT_READY                        0x04
+#define USB_BOOT_ASC_NO_MEDIA                         0x3A
+#define USB_BOOT_ASC_MEDIA_CHANGE                     0x28
+
+#define SCSI_TRLEN_REQUEST_SENSE		18
+
 /// SCSI_CMD_INQUIRY				0x12
 struct scsi_cmd_inquiry_t
 {

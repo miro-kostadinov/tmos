@@ -50,6 +50,7 @@ struct usb_remote_dev_t
 	RES_CODE set_configuration(uint32_t cfg_indx);
 	RES_CODE set_address(uint32_t adr);
 	RES_CODE set_interface(uint32_t iface_indx, uint32_t alt_set);
+	RES_CODE clr_endpoint_stall(uint32_t indx);
 
 	RES_CODE hdc_init(uint32_t port_indx);
 };

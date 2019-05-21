@@ -317,6 +317,29 @@ RES_CODE usb_remote_dev_t::set_interface(uint32_t iface_indx, uint32_t alt_set)
 	return res;
 }
 
+RES_CODE usb_remote_dev_t::clr_endpoint_stall(uint32_t indx)
+{
+	RES_CODE res;
+
+	req.bmRequestType = USB_REQ_OUT_STANDARD_ENDPOINT;
+	req.bRequest = USBGenericRequest_CLEAR_FEATURE;
+	req.wValue = USBFeatureRequest_ENDPOINTHALT;					// Feature Selector
+	req.wIndex = indx;												// endpoint
+	req.wLength = 0;
+
+	res = std_request(NULL);
+	if(res == RES_OK && usb_drv_info && (indx & 0xF) < USB_NUMENDPOINTS)
+	{
+	    ep_dir_state_t* epdir;
+
+        if(indx & 0x80)
+            epdir = &usb_drv_info->drv_data->endpoints[indx & 0xF].epd_out;
+        else
+            epdir = &usb_drv_info->drv_data->endpoints[indx & 0xF].epd_in;
+		epdir->epd_flags &=  ~EPD_FLAG_DATA1;
+	}
+	return res;
+}
 
 RES_CODE usb_remote_dev_t::hdc_init(uint32_t port_indx)
 {

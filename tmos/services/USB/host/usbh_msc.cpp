@@ -35,8 +35,9 @@ RES_CODE usb_remote_msc_t::get_max_lun()
 //------------------------------------------------------------------------------
 RES_CODE usb_remote_msc_t::msc_command(usbmsc_cs_t* transaction, void* buf, uint32_t len)
 {
-	RES_CODE res;
+	RES_CODE res, res1;
 
+	// send command
 	transaction->cbw.dCBWSignature = USBMSC_CBW_SIGNATURE;
 	transaction->cbw.dCBWTag = ++cb_tag;
 	transaction->cbw.bCBWLUN = lun;
@@ -59,13 +60,88 @@ RES_CODE usb_remote_msc_t::msc_command(usbmsc_cs_t* transaction, void* buf, uint
 				// OUT transaction
 				res = msc_hnd->tsk_write(buf, len, USBMSC_WRITE_TOUT);
 			}
+			if(res != RES_OK && res != RES_FATAL)
+			{
+				// Stall
+				if(res == FLG_DATA )
+				{
+					if(transaction->cbw.bmCBWFlags & USBMSC_CBW_FLAGS_IN)
+						clr_endpoint_stall(msc_hnd->mode.as_bytes[0] | 0x80);
+					else
+						clr_endpoint_stall(msc_hnd->mode.as_bytes[1]);
+				}
+			}
 		}
-		if(res == RES_OK)
-			res = msc_hnd->tsk_read(&transaction->csw, USBMSC_CSW_SIZEOF, USBMSC_READ_TOUT);
-	}
 
+		// get status
+		for (int retry = 0; retry < 3; retry++)
+		{
+			//
+			// Attemp to the read Command Status Wrapper from bulk in endpoint
+			//
+			memclr(&transaction->csw, USBMSC_CSW_SIZEOF);
+			res1 = msc_hnd->tsk_read(&transaction->csw, USBMSC_CSW_SIZEOF, USBMSC_READ_TOUT);
+			if (res1 != RES_OK)
+			{
+				// Stall
+				if (res1 == FLG_DATA)
+				{
+					clr_endpoint_stall(msc_hnd->mode.as_bytes[0] | 0x80);
+				}
+				if(res1 == RES_IDLE && res == RES_IDLE)
+					break;
+				continue;
+			}
+
+			res1 = RES_ERROR;
+			if (transaction->csw.dCSWSignature == USBMSC_CSW_SIGNATURE &&
+					transaction->csw.dCSWTag == cb_tag)
+			{
+				if (transaction->csw.bCSWStatus == USBMSC_CSW_STATUS_PASS)
+					res1 = RES_OK;
+				break;
+			}
+		}
+		if(res == RES_OK && res1 != RES_OK)
+			res = res1;
+
+	}
 	if(res != RES_OK)
-		msc_hnd->tsk_read(&transaction->csw, USBMSC_CSW_SIZEOF, USBMSC_READ_TOUT);
+	{
+		TRACELN("MSC: res=%x", res);
+		msc_reset();
+	}
+	return res;
+}
+
+RES_CODE usb_remote_msc_t::msc_command_with_retry(usbmsc_cs_t* transaction, void* buf, uint32_t len)
+{
+	RES_CODE res;
+	uint32_t time, retry;
+
+	time = CURRENT_TIME;
+	retry = 0;
+	do
+	{
+		res = msc_command(transaction, buf, len);
+		if(res == RES_OK || res == RES_FATAL)
+			break;
+		TRACELN("MSC: cmd res=%x", res);
+		res = msc_request_sense();
+		if( res == RES_FATAL)
+			break;
+
+	    // If the sense data shows the drive is not ready, we need execute the cmd again.
+	    // We limit the upper boundary to 60 seconds.
+		if(res != RES_OK)
+		{
+		    // If the status is other error, then just retry 5 times.
+			if(++retry > 5)
+				break;
+		}
+		res = RES_ERROR;
+	} while( seconds_since(time) < 60);
+
 	return res;
 }
 
@@ -79,7 +155,7 @@ RES_CODE usb_remote_msc_t::cmd_test_unit_ready(usbmsc_cs_t* transaction)
 	memclr(transaction->cbw.CBWCB, USBMSC_MAX_CDBLEN);
 	cdb->opcode = SCSI_CMD_TEST_UNIT_READY;
 
-	return msc_command(transaction, nullptr, SCSI_TRLEN_TEST_UNIT_READY);
+	return msc_command_with_retry(transaction, nullptr, SCSI_TRLEN_TEST_UNIT_READY);
 }
 
 RES_CODE usb_remote_msc_t::cmd_read_capcity(usbmsc_cs_t* transaction)
@@ -96,7 +172,7 @@ RES_CODE usb_remote_msc_t::cmd_read_capcity(usbmsc_cs_t* transaction)
 
 	data.block_len = 0;
 	data.lba = 0;
-	res = msc_command(transaction, &data, SCSI_TRLEN_READ_CAPACITY);
+	res = msc_command_with_retry(transaction, &data, SCSI_TRLEN_READ_CAPACITY);
 	blk_size = __REV(data.block_len);
 	capacity = __REV(data.lba) + 1;
 	return res;
@@ -116,7 +192,7 @@ RES_CODE usb_remote_msc_t::cmd_inquiry(usbmsc_cs_t* transaction)
 	cdb->allocation_length = __REV16(SCSI_TRLEN_INQUIRY);
 
 	memclr(&data, sizeof(data));
-	res = msc_command(transaction, &data, SCSI_TRLEN_INQUIRY);
+	res = msc_command_with_retry(transaction, &data, SCSI_TRLEN_INQUIRY);
 	if(res == RES_OK)
 	{
 		TRACELN("MSC Found:\r\ntype=%x", data.qualifier_type);
@@ -176,21 +252,117 @@ RES_CODE usb_remote_msc_t::init_msd()
 	return res;
 }
 
+
+// Bulk-Only Mass Storage Reset (class-specific request)
+RES_CODE usb_remote_msc_t::msc_reset()
+{
+	RES_CODE res;
+
+	req.bmRequestType = USB_REQ_OUT_CLASS_INTERFACE;
+	req.bRequest = MSCRequest_BOMSR;
+	req.wValue = 0;
+	req.wIndex = pid->bInterfaceNumber;						// interface
+	req.wLength = 0;
+
+	res = std_request(NULL);
+
+	if (res == RES_OK)
+	{
+		// The device shall NAK the host's request until the reset is
+		// complete. We can use this to sync the device and host. For
+		// now just stall 100ms to wait for the device.
+
+		// Clear the Bulk-In and Bulk-Out stall condition.
+		clr_endpoint_stall(msc_hnd->mode.as_bytes[0] | 0x80);
+		clr_endpoint_stall(msc_hnd->mode.as_bytes[1]);
+	}
+	return res;
+}
+
+RES_CODE usb_remote_msc_t::msc_request_sense()
+{
+	usbmsc_cs_t transaction;
+	scsi_data_request_sense_t data;
+	scsi_cmd_request_sense_t* cdb =
+			(scsi_cmd_request_sense_t*) (transaction.cbw.CBWCB);
+	RES_CODE res;
+
+	transaction.cbw.bmCBWFlags = USBMSC_CBW_FLAGS_IN;
+	transaction.cbw.bCBWCBLength = sizeof(*cdb);
+	memclr(transaction.cbw.CBWCB, USBMSC_MAX_CDBLEN);
+	cdb->opcode = SCSI_CMD_REQUEST_SENSE;
+	cdb->lun = USB_BOOT_LUN(lun);
+	cdb->alloc_len = sizeof(scsi_data_request_sense_t);
+	memclr(&data, sizeof(data));
+
+	res = msc_command(&transaction, &data, SCSI_TRLEN_REQUEST_SENSE);
+
+	if (res == RES_OK)
+	{
+		switch (data.sense_key & 0xf)
+		{
+		case USB_BOOT_SENSE_NO_SENSE:
+			// It is not an error if a device does not have additional sense information
+			if (data.asc != USB_BOOT_ASC_NO_ADDITIONAL_SENSE_INFORMATION)
+			{
+				// no response
+				res = RES_ERROR;
+			}
+			break;
+
+		case USB_BOOT_SENSE_RECOVERED:
+			// Suppose hardware can handle this case, and recover later by itself
+			res = RES_IDLE;
+			break;
+
+		case USB_BOOT_SENSE_NOT_READY:
+			res = RES_ERROR;
+			break;
+
+		case USB_BOOT_SENSE_ILLEGAL_REQUEST:
+			res = RES_ERROR; // INVALID_PARAMETER;
+			break;
+
+		case USB_BOOT_SENSE_UNIT_ATTENTION:
+			res = RES_ERROR;
+			break;
+
+		case USB_BOOT_SENSE_DATA_PROTECT:
+			res = RES_ERROR;
+			break;
+
+		default:
+			res = RES_ERROR;
+			break;
+		}
+	}
+
+	return res;
+}
+
 RES_CODE usb_remote_msc_t::msc_read(void* buf, uint32_t sector, uint32_t count)
 {
 	usbmsc_cs_t transaction;
 	scsi_cmd_read_10_t* cdb = (scsi_cmd_read_10_t*)transaction.cbw.CBWCB;
 	RES_CODE res;
 
-	transaction.cbw.bmCBWFlags = USBMSC_CBW_FLAGS_IN;
+	if( (sector +count) > capacity)
+		res = RES_ERROR;
+	else
+	{
+		transaction.cbw.bmCBWFlags = USBMSC_CBW_FLAGS_IN;
 
-	transaction.cbw.bCBWCBLength = sizeof(*cdb);
-	memclr(transaction.cbw.CBWCB, USBMSC_MAX_CDBLEN);
-	cdb->opcode = SCSI_CMD_READ_10;
-	cdb->blocks = __REV16(count);
-	cdb->lba = __REV(sector);
+		transaction.cbw.bCBWCBLength = sizeof(*cdb);
+		memclr(transaction.cbw.CBWCB, USBMSC_MAX_CDBLEN);
+		cdb->opcode = SCSI_CMD_READ_10;
+		cdb->blocks = __REV16(count);
+		cdb->lba = __REV(sector);
 
-	res = msc_command(&transaction, buf, blk_size * count);
+		res = msc_command_with_retry(&transaction, buf, blk_size * count);
+		if(res != RES_OK)
+			msc_reset();
+	}
+
 	return res;
 }
 
@@ -200,15 +372,22 @@ RES_CODE usb_remote_msc_t::msc_write(const void* buf, uint32_t sector, uint32_t 
 	scsi_cmd_write_10_t* cdb = (scsi_cmd_write_10_t*)transaction.cbw.CBWCB;
 	RES_CODE res;
 
-	transaction.cbw.bmCBWFlags = USBMSC_CBW_FLAGS_OUT;
+	if( (sector +count) > capacity)
+		res = RES_ERROR;
+	else
+	{
+		transaction.cbw.bmCBWFlags = USBMSC_CBW_FLAGS_OUT;
 
-	transaction.cbw.bCBWCBLength = sizeof(*cdb);
-	memclr(transaction.cbw.CBWCB, USBMSC_MAX_CDBLEN);
-	cdb->opcode = SCSI_CMD_WRITE_10;
-	cdb->blocks = __REV16(count);
-	cdb->lba = __REV(sector);
+		transaction.cbw.bCBWCBLength = sizeof(*cdb);
+		memclr(transaction.cbw.CBWCB, USBMSC_MAX_CDBLEN);
+		cdb->opcode = SCSI_CMD_WRITE_10;
+		cdb->blocks = __REV16(count);
+		cdb->lba = __REV(sector);
 
-	res = msc_command(&transaction, (void*)buf, blk_size * count);
+		res = msc_command_with_retry(&transaction, (void*)buf, blk_size * count);
+		if(res != RES_OK)
+			msc_reset();
+	}
 	return res;
 
 }

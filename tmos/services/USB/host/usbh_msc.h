@@ -12,8 +12,8 @@
 #include <usb_host.h>
 #include <usb_msc_dtors.h>
 
-#define USBMSC_WRITE_TOUT	500
-#define USBMSC_READ_TOUT	500
+#define USBMSC_WRITE_TOUT	5000
+#define USBMSC_READ_TOUT	2500
 
 struct usb_remote_msc_t: public usb_remote_dev_t
 {
@@ -33,10 +33,13 @@ struct usb_remote_msc_t: public usb_remote_dev_t
 	RES_CODE get_max_lun();
 
 	RES_CODE msc_command(usbmsc_cs_t* transaction, void* buf, uint32_t len);
+	RES_CODE msc_command_with_retry(usbmsc_cs_t* transaction, void* buf, uint32_t len);
 	RES_CODE cmd_test_unit_ready(usbmsc_cs_t* transaction);
 	RES_CODE cmd_read_capcity(usbmsc_cs_t* transaction);
 	RES_CODE cmd_inquiry(usbmsc_cs_t* transaction);
 	RES_CODE init_msd();
+	RES_CODE msc_reset();
+	RES_CODE msc_request_sense();
 	RES_CODE msc_read(void* buf, uint32_t sector, uint32_t count);
 	RES_CODE msc_write(const void* buf, uint32_t sector, uint32_t count);
 	RES_CODE scan_msc(uint32_t port_indx, USBSubClassCode subcls, USBProtocolCode proto);
