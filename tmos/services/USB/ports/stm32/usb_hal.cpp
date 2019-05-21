@@ -2629,8 +2629,9 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 	{
 		TRACE1_USB(" TRERR");
 
-		epdir->epd_state |= ENDPOINT_STATE_ERR;
+		epdir->epd_state |= ENDPOINT_STATE_ERR | ENDPOINT_STATE_IDLE;
 		stm_host_ch_halt(drv_info, ch_regs);
+		tsk_send_signal(drv_info->drv_data->helper_task, USB_DRIVER_SIG_TOUT);
 	}
 
 	if(ch_ints & OTG_HCINT_NAK)			// NAK response received
@@ -2671,7 +2672,13 @@ static void usb_a_ch_int(USB_DRV_INFO drv_info, uint32_t ch_indx)
 			{
 				TRACE1_USB(" EoT ");
 				epdir->epd_pending = hnd->next;
-				usr_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | (hnd->res & FLG_OK));
+				if(epdir->epd_state == ENDPOINT_STATE_STALL)
+				{
+					usr_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | FLG_DATA);
+				} else
+				{
+					usr_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | (hnd->res & FLG_OK));
+				}
 			}
 			epdir->epd_state = ENDPOINT_STATE_IDLE;
 
