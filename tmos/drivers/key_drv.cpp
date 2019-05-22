@@ -42,6 +42,10 @@
 	#define KEY_REPEAT_TIME 	300
 #endif
 
+#ifndef KEY_RD_SETUP_TIME
+#define KEY_RD_SETUP_TIME		5
+#endif
+
 WEAK_C void on_key(unsigned int key)
 {
 
@@ -115,6 +119,15 @@ bool key_rd_data<size>::key_rd_scan(unsigned int drv_ndx, pio_set new_keys[], co
 	return something_pressed;
 }
 
+#if KEY_RD_SETUP_TIME
+static void us_delay (uint32_t usec)
+{
+	usec *= 16;
+	while(usec--)
+		__NOP();
+}
+#endif
+
 void key_drv_thread()
 {
 #if KEY_DRV_COUNT
@@ -154,6 +167,9 @@ void key_drv_thread()
             for(drv_ndx=0; drv_ndx < drv_cnt; drv_ndx++)
             {
            		PIO_Assert(KEY_DRV_PINS[drv_ndx]);
+#if KEY_RD_SETUP_TIME
+          		us_delay(KEY_RD_SETUP_TIME);
+#endif
             	keyrd_hnd.tsk_read(new_keys, sizeof(new_keys));
     			something_pressed |= rd[drv_ndx].key_rd_scan(
     					(drv_ndx * KEY_RD_COUNT)+KEY_FIX_COUNT, new_keys, KEY_RD_PINS);
