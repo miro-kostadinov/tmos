@@ -248,7 +248,7 @@ RES_CODE tls_context_t::tlsFinalizeHandshakeHash(const hash_algo_t* hash,
 		return RES_OUT_OF_MEMORY;
 
 	//Original hash context must be preserved
-	memcpy(temp_hash, hash, sizeof(hash_algo_t) + hash->hash_info->algo_info.block_size
+	memcpy((void*)temp_hash, hash, sizeof(hash_algo_t) + hash->hash_info->algo_info.block_size
 					+ hash->hash_info->digest_size);
 
 #if (TLS_MAX_VERSION >= SSL_VERSION_3_0 && TLS_MIN_VERSION <= SSL_VERSION_3_0)
@@ -1004,7 +1004,7 @@ RES_CODE tls_context_t::tlsComputeVerifyData(tls_connection_end_t ce)
 			return RES_OUT_OF_MEMORY;
 
 		//The original hash context must be preserved
-		memcpy(hash, handshake_hash.get(), sizeof(hash_algo_t) + hash->hash_info->algo_info.block_size
+		memcpy((void*)hash, handshake_hash.get(), sizeof(hash_algo_t) + hash->hash_info->algo_info.block_size
 				+ hash->hash_info->digest_size);
 		//Finalize hash computation
 		hash->Result(nullptr);

@@ -434,7 +434,7 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 			}
 
 			//Keep track of the issuer certificate
-			memcpy(certInfo.get(), issuerCertInfo.get(), sizeof(X509CertificateInfo));
+			memcpy((void*)certInfo.get(), issuerCertInfo.get(), sizeof(X509CertificateInfo));
 
 			//Next certificate
 			p += n;
