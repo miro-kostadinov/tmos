@@ -97,7 +97,7 @@ RES_CODE usb_remote_msc_t::msc_command(usbmsc_cs_t* transaction, void* buf, uint
 			if (transaction->csw.dCSWSignature == USBMSC_CSW_SIGNATURE &&
 					transaction->csw.dCSWTag == cb_tag)
 			{
-				if (transaction->csw.bCSWStatus == USBMSC_CSW_STATUS_PASS)
+				if (transaction->csw.bCSWStatus != USBMSC_CSW_STATUS_PHASEERROR)
 					res1 = RES_OK;
 				break;
 			}
@@ -124,7 +124,9 @@ RES_CODE usb_remote_msc_t::msc_command_with_retry(usbmsc_cs_t* transaction, void
 	do
 	{
 		res = msc_command(transaction, buf, len);
-		if(res == RES_OK || res == RES_FATAL)
+		if(res == RES_FATAL)
+			break;
+		if(res == RES_OK && transaction->csw.bCSWStatus == USBMSC_CSW_STATUS_PASS)
 			break;
 		TRACELN("MSC: cmd res=%x", res);
 		res = msc_request_sense();
@@ -299,41 +301,46 @@ RES_CODE usb_remote_msc_t::msc_request_sense()
 
 	if (res == RES_OK)
 	{
-		switch (data.sense_key & 0xf)
+		if (transaction.csw.bCSWStatus != USBMSC_CSW_STATUS_PASS)
+			res = RES_INVALID_DATA;
+		else
 		{
-		case USB_BOOT_SENSE_NO_SENSE:
-			// It is not an error if a device does not have additional sense information
-			if (data.asc != USB_BOOT_ASC_NO_ADDITIONAL_SENSE_INFORMATION)
+			switch (data.sense_key & 0xf)
 			{
-				// no response
+			case USB_BOOT_SENSE_NO_SENSE:
+				// It is not an error if a device does not have additional sense information
+				if (data.asc != USB_BOOT_ASC_NO_ADDITIONAL_SENSE_INFORMATION)
+				{
+					// no response
+					res = RES_ERROR;
+				}
+				break;
+
+			case USB_BOOT_SENSE_RECOVERED:
+				// Suppose hardware can handle this case, and recover later by itself
+				res = RES_IDLE;
+				break;
+
+			case USB_BOOT_SENSE_NOT_READY:
 				res = RES_ERROR;
+				break;
+
+			case USB_BOOT_SENSE_ILLEGAL_REQUEST:
+				res = RES_ERROR; // INVALID_PARAMETER;
+				break;
+
+			case USB_BOOT_SENSE_UNIT_ATTENTION:
+				res = RES_ERROR;
+				break;
+
+			case USB_BOOT_SENSE_DATA_PROTECT:
+				res = RES_ERROR;
+				break;
+
+			default:
+				res = RES_ERROR;
+				break;
 			}
-			break;
-
-		case USB_BOOT_SENSE_RECOVERED:
-			// Suppose hardware can handle this case, and recover later by itself
-			res = RES_IDLE;
-			break;
-
-		case USB_BOOT_SENSE_NOT_READY:
-			res = RES_ERROR;
-			break;
-
-		case USB_BOOT_SENSE_ILLEGAL_REQUEST:
-			res = RES_ERROR; // INVALID_PARAMETER;
-			break;
-
-		case USB_BOOT_SENSE_UNIT_ATTENTION:
-			res = RES_ERROR;
-			break;
-
-		case USB_BOOT_SENSE_DATA_PROTECT:
-			res = RES_ERROR;
-			break;
-
-		default:
-			res = RES_ERROR;
-			break;
 		}
 	}
 
