@@ -35,7 +35,7 @@
 #define USE_BASE32			1
 #define USE_GUI				0
 #define USE_GUI2			1
-#define USE_AES_TMOS		0 // 1
+#define USE_AES_TMOS		1
 #define STATIC_AES_TABLES	1
 #define	USE_GPIO_EXPANDER 	1
 
@@ -64,12 +64,14 @@
 /// USB stack options
 #define USE_USB				1
 #define USB_ENABLE_DEVICE	1
-#define USB_ENABLE_HOST 	0
-#define USB_ENABLE_OTG 		0
+#define USB_ENABLE_HOST 	1
+#define USB_ENABLE_OTG 		1
 #define USB_ENABLE_CDC		1
 #define USB_ENABLE_PRN		0
 #define USB_ENABLE_HID		0
+#define USB_ENABLE_MSC		1
 
+/// Ethernet
 #define USE_NET				1
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
