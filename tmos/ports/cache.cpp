@@ -12,24 +12,100 @@
 //+			CCache
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+void CCache::set_cache_pos(uint32_t pos)
+{
+	if(pos < cache_offset)
+	{
+		// pos is too old
+		cache_offset =  pos;
+		cache_pos = 0;
+		buf.clear();
+		next.free();
+	} else
+	{
+		pos -= cache_offset;
+		if(pos < buf.length())
+		{
+			// pos is inside the buf
+			cache_pos = pos;
+		} else
+		{
+			cache_offset += buf.length();
+			pos -= buf.length();
+			if(!next.empty())
+			{
+				buf = next;
+				next.free();
+			}
+
+			if(pos < buf.length())
+			{
+				cache_pos = pos;
+			} else
+			{
+				cache_offset +=  pos;
+				cache_pos = 0;
+				buf.clear();
+			}
+		}
+	}
+}
+
 /**
  * Reads single character from the cached object
  * @return  : 0, success - symbol
  */
 char CCache::getc()
 {
-	char c;
+	if(cache_pos >= buf.length())
+		if (load_next() != RES_OK)
+			return 0;
 
-	if (pos)
+	return buf.c_str()[cache_pos++];
+}
+
+/**
+ * Returns the character from top of the cached object
+ * @return : 0, success - symbol
+ */
+char CCache::topc()
+{
+	if(cache_pos >= buf.length())
+		if (load_next() != RES_OK)
+			return 0;
+
+	return buf.c_str()[cache_pos];
+}
+
+/**
+ * Reads single character from the cached object in reverse direction
+ * @return
+ */
+char CCache::getc_rev()
+{
+	if (cache_pos)
 	{
-		c = *pos++;
-		if (c || ((unsigned) (pos - buf.c_str()) <= buf.length()))
-			return (c);
+		return buf.c_str()[--cache_pos];
+	} else
+	{
+		if(cache_offset)
+		{
+			uint32_t rev_seek;
+
+			rev_seek = min(16u, cache_offset);
+			cache_offset -= rev_seek;
+			buf.clear();
+			next.free();
+			if (load_next() == RES_OK && rev_seek <= buf.length())
+			{
+				cache_pos = rev_seek;
+				return buf.c_str()[--cache_pos];
+			}
+			cache_pos = rev_seek;
+		}
 	}
 
-	if (load() == RES_OK)
-		return (*pos++);
-	return (0);
+	return 0;
 }
 
 /**
@@ -41,22 +117,21 @@ RES_CODE CCache::getc(char& c)
 {
 	RES_CODE res;
 
-	if (pos)
-	{
-		if ((c = *pos++) || ((unsigned) (pos - buf.c_str()) <= buf.length()))
-			return RES_OK;
-	}
+	if(cache_pos >= buf.length())
+		res = load_next();
+	else
+		res = RES_OK;
 
-	res = load();
 	if (res == RES_OK)
-		c = *pos++;
+		c = buf.c_str()[cache_pos++];
+
 	return (res);
 }
 
 /**
  * Reads print character (skip white spaces) from the cached object
  * @param c - reference to store the character
- * @return RES_OK or error returned from load()
+ * @return RES_OK or error returned from load_next()
  */
 RES_CODE CCache::get_pc(char&c)
 {
@@ -77,25 +152,26 @@ RES_CODE CCache::get_pc(char&c)
 
 /**
  * Skip white spaces
- * @return RES_OK or error returned from load()
+ * @return RES_OK or error returned from load_next()
  */
 RES_CODE CCache::skip_ws()
 {
 	RES_CODE res;
+	const char* ptr;
+	uint32_t len;
 
 	do
 	{
-		if (pos)
+		ptr = buf.c_str();
+		len = buf.length();
+		while(cache_pos < len)
 		{
-			do
-			{
-				if (*pos > ' ')
-					return RES_OK;
-				pos++;
-			} while ((unsigned) (pos - buf.c_str()) <= buf.length());
+			if (ptr[cache_pos] > ' ')
+				return RES_OK;
+			cache_pos++;
 		}
 
-		res = load();
+		res = load_next();
 	} while (res == RES_OK);
 
 	return (res);
@@ -110,23 +186,58 @@ RES_CODE CCache::skip_ws()
 RES_CODE CCache::skip_char(char c)
 {
 	RES_CODE res;
+	const char* ptr;
+	uint32_t len;
 
 	do
 	{
-		if (pos)
+		ptr = buf.c_str();
+		len = buf.length();
+		while(cache_pos < len)
 		{
-			const char* end = buf.c_str() + buf.length();
-			while (pos < end)
-			{
-				if (*pos++ == c)
-					return RES_OK;
-			}
+			if (ptr[cache_pos++] == c)
+				return RES_OK;
 		}
-
-		res = load();
+		res = load_next();
 	} while (res == RES_OK);
 
 	return (res);
+}
+
+/**
+ *  Skips XML comments
+ */
+void CCache::skip_xml_comments()
+{
+	bool found;
+
+	do
+	{
+		found = false;
+
+		if(match("<!--") == RES_OK)
+		{
+			found = true;
+			while(match("-->") == RES_INVALID_DATA)
+			{
+				if(!getc())
+					break;
+			}
+		}
+		else
+		{
+			if(match("<?") == RES_OK)
+			{
+				found = true;
+				while(match("?>") == RES_INVALID_DATA)
+				{
+					if(!getc())
+						break;
+				}
+			}
+		}
+
+	} while(found);
 }
 
 /**
@@ -135,10 +246,23 @@ RES_CODE CCache::skip_char(char c)
  */
 bool CCache::ungetc()
 {
-	if (pos > buf.c_str())
+	if (cache_pos)
 	{
-		pos--;
+		cache_pos--;
 		return (true);
+	} else
+	{
+		if(cache_offset)
+		{
+			if(!buf.empty())
+			{
+				buf += next;
+				next = buf;
+				buf.clear();
+			}
+			cache_offset--;
+			return (true);
+		}
 	}
 
 	return (false);
@@ -147,33 +271,36 @@ bool CCache::ungetc()
 /**
  * Read a line from the cached object
  * @param var - CSTRING where to store the line
- * @return RES_OK or error returned from load()
+ * @return RES_OK or error returned from load_next()
  */
 RES_CODE CCache::readline(CSTRING& var)
 {
-	unsigned int res;
-	int i;
+	RES_CODE res;
 
 	do
 	{
-		if (pos)
+		int len = buf.length() - cache_pos;
+
+		if(len > 0)
 		{
-			res = buf.c_str() + buf.length() - pos; //max size
-			i = 0;
-			while (res--)
+			const char* ptr = buf.c_str()+ cache_pos;
+			int i = 0;
+
+			do
 			{
-				if (!pos[i] || pos[i] == '\n')
+				if (!ptr[i] || ptr[i] == '\n')
 				{
 					//we found \n or \0
-					var.append(pos, i);
-					pos += i + 1;
+					var.append(ptr, i);
+					cache_pos += i + 1;
 					return RES_OK;
 				}
-				i++;
-			}
-			var.append(pos, i);
+			} while(++i < len);
+
+			var.append(ptr, len);
 		}
-		res = load();
+
+		res = load_next();
 	} while (res == RES_OK);
 
 	return (res);
@@ -192,21 +319,26 @@ RES_CODE CCache::readline(CSTRING& str, unsigned int time)
 }
 
 /**
- *  Default cache load method
+ *  Default cache load_next method
  *
  * @return
  */
-RES_CODE CCache::load()
+RES_CODE CCache::load_next()
 {
-	pos = NULL;
+	cache_offset += buf.length();
+	cache_pos = 0;
 
-	buf = next;
-	next.clear();
+	if(next.empty())
+	{
+		buf.clear(); // avoid memory release
 
-	if (buf.empty())
 		return RES_EOF;
+	} else
+	{
+		buf = next;
+		next.clear();
+	}
 
-	pos = buf.c_str();
 	return RES_OK;
 }
 
@@ -267,30 +399,104 @@ RES_CODE CCache::get_name(CSTRING& var)
 }
 
 /**
+ * Repeat string from position
+ * @param str
+ * @param from
+ * @return
+ */
+RES_CODE CCache::repeat_from(CSTRING& str, uint32_t from)
+{
+	uint32_t pos;
+	RES_CODE res= RES_OK;
+	int start, len;
+
+	pos = cache_offset + cache_pos;
+	while(from < pos)
+	{
+		start = from - cache_offset;
+		len = buf.length() - start;
+		if(start < 0 || len <= 0)
+		{
+			// it's not in the cache anymore
+			set_cache_pos(from);
+			res = load_next();
+			if(res != RES_OK)
+				break;
+		} else
+		{
+			// cache_offset <= from < pos  copy [start.. pos-offset]
+			len = min(pos-from, (unsigned)len);
+			from += len;
+			str.append(buf.c_str()+start, len);
+		}
+	}
+	set_cache_pos(pos);
+	return res;
+}
+
+const char* CCache::get_cptr(uint32_t len)
+{
+	if(cache_pos >= buf.length())
+		if (load_next() != RES_OK)
+			return nullptr;
+
+	// not enough in the cache?
+	if((cache_pos + len) > buf.length())
+	{
+		//nope, free some space
+		if(cache_pos)
+		{
+			buf.erase(0, cache_pos);
+			cache_offset += cache_pos;
+			cache_pos = 0;
+		}
+
+		if(!next.empty())
+		{
+			buf += next;
+			next.free();
+		}
+
+		//check again
+		if(len > buf.length())
+		{
+			CSTRING s;
+
+			s = buf;
+			len = cache_offset;
+			load_next();
+			s += buf;
+			buf = s;
+			cache_offset = len;
+		}
+
+	}
+	return buf.c_str()+ cache_pos;
+}
+
+/**
  * Puts a string in the cache line
  * @param var
  * @return
  */
 RES_CODE CCache::buffer(CSTRING &var)
 {
-	unsigned int len;
-
 	if (!var.empty())
 	{
-		if (pos)
+		if(cache_pos < buf.length())
 		{
-			len = buf.length() - (pos - buf.c_str());
-			if (len)
+			if(cache_pos)
 			{
-				CSTRING s(pos, len);
-				if (next.empty())
-					next = s;
-				else
-					next = s + next;
+				cache_offset += cache_pos;
+				buf.erase(0, cache_pos);
 			}
-		}
+			buf += next;
+			next = buf;
+		} else
+			cache_offset += buf.length();
+
+		cache_pos = 0;
 		buf = var;
-		pos = (char*) buf.c_str();
 	}
 	return RES_OK;
 }
@@ -306,35 +512,42 @@ RES_CODE CCache::match(const char* str)
 
 	res = skip_ws();
 
-	if (res == RES_OK)
+	if (res == RES_OK && str)
 	{
-		const char* ptr = str;
+		uint32_t start_pos = get_cache_pos();
+		const char* ptr;
 
-		if (ptr)
+		if(cache_pos >= buf.length())
 		{
-			while (*ptr)
-			{
-				char c;
-
-				res = getc(c);
-				if (res != RES_OK)
-					break;
-
-				if (c != *ptr++)
-				{
-					for (unsigned int i = ptr - str; i; i--)
-						if (!ungetc())
-						{
-							CSTRING s(str, i);
-							buffer(s);
-						}
-					res = RES_INVALID_DATA;
-					break;
-				}
-
-			}
+			res = load_next();
 		}
-
+		if(res == RES_OK)
+		{
+			ptr = buf.c_str();
+			while(*str)
+			{
+				if(*str == ptr[cache_pos])
+				{
+					str++;
+					cache_pos++;
+				} else
+				{
+					if(cache_pos >= buf.length())
+					{
+						res = load_next();
+						if(res != RES_OK)
+							break;
+						ptr = buf.c_str();
+					} else
+					{
+						res = RES_INVALID_DATA;
+						break;
+					}
+				}
+			}
+			if(res != RES_OK)
+				set_cache_pos(start_pos);
+		}
 	}
 
 	return (res);
@@ -348,42 +561,189 @@ RES_CODE CCache::match(const char* str)
 RES_CODE CCache::match_name(const char* str)
 {
 	RES_CODE res;
+	uint32_t pos;
 
+	pos = get_cache_pos();
 	res = match(str);
 
 	if (res == RES_OK)
 	{
-		char c;
-		res = getc(c);
+		char c = topc();
 
-		if (res == RES_OK)
+		if (IS_ALPHANUM(c) || c == ':' || c == '_' || c == '-' || c == '.')
 		{
-			ungetc();
-			if (IS_ALPHANUM(c) || c == ':' || c == '_' || c == '-' || c == '.')
-			{
-				//this is not a name
-				unsigned int len = strlen(str);
-
-				while (len)
-				{
-					if (!ungetc())
-					{
-						CSTRING s(str, len);
-						buffer(s);
-						break;
-					}
-					len--;
-
-				}
-				res = RES_INVALID_DATA;
-			}
+			//this is not a name
+			set_cache_pos(pos);
+			res = RES_INVALID_DATA;
 		}
-		else if (res == RES_EOF)
-			res = RES_OK;
 	}
 
 	return (res);
 }
+
+RES_CODE CCache::matchc(char c)
+{
+	RES_CODE res;
+
+	if(cache_pos >= buf.length())
+		res = load_next();
+	else
+		res = RES_OK;
+
+	if (res == RES_OK)
+	{
+		if(c == buf.c_str()[cache_pos])
+			cache_pos++;
+		else
+			res = RES_INVALID_DATA;
+	}
+	return (res);
+}
+
+bool CCache::match_uint()
+{
+	char c, sign;
+
+	c = topc();
+	if(c == '+')
+	{
+		sign = c;
+		getc();
+		c = topc();
+	} else
+		sign = 0;
+
+	if(IS_DIGIT(c))
+	{
+		unsigned int old_val, new_val;
+
+		new_val=0;
+		do
+		{
+			old_val = new_val;
+			new_val *= 10;
+			new_val += c - '0';
+			if(new_val < old_val)
+				break; //overflow
+			getc();
+			c = topc();
+		} while ( IS_DIGIT(c) );
+		return true;
+	}
+	if(sign)
+		ungetc();
+	return false;
+
+}
+
+bool CCache::match_long()
+{
+	char c, sign;
+
+	c = topc();
+	if(c == '-'|| c == '+')
+	{
+		sign = c;
+		getc();
+		c = topc();
+	} else
+		sign = 0;
+
+	if(IS_DIGIT(c))
+	{
+		unsigned long long val;
+
+		val=0;
+		do
+		{
+			val *= 10;
+			val += c - '0';
+			if(val >> 63)
+				break; //overflow
+
+			getc();
+			c = topc();
+		} while ( IS_DIGIT(c) );
+		return true;
+	}
+	if(sign)
+		ungetc();
+	return false;
+}
+
+bool CCache::match_ulong()
+{
+	char c, sign;
+
+	c = topc();
+	if(c == '+')
+	{
+		sign = c;
+		getc();
+		c = topc();
+	} else
+		sign = 0;
+
+	if(IS_DIGIT(c))
+	{
+		unsigned long long val;
+
+		val=0;
+		do
+		{
+			val *= 10;
+			val += c - '0';
+			if(val >> 63)
+				break; //overflow
+
+			getc();
+			c = topc();
+		} while ( IS_DIGIT(c) );
+		return true;
+	}
+	if(sign)
+		ungetc();
+	return false;
+}
+
+bool CCache::match_uamount()
+{
+	if(match_ulong())
+	{
+		if(topc() == '.')
+		{
+			getc();
+			if(IS_DIGIT(topc()))
+			{
+				getc();
+				if(IS_DIGIT(topc()))
+					getc();
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
+bool CCache::match_amount()
+{
+	if(match_long())
+	{
+		if(topc() == '.')
+		{
+			getc();
+			if(IS_DIGIT(topc()))
+			{
+				getc();
+				if(IS_DIGIT(topc()))
+					getc();
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //+			CCachedHandle
@@ -392,35 +752,22 @@ RES_CODE CCache::match_name(const char* str)
  * Load (virtual) from handle
  * @return
  */
-RES_CODE CCachedHandle::load()
+RES_CODE CCachedHandle::load_next()
 {
+	RES_CODE res;
 	unsigned int len;
 
-	if (!next.empty())
+	res = CCache::load_next();
+	if(res == RES_EOF)
 	{
-
-		buf = next;
-		next.clear();
-
-		pos = buf.c_str();
-		return RES_OK;
+		len = buf.reserve(size);
+		if (len)
+		{
+			res = hnd->tsk_resume_read((void*) buf.c_str(), len);
+			buf.m_set_size(len - hnd->len);
+		} else
+			res = RES_OUT_OF_MEMORY;
 	}
-
-	len = buf.reserve(size);
-	if (len)
-	{
-		pos = (char*) buf.c_str();
-		hnd->tsk_resume_read((void*) pos, len);
-		len -= hnd->len;
-#if USE_CSTRING
-		buf.storage.ram->len = len;
-		buf.storage.ram->buf[len] = 0;
-#else
-		buf.m_set_size(len);
-#endif
-		return (hnd->res);
-	}
-
-	return RES_OUT_OF_MEMORY;
+	return res;
 }
 

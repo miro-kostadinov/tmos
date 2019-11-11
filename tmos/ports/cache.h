@@ -15,60 +15,67 @@
  */
 struct CCache
 {
+protected:
 	//-- members
-	CSTRING buf; 		//!< buffer holding the cached content
-	CSTRING next; 		//!< buffer holding queued content
-	const char* pos; 	//!< position to read from buf
-	unsigned int size;  //!< cache line size
+	CSTRING buf; 			//!< buffer holding the cached content
+	CSTRING next; 			//!< buffer holding queued content
+	uint32_t cache_pos; 	//!< position to read from buf
+	uint32_t cache_offset;
 
+public:
 	/** Default constructor	**/
 	CCache() :
-			buf(), next(), pos(NULL), size(CACHE_DEFAULT_SIZE)
+			buf(), next(), cache_pos(0), cache_offset(0)
 	{
 	}
-	;
 
 	/** Construct from CSTRING **/
 	CCache(const CSTRING& s) :
-		buf(s), next(), pos(buf.c_str()), size(CACHE_DEFAULT_SIZE)
+		buf(s), next(), cache_pos(0), cache_offset(0)
 	{
 	}
-	;
+
 	/** Construct from char* 	**/
 	CCache(const char *str) :
-		buf(str), next(), pos(buf.c_str()), size(CACHE_DEFAULT_SIZE)
+		buf(str), next(), cache_pos(0), cache_offset(0)
 	{
 	}
-	;
-	/** Construct with custom buffer size **/
-	CCache(unsigned int sz) :
-#if USE_CSTRING
-		next(), pos(0), size(sz)
-#else
-		buf(), next(), pos(0), size(sz)
-#endif
-	{
-		buf.reserve(sz);
-	}
-	;
+
 	virtual ~CCache(){};
 
+	uint32_t get_cache_pos()
+	{
+		return cache_offset + cache_pos;
+	}
+	void set_cache_pos(uint32_t pos);
+
 	char getc(); // get 1 char
+	char topc();
+	char getc_rev(); // get 1 char in reverse
 	RES_CODE getc(char& c);
 	RES_CODE get_pc(char&c);
 	RES_CODE skip_ws();
 	RES_CODE skip_char(char c);
+	void skip_xml_comments();
 	bool ungetc();
 	RES_CODE readline(CSTRING& var);
 	RES_CODE readline(CSTRING& str, unsigned int time);
 	RES_CODE buffer(CSTRING& var);
 	RES_CODE get_name(CSTRING& var);
+	RES_CODE repeat_from(CSTRING& str, uint32_t from);
+	const char* get_cptr(uint32_t len);
 
 	RES_CODE match(const char* str);
 	RES_CODE match_name(const char* str);
+	RES_CODE matchc(char c);
+	bool match_uint();
+	bool match_ulong();
+	bool match_long();
+	bool match_uamount();
+	bool match_amount();
 
 protected:
-	virtual RES_CODE load();
+	virtual RES_CODE load_next();
 
 };
 
@@ -76,15 +83,17 @@ protected:
 struct CCachedHandle: CCache
 {
 	HANDLE hnd;		//!< handle to be cached
+	unsigned int size;  //!< cache line size
+
 	/// Constructor
 	CCachedHandle(HANDLE h, unsigned int sz) :
-		CCache(sz), hnd(h)
+		CCache(), hnd(h)
 	{
+		buf.reserve(sz);
 	}
-	;
 
 protected:
-	RES_CODE load() override;
+	RES_CODE load_next() override;
 
 };
 
