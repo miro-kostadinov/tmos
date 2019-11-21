@@ -65,6 +65,12 @@ extern const char font10x12_cp1251[];
 extern const char font10x14_cp1251[];
 extern const char font10x21_cp1251[];
 
+extern const char font5x7_cp1252[];
+extern const char font7x9_cp1252[];
+extern const char font10x12_cp1252[];
+extern const char font10x14_cp1252[];
+extern const char font10x21_cp1252[];
+
 #endif
 
 
