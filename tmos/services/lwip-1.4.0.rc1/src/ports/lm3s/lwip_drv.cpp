@@ -522,10 +522,32 @@ static void lwIPServiceTimers(struct netif *netif)
        	    if (netif->flags & NETIF_FLAG_LINK_UP)
 			{
 #if LWIP_DHCP
-                autoip_stop(netif);
-                dhcp_start(netif);
+				autoip_stop(netif);
+				dhcp_stop(netif);
 #endif
 				netif_set_link_down(netif);
+
+#if LWIP_DHCP
+				if (drv_data->ip_addr_mode == IPADDR_USE_DHCP)
+				{
+					dhcp_start(netif);
+				}
+#endif
+
+				//
+				// Start AutoIP, if enabled and DHCP is not.
+				//
+#if LWIP_AUTOIP
+				if (drv_data->ip_addr_mode == IPADDR_USE_AUTOIP)
+				{
+					autoip_start(netif);
+				}
+#endif
+
+				//
+				// Bring the interface up.
+				//
+				netif_set_up(netif);
 			}
 		}
 		else
