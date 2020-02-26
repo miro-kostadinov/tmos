@@ -792,7 +792,7 @@ void usb_hal_ept_config(USB_DRV_INFO drv_info, const USBGenericDescriptor* pDesc
 {
     Endpoint *pEndpoint;
     unsigned int eptnum, reg;
-    EndpointAttribute_TransferType ept_type;
+    EndpointAttribute_TransferType ept_type = ENDPOINT_TYPE_CONTROL;
     EndpointDirection ept_dir = ENDPOINT_DIRECTION_OUT;
     USB_Type* hw_base = drv_info->hw_base;
 

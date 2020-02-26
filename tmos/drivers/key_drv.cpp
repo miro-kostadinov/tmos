@@ -60,8 +60,6 @@ static void key_post(unsigned int key)
     on_key(key);
 }
 
-#include "key_drv.h"
-
 template <const unsigned int size>
 struct key_rd_data
 {
@@ -119,7 +117,7 @@ bool key_rd_data<size>::key_rd_scan(unsigned int drv_ndx, pio_set new_keys[], co
 	return something_pressed;
 }
 
-#if KEY_RD_SETUP_TIME
+#if KEY_DRV_COUNT && KEY_RD_SETUP_TIME
 static void us_delay (uint32_t usec)
 {
 	usec *= 16;
