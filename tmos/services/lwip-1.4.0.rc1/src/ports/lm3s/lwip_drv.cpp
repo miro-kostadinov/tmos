@@ -521,8 +521,10 @@ static void lwIPServiceTimers(struct netif *netif)
         	mac->MDIX  ^= MAC_MDIX_EN;
        	    if (netif->flags & NETIF_FLAG_LINK_UP)
 			{
-#if LWIP_DHCP
+#if LWIP_AUTOIP
 				autoip_stop(netif);
+#endif
+#if LWIP_DHCP
 				dhcp_stop(netif);
 #endif
 				netif_set_link_down(netif);
@@ -533,20 +535,13 @@ static void lwIPServiceTimers(struct netif *netif)
 					dhcp_start(netif);
 				}
 #endif
-
-				//
-				// Start AutoIP, if enabled and DHCP is not.
-				//
 #if LWIP_AUTOIP
 				if (drv_data->ip_addr_mode == IPADDR_USE_AUTOIP)
 				{
 					autoip_start(netif);
 				}
 #endif
-
-				//
 				// Bring the interface up.
-				//
 				netif_set_up(netif);
 			}
 		}
@@ -1372,7 +1367,7 @@ void LWIP_ISR(LWIP_DRIVER_INFO* drv_info )
     //
     if(ulStatus)
     {
-    	svc_send_signal(&lwipdrv_task, LWIP_THREAD_RXTXSIG);
+    	usr_send_signal(&lwipdrv_task, LWIP_THREAD_RXTXSIG);
     	mac->MACIM &= ~  (ETH_INT_TX |  ETH_INT_RX);
     }
 
