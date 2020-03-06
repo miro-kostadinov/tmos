@@ -380,8 +380,8 @@ void isr_SPI_driver(SPI_DRIVER_INFO* drv_info )
 		}
 
 		drv_data->pending = hnd->next;
-//		usr_HND_SET_STATUS(hnd, RES_SIG_OK);
-		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+		usr_HND_SET_STATUS(hnd, RES_SIG_OK);
+//		svc_HND_SET_STATUS(hnd, RES_SIG_OK);
 
 		if( !drv_data->pending )
 		{
