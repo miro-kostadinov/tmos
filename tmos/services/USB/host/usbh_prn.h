@@ -14,12 +14,13 @@
 
 struct usb_remote_prn_t: public usb_remote_dev_t
 {
-	uint8_t				epts[2];
+	HANDLE 				epi_hnd;
 	CSTRING 			device_id;
 	uint16_t 			port_status;
 	USBInterfaceDescriptor* pid;
 
-	usb_remote_prn_t(HANDLE h1): usb_remote_dev_t(h1), port_status(0), pid(NULL) {};
+	usb_remote_prn_t(HANDLE h1, HANDLE hi1): usb_remote_dev_t(h1),
+			epi_hnd(hi1), port_status(0), pid(nullptr) {};
 
 	void clean() override;
 

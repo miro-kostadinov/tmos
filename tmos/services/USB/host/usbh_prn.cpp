@@ -122,9 +122,12 @@ RES_CODE usb_remote_prn_t::scan_printer(uint32_t port_indx)
 	// select EPT_0 and device address
 	ep0_hnd->mode.as_bytes[0] = EPT_0; // RX pipe
 	ep0_hnd->mode.as_bytes[1] = EPT_0; // TX pipe
+	epi_hnd->mode.as_bytes[0] = EPT_0;
+	epi_hnd->mode.as_bytes[1] = EPT_0;
 	res = hdc_init(port_indx);
 	if(res == RES_OK)
 	{
+		epi_hnd->mode0 = ep0_hnd->mode0;  // device hub port
 		if(dev_descriptor.bDeviceClass == INTERFACE_DEFINED_CLASS)
 		{
 			//loop the configurations
@@ -157,11 +160,9 @@ RES_CODE usb_remote_prn_t::scan_printer(uint32_t port_indx)
 
 							if(res == RES_OK)
 							{
-								epts[0] = 0;
-								epts[1] = 0;
 								for(int i=0; i<pid->bNumEndpoints && i<2; i++)
 								{
-									USBEndpointDescriptor* ped;
+									const USBEndpointDescriptor* ped;
 									int config_fifo;
 
 									ped = usb_get_enpoint(config_descriptor, i, pid->bInterfaceNumber);
@@ -171,21 +172,15 @@ RES_CODE usb_remote_prn_t::scan_printer(uint32_t port_indx)
 										config_fifo = 0;
 									else
 										config_fifo = 1;
-									if(ped->bEndpointAddress & 0x80)
+									if( ped->bEndpointAddress & 0x80 )
 									{
-										//IN
-										epts[1] = ped->bEndpointAddress & 0x7F;
-										ep0_hnd->mode.as_bytes[0] = epts[1]; // RX pipe
-										ped->bEndpointAddress = 2;
-
+										epi_hnd->mode.as_bytes[0] = ped->bEndpointAddress & 0x7F; // RX pipe
 									} else
 									{
-										//OUT
-										epts[0] = ped->bEndpointAddress;
-										ep0_hnd->mode.as_bytes[0] = epts[0]; // TX pipe
-										ped->bEndpointAddress = 0x81;
+										epi_hnd->mode.as_bytes[1] = ped->bEndpointAddress; // TX pipe
 									}
-									usb_svc_configendpoint(ep0_hnd, &ped->as_generic, config_fifo);
+									epi_hnd->mode.as_ushort[1] = ep0_hnd->mode.as_ushort[1]; //drv_state_cnt
+									usb_svc_configendpoint(epi_hnd, &ped->as_generic, config_fifo);
 									ep0_hnd->mode.as_bytes[0] = EPT_0;
 								}
 								return res;

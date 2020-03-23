@@ -66,7 +66,7 @@
 #define USB_ENABLE_HOST 	1
 #define USB_ENABLE_OTG 		1
 #define USB_ENABLE_CDC		1
-#define USB_ENABLE_PRN		0
+#define USB_ENABLE_PRN		1
 #define USB_ENABLE_HID		1
 #define USB_ENABLE_MSC		1
 #define USB_ENABLE_VID		1
