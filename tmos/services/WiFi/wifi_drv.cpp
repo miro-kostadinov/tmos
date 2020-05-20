@@ -84,7 +84,20 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
     		    }  else
     		    {
     		    	res = RES_SIG_ERROR;
-    		    }
+    		    	if(drv_data->wifi_module)
+    		    	{
+    		    		switch(client->cmd)
+    		    		{
+//    		    		case GSM_DRV_OFF_CMD:
+//    		    			res = gsm_drv_off(drv_data->gsm_module, client);
+//    		    			break;
+    		    		case CMD_WIFI_UPGRADE:
+        		    		drv_data->wifi_module->module_upgrade((HANDLE)client->dst.as_voidptr);
+        					res = RES_SIG_OK;
+    		    			break;
+    		    		}
+    		    	}
+   		    }
 
             	if(res & FLG_SIGNALED)
             	{

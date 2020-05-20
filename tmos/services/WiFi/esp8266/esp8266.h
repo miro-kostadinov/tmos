@@ -83,8 +83,10 @@ struct esp8266_module: public wifi_module_type
 #endif
     wifi_notify_t notify_state;
     unsigned int  wifi_pin_pwr;
+    unsigned int  wifi_pin_boot;
 
-    esp8266_module(const WIFI_DRIVER_INFO* pinfo, unsigned int pwr_pin =0, unsigned int rst_pin=0 )
+    esp8266_module(const WIFI_DRIVER_INFO* pinfo, unsigned int pwr_pin =0,
+    		unsigned int rst_pin=0, unsigned int boot_pin =0)
     	:wifi_module_type(pinfo, rst_pin)
 		{
 				used_sockets = 0;
@@ -108,6 +110,7 @@ struct esp8266_module: public wifi_module_type
 					closed_sockets[i] = true;
 				}
 				wifi_pin_pwr = pwr_pin;
+				wifi_pin_boot = boot_pin;
 		};
 
 	RES_CODE wifi_echo_off(bool lowlevel, uint32_t indx);
@@ -153,6 +156,8 @@ struct esp8266_module: public wifi_module_type
 #if USE_WIFI_ESP8266 < 3 // version 3.0
     bool is_data_received(unsigned char sock_state);
 #endif
+    virtual RES_CODE module_upgrade(HANDLE hnd);
+
 };
 
 bool wifi_get_param(const char*row, CSTRING& param, unsigned int num);

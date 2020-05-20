@@ -1766,3 +1766,319 @@ RES_CODE esp8266_module::wifi_sock_addr(CSocket* sock)
 	return RES_SIG_ERROR;
 }
 
+RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
+{
+	char gsm_ack[32];
+	unsigned int sig, old_sig;//, total, tm, last;
+	HND_CLIENTS old_client;
+	RES_CODE res;
+//	CSTRING log;
+	CHandle hnd_snd;
+	uint32_t buf_in, buf_out, rx_size, tx_size, gsm_ack_off;
+
+    //change hnd client
+    old_sig = hnd->signal;
+    old_client = hnd->client;
+    sig = CURRENT_TASK->aloc_sig;
+    sig = (sig+1) & ~sig;
+    sig &= 255;
+    if( sig )
+    {
+    	hnd->signal = sig;
+	    hnd->client.task = CURRENT_TASK;
+		wifi_drv_off();
+
+	    hnd->tsk_write("\r\n----- READY -----\r\n");
+	    if(wifi_pin_boot)
+	    {
+	    	PIO_Assert(wifi_pin_boot);
+	    	tsk_sleep(100);
+	    }
+		wifi_drv_pwron(true);
+
+		res = hnd->tsk_read(buf, 1, 2*25000);
+		wifi_drv_pwron(true);
+
+		if(res == RES_OK)
+		{
+			// upgrade started
+
+
+			if(rcv_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[1]) &&
+				snd_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[1])	)
+			{
+		    	unsigned int pc_rcv, gsm_rcv;
+
+			    TRACE1_WIFI("\r\n------ WIFI UPGRADE --------");
+
+			    res = hnd_snd.tsk_open(hnd->drv_index, hnd->mode.as_voidptr);
+			    //flush PC
+			    buf_in = 20;
+			    gsm_ack_off = 0;
+			    while(--buf_in)
+			    {
+				    hnd->tsk_read(buf, WIFI_BUF_SIZE, 2000);
+			    	pc_rcv = WIFI_BUF_SIZE - hnd->len;
+			    	if(pc_rcv)
+			    	{
+			    		TRACE_BUF(buf, pc_rcv, TC_TXT_YELLOW);
+			    		buf_in = pc_rcv;
+			    		break;
+//			    		if(pc_rcv == 1 && buf[0] == 0xA0)
+//			    		{
+//						    buf_in = 1;
+//			    			break;
+//			    		}
+			    	}
+			    }
+
+//			    hnd->tsk_read(buf, WIFI_BUF_SIZE, 2);
+//		    	pc_rcv = WIFI_BUF_SIZE - hnd->len;
+//		    	if(pc_rcv)
+//		    	{
+//		    		TRACE_BUF(buf, pc_rcv, TC_TXT_RED);
+//		    	}
+//
+//		    	last = 0;
+//		    	tm = CURRENT_TIME;
+//		    	total = 0;
+
+/*
+			    while(1)
+			    {
+
+			    	//start reading from PC
+			    	if(!(hnd->res & FLG_BUSY))
+						if(!hnd->tsk_start_read(buf, WIFI_BUF_SIZE))
+							break;
+
+			    	//start reading from GSM
+			    	if(!(rcv_hnd.res & FLG_BUSY))
+						if(!rcv_hnd.tsk_start_read(gsm_ack, sizeof(gsm_ack)))
+								break;
+
+			    	sig = tsk_wait_signal(hnd->signal | rcv_hnd.signal, 2*25000);
+
+			    	//process PC
+			    	if(sig & hnd->signal)
+			    	{
+			    		hnd->res &= ~FLG_SIGNALED;
+				    	pc_rcv = WIFI_BUF_SIZE - hnd->len;
+			    		TRACELN(" pc%u:", pc_rcv);
+			    		if(last == 0)
+			    		{
+			    			last =1;
+			    			TRACELN1("");
+			    			log.format("WIFI -> PC %u bytes %u mS", total, CURRENT_TIME - tm);
+			    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
+			    			TRACELN1("");
+			    			tm = CURRENT_TIME;
+			    			total = 0;
+			    		}
+			    		total += pc_rcv;
+				    	if(pc_rcv)
+				    	{
+//				    		TRACE_BUF(buf, pc_rcv, TC_TXT_MAGENTA);
+				    		if (snd_hnd.tsk_write(buf, pc_rcv, 10000) != RES_OK)
+				    		{
+				    			TRACELN1("TIMEOUT\r\n");
+				    		}
+				    	}
+			    	}
+
+			    	//process GSM
+			    	if(sig & rcv_hnd.signal)
+			    	{
+			    		rcv_hnd.res &= ~FLG_SIGNALED;
+				    	gsm_rcv = sizeof(gsm_ack) - rcv_hnd.len;
+			    		TRACELN(" wifi%u:", gsm_rcv);
+			    		if(last == 1)
+			    		{
+			    			last =0;
+			    			TRACELN1("");
+			    			log.format("PC -> WIFI %u bytes %u mS", total, CURRENT_TIME - tm);
+			    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
+			    			TRACELN1("");
+			    			tm = CURRENT_TIME;
+			    			total = 0;
+			    		}
+			    		total += gsm_rcv;
+				    	if(gsm_rcv)
+				    	{
+//				    		TRACE_BUF(gsm_ack, gsm_rcv, TC_TXT_CYAN);
+
+				    		hnd->tsk_cancel();
+					    	pc_rcv = WIFI_BUF_SIZE - hnd->len;
+				    		TRACE(" pccan%u:", pc_rcv);
+					    	if(pc_rcv)
+					    	{
+//					    		TRACE_BUF(buf, pc_rcv, TC_TXT_MAGENTA);
+					    		if(snd_hnd.tsk_write(buf, pc_rcv, 10000) != RES_OK)
+					    		{
+					    			TRACELN1("TIMEOUT\r\n");
+					    		}
+					    	}
+
+				    		hnd->tsk_write(gsm_ack, gsm_rcv);
+				    	}
+			    	}
+			    	if(!sig)
+			    	{
+			    		hnd->tsk_cancel();
+			    		rcv_hnd.tsk_cancel();
+			    		break;
+			    	}
+
+
+			    }
+*/
+
+			    buf_out = 0;
+			    while(1)
+			    {
+
+			    	//start reading from PC
+			    	if(hnd->res <  FLG_SIGNALED)
+			    	{
+			    		if(buf_in >= buf_out)
+			    		{
+			    			rx_size = WIFI_BUF_SIZE - buf_in;
+				    		if(rx_size > 1 || buf_out == 0)
+				    			rx_size /= 2;
+
+			    		}
+			    		else
+			    		{
+			    			rx_size = buf_out - buf_in;
+			    			rx_size /= 2;
+			    		}
+			    		if(rx_size)
+			    		{
+							if (rx_size > 16)
+								rx_size = 16;
+							if (!hnd->tsk_start_read(buf + buf_in, rx_size))
+								break;
+							TRACELN("rx st %u %u", buf_in, rx_size);
+			    		}
+			    	}
+
+			    	// start sending to gsm
+			    	if(buf_in != buf_out && (snd_hnd.res < FLG_SIGNALED))
+			    	{
+			    		if(buf_out > buf_in)
+			    			tx_size = WIFI_BUF_SIZE - buf_out;
+			    		else
+			    			tx_size = buf_in - buf_out;
+			    		if (snd_hnd.tsk_start_write(buf+buf_out, tx_size) != RES_OK)
+			    		{
+			    			TRACELN1("TIMEOUT\r\n");
+			    		}
+						TRACELN("tx st %u %u", buf_out, tx_size);
+			    	}
+
+			    	//start reading from GSM
+			    	if(rcv_hnd.res < FLG_SIGNALED)
+						if(!rcv_hnd.tsk_start_read(gsm_ack+gsm_ack_off, sizeof(gsm_ack)/2))
+								break;
+
+			    	sig = tsk_wait_signal(hnd->signal | rcv_hnd.signal | snd_hnd.signal, 2*25000);
+
+			    	// process send
+			    	if(sig & snd_hnd.signal)
+			    	{
+			    		snd_hnd.res &= ~FLG_SIGNALED;
+				    	pc_rcv = tx_size - snd_hnd.len;
+						TRACELN("tx %u %u", buf_out, pc_rcv);
+		    			buf_out += pc_rcv;
+		    			if(buf_out >= WIFI_BUF_SIZE)
+		    				buf_out = 0;
+			    	}
+
+			    	//process PC
+			    	if(sig & hnd->signal)
+			    	{
+			    		hnd->res &= ~FLG_SIGNALED;
+				    	pc_rcv = rx_size - hnd->len;
+//			    		TRACELN(" pc%u:", pc_rcv);
+//			    		if(last == 0)
+//			    		{
+//			    			last =1;
+//			    			TRACELN1("");
+//			    			log.format("GSM -> PC %u bytes %u mS", total, CURRENT_TIME - tm);
+//			    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
+//			    			TRACELN1("");
+//			    			tm = CURRENT_TIME;
+//			    			total = 0;
+//			    		}
+//			    		total += pc_rcv;
+//						TRACELN("rx %u %u", buf_in, pc_rcv);
+						TRACE_BUF(buf+buf_in, pc_rcv, TC_TXT_RED);
+
+		    			buf_in += pc_rcv;
+		    			if(buf_in >= WIFI_BUF_SIZE)
+		    				buf_in = 0;
+			    	}
+
+			    	//process GSM
+			    	if(sig & rcv_hnd.signal)
+			    	{
+			    		rcv_hnd.res &= ~FLG_SIGNALED;
+				    	gsm_rcv = sizeof(gsm_ack)/2 - rcv_hnd.len;
+//			    		TRACELN(" gsm%u:", gsm_rcv);
+//			    		if(last == 1)
+//			    		{
+//			    			last =0;
+//			    			TRACELN1("");
+//			    			log.format("PC -> GSM %u bytes %u mS", total, CURRENT_TIME - tm);
+//			    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
+//			    			TRACELN1("");
+//			    			tm = CURRENT_TIME;
+//			    			total = 0;
+//			    		}
+//			    		total += gsm_rcv;
+				    	if(gsm_rcv)
+				    	{
+				    		hnd_snd.tsk_start_write(gsm_ack+gsm_ack_off, gsm_rcv);
+				    		TRACE_BUF(gsm_ack+gsm_ack_off, gsm_rcv, TC_TXT_CYAN);
+				    		if(gsm_ack_off)
+				    			gsm_ack_off =0;
+				    		else
+				    			gsm_ack_off = sizeof(gsm_ack)/2;
+				    	}
+			    	}
+			    	if(!sig)
+			    	{
+			    		hnd->tsk_cancel();
+			    		rcv_hnd.tsk_cancel();
+			    		break;
+			    	}
+			    }
+//			    if(last ==1)
+//	    			log.format("\r\nPC -> GSM %u bytes %u mS\r\n", total, CURRENT_TIME - tm);
+//			    else
+//	    			log.format("\r\nGSM -> PC %u bytes %u mS\r\n", total, CURRENT_TIME - tm);
+//    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
+
+			    TRACE1_WIFI("\r\n------ UPGRADE END --------");
+			    if(wifi_pin_boot)
+			    {
+				    wifi_drv_off();
+			    	PIO_Deassert(wifi_pin_boot);
+			    	tsk_sleep(100);
+				    wifi_drv_pwron();
+			    }
+			    //gsm_pwron();
+			}
+		} else
+			TRACE1_WIFI("\r\nTIMEOUT\r\n");
+
+	    //restore hnd owner
+    	hnd->signal = old_sig;
+	    hnd->client = old_client;
+	} else
+	{
+		res = RES_ERROR;
+	}
+
+	return res;
+}

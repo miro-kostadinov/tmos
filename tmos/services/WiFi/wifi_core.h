@@ -130,7 +130,7 @@ struct wifi_module_type
 
 
     NET_CODE wifi_drv_on();
-    virtual RES_CODE module_upgrade(HANDLE param)
+    virtual RES_CODE module_upgrade(HANDLE hnd)
     	{return NET_ERR_PHY_NOT_READY;}
 
     virtual NET_CODE wifi_get_network_name(CSTRING& name);

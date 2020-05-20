@@ -501,7 +501,7 @@ RES_CODE wifi_module_type::process_cmd(HANDLE client)
 	RES_CODE res = RES_SIG_ERROR;
 
 
-	if( !(drv_info->drv_data->wifi_flags_bad & WIFI_FLAG_ON))
+	if( !(drv_info->drv_data->wifi_flags_bad & WIFI_FLAG_ON) || (client->cmd == CMD_WIFI_UPGRADE))
 	{
 		switch (client->cmd)
 		{
