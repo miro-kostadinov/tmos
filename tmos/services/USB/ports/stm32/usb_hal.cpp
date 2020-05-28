@@ -484,6 +484,14 @@ static void stm_start_tx(USB_DRV_INFO drv_info, HANDLE hnd, uint32_t eptnum, ep_
 	uint32_t reg;
 	USB_TypeDef* otg = drv_info->hw_base;
 
+	// Do not send while in suspend state
+	if(otg->device_regs.DSTS & OTG_DSTS_SUSPSTS)
+	{
+		TRACELN1_USB(" WR SUSPEND ");
+		usb_drv_end_transfers(epdir, RES_SIG_ERROR);
+		return;
+	}
+
 	// 1. Program the transfer size...
 	if (hnd->len == 0)
 	{
@@ -2915,7 +2923,22 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 			{
 				TRACE1_USB(" suspint");
 				usb_b_gint_usbsusp(drv_info);
-			}
+				for(int i=0; i<USB_NUMENDPOINTS; i++)
+				{
+					usb_drv_end_transfers(&drv_data->endpoints[i].epd_in, USBD_STATUS_RESET);
+					usb_drv_end_transfers(&drv_data->endpoints[i].epd_out, USBD_STATUS_RESET);
+				}
+				if(drv_data->pending)
+				{
+					HANDLE hnd;
+					while( (hnd=drv_data->pending) )
+					{
+						drv_data->pending = hnd->next;
+						usr_usb_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_ERROR);
+					}
+					atomic_clrex();
+				}
+}
 
 			if(status & OTG_GINTSTS_RESETDET)
 			{
