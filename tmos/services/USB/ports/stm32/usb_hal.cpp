@@ -2823,9 +2823,9 @@ void USB_OTG_ISR(USB_DRV_INFO drv_info)
 {
 	uint32_t status;
 	USB_TypeDef* otg = drv_info->hw_base;
-#if USB_ENABLE_HOST
+//#if USB_ENABLE_HOST
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
-#endif
+//#endif
 #if USB_ENABLE_DEVICE
 	uint32_t host_mode;
 #endif
