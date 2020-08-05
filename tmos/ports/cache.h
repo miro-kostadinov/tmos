@@ -87,7 +87,7 @@ struct CCachedHandle: CCache
 
 	/// Constructor
 	CCachedHandle(HANDLE h, unsigned int sz) :
-		CCache(), hnd(h)
+		CCache(), hnd(h), size(sz)
 	{
 		buf.reserve(sz);
 	}
