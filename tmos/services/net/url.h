@@ -37,6 +37,8 @@
 #define URL_CUSTOM_ROUTING	0
 #endif
 
+const char* url_scheme(const char* url, unsigned short* url_flags);
+
 class CURL
 {
 	const char * url_get_userinfo (const char *url);

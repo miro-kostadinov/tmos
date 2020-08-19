@@ -388,7 +388,7 @@ static const char* url_skip_slashes(const char* url)
 	return url;
 }
 
-static const char* url_scheme(const char* url, unsigned short * url_flags )
+const char* url_scheme(const char* url, unsigned short * url_flags )
 {
 	int i=0;
 
