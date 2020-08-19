@@ -1774,7 +1774,7 @@ RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
 	RES_CODE res;
 //	CSTRING log;
 	CHandle hnd_snd;
-	uint32_t buf_in, buf_out, rx_size, tx_size, gsm_ack_off;
+	uint32_t buf_in, buf_out, rx_size=0, tx_size=0, gsm_ack_off;
 
     //change hnd client
     old_sig = hnd->signal;
