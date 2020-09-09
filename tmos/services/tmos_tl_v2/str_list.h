@@ -97,7 +97,7 @@ public:
 	{
 		storage.adr = NULL;
 	}
-	~CSTRING();
+	virtual ~CSTRING();
 	// free allocated memory
 	void free(void);
 	//Assign
@@ -138,19 +138,19 @@ public:
 	 * @param s
 	 * @return
 	 */
-	CSTRING& operator+=(const CSTRING& s)	{ return (this->append(s)); }
+	virtual CSTRING& operator+=(const CSTRING& s)	{ return (this->append(s)); }
 	/**
 	 * Append string operator
 	 * @param s
 	 * @return
 	 */
-	CSTRING& operator+=(const char* s)		{ return (this->append(s)); }
+	virtual CSTRING& operator+=(const char* s)		{ return (this->append(s)); }
 	/** Append char operator
 	 *
 	 * @param c
 	 * @return
 	 */
-	CSTRING& operator+=(const char  c)		{ return (this->append(c)); }
+	virtual CSTRING& operator+=(const char  c)		{ return (this->append(c)); }
 
 
 	//Compare
