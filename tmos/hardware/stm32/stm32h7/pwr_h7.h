@@ -102,35 +102,84 @@ typedef struct
 
 /** @name PWR_CPUCR:     	(pwr Offset: 0x10) PWR CPU control register	 	   */
 /** @{ */
-#define PWR_CPUCR_				0x00000000 //!<
-#define PWR_CPUCR_				0x00000000 //!<
-#define PWR_CPUCR_				0x00000000 //!<
-#define PWR_CPUCR_				0x00000000 //!<
-#define PWR_CPUCR_				0x00000000 //!<
-#define PWR_CPUCR_				0x00000000 //!<
-#define PWR_CPUCR_				0x00000000 //!<
-#define PWR_CPUCR_				0x00000000 //!<
-#define PWR_CPUCR_				0x00000000 //!<
+#define PWR_CPUCR_RUN_D3		0x00000400 //!< Keep system D3 domain in Run mode regardless of the CPU subsystem modes
+#define PWR_CPUCR_CSSF			0x00000200 //!< Clear Standby and Stop flags (always read as 0)
+#define PWR_CPUCR_SBF_D2		0x00000100 //!< D2 domain DStandby flag
+#define PWR_CPUCR_SBF_D1		0x00000080 //!< D1 domain DStandby flag
+#define PWR_CPUCR_SBF			0x00000040 //!< System Standby flag
+#define PWR_CPUCR_STOPF			0x00000020 //!< STOP flag
+#define PWR_CPUCR_PDDS_D3		0x00000004 //!< System D3 domain Power Down Deepsleep
+#define PWR_CPUCR_PDDS_D2		0x00000002 //!< D2 domain Power Down Deepsleep
+#define PWR_CPUCR_PDDS_D1		0x00000001 //!< D1 domain Power Down Deepsleep selection
 /** @} */
 
 /** @name PWR_D3CR:      	(pwr Offset: 0x18) PWR D3 domain control register  */
 /** @{ */
-#define PWR_D3CR_				0x00000000 //!<
+#define PWR_D3CR_VOS			0x0000C000 //!< Voltage scaling selection according to performance
+#define PWR_D3CR_VOS_scale3		0x00004000 //!< Scale 3 (default)
+#define PWR_D3CR_VOS_scale2		0x00008000 //!< Scale 2
+#define PWR_D3CR_VOS_scale1		0x0000C000 //!< Scale 1
+#define PWR_D3CR_VOSRDY			0x00002000 //!< VOS Ready bit for VCORE voltage scaling output selection
 /** @} */
 
 /** @name PWR_WKUPCR:    	(pwr Offset: 0x20) PWR wakeup clear register	   */
 /** @{ */
-#define PWR_WKUPCR_				0x00000000 //!<
+#define PWR_WKUPCR_WKUPCR6		0x00000020 //!< Clear Wakeup pin flag for WKUPn+1.
+#define PWR_WKUPCR_WKUPCR5		0x00000010 //!< Clear Wakeup pin flag for WKUPn+1.
+#define PWR_WKUPCR_WKUPCR4		0x00000008 //!< Clear Wakeup pin flag for WKUPn+1.
+#define PWR_WKUPCR_WKUPCR3		0x00000004 //!< Clear Wakeup pin flag for WKUPn+1.
+#define PWR_WKUPCR_WKUPCR2		0x00000002 //!< Clear Wakeup pin flag for WKUPn+1.
+#define PWR_WKUPCR_WKUPCR1		0x00000001 //!< Clear Wakeup pin flag for WKUPn+1.
 /** @} */
 
 /** @name PWR_WKUPFR:    	(pwr Offset: 0x24) PWR wakeup flag register	 	   */
 /** @{ */
-#define PWR_WKUPFR_				0x00000000 //!<
+#define PWR_WKUPFR_WKUPFR6		0x00000020 //!< WKUPn+1: Wakeup pin WKUPn+1 flag.
+#define PWR_WKUPFR_WKUPFR5		0x00000010 //!< WKUPn+1: Wakeup pin WKUPn+1 flag.
+#define PWR_WKUPFR_WKUPFR4		0x00000008 //!< WKUPn+1: Wakeup pin WKUPn+1 flag.
+#define PWR_WKUPFR_WKUPFR3		0x00000004 //!< WKUPn+1: Wakeup pin WKUPn+1 flag.
+#define PWR_WKUPFR_WKUPFR2		0x00000002 //!< WKUPn+1: Wakeup pin WKUPn+1 flag.
+#define PWR_WKUPFR_WKUPFR1		0x00000001 //!< WKUPn+1: Wakeup pin WKUPn+1 flag.
 /** @} */
 
 /** @name PWR_WKUPEPR:   	(pwr Offset: 0x28) PWR wakeup enable and polarity register */
 /** @{ */
-#define PWR_WKUPEPR_			0x00000000 //!<
+#define PWR_WKUPEPR_WKUPPUPD6	0x0C000000 //!< Wakeup pin pull configuration for WKUP(truncate(n/2)-7)
+#define PWR_WKUPEPR_WKUPPUPD6_3	0x08000000 //!< Scale 3 (default)
+#define PWR_WKUPEPR_WKUPPUPD6_2	0x04000000 //!< Scale 2
+#define PWR_WKUPEPR_WKUPPUPD6_1	0x0C000000 //!< Scale 1
+#define PWR_WKUPEPR_WKUPPUPD5	0x0C000000 //!< Wakeup pin pull configuration for WKUP(truncate(n/2)-7)
+#define PWR_WKUPEPR_WKUPPUPD5_3	0x02000000 //!< Scale 3 (default)
+#define PWR_WKUPEPR_WKUPPUPD5_2	0x01000000 //!< Scale 2
+#define PWR_WKUPEPR_WKUPPUPD5_1	0x0C000000 //!< Scale 1
+#define PWR_WKUPEPR_WKUPPUPD4	0x00C00000 //!< Wakeup pin pull configuration for WKUP(truncate(n/2)-7)
+#define PWR_WKUPEPR_WKUPPUPD4_3	0x00800000 //!< Scale 3 (default)
+#define PWR_WKUPEPR_WKUPPUPD4_2	0x00400000 //!< Scale 2
+#define PWR_WKUPEPR_WKUPPUPD4_1	0x00C00000 //!< Scale 1
+#define PWR_WKUPEPR_WKUPPUPD3	0x00C00000 //!< Wakeup pin pull configuration for WKUP(truncate(n/2)-7)
+#define PWR_WKUPEPR_WKUPPUPD3_3	0x00200000 //!< Scale 3 (default)
+#define PWR_WKUPEPR_WKUPPUPD3_2	0x00100000 //!< Scale 2
+#define PWR_WKUPEPR_WKUPPUPD3_1	0x00C00000 //!< Scale 1
+#define PWR_WKUPEPR_WKUPPUPD2	0x000C0000 //!< Wakeup pin pull configuration for WKUP(truncate(n/2)-7)
+#define PWR_WKUPEPR_WKUPPUPD2_3	0x00080000 //!< Scale 3 (default)
+#define PWR_WKUPEPR_WKUPPUPD2_2	0x00040000 //!< Scale 2
+#define PWR_WKUPEPR_WKUPPUPD2_1	0x000C0000 //!< Scale 1
+#define PWR_WKUPEPR_WKUPPUPD1	0x000C0000 //!< Wakeup pin pull configuration for WKUP(truncate(n/2)-7)
+#define PWR_WKUPEPR_WKUPPUPD1_3	0x00020000 //!< Scale 3 (default)
+#define PWR_WKUPEPR_WKUPPUPD1_2	0x00010000 //!< Scale 2
+#define PWR_WKUPEPR_WKUPPUPD1_1	0x000C0000 //!< Scale 1
+#define PWR_WKUPEPR_WKUPP6		0x00002000 //!< Wakeup pin polarity bit for WKUPn-7
+#define PWR_WKUPEPR_WKUPP5		0x00001000 //!< Wakeup pin polarity bit for WKUPn-7
+#define PWR_WKUPEPR_WKUPP4		0x00000800 //!< Wakeup pin polarity bit for WKUPn-7
+#define PWR_WKUPEPR_WKUPP3		0x00000400 //!< Wakeup pin polarity bit for WKUPn-7
+#define PWR_WKUPEPR_WKUPP2		0x00000200 //!< Wakeup pin polarity bit for WKUPn-7
+#define PWR_WKUPEPR_WKUPP1		0x00000100 //!< Wakeup pin polarity bit for WKUPn-7
+#define PWR_WKUPEPR_WKUPEN6		0x00000020 //!< Enable Wakeup Pin WKUPn+1. Each bit is set and cleared by software.
+#define PWR_WKUPEPR_WKUPEN5		0x00000010 //!< Enable Wakeup Pin WKUPn+1. Each bit is set and cleared by software.
+#define PWR_WKUPEPR_WKUPEN4		0x00000008 //!< Enable Wakeup Pin WKUPn+1. Each bit is set and cleared by software.
+#define PWR_WKUPEPR_WKUPEN3		0x00000004 //!< Enable Wakeup Pin WKUPn+1. Each bit is set and cleared by software.
+#define PWR_WKUPEPR_WKUPEN2		0x00000002 //!< Enable Wakeup Pin WKUPn+1. Each bit is set and cleared by software.
+#define PWR_WKUPEPR_WKUPEN1		0x00000001 //!< Enable Wakeup Pin WKUPn+1. Each bit is set and cleared by software.
 /** @} */
 
 
