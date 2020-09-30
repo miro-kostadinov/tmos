@@ -535,97 +535,290 @@ typedef struct
 
 /** @name RCC_RSR: (rcc Offset: 0x0D0) RCC Reset status register			   */
 /** @{ */
-#define RCC_RSR_					0x00000000 //!<
+#define RCC_RSR_LPWRRSTF		0x40000000 //!< Reset due to illegal D1 DStandby or CPU CStop flag
+#define RCC_RSR_WWDG1RSTF 		0x10000000 //!<	Window Watchdog reset flag
+#define RCC_RSR_IWDG1RSTF 		0x04000000 //!< Independent Watchdog reset flag
+#define RCC_RSR_SFTRSTF 		0x01000000 //!< System reset from CPU reset flag
+#define RCC_RSR_PORRSTF 		0x00800000 //!< POR/PDR reset flag
+#define RCC_RSR_PINRSTF 		0x00400000 //!< Pin reset flag (NRST)
+#define RCC_RSR_BORRSTF 		0x00200000 //!< BOR reset flag
+#define RCC_RSR_D2RSTF 			0x00100000 //!< D2 domain power switch reset flag
+#define RCC_RSR_D1RSTF 			0x00080000 //!< D1 domain power switch reset flag
+#define RCC_RSR_CPURSTF 		0x00020000 //!< CPU reset flag
+#define RCC_RSR_RMVF 			0x00010000 //!< Remove reset flag
 /** @} */
 
 /** @name RCC_AHB3ENR: (rcc Offset: 0x0D4) RCC AHB3 peripheral clock  register */
 /** @{ */
-#define RCC_AHB3ENR_				0x00000000 //!<
+#define RCC_AHB3ENR_SDMMC1EN 	0x00010000 //!< SDMMC1 and SDMMC1 Delay Clock Enable
+#define RCC_AHB3ENR_QSPIEN 		0x00004000 //!< QUADSPI and QUADSPI Delay Clock Enable
+#define RCC_AHB3ENR_FMCEN 		0x00001000 //!< FMC Peripheral Clocks Enable
+#define RCC_AHB3ENR_JPGDECEN 	0x00000020 //!< JPGDEC Peripheral Clock Enable
+#define RCC_AHB3ENR_DMA2DEN 	0x00000010 //!< DMA2D Peripheral Clock Enable
+#define RCC_AHB3ENR_MDMAEN 		0x00000001 //!< MDMA Peripheral Clock Enable
 /** @} */
 
 /** @name RCC_AHB1ENR: (rcc Offset: 0x0D8) RCC AHB1 peripheral clock  register */
 /** @{ */
-#define RCC_AHB1ENR_				0x00000000 //!<
+#define RCC_AHB1ENR_USB2OTGHSEN 		0x08000000 //!< USB2OTG (OTG_HS2) Peripheral Clocks Enable
+#define RCC_AHB1ENR_USB1OTGHSULPIEN		0x04000000 //!< USB_PHY1 Clocks Enable
+#define RCC_AHB1ENR_USB1OTGHSEN 		0x02000000 //!< USB1OTG (OTG_HS1) Peripheral Clocks Enable
+#define RCC_AHB1ENR_USB2OTGHSULPIEN 	0x00040000 //!< Enable USB_PHY2 clocks
+#define RCC_AHB1ENR_ETH1RXEN 			0x00020000 //!< Ethernet Reception Clock Enable
+#define RCC_AHB1ENR_ETH1TXEN 			0x00010000 //!< Ethernet Transmission Clock Enable
+#define RCC_AHB1ENR_ETH1MACEN 			0x00008000 //!< Ethernet MAC bus interface Clock Enable
+#define RCC_AHB1ENR_ADC12EN 			0x00000020 //!< ADC1/2 Peripheral Clocks Enable
+#define RCC_AHB1ENR_DMA2EN 				0x00000002 //!< DMA2 Clock Enable
+#define RCC_AHB1ENR_DMA1EN 				0x00000001 //!< DMA1 Clock Enable
 /** @} */
 
 /** @name RCC_AHB2ENR: (rcc Offset: 0x0DC) RCC AHB2 peripheral clock  register */
 /** @{ */
-#define RCC_AHB2ENR_				0x00000000 //!<
+#define RCC_AHB2ENR_SRAM3EN 	0x80000000 //!< SRAM3 block enable
+#define RCC_AHB2ENR_SRAM2EN 	0x40000000 //!< SRAM2 block enable
+#define RCC_AHB2ENR_SRAM1EN 	0x20000000 //!< SRAM1 block enable
+#define RCC_AHB2ENR_SDMMC2EN 	0x00000200 //!< SDMMC2 and SDMMC2 delay clock enable
+#define RCC_AHB2ENR_RNGEN 		0x00000040 //!< RNG peripheral clocks enable
+#define RCC_AHB2ENR_HASHEN 		0x00000020 //!< HASH peripheral clock enable
+#define RCC_AHB2ENR_CRYPTEN 	0x00000010 //!< CRYPT peripheral clock enable
+#define RCC_AHB2ENR_DCMIEN 		0x00000001 //!< DCMI peripheral clock enable
 /** @} */
 
 /** @name RCC_AHB4ENR: (rcc Offset: 0x0E0) RCC AHB4 peripheral clock  register */
 /** @{ */
-#define RCC_AHB4ENR_				0x00000000 //!<
+#define RCC_AHB4ENR_BKPRAMEN 	0x10000000 //!< Backup RAM Clock Enable
+#define RCC_AHB4ENR_HSEMEN 		0x02000000 //!< HSEM peripheral clock enable
+#define RCC_AHB4ENR_ADC3EN 		0x01000000 //!< ADC3 Peripheral Clocks Enable
+#define RCC_AHB4ENR_BDMAEN 		0x00200000 //!< BDMA and DMAMUX2 Clock Enable
+#define RCC_AHB4ENR_CRCEN 		0x00080000 //!< CRC peripheral clock enable
+#define RCC_AHB4ENR_GPIOKEN 	0x00000400 //!< GPIOK peripheral clock enable
+#define RCC_AHB4ENR_GPIOJEN 	0x00000200 //!< GPIOJ peripheral clock enable
+#define RCC_AHB4ENR_GPIOIEN 	0x00000100 //!< GPIOI peripheral clock enable
+#define RCC_AHB4ENR_GPIOHEN 	0x00000080 //!< GPIOH peripheral clock enable
+#define RCC_AHB4ENR_GPIOGEN 	0x00000040 //!< GPIOG peripheral clock enable
+#define RCC_AHB4ENR_GPIOFEN 	0x00000020 //!< GPIOF peripheral clock enable
+#define RCC_AHB4ENR_GPIOEEN 	0x00000010 //!< GPIOE peripheral clock enable
+#define RCC_AHB4ENR_GPIODEN 	0x00000008 //!< GPIOD peripheral clock enable
+#define RCC_AHB4ENR_GPIOCEN 	0x00000004 //!< GPIOC peripheral clock enable
+#define RCC_AHB4ENR_GPIOBEN 	0x00000002 //!< GPIOB peripheral clock enable
+#define RCC_AHB4ENR_GPIOAEN 	0x00000001 //!< GPIOA peripheral clock enable
 /** @} */
 
 /** @name RCC_APB3ENR: (rcc Offset: 0x0E4) RCC APB3 peripheral clock  register */
 /** @{ */
-#define RCC_APB3ENR_				0x00000000 //!<
+#define RCC_APB3ENR_WWDG1EN 	0x00000040 //!< WWDG1 Clock Enable
+#define RCC_APB3ENR_LTDCEN 		0x00000008 //!< LTDC peripheral clock enable
 /** @} */
 
 /** @name RCC_APB1LENR: (rcc Offset: 0x0E8) RCC APB1 peripheral clock  Low Word register */
 /** @{ */
-#define RCC_APB1LENR_				0x00000000 //!<
+#define RCC_APB1LENR_UART8EN 	0x80000000 //!< UART8 Peripheral Clocks Enable
+#define RCC_APB1LENR_UART7EN 	0x40000000 //!< UART7 Peripheral Clocks Enable
+#define RCC_APB1LENR_DAC12EN 	0x20000000 //!< DAC1 and 2 peripheral clock enable
+#define RCC_APB1LENR_CECEN 		0x08000000 //!< HDMI-CEC peripheral clock enable
+#define RCC_APB1LENR_I2C3EN 	0x00800000 //!< I2C3 Peripheral Clocks Enable
+#define RCC_APB1LENR_I2C2EN 	0x00400000 //!< I2C2 Peripheral Clocks Enable
+#define RCC_APB1LENR_I2C1EN 	0x00200000 //!< I2C1 Peripheral Clocks Enable
+#define RCC_APB1LENR_UART5EN 	0x00100000 //!< UART5 Peripheral Clocks Enable
+#define RCC_APB1LENR_UART4EN 	0x00080000 //!< UART4 Peripheral Clocks Enable
+#define RCC_APB1LENR_USART3EN 	0x00040000 //!< USART3 Peripheral Clocks Enable
+#define RCC_APB1LENR_USART2EN 	0x00020000 //!< USART2 Peripheral Clocks Enable
+#define RCC_APB1LENR_SPDIFRXEN 	0x00010000 //!< SPDIFRX Peripheral Clocks Enable
+#define RCC_APB1LENR_SPI3EN 	0x00008000 //!< SPI3 Peripheral Clocks Enable
+#define RCC_APB1LENR_SPI2EN 	0x00004000 //!< SPI2 Peripheral Clocks Enable
+#define RCC_APB1LENR_LPTIM1EN 	0x00000200 //!< LPTIM1 Peripheral Clocks Enable
+#define RCC_APB1LENR_TIM14EN 	0x00000100 //!< TIM14 peripheral clock enable
+#define RCC_APB1LENR_TIM13EN 	0x00000080 //!< TIM13 peripheral clock enable
+#define RCC_APB1LENR_TIM12EN 	0x00000040 //!< TIM12 peripheral clock enable
+#define RCC_APB1LENR_TIM7EN 	0x00000020 //!< TIM7 peripheral clock enable
+#define RCC_APB1LENR_TIM6EN 	0x00000010 //!< TIM6 peripheral clock enable
+#define RCC_APB1LENR_TIM5EN 	0x00000008 //!< TIM5 peripheral clock enable
+#define RCC_APB1LENR_TIM4EN 	0x00000004 //!< TIM4 peripheral clock enable
+#define RCC_APB1LENR_TIM3EN 	0x00000002 //!< TIM3 peripheral clock enable
+#define RCC_APB1LENR_TIM2EN 	0x00000001 //!< TIM2 peripheral clock enable
 /** @} */
 
 /** @name RCC_APB1HENR: (rcc Offset: 0x0EC) RCC APB1 peripheral clock  High Word register */
 /** @{ */
-#define RCC_APB1HENR_				0x00000000 //!<
+#define RCC_APB1HENR_FDCANEN 	0x00000100 //!< FDCAN Peripheral Clocks Enable
+#define RCC_APB1HENR_MDIOSEN 	0x00000020 //!< MDIOS peripheral clock enable
+#define RCC_APB1HENR_OPAMPEN 	0x00000010 //!< OPAMP peripheral clock enable
+#define RCC_APB1HENR_SWPEN 		0x00000004 //!< SWPMI Peripheral Clocks Enable
+#define RCC_APB1HENR_CRSEN 		0x00000002 //!< Clock Recovery System peripheral clock enable
 /** @} */
 
 /** @name RCC_APB2ENR: 	(rcc Offset: 0x0F0) RCC APB2 peripheral clock  register */
 /** @{ */
-#define RCC_APB2ENR_				0x00000000 //!<
+#define RCC_APB2ENR_HRTIMEN 	0x20000000 //!< HRTIM peripheral clock enable
+#define RCC_APB2ENR_DFSDM1EN 	0x10000000 //!< DFSDM1 Peripheral Clocks Enable
+#define RCC_APB2ENR_SAI3EN 		0x01000000 //!< SAI3 Peripheral Clocks Enable
+#define RCC_APB2ENR_SAI2EN 		0x00800000 //!< SAI2 Peripheral Clocks Enable
+#define RCC_APB2ENR_SAI1EN 		0x00400000 //!< SAI1 Peripheral Clocks Enable
+#define RCC_APB2ENR_SPI5EN 		0x00100000 //!< SPI5 Peripheral Clocks Enable
+#define RCC_APB2ENR_TIM17EN 	0x00040000 //!< TIM17 peripheral clock enable
+#define RCC_APB2ENR_TIM16EN 	0x00020000 //!< TIM16 peripheral clock enable
+#define RCC_APB2ENR_TIM15EN 	0x00010000 //!< TIM15 peripheral clock enable
+#define RCC_APB2ENR_SPI4EN 		0x00002000 //!< SPI4 Peripheral Clocks Enable
+#define RCC_APB2ENR_SPI1EN 		0x00001000 //!< SPI1 Peripheral Clocks Enable
+#define RCC_APB2ENR_USART6EN 	0x00000020 //!< USART6 Peripheral Clocks Enable
+#define RCC_APB2ENR_USART1EN 	0x00000010 //!< USART1 Peripheral Clocks Enable
+#define RCC_APB2ENR_TIM8EN 		0x00000002 //!< TIM8 peripheral clock enable
+#define RCC_APB2ENR_TIM1EN 		0x00000001 //!< TIM1 peripheral clock enable
 /** @} */
 
 /** @name RCC_APB4ENR: 	(rcc Offset: 0x0F4) RCC APB4 peripheral clock  register */
 /** @{ */
-#define RCC_APB4ENR_				0x00000000 //!<
+#define RCC_APB4ENR_SAI4EN 		0x00200000 //!< SAI4 Peripheral Clocks Enable
+#define RCC_APB4ENR_RTCAPBEN 	0x00010000 //!< RTC APB Clock Enable
+#define RCC_APB4ENR_VREFEN 		0x00008000 //!< VREF peripheral clock enable
+#define RCC_APB4ENR_COMP12EN 	0x00004000 //!< COMP1/2 peripheral clock enable
+#define RCC_APB4ENR_LPTIM5EN 	0x00001000 //!< LPTIM5 Peripheral Clocks Enable
+#define RCC_APB4ENR_LPTIM4EN 	0x00000800 //!< LPTIM4 Peripheral Clocks Enable
+#define RCC_APB4ENR_LPTIM3EN 	0x00000400 //!< LPTIM3 Peripheral Clocks Enable
+#define RCC_APB4ENR_LPTIM2EN 	0x00000200 //!< LPTIM2 Peripheral Clocks Enable
+#define RCC_APB4ENR_I2C4EN 		0x00000080 //!< I2C4 Peripheral Clocks Enable
+#define RCC_APB4ENR_SPI6EN 		0x00000020 //!< SPI6 Peripheral Clocks Enable
+#define RCC_APB4ENR_LPUART1EN 	0x00000008 //!< LPUART1 Peripheral Clocks Enable
+#define RCC_APB4ENR_SYSCFGEN 	0x00000002 //!< SYSCFG peripheral clock enable
 /** @} */
 
 /** @name RCC_AHB3LPENR: (rcc Offset: 0x0FC) RCC AHB3 peripheral sleep clock  register */
 /** @{ */
-#define RCC_AHB3LPENR_				0x00000000 //!<
+#define RCC_AHB3LPENR_AXISRAMLPEN 	0x80000000 //!< AXISRAM Block Clock Enable During CSleep mode
+#define RCC_AHB3LPENR_ITCMLPEN 		0x40000000 //!< D1ITCM Block Clock Enable During CSleep mode
+#define RCC_AHB3LPENR_DTCM2LPEN 	0x20000000 //!< D1 DTCM2 Block Clock Enable During CSleep mode
+#define RCC_AHB3LPENR_D1DTCM1LPEN 	0x10000000 //!< D1DTCM1 Block Clock Enable During CSleep mode
+#define RCC_AHB3LPENR_SDMMC1LPEN 	0x00010000 //!< SDMMC1 and SDMMC1 Delay Clock Enable During CSleep Mode
+#define RCC_AHB3LPENR_QSPILPEN 		0x00004000 //!< QUADSPI and QUADSPI Delay Clock Enable During CSleep Mode
+#define RCC_AHB3LPENR_FMCLPEN 		0x00001000 //!< FMC Peripheral Clocks Enable During CSleep Mode
+#define RCC_AHB3LPENR_FLASHLPEN 	0x00000100 //!< Flash interface Clock Enable During CSleep Mode
+#define RCC_AHB3LPENR_JPGDECLPEN 	0x00000020 //!< JPGDEC Clock Enable During CSleep Mode
+#define RCC_AHB3LPENR_DMA2DLPEN 	0x00000010 //!< DMA2D Clock Enable During CSleep Mode
+#define RCC_AHB3LPENR_MDMALPEN 		0x00000001 //!< MDMA Clock Enable During CSleep Mode
 /** @} */
 
 /** @name RCC_AHB1LPENR: (rcc Offset: 0x100) RCC AHB1 peripheral sleep clock  register */
 /** @{ */
-#define RCC_AHB1LPENR_				0x00000000 //!<
+#define RCC_AHB1LPENR_USB2OTGHSULPILPEN 	0x10000000 //!< USB_PHY1 clock enable during CSleep mode
+#define RCC_AHB1LPENR_USB2OTGHSLPEN 		0x08000000 //!< USB2OTG (OTG_US2) peripheral clock enable during CSleep mode
+#define RCC_AHB1LPENR_USB1OTGHSULPILPEN 	0x04000000 //!< USB_PHY1 clock enable during CSleep mode
+#define RCC_AHB1LPENR_USB1OTGHSLPEN 		0x02000000 //!< USB1OTG (OTG_HS1) peripheral clock enable during CSleep mode
+#define RCC_AHB1LPENR_ETH1RXLPEN 			0x00020000 //!< Ethernet Reception Clock Enable During CSleep Mode
+#define RCC_AHB1LPENR_ETH1TXLPEN 			0x00010000 //!< Ethernet Transmission Clock Enable During CSleep Mode
+#define RCC_AHB1LPENR_ETH1MACLPEN 			0x00008000 //!< Ethernet MAC bus interface Clock Enable During CSleep Mode
+#define RCC_AHB1LPENR_ADC12LPEN 			0x00000020 //!< ADC1/2 Peripheral Clocks Enable During CSleep Mode
+#define RCC_AHB1LPENR_DMA2LPEN 				0x00000002 //!< DMA2 Clock Enable During CSleep Mode
+#define RCC_AHB1LPENR_DMA1LPEN 				0x00000001 //!< DMA1 Clock Enable During CSleep Mode
 /** @} */
 
 /** @name RCC_AHB2LPENR: (rcc Offset: 0x104) RCC AHB2 peripheral sleep clock  register */
 /** @{ */
-#define RCC_AHB2LPENR_				0x00000000 //!<
+#define RCC_AHB2LPENR_SRAM3LPEN 	0x80000000 //!< SRAM3 Clock Enable During CSleep Mode
+#define RCC_AHB2LPENR_SRAM2LPEN 	0x40000000 //!< SRAM2 Clock Enable During CSleep Mode
+#define RCC_AHB2LPENR_SRAM1LPEN 	0x20000000 //!< SRAM1 Clock Enable During CSleep Mode
+#define RCC_AHB2LPENR_SDMMC2LPEN 	0x00000200 //!< SDMMC2 and SDMMC2 Delay Clock Enable During CSleep Mode
+#define RCC_AHB2LPENR_RNGLPEN 		0x00000040 //!< RNG peripheral clock enable during CSleep mode
+#define RCC_AHB2LPENR_HASHLPEN 		0x00000020 //!< HASH peripheral clock enable during CSleep mode
+#define RCC_AHB2LPENR_CRYPTLPEN 	0x00000010 //!< CRYPT peripheral clock enable during CSleep mode
+#define RCC_AHB2LPENR_DCMILPEN 		0x00000001 //!< DCMI peripheral clock enable during CSleep mode
 /** @} */
 
 /** @name RCC_AHB4LPENR: (rcc Offset: 0x108) RCC AHB4 peripheral sleep clock  register */
 /** @{ */
-#define RCC_AHB4LPENR_				0x00000000 //!<
+#define RCC_AHB4LPENR_SRAM4LPEN 	0x20000000 //!< SRAM4 Clock Enable During CSleep Mode
+#define RCC_AHB4LPENR_BKPRAMLPEN 	0x10000000 //!< Backup RAM Clock Enable During CSleep Mode
+#define RCC_AHB4LPENR_ADC3LPEN 		0x01000000 //!< ADC3 Peripheral Clocks Enable During CSleep Mode
+#define RCC_AHB4LPENR_BDMALPEN 		0x00200000 //!< BDMA Clock Enable During CSleep Mode
+#define RCC_AHB4LPENR_CRCLPEN 		0x00080000 //!< CRC peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIOKLPEN 	0x00000400 //!< GPIOK peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIOJLPEN 	0x00000200 //!< GPIOJ peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIOILPEN 	0x00000100 //!< GPIOI peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIOHLPEN 	0x00000080 //!< GPIOH peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIOGLPEN 	0x00000040 //!< GPIOG peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIOFLPEN 	0x00000020 //!< GPIOF peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIOELPEN 	0x00000010 //!< GPIOE peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIODLPEN 	0x00000008 //!< GPIOD peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIOCLPEN 	0x00000004 //!< GPIOC peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIOBLPEN 	0x00000002 //!< GPIOB peripheral clock enable during CSleep mode
+#define RCC_AHB4LPENR_GPIOALPEN 	0x00000001 //!< GPIOA peripheral clock enable during CSleep mode
 /** @} */
 
 /** @name RCC_APB3LPENR: (rcc Offset: 0x10C) RCC APB3 peripheral sleep clock  register */
 /** @{ */
-#define RCC_APB3LPENR_				0x00000000 //!<
+#define RCC_APB3LPENR_WWDG1LPEN 	0x00000040 //!< WWDG1 Clock Enable During CSleep Mode
+#define RCC_APB3LPENR_LTDCLPEN 		0x00000008 //!< LTDC peripheral clock enable during CSleep mode
 /** @} */
 
 /** @name RCC_APB1LLPENR:  (rcc Offset: 0x110) RCC APB1 peripheral sleep clock  Low Word register */
 /** @{ */
-#define RCC_APB1LLPENR_				0x00000000 //!<
+#define RCC_APB1LLPENR_UART8LPEN 	0x80000000 //!< UART8 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_UART7LPEN 	0x40000000 //!< UART7 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_DAC12LPEN 	0x20000000 //!< DAC1/2 peripheral clock enable during CSleep mode
+#define RCC_APB1LLPENR_CECLPEN 		0x08000000 //!< HDMI-CEC Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_I2C3LPEN 	0x00800000 //!< I2C3 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_I2C2LPEN 	0x00400000 //!< I2C2 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_I2C1LPEN 	0x00200000 //!< I2C1 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_UART5LPEN 	0x00100000 //!< UART5 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_UART4LPEN 	0x00080000 //!< UART4 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_USART3LPEN 	0x00040000 //!< USART3 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_USART2LPEN 	0x00020000 //!< USART2 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_SPDIFRXLPEN 	0x00010000 //!< SPDIFRX Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_SPI3LPEN 	0x00008000 //!< SPI3 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_SPI2LPEN 	0x00004000 //!< SPI2 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_LPTIM1LPEN 	0x00000200 //!< LPTIM1 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1LLPENR_TIM14LPEN 	0x00000100 //!< TIM14 peripheral clock enable during CSleep mode
+#define RCC_APB1LLPENR_TIM13LPEN 	0x00000080 //!< TIM13 peripheral clock enable during CSleep mode
+#define RCC_APB1LLPENR_TIM12LPEN 	0x00000040 //!< TIM12 peripheral clock enable during CSleep mode
+#define RCC_APB1LLPENR_TIM7LPEN 	0x00000020 //!< TIM7 peripheral clock enable during CSleep mode
+#define RCC_APB1LLPENR_TIM6LPEN 	0x00000010 //!< TIM6 peripheral clock enable during CSleep mode
+#define RCC_APB1LLPENR_TIM5LPEN 	0x00000008 //!< TIM5 peripheral clock enable during CSleep mode
+#define RCC_APB1LLPENR_TIM4LPEN 	0x00000004 //!< TIM4 peripheral clock enable during CSleep mode
+#define RCC_APB1LLPENR_TIM3LPEN 	0x00000002 //!< TIM3 peripheral clock enable during CSleep mode
+#define RCC_APB1LLPENR_TIM2LPEN 	0x00000001 //!< TIM2 peripheral clock enable during CSleep mode
 /** @} */
 
 /** @name RCC_APB1HLPENR:  (rcc Offset: 0x114) RCC APB1 peripheral sleep clock  High Word register */
 /** @{ */
-#define RCC_APB1HLPENR_				0x00000000 //!<
+#define RCC_APB1HLPENR_FDCANLPEN 	0x00000100 //!< FDCAN Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1HLPENR_MDIOSLPEN 	0x00000020 //!< MDIOS peripheral clock enable during CSleep mode
+#define RCC_APB1HLPENR_OPAMPLPEN 	0x00000010 //!< OPAMP peripheral clock enable during CSleep mode
+#define RCC_APB1HLPENR_SWPLPEN 		0x00000004 //!< SWPMI Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB1HLPENR_CRSLPEN 		0x00000002 //!< Clock Recovery System peripheral clock enable during CSleep mode
 /** @} */
 
 /** @name RCC_APB2LPENR:  (rcc Offset: 0x118) RCC APB2 peripheral sleep clock  register */
 /** @{ */
-#define RCC_APB2LPENR_				0x00000000 //!<
+#define RCC_APB2LPENR_HRTIMLPEN 	0x20000000 //!< HRTIM peripheral clock enable during CSleep mode
+#define RCC_APB2LPENR_DFSDM1LPEN 	0x10000000 //!< DFSDM1 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB2LPENR_SAI3LPEN 		0x01000000 //!< SAI3 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB2LPENR_SAI2LPEN 		0x00800000 //!< SAI2 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB2LPENR_SAI1LPEN 		0x00400000 //!< SAI1 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB2LPENR_SPI5LPEN 		0x00100000 //!< SPI5 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB2LPENR_TIM17LPEN 	0x00040000 //!< TIM17 peripheral clock enable during CSleep mode
+#define RCC_APB2LPENR_TIM16LPEN 	0x00020000 //!< TIM16 peripheral clock enable during CSleep mode
+#define RCC_APB2LPENR_TIM15LPEN 	0x00010000 //!< TIM15 peripheral clock enable during CSleep mode
+#define RCC_APB2LPENR_SPI4LPEN 		0x00002000 //!< SPI4 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB2LPENR_SPI1LPEN 		0x00001000 //!< SPI1 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB2LPENR_USART6LPEN 	0x00000020 //!< USART6 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB2LPENR_USART1LPEN 	0x00000010 //!< USART1 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB2LPENR_TIM8LPEN 		0x00000002 //!< TIM8 peripheral clock enable during CSleep mode
+#define RCC_APB2LPENR_TIM1LPEN 		0x00000001 //!< TIM1 peripheral clock enable during CSleep mode
 /** @} */
 
 /** @name RCC_APB4LPENR:  (rcc Offset: 0x11C) RCC APB4 peripheral sleep clock  register */
 /** @{ */
-#define RCC_APB4LPENR_				0x00000000 //!<
+#define RCC_APB4LPENR_SAI4LPEN 		0x00200000 //!< SAI4 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB4LPENR_RTCAPBLPEN 	0x00010000 //!< RTC APB Clock Enable During CSleep Mode
+#define RCC_APB4LPENR_VREFLPEN 		0x00008000 //!< VREF peripheral clock enable during CSleep mode
+#define RCC_APB4LPENR_COMP12LPEN 	0x00004000 //!< COMP1/2 peripheral clock enable during CSleep mode
+#define RCC_APB4LPENR_LPTIM5LPEN 	0x00001000 //!< LPTIM5 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB4LPENR_LPTIM4LPEN 	0x00000800 //!< LPTIM4 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB4LPENR_LPTIM3LPEN 	0x00000400 //!< LPTIM3 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB4LPENR_LPTIM2LPEN 	0x00000200 //!< LPTIM2 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB4LPENR_I2C4LPEN 		0x00000080 //!< I2C4 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB4LPENR_SPI6LPEN 		0x00000020 //!< SPI6 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB4LPENR_LPUART1LPEN 	0x00000008 //!< LPUART1 Peripheral Clocks Enable During CSleep Mode
+#define RCC_APB4LPENR_SYSCFGLPEN 	0x00000002 //!< SYSCFG peripheral clock enable during CSleep mode
 /** @} */
 
 
