@@ -436,7 +436,7 @@ typedef struct
 #define RCC_APB3RSTR_LTDCRST 	0x00000008 //!< LTDC block reset
 /** @} */
 
-/** @name RCC_APB1LRSTR:	(rcc Offset: 0x000) RCC APB1 Peripheral Reset Register   */
+/** @name RCC_APB1LRSTR:	(rcc Offset: 0x090) RCC APB1 Peripheral Reset Register   */
 /** @{ */
 #define RCC_APB1LRSTR_UART8RST 	0x80000000 //!< UART8 block reset
 #define RCC_APB1LRSTR_UART7RST 	0x40000000 //!< UART7 block reset
