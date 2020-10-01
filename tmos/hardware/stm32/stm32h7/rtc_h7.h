@@ -46,8 +46,8 @@ typedef struct
 	__IO uint32_t RTC_TAMPCR; 		//!< (rtc Offset: 0x40) RTC tamper configuration register
 	__IO uint32_t RTC_ALRMASSR; 	//!< (rtc Offset: 0x44) RTC alarm A sub second register
 	__IO uint32_t RTC_ALRMBSSR; 	//!< (rtc Offset: 0x48) RTC alarm B sub second register
-	__IO uint32_t RTC_OR;		 	//!< (rtc Offset: 0x48) RTC option register
-	__IO uint32_t RTC_BKPxR[20]; 	//!< (rtc Offset: 0x5C) RTC backup registers
+	__IO uint32_t RTC_OR;		 	//!< (rtc Offset: 0x4C) RTC option register
+	__IO uint32_t RTC_BKPxR[20]; 	//!< (rtc Offset: 0x50) RTC backup registers
 
 } RTC_TypeDef;
 
@@ -71,7 +71,7 @@ typedef struct
 /** @{ */
 #define RTC_DR_YT                   0x00F00000 //!< YT[3:0]: Year tens in BCD format
 #define RTC_DR_YU                   0x000F0000 //!< YU[3:0]: Year units in BCD format
-#define RTC_DR_WDU                  0x0000E000 //!< WDU[2:0]: Week day units (1-7)
+#define RTC_DR_WDU                  0x0000F000 //!< WDU[2:0]: Week day units (1-7)
 #define RTC_DR_MT                   0x00001000 //!< MT: Month tens in BCD format
 #define RTC_DR_MU                   0x00000F00 //!< MU: Month units in BCD format
 #define RTC_DR_DT                   0x00000030 //!< DT[1:0]: Date tens in BCD format
@@ -80,6 +80,7 @@ typedef struct
 
 /** @name RTC_CR:      	(rtc Offset: 0x08) RTC control register				  */
 /** @{ */
+#define RTC_CR_ITSE                 0x01000000 //!< timestamp on internal event enable
 #define RTC_CR_COE                  0x00800000 //!< COE: Calibration output enable
 #define RTC_CR_OSEL                 0x00600000 //!< OSEL[1:0]: Output selection
 #define RTC_CR_OSEL_DIS             0x00000000 //!<  Output disabled
@@ -87,7 +88,7 @@ typedef struct
 #define RTC_CR_OSEL_ALRMB           0x00400000 //!<  Alarm B output enabled
 #define RTC_CR_OSEL_WKUP            0x00600000 //!<  Wakeup output enabled
 #define RTC_CR_POL                  0x00100000 //!< POL: Output polarity
-#define RTC_CR_CALSEL               0x00080000 //!<
+#define RTC_CR_COSEL                0x00080000 //!< Calibration output selection
 #define RTC_CR_BKP                  0x00040000 //!< BKP: Backup
 #define RTC_CR_SUB1H                0x00020000 //!< SUB1H: Subtract 1 hour (winter time change)
 #define RTC_CR_ADD1H                0x00010000 //!< ADD1H: Add 1 hour (summer time change)
@@ -99,9 +100,9 @@ typedef struct
 #define RTC_CR_WUTE                 0x00000400 //!< WUTE: Wakeup timer enable
 #define RTC_CR_ALRBE                0x00000200 //!< ALRBE: Alarm B enable
 #define RTC_CR_ALRAE                0x00000100 //!< ALRAE: Alarm A enable
-#define RTC_CR_DCE                  0x00000080 //!< DCE: Coarse digital calibration enable
+//#define RTC_CR_DCE                  0x00000080 //!< DCE: Coarse digital calibration enable
 #define RTC_CR_FMT                  0x00000040 //!< FMT: Hour format
-#define RTC_CR_BYPSHAD              0x00000020 //!<
+#define RTC_CR_BYPSHAD              0x00000020 //!< Bypass the shadow registers
 #define RTC_CR_REFCKON              0x00000010 //!< REFCKON: Reference clock detection enable (50 or 60 Hz)
 #define RTC_CR_TSEDGE               0x00000008 //!< TSEDGE: Timestamp event active edge
 #define RTC_CR_WUCKSEL              0x00000007 //!< WUCKSEL[2:0]: Wakeup clock selection
@@ -115,11 +116,14 @@ typedef struct
 
 /** @name RTC_ISR:     	(rtc Offset: 0x0C) RTC initialization and status register */
 /** @{ */
-#define RTC_ISR_RECALPF             0x00010000 //!<
-#define RTC_ISR_TAMP2F              0x00004000 //!<
-#define RTC_ISR_TAMP1F              0x00002000 //!< TAMP1F: Tamper detection flag
+#define RTC_ISR_ITSF	            0x00020000 //!< Internal tTime-stamp flag
+#define RTC_ISR_RECALPF             0x00010000 //!< Recalibration pending Flag
+
+#define RTC_ISR_TAMP3F              0x00008000 //!< RTC_TAMP3 detection flag
+#define RTC_ISR_TAMP2F              0x00004000 //!< RTC_TAMP2 detection flag
+#define RTC_ISR_TAMP1F              0x00002000 //!< RTC_TAMP1 detection flag
 #define RTC_ISR_TSOVF               0x00001000 //!< TSOVF: Timestamp overflow flag
-#define RTC_ISR_TSF                 0x00000800 //!< TSF: Timestamp flag
+#define RTC_ISR_TSF                 0x00000800 //!< Time-stamp flag
 #define RTC_ISR_WUTF                0x00000400 //!< WUTF: Wakeup timer flag
 #define RTC_ISR_ALRBF               0x00000200 //!< ALRBF: Alarm B flag
 #define RTC_ISR_ALRAF               0x00000100 //!< ALRAF: Alarm A flag
@@ -127,7 +131,7 @@ typedef struct
 #define RTC_ISR_INITF               0x00000040 //!< INITF: Initialization flag
 #define RTC_ISR_RSF                 0x00000020 //!< RSF: Registers synchronization flag
 #define RTC_ISR_INITS               0x00000010 //!< INITS: Initialization status flag
-#define RTC_ISR_SHPF                0x00000008 //!<
+#define RTC_ISR_SHPF                0x00000008 //!< Shift operation pending
 #define RTC_ISR_WUTWF               0x00000004 //!< WUTWF: Wakeup timer write flag
 #define RTC_ISR_ALRBWF              0x00000002 //!< ALRBWF: Alarm B write flag
 #define RTC_ISR_ALRAWF              0x00000001 //!< ALRAWF: Alarm A write flag
@@ -137,7 +141,7 @@ typedef struct
 /** @{ */
 #define RTC_PRER_PREDIV_A           0x007F0000 //!< PREDIV_A[6:0]: Asynchronous prescaler factor
 #define RTC_PRER_PREDIV_A_Set(x)    ((x)<<16)
-#define RTC_PRER_PREDIV_S           0x00001FFF //!< PREDIV_S[12:0]: Synchronous prescaler factor
+#define RTC_PRER_PREDIV_S           0x00007FFF //!< PREDIV_S[14:0]: Synchronous prescaler factor
 #define RTC_PRER_PREDIV_S_Set(x)    (x)
 /** @} */
 
@@ -274,7 +278,7 @@ typedef struct
 #define RTC_OR_RTC_ALARM_TYPE 		0x00000001	//!< RTC_ALARM output type on PC13
 /** @} */
 
-/** @name RTC_BKPxR[20]:(rtc Offset: 0x5C) RTC backup registers               */
+/** @name RTC_BKPxR[20]:(rtc Offset: 0x50) RTC backup registers               */
 /** @{ */
 #define RTC_BKPxR_BKP_1				0xFFFF0000	//!<
 #define RTC_BKPxR_BKP_2				0x0000FFFF	//!<
