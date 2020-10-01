@@ -148,7 +148,7 @@ typedef struct
 
 /** @name RTC_ALRMAR:  	(rtc Offset: 0x1C) RTC alarm A register				  */
 /** @{ */
-#define RTC_ALRMAR_MSK4             0x80000000u//!< MSK4: Alarm A date mask
+#define RTC_ALRMAR_MSK4             0x80000000 //!< MSK4: Alarm A date mask
 #define RTC_ALRMAR_WDSEL            0x40000000 //!< WDSEL: Week day selection
 #define RTC_ALRMAR_DT               0x30000000 //!< DT[1:0]: Date tens in BCD format
 #define RTC_ALRMAR_DU               0x0F000000 //!< DU[3:0]: Date units or day in BCD format
@@ -166,7 +166,7 @@ typedef struct
 
 /** @name RTC_ALRMBR:  	(rtc Offset: 0x20) RTC alarm B register				  */
 /** @{ */
-#define RTC_ALRMBR_MSK4             0x80000000u//!< MSK4: Alarm B date mask
+#define RTC_ALRMBR_MSK4             0x80000000 //!< MSK4: Alarm B date mask
 #define RTC_ALRMBR_WDSEL            0x40000000 //!< WDSEL: Week day selection
 #define RTC_ALRMBR_DT               0x30000000 //!< DT[1:0]: Date tens in BCD format
 #define RTC_ALRMBR_DU               0x0F000000 //!< DU[3:0]: Date units or day in BCD format
@@ -189,10 +189,13 @@ typedef struct
 
 /** @name RTC_SSR: 		(rtc Offset: 0x28) RTC sub second register            */
 /** @{ */
+#define RTC_SSR_SS  				0x0000FFFF //!< Sub second value
 /** @} */
 
 /** @name RTC_SHIFTR:	(rtc Offset: 0x2C) RTC shift control register         */
 /** @{ */
+#define RTC_SHIFTR_ADD1S 			0x80000000	//!< Add one second
+#define RTC_SHIFTR_SUBFS 			0x00007FFF	//!< Subtract a fraction of a second
 /** @} */
 
 /** @name RTC_TSTR:    	(rtc Offset: 0x30) RTC time stamp time register	 	  */
@@ -217,30 +220,64 @@ typedef struct
 
 /** @name RTC_TSSSR: 	(rtc Offset: 0x38) RTC time-stamp sub second register */
 /** @{ */
+#define RTC_TSSSR_SS 				0x0000FFFF //!< Sub second value
 /** @} */
 
 /** @name RTC_CALR: 	(rtc Offset: 0x3C) RTC calibration register           */
 /** @{ */
+#define RTC_CALR_CALP 				0x00008000	//!< Increase frequency of RTC by 488.5 ppm
+#define RTC_CALR_CALW8 				0x00004000	//!< Use an 8-second calibration cycle period
+#define RTC_CALR_CALW16 			0x00002000	//!< Use a 16-second calibration cycle period
+#define RTC_CALR_CALM 				0x000001FF	//!< Calibration minus
 /** @} */
 
 /** @name RTC_TAMPCR: 	(rtc Offset: 0x40) RTC tamper configuration register  */
 /** @{ */
+#define RTC_TAMPCR_TAMP3MF 			0x01000000	//!< Tamper 3 mask flag
+#define RTC_TAMPCR_TAMP3NOERASE 	0x00800000	//!< Tamper 3 no erase
+#define RTC_TAMPCR_TAMP3IE 			0x00400000	//!< Tamper 3 interrupt enable
+#define RTC_TAMPCR_TAMP2MF 			0x00200000	//!< Tamper 2 mask flag
+#define RTC_TAMPCR_TAMP2NOERASE 	0x00100000	//!< Tamper 2 no erase
+#define RTC_TAMPCR_TAMP2IE 			0x00080000	//!< Tamper 2 interrupt enable
+#define RTC_TAMPCR_TAMP1MF 			0x00040000	//!< Tamper 1 mask flag
+#define RTC_TAMPCR_TAMP1NOERASE 	0x00020000	//!< Tamper 1 no erase
+#define RTC_TAMPCR_TAMP1IE 			0x00010000	//!< Tamper 1 interrupt enable
+#define RTC_TAMPCR_TAMPPUDIS 		0x00008000	//!< RTC_TAMPx pull-up disable
+#define RTC_TAMPCR_TAMPPRCH 		0x00006000	//!< RTC_TAMPx precharge duration
+#define RTC_TAMPCR_TAMPFLT 			0x00001800	//!< RTC_TAMPx filter count
+#define RTC_TAMPCR_TAMPFREQ 		0x00000700	//!< Tamper sampling frequency
+#define RTC_TAMPCR_TAMPTS 			0x00000080	//!< Activate timestamp on tamper detection event
+#define RTC_TAMPCR_TAMP3TRG 		0x00000040	//!< Active level for RTC_TAMP3 input
+#define RTC_TAMPCR_TAMP3E 			0x00000020	//!< RTC_TAMP3 detection enable
+#define RTC_TAMPCR_TAMP2TRG 		0x00000010	//!< Active level for RTC_TAMP2 input
+#define RTC_TAMPCR_TAMP2E 			0x00000008	//!< RTC_TAMP2 input detection enable
+#define RTC_TAMPCR_TAMPIE 			0x00000004	//!< Tamper interrupt enable
+#define RTC_TAMPCR_TAMP1TRG 		0x00000002	//!< Active level for RTC_TAMP1 input
+#define RTC_TAMPCR_TAMP1E 			0x00000001	//!< RTC_TAMP1 input detection enable
 /** @} */
 
 /** @name RTC_ALRMASSR: (rtc Offset: 0x44) RTC alarm A sub second register    */
 /** @{ */
+#define RTC_ALRMASSR_MASKSS 		0x0F000000	//!< Mask the most-significant bits starting at this bit
+#define RTC_ALRMASSR_SS 			0x00007FFF	//!< Sub seconds value
 /** @} */
 
 /** @name RTC_ALRMBSSR: (rtc Offset: 0x48) RTC alarm B sub second register    */
 /** @{ */
+#define RTC_ALRMBSSR_MASKSS 		0x0F000000	//!< Mask the most-significant bits starting at this bit
+#define RTC_ALRMBSSR_SS				0x00007FFF	//!< Sub seconds value
 /** @} */
 
-/** @name RTC_OR:		(rtc Offset: 0x48) RTC option register                */
+/** @name RTC_OR:		(rtc Offset: 0x4C) RTC option register                */
 /** @{ */
+#define RTC_OR_RTC_OUT_RMP 			0x00000002	//!< RTC_OUT remap
+#define RTC_OR_RTC_ALARM_TYPE 		0x00000001	//!< RTC_ALARM output type on PC13
 /** @} */
 
 /** @name RTC_BKPxR[20]:(rtc Offset: 0x5C) RTC backup registers               */
 /** @{ */
+#define RTC_BKPxR_BKP_1				0xFFFF0000	//!<
+#define RTC_BKPxR_BKP_2				0x0000FFFF	//!<
 /** @} */
 
 
