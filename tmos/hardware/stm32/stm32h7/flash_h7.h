@@ -73,7 +73,7 @@ typedef struct
 
 /** @name FLASH_KEYR:       (flash Offset: 0x004) Flash Key Register		   */
 /** @{ */
-#define FLASH_KEYR_KEYR:           0xFFFFFFFF //!< bank configuration access unlock key
+#define FLASH_KEYR_KEYR	           0xFFFFFFFF //!< bank configuration access unlock key
 #define FLASH_KEYR_KEYR_1		   0x45670123 //!<  key 1
 #define FLASH_KEYR_KEYR_2          0xCDEF89AB //!<  key 2
 /** @} */

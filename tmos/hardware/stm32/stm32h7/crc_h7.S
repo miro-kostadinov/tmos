@@ -6,7 +6,7 @@
  */
 
 #include "port_asm.h"
-#include "crc_f7.h"
+#include "crc_h7.h"
 #include "mcu_cpp.h"
 
 #ifndef USE_CRC32
