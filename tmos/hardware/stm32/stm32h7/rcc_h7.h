@@ -374,7 +374,7 @@ typedef struct
 #define RCC_BDCR_LSEDRV		 	0x00000018 //!<	LSE oscillator driving capability
 #define RCC_BDCR_LSEBYP 		0x00000004 //!< LSE oscillator bypass
 #define RCC_BDCR_LSERDY 		0x00000002 //!< LSE oscillator ready
-#define RCC_BDCR_LSERDY 		0x00000001 //!< LSE oscillator ready
+#define RCC_BDCR_LSEON	 		0x00000001 //!< LSE oscillator enabled
 /** @} */
 
 /** @name RCC_CSR:	(rcc Offset: 0x074) RCC Clock Control and Status Register   */
