@@ -17,6 +17,7 @@
 
 #include <mcu_inc.h>
 #include <tmos_types.h>
+#include <brd_cfg.h>
 
 // revision V by default
 #ifndef STM32_H7_CPU_REVISION_Y
@@ -32,6 +33,12 @@
 /***************************************************************************//**
  *  Reset and Clock Control registers
  ******************************************************************************/
+typedef struct
+{
+	__IO uint32_t RCC_PLLxDIVR; 		//!< (rcc Offset: 0x030) RCC PLL1-3 Dividers Configuration Register
+	__IO uint32_t RCC_PLLxFRACR; 		//!< (rcc Offset: 0x034) RCC PLL1-3 Fractional Divider Configuration Register
+} PLLx_TypeDef;
+
 typedef struct
 {
 	__IO uint32_t RCC_CR; 				//!< (rcc Offset: 0x000) RCC Source Control Register
@@ -54,12 +61,7 @@ typedef struct
 	__IO uint32_t reserved2; 			//!< (rcc Offset: 0x024) reserved
 	__IO uint32_t RCC_PLLCKSELR; 		//!< (rcc Offset: 0x028) RCC PLLs Clock Source Selection Register
 	__IO uint32_t RCC_PLLCFGR; 			//!< (rcc Offset: 0x02C) RCC PLLs  Configuration Register
-	__IO uint32_t RCC_PLL1DIVR; 		//!< (rcc Offset: 0x030) RCC PLL1 Dividers Configuration Register
-	__IO uint32_t RCC_PLL1FRACR; 		//!< (rcc Offset: 0x034) RCC PLL1 Fractional Divider Configuration Register
-	__IO uint32_t RCC_PLL2DIVR; 		//!< (rcc Offset: 0x038) RCC PLL2 Dividers Configuration Register
-	__IO uint32_t RCC_PLL2FRACR; 		//!< (rcc Offset: 0x03C) RCC PLL2 Fractional Divider Configuration Register
-	__IO uint32_t RCC_PLL3DIVR; 		//!< (rcc Offset: 0x040) RCC PLL3 Dividers Configuration Register
-	__IO uint32_t RCC_PLL3FRACR; 		//!< (rcc Offset: 0x044) RCC PLL3 Fractional Divider Configuration Register
+	__IO PLLx_TypeDef RCC_PLLx[3]; 		//!< (rcc Offset: 0x030) RCC PLL1-3 Dividers and Fractional Configuration Registers
 	__IO uint32_t reserved3; 			//!< (rcc Offset: 0x048) reserved
 	__IO uint32_t RCC_D1CCIPR;			//!< (rcc Offset: 0x04C) RCC Domain 1 Kernel Clock Configuration Register
 	__IO uint32_t RCC_D2CCIP1R; 		//!< (rcc Offset: 0x050) RCC Domain 2 Kernel Clock Configuration Register
@@ -135,10 +137,12 @@ typedef struct
 #define RCC_CR_CSIRDY 			0x00000100 //!< CSI clock ready flag
 #define RCC_CR_CSION 			0x00000080 //!< CSI clock enable
 #define RCC_CR_HSIDIVF 			0x00000020 //!< HSI divider flag
-#define RCC_CR_HSIDIV_1			0x00000000 //!< 00: Division by 1, hsi(_ker)_ck = 64 MHz (default after reset)
-#define RCC_CR_HSIDIV_2		 	0x00000030 //!< 01: Division by 2, hsi(_ker)_ck = 32 MHz
-#define RCC_CR_HSIDIV_4		 	0x00000040 //!< 10: Division by 4, hsi(_ker)_ck = 16 MHz
-#define RCC_CR_HSIDIV_8		 	0x00000050 //!< 11: Division by 8, hsi(_ker)_ck = 8 MHz
+#define RCC_CR_HSIDIV			0x00000018 //!< HSI clock divider
+#define RCC_CR_HSIDIV_1			0x00000000 //!<  00: Division by 1, hsi(_ker)_ck = 64 MHz (default after reset)
+#define RCC_CR_HSIDIV_2		 	0x00000008 //!<  01: Division by 2, hsi(_ker)_ck = 32 MHz
+#define RCC_CR_HSIDIV_4		 	0x00000010 //!<  10: Division by 4, hsi(_ker)_ck = 16 MHz
+#define RCC_CR_HSIDIV_8		 	0x00000018 //!<  11: Division by 8, hsi(_ker)_ck = 8 MHz
+#define RCC_CR_HSIDIV_Get(x) 	(((x)>>3) & 0x03) //!< HSI clock divider value get
 #define RCC_CR_HSIRDY 			0x00000004 //!< HSI clock ready flag
 #define RCC_CR_HSIKERON			0x00000002 //!< High Speed Internal clock enable in Stop mode
 #define RCC_CR_HSION 			0x00000001 //!< High Speed Internal clock enable
@@ -187,6 +191,10 @@ typedef struct
 #define RCC_CFGR_STOPKERWUCK	0x00000080 //!< Kernel clock selection after a wake up from system Stop
 #define RCC_CFGR_STOPWUCK		0x00000040 //!< System clock selection after a wake up from system Stop
 #define RCC_CFGR_SWS			0x00000038 //!< System clock switch status
+#define RCC_CFGR_SWS_HSI		0x00000000 //!<  HSI selected as system clock (hsi_ck) (default after reset)
+#define RCC_CFGR_SWS_CSI		0x00000008 //!<  CSI selected as system clock (csi_ck)
+#define RCC_CFGR_SWS_HSE		0x00000010 //!<  HSE selected as system clock (hse_ck)
+#define RCC_CFGR_SWS_PLL1		0x00000018 //!<  PLL1 selected as system clock (pll1_p_ck)
 #define RCC_CFGR_SW				0x00000007 //!< System clock switch
 /** @} */
 
@@ -210,10 +218,15 @@ typedef struct
 
 /** @name RCC_PLLCKSELR:	(rcc Offset: 0x028) RCC PLLs clock source selection register  */
 /** @{ */
-#define RCC_PLLCKSELR_DIVM3		0x03F00000 //!< Prescaler for PLL3
-#define RCC_PLLCKSELR_DIVM2		0x0003F000 //!< Prescaler for PLL2
-#define RCC_PLLCKSELR_DIVM1		0x000003F0 //!< Prescaler for PLL1
-#define RCC_PLLCKSELR_PLLSRC	0x00000003 //!< DIVMx and PLLs clock source selection
+#define RCC_PLLCKSELR_DIVM3			0x03F00000 //!< Prescaler for PLL3
+#define RCC_PLLCKSELR_DIVM2			0x0003F000 //!< Prescaler for PLL2
+#define RCC_PLLCKSELR_DIVM1			0x000003F0 //!< Prescaler for PLL1
+#define RCC_PLLCLSELR_DIVMx_Get(r, x)  ( ((r)>>((x)*8 + 4)) & 0x3F)
+#define RCC_PLLCKSELR_PLLSRC		0x00000003 //!< DIVMx and PLLs clock source selection
+#define RCC_PLLCKSELR_PLLSRC_HSI	0x00000000 //!<  HSI selected as PLL clock (hsi_ck) (default after reset)
+#define RCC_PLLCKSELR_PLLSRC_CSI	0x00000001 //!<  CSI selected as PLL clock (csi_ck)
+#define RCC_PLLCKSELR_PLLSRC_HSE	0x00000002 //!<  HSE selected as PLL clock (hse_ck)
+#define RCC_PLLCKSELR_PLLSRC_OFF	0x00000003 //!<  No clock send to DIVMx divider and PLLs
 /** @} */ // @relates RCC_TypeDef
 
 /** @name RCC_PLLCFGR:	(rcc Offset: 0x02C) RCC PLLs configuration register   */
@@ -227,6 +240,9 @@ typedef struct
 #define RCC_PLLCFGR_DIVR1EN 	0x00040000 //!< PLL1 DIVR divider output enable
 #define RCC_PLLCFGR_DIVQ1EN		0x00020000 //!< PLL1 DIVQ divider output enable
 #define RCC_PLLCFGR_DIVP1EN 	0x00010000 //!< PLL1 DIVP divider output enable
+#define RCC_PLLCFGR_DIVRxEN_Get(r, x)  ( ((r)>>((x)*3 + 18)) & 0x01)
+#define RCC_PLLCFGR_DIVQxEN_Get(r, x)  ( ((r)>>((x)*3 + 17)) & 0x01)
+#define RCC_PLLCFGR_DIVPxEN_Get(r, x)  ( ((r)>>((x)*3 + 16)) & 0x01)
 #define RCC_PLLCFGR_PLL3RGE 	0x00000C00 //!< PLL3 input frequency range
 #define RCC_PLLCFGR_PLL3VCOSEL 	0x00000200 //!< PLL3 VCO selection
 #define RCC_PLLCFGR_PLL3FRACEN 	0x00000100 //!< PLL3 fractional latch enable
@@ -236,46 +252,27 @@ typedef struct
 #define RCC_PLLCFGR_PLL1RGE 	0x0000000C //!< PLL2 fractional latch enable
 #define RCC_PLLCFGR_PLL1VCOSEL 	0x00000002 //!< PLL1 input frequency range
 #define RCC_PLLCFGR_PLL1FRACEN 	0x00000001 //!< PLL1 fractional latch enable
+#define RCC_PLLCFGR_PLLxFRACEN_Get(r, x)  ( ((r)>>((x)*4)) & 0x01)
 /** @} */
 
-/** @name RCC_PLL1DIVR:	(rcc Offset: 0x030) RCC PLL1 dividers configuration register    */
+/** @name RCC_PLLxDIVR:	(rcc Offset: 0x030, 0x38,0x40) RCC PLL1-3 dividers configuration register    */
 /** @{ */
-#define RCC_PLL1DIVR_DIVR1	 	0x7F000000 //!< PLL1 DIVR division factor
-#define RCC_PLL1DIVR_DIVQ1		0x007F0000 //!< PLL1 DIVQ division factor
-#define RCC_PLL1DIVR_DIVP1	 	0x0000FE00 //!< PLL1 DIVP division factor
-#define RCC_PLL1DIVR_DIVN1	 	0x000001FF //!< Multiplication factor for PLL1 VCO
+#define RCC_PLLxDIVR_DIVRx	 		0x7F000000 //!< PLL1 DIVR division factor
+#define RCC_PLLxDIVR_DIVRx_Get(x)	(((x) >> 24) & 0x7F)
+#define RCC_PLLxDIVR_DIVQx			0x007F0000 //!< PLL1 DIVQ division factor
+#define RCC_PLLxDIVR_DIVQx_Get(x)	(((x) >> 16) & 0x7F)
+#define RCC_PLLxDIVR_DIVPx	 		0x0000FE00 //!< PLL1 DIVP division factor
+#define RCC_PLLxDIVR_DIVPx_Get(x)	(((x) >> 9) & 0x7F)
+#define RCC_PLLxDIVR_DIVNx	 		0x000001FF //!< Multiplication factor for PLL1 VCO
+#define RCC_PLLxDIVR_DIVNx_Get(x) 	((x) & 0x1FF)
 /** @} */
 
-/** @name RCC_PLL1FRACR:	(rcc Offset: 0x034) RCC PLL1 fractional divider register    */
+/** @name RCC_PLLxFRACR:	(rcc Offset: 0x034, 0x3C, 0x44) RCC PLL1-3 fractional divider register    */
 /** @{ */
-#define RCC_PLL1FRACR_FRACN1	0x0000FFF8 //!< Fractional part of the multiplication factor for PLL1 VCO
+#define RCC_PLLxFRACR_FRACNx		0x0000FFF8 //!< Fractional part of the multiplication factor for PLL1 VCO
+#define RCC_PLLxFRACR_FRACNx_Get(x)	(((x) >> 3) & 0x1FFF)
 /** @} */
 
-/** @name RCC_PLL2DIVR:	(rcc Offset: 0x038) RCC PLL2 dividers configuration register    */
-/** @{ */
-#define RCC_PLL2DIVR_DIVR2		0x07F00000 //!< PLL2 DIVR division factor
-#define RCC_PLL2DIVR_DIVQ2		0x007F0000 //!< PLL2 DIVQ division factor
-#define RCC_PLL2DIVR_DIVP2		0x0000FE00 //!< PLL2 DIVP division factor
-#define RCC_PLL2DIVR_DIVN2		0x000001FF //!< Multiplication factor for PLL2 VCO
-/** @} */
-
-/** @name RCC_PLL2FRACR:	(rcc Offset: 0x03C) RCC PLL2 fractional divider register   */
-/** @{ */
-#define RCC_PLL2FRACR_FRACN2	0x0000FFF8 //!< Fractional part of the multiplication factor for PLL2 VCO
-/** @} */
-
-/** @name RCC_PLL3DIVR:	(rcc Offset: 0x040) RCC PLL3 dividers configuration register    */
-/** @{ */
-#define RCC_PLL3DIVR_DIVR3		0xCF000000 //!< PLL3 DIVR division factor
-#define RCC_PLL3DIVR_DIVQ3		0x00CF0000 //!< PLL3 DIVQ division factor
-#define RCC_PLL3DIVR_DIVP3		0x0000FC00 //!< PLL3 DIVP division factor
-#define RCC_PLL3DIVR_DIVN3		0x000001FF //!< Multiplication factor for PLL3 VCO
-/** @} */
-
-/** @name RCC_PLL3FRACR:	(rcc Offset: 0x044) RCC PLL3 fractional divider register   */
-/** @{ */
-#define RCC_PLL3FRACR_FRACN3	0x0000FFF8 //!< Fractional part of the multiplication factor for PLL3 VCO
-/** @} */
 
 /** @name RCC_D1CCIPR:	(rcc Offset: 0x04C) RCC Domain 1 kernel clock configuration register   */
 /** @{ */
@@ -844,16 +841,30 @@ typedef struct
 #endif /* HSE_STARTUP_TIMEOUT */
 
 #ifndef HSI_VALUE
-#define HSI_VALUE            16000000 /*!< Value of the Internal oscillator in Hz*/
+#define HSI_VALUE            64000000 /*!< Value of the High-speed Internal oscillator in Hz*/
 #endif /* HSI_VALUE */
+
+#ifndef CSI_VALUE
+#define CSI_VALUE            4000000 /*!< Value of the Low-power Internal oscillator in Hz*/
+#endif
 
 
 typedef struct
 {
-	uint32_t SYSCLK_Frequency; 	//!< SYSCLK clock frequency expressed in Hz
+  uint32_t PLL_P_Frequency;
+  uint32_t PLL_Q_Frequency;
+  uint32_t PLL_R_Frequency;
+} PLL_ClocksTypeDef;
+
+typedef struct
+{
+	uint32_t SYSCLK_Frequency;	//!< SYSCLK clock frequency expressed in Hz
+	uint32_t CPUCLK_Frequency;	//!< CPU clock in Hz
 	uint32_t HCLK_Frequency; 	//!< HCLK clock frequency expressed in Hz
-	uint32_t PCLK1_Frequency; 	//!< PCLK1 clock frequency expressed in Hz
-	uint32_t PCLK2_Frequency; 	//!< PCLK2 clock frequency expressed in Hz
+	uint32_t PCLK1_Frequency;	//!< PCLK1 clock frequency expressed in Hz
+	uint32_t PCLK2_Frequency;	//!< PCLK2 clock frequency expressed in Hz
+	uint32_t PCLK3_Frequency;	//!< PCLK3 clock frequency expressed in Hz
+	uint32_t PCLK4_Frequency;	//!< PCLK4 clock frequency expressed in Hz
 } RCC_ClocksTypeDef;
 
 

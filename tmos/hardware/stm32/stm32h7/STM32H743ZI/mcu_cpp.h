@@ -120,83 +120,124 @@
  * \addtogroup STM32_id Peripheral Ids Definitions
  * @{
  */
-// ------------------- index 0 ->   RCC_AHB1ENR  -------------------------------
-#define ID_PERIPH_GPIOA     ((0<<5)| 0) //!< GPIO A
-#define ID_PERIPH_GPIOB     ((0<<5)| 1) //!< GPIO B
-#define ID_PERIPH_GPIOC     ((0<<5)| 2) //!< GPIO C
-#define ID_PERIPH_GPIOD     ((0<<5)| 3) //!< GPIO D
-#define ID_PERIPH_GPIOE     ((0<<5)| 4) //!< GPIO E
-#define ID_PERIPH_GPIOF     ((0<<5)| 5) //!< GPIO F
-#define ID_PERIPH_GPIOG     ((0<<5)| 6) //!< GPIO G
-#define ID_PERIPH_GPIOH     ((0<<5)| 7) //!< GPIO H
-#define ID_PERIPH_GPIOI     ((0<<5)| 8) //!< GPIO I
-#define ID_PERIPH_CRC 		((0<<5)|12) //!< CRC
-#define ID_PERIPH_FLITF     ((0<<5)|15) //!< FLITF
-#define ID_PERIPH_SRAM1     ((0<<5)|16) //!< SRAM 1
-#define ID_PERIPH_SRAM2     ((0<<5)|17) //!< SRAM 2
-#define ID_PERIPH_BKPSPA    ((0<<5)|18) //!< BKPA
-#define ID_PERIPH_DMA1     	((0<<5)|21) //!< DMA1
-#define ID_PERIPH_DMA2 		((0<<5)|22) //!< DMA2
-#define ID_PERIPH_ETHMAC  	((0<<5)|25) //!< ETH MAC
-#define ID_PERIPH_ETHMACTX	((0<<5)|26) //!< ETH MAC TX
-#define ID_PERIPH_ETHMACRX	((0<<5)|27) //!< ETH MAC RX
-#define ID_PERIPH_ETHPTP	((0<<5)|28) //!< ETH PTP
-#define ID_PERIPH_OTGHS		((0<<5)|29) //!< OTG HS
-#define ID_PERIPH_OTGHS_ULPI ((0<<5)|30) //!< OTG HS ULPI
+// ------------------- index 0 ->   RCC_AHB3ENR  -------------------------------
+#define ID_PERIPH_SDMMC1	((0<<5)|16) //!< SDMMC1
+#define ID_PERIPH_QSPIEN	((0<<5)|14) //!< QUADSPI
+#define ID_PERIPH_FMC		((0<<5)|12) //!< FMC
+#define ID_PERIPH_JPGDEC	((0<<5)| 5) //!< JPGDEC
+#define ID_PERIPH_DMA2D		((0<<5)| 4) //!< DMA2D
+#define ID_PERIPH_MDMA		((0<<5)| 0) //!< MDMA
 
-// ------------------- index 1 ->   RCC_AHB2ENR  -------------------------------
-#define ID_PERIPH_DCMI		((1<<5)| 0) //!< DCMI
-#define ID_PERIPH_CRYP		((1<<5)| 4) //!< CRYP
-#define ID_PERIPH_HASH		((1<<5)| 5) //!< HASH
-#define ID_PERIPH_RNG		((1<<5)| 6) //!< RNG
-#define ID_PERIPH_OTGFS		((1<<5)| 7) //!< OTG FS
+// ------------------- index 1 ->   RCC_AHB1ENR  -------------------------------
+#define ID_PERIPH_USB2OTGHS		((1<<5)|27) //!< USB2OTG (OTG_HS2)
+#define ID_PERIPH_USB1OTGHSULPI	((1<<5)|26) //!< USB_PHY1
+#define ID_PERIPH_USB1OTGHS		((1<<5)|25) //!< USB1OTG (OTG_HS1)
+#define ID_PERIPH_USB2OTGHSULPI	((1<<5)|18) //!< USB_PHY2
+#define ID_PERIPH_ETH1RX		((1<<5)|17) //!< Ethernet Reception
+#define ID_PERIPH_ETH1TX		((1<<5)|16) //!< Ethernet Transmission
+#define ID_PERIPH_ETH1MAC		((1<<5)|15) //!< Ethernet MAC
+#define ID_PERIPH_ADC12			((1<<5)| 5) //!< ADC1/2
+#define ID_PERIPH_DMA2			((1<<5)| 1) //!< DMA2
+#define ID_PERIPH_DMA1			((1<<5)| 0) //!< DMA1
 
-// ------------------- index 2 ->   RCC_AHB3ENR  -------------------------------
-#define ID_PERIPH_FSMC		((2<<5)| 0) //!< FSMC
+// ------------------- index 2 ->   RCC_AHB2ENR  -------------------------------
+#define ID_PERIPH_SRAM3		 	((2<<5)|31) //!< SRAM3
+#define ID_PERIPH_SRAM2		 	((2<<5)|30) //!< SRAM2
+#define ID_PERIPH_SRAM1		 	((2<<5)|29) //!< SRAM1
+#define ID_PERIPH_SDMMC2		((2<<5)| 9) //!< SDMMC2
+#define ID_PERIPH_RNG	 		((2<<5)| 6) //!< RNG
+#define ID_PERIPH_HASH	 		((2<<5)| 5) //!< HASH
+#define ID_PERIPH_CRYPT		 	((2<<5)| 4) //!< CRYPT
+#define ID_PERIPH_DCMI	 		((2<<5)| 0) //!< DCMI
 
-// ------------------- index 3 ->   reserved     -------------------------------
+// ------------------- index 3 ->   RCC_AHB4ENR  -------------------------------
+#define ID_PERIPH_BKPRAM		((3<<5)|28) //!< Backup RAM
+#define ID_PERIPH_HSEM	 		((3<<5)|25) //!< HSEM
+#define ID_PERIPH_ADC3	 		((3<<5)|24) //!< ADC3
+#define ID_PERIPH_BDMA	 		((3<<5)|21) //!< BDMA and DMAMUX2
+#define ID_PERIPH_CRC			((3<<5)|19) //!< CRC
+#define ID_PERIPH_GPIOK			((3<<5)|10) //!< GPIOK
+#define ID_PERIPH_GPIOJ			((3<<5)| 9) //!< GPIOJ
+#define ID_PERIPH_GPIOI			((3<<5)| 8) //!< GPIOI
+#define ID_PERIPH_GPIOH			((3<<5)| 7) //!< GPIOH
+#define ID_PERIPH_GPIOG			((3<<5)| 6) //!< GPIOG
+#define ID_PERIPH_GPIOF			((3<<5)| 5) //!< GPIOF
+#define ID_PERIPH_GPIOE			((3<<5)| 4) //!< GPIOE
+#define ID_PERIPH_GPIOD			((3<<5)| 3) //!< GPIOD
+#define ID_PERIPH_GPIOC			((3<<5)| 2) //!< GPIOC
+#define ID_PERIPH_GPIOB			((3<<5)| 1) //!< GPIOB
+#define ID_PERIPH_GPIOA			((3<<5)| 0) //!< GPIOA
 
-// ------------------- index 4 ->   RCC_APB1ENR  -------------------------------
-#define ID_PERIPH_TIM2      ((4<<5)| 0) //!< TIM 2
-#define ID_PERIPH_TIM3      ((4<<5)| 1) //!< TIM 3
-#define ID_PERIPH_TIM4      ((4<<5)| 2) //!< TIM 4
-#define ID_PERIPH_TIM5      ((4<<5)| 3) //!< TIM 5
-#define ID_PERIPH_TIM6      ((4<<5)| 4) //!< TIM 6
-#define ID_PERIPH_TIM7      ((4<<5)| 5) //!< TIM 7
-#define ID_PERIPH_TIM12     ((4<<5)| 6) //!< TIM 12
-#define ID_PERIPH_TIM13     ((4<<5)| 7) //!< TIM 13
-#define ID_PERIPH_TIM14     ((4<<5)| 8) //!< TIM 14
-#define ID_PERIPH_WWDG      ((4<<5)|11) //!< W WDG
-#define ID_PERIPH_SPI2      ((4<<5)|14) //!< SPI 2
-#define ID_PERIPH_SPI3      ((4<<5)|15) //!< SPI 3
-#define ID_PERIPH_USART2    ((4<<5)|17) //!< USART 2
-#define ID_PERIPH_USART3    ((4<<5)|18) //!< USART 3
-#define ID_PERIPH_USART4    ((4<<5)|19) //!< USART 4
-#define ID_PERIPH_USART5    ((4<<5)|20) //!< USART 5
-#define ID_PERIPH_I2C1      ((4<<5)|21) //!< I2C 1
-#define ID_PERIPH_I2C2      ((4<<5)|22) //!< I2C 2
-#define ID_PERIPH_I2C3      ((4<<5)|23) //!< I2C 3
-#define ID_PERIPH_CAN1      ((4<<5)|25) //!< CAN 1
-#define ID_PERIPH_CAN2      ((4<<5)|26) //!< CAN 2
-#define ID_PERIPH_PWR       ((4<<5)|28) //!< PWR
-#define ID_PERIPH_DAC       ((4<<5)|29) //!< DAC
+// ------------------- index 4 ->   RCC_APB3ENR  -------------------------------
+#define ID_PERIPH_WWDG1			((4<<5)| 6) //!< WWDG1
+#define ID_PERIPH_LTDC			((4<<5)| 3) //!< LTDC
 
-// ------------------- index 5 ->   RCC_APB2ENR  -------------------------------
-#define ID_PERIPH_TIM1      ((5<<5)| 0) //!< TIM 1
-#define ID_PERIPH_TIM8      ((5<<5)| 1) //!< TIM 8
-#define ID_PERIPH_USART1    ((5<<5)| 4) //!< USART 1
-#define ID_PERIPH_USART6    ((5<<5)| 5) //!< USART 6
-#define ID_PERIPH_ADC1		((5<<5)| 8) //!< ADC 1
-#define ID_PERIPH_ADC2      ((5<<5)| 9) //!< ADC 2
-#define ID_PERIPH_ADC3      ((5<<5)|10) //!< ADC 3
-#define ID_PERIPH_SDIO      ((5<<5)|11) //!< SDIO
-#define ID_PERIPH_SPI1      ((5<<5)|12) //!< SPI 1
-#define ID_PERIPH_SYSC      ((5<<5)|14) //!< SYSC
-#define ID_PERIPH_TIM9      ((5<<5)|16) //!< TIM 9
-#define ID_PERIPH_TIM10     ((5<<5)|17) //!< TIM 10
-#define ID_PERIPH_TIM11     ((5<<5)|18) //!< TIM 11
+// ------------------- index 5 ->   RCC_APB1LENR -------------------------------
+#define ID_PERIPH_UART8 		((5<<5)|31) //!< UART8
+#define ID_PERIPH_UART7 		((5<<5)|30) //!< UART7
+#define ID_PERIPH_DAC12 		((5<<5)|29) //!< DAC1
+#define ID_PERIPH_CEC	 		((5<<5)|27) //!< HDMI-CEC
+#define ID_PERIPH_I2C3	 		((5<<5)|23) //!< I2C3
+#define ID_PERIPH_I2C2	 		((5<<5)|22) //!< I2C2
+#define ID_PERIPH_I2C1	 		((5<<5)|21) //!< I2C1
+#define ID_PERIPH_UART5 		((5<<5)|20) //!< UART5
+#define ID_PERIPH_UART4 		((5<<5)|19) //!< UART4
+#define ID_PERIPH_USART3 		((5<<5)|18) //!< USART3
+#define ID_PERIPH_USART2 		((5<<5)|17) //!< USART2
+#define ID_PERIPH_SPDIFRX	 	((5<<5)|16) //!< SPDIFRX
+#define ID_PERIPH_SPI3	 		((5<<5)|15) //!< SPI3
+#define ID_PERIPH_SPI2	 		((5<<5)|14) //!< SPI2
+#define ID_PERIPH_LPTIM1 		((5<<5)| 9) //!< LPTIM1
+#define ID_PERIPH_TIM14 		((5<<5)| 8) //!< TIM14
+#define ID_PERIPH_TIM13 		((5<<5)| 7) //!< TIM13
+#define ID_PERIPH_TIM12 		((5<<5)| 6) //!< TIM12
+#define ID_PERIPH_TIM7	 		((5<<5)| 5) //!< TIM7
+#define ID_PERIPH_TIM6	 		((5<<5)| 4) //!< TIM6
+#define ID_PERIPH_TIM5	 		((5<<5)| 3) //!< TIM5
+#define ID_PERIPH_TIM4	 		((5<<5)| 2) //!< TIM4
+#define ID_PERIPH_TIM3	 		((5<<5)| 1) //!< TIM3
+#define ID_PERIPH_TIM2	 		((5<<5)| 0) //!< TIM2
 
-#define ID_NO_PERIPH 		(255)		//!< invalid index for peripheral
+// ------------------- index 6 ->   RCC_APB1HENR -------------------------------
+#define ID_PERIPH_FDCAN			((6<<5)| 8) //!< FDCAN
+#define ID_PERIPH_MDIOS			((6<<5)| 5) //!< MDIOS
+#define ID_PERIPH_OPAMP			((6<<5)| 4) //!< OPAMP
+#define ID_PERIPH_SWP			((6<<5)| 2) //!< SWPMI
+#define ID_PERIPH_CRS			((6<<5)| 1) //!< Clock Recovery System
+
+// ------------------- index 7 ->   RCC_APB2ENR  -------------------------------
+#define ID_PERIPH_HRTIM 		((7<<5)| 0) //!< HRTIM
+#define ID_PERIPH_DFSDM1		((7<<5)| 0) //!< DFSDM1
+#define ID_PERIPH_SAI3 			((7<<5)| 0) //!< SAI3
+#define ID_PERIPH_SAI2 			((7<<5)| 0) //!< SAI2
+#define ID_PERIPH_SAI1 			((7<<5)| 0) //!< SAI1
+#define ID_PERIPH_SPI5 			((7<<5)| 0) //!< SPI5
+#define ID_PERIPH_TIM17 		((7<<5)| 0) //!< TIM17
+#define ID_PERIPH_TIM16 		((7<<5)| 0) //!< TIM16
+#define ID_PERIPH_TIM15 		((7<<5)| 0) //!< TIM15
+#define ID_PERIPH_SPI4 			((7<<5)| 0) //!< SPI4
+#define ID_PERIPH_SPI1 			((7<<5)| 0) //!< SPI1
+#define ID_PERIPH_USART6		((7<<5)| 0) //!< USART6
+#define ID_PERIPH_USART1		((7<<5)| 0) //!< USART1
+#define ID_PERIPH_TIM8 			((7<<5)| 0) //!< TIM8
+#define ID_PERIPH_TIM1 			((7<<5)| 0) //!< TIM1
+
+// ------------------- index 8 ->   RCC_APB4ENR  -------------------------------
+#define ID_PERIPH_SAI4			((8<<5)|21) //!< SAI4
+#define ID_PERIPH_RTCAPB 		((8<<5)|16) //!< RTC APB
+#define ID_PERIPH_VREF			((8<<5)|15) //!< VREF
+#define ID_PERIPH_COMP12 		((8<<5)|14) //!< COMP1/2
+#define ID_PERIPH_LPTIM5 		((8<<5)|12) //!< LPTIM5
+#define ID_PERIPH_LPTIM4 		((8<<5)|11) //!< LPTIM4
+#define ID_PERIPH_LPTIM3 		((8<<5)|10) //!< LPTIM3
+#define ID_PERIPH_LPTIM2 		((8<<5)| 9) //!< LPTIM2
+#define ID_PERIPH_I2C4			((8<<5)| 7) //!< I2C4
+#define ID_PERIPH_SPI6			((8<<5)| 5) //!< SPI6
+#define ID_PERIPH_LPUART1		((8<<5)| 3) //!< LPUART1
+#define ID_PERIPH_SYSCFG 		((8<<5)| 1) //!< SYSCFG
+
+
+#define ID_NO_PERIPH 		(1023)		//!< invalid index for peripheral
 /** @}*/
 
 
