@@ -124,10 +124,18 @@ void sha512_algo_t::Result(void* digest)
 
 void sha512_algo_t::process_block(const uint32_t* block)
 {
-	uint32_t t;
+	uint32_t t, temp32;
 	uint64_t temp1;
 	uint64_t temp2;
 	uint64_t* h = digest64();
+
+	//Convert from big-endian byte order to host byte order
+	for (t = 0; t < 32; t+=2)
+	{
+		temp32 = __REV(block[t]);
+		buf32[t] = __REV(block[t+1]);
+		buf32[t+1] = temp32;
+	}
 
 	//Initialize the 8 working registers
 	uint64_t a = h[0];
@@ -138,13 +146,6 @@ void sha512_algo_t::process_block(const uint32_t* block)
 	uint64_t f = h[5];
 	uint64_t g = h[6];
 	uint64_t hh = h[7];
-
-	//Convert from big-endian byte order to host byte order
-	for (t = 0; t < 32; t+=2)
-	{
-		buf32[t] = __REV(block[t+1]);
-		buf32[t+1] = __REV(block[t]);
-	}
 
 	//SHA-512 hash computation (alternate method)
 	for (t = 0; t < 80; t++)
