@@ -15,8 +15,8 @@ const uint8_t sha384Oid[] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x0
 const hash_info_t SHA384_HASH_ALGO[1] =
 {
 	"SHA-384",
-	SHA512_BLOCK_SIZE,
-	SHA512_DIGEST_SIZE,
+	SHA384_BLOCK_SIZE,
+	SHA384_DIGEST_SIZE,
 	sizeof(sha384Oid),
 	sha384Oid,
 	new_sha384_hash
