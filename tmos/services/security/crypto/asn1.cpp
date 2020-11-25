@@ -143,6 +143,24 @@ RES_CODE Asn1Tag::asn1ReadInt32(const uint8_t *data, size_t len, int32_t *val)
 	return RES_OK;
 }
 
+RES_CODE Asn1Tag::asn1ReadSequence(const uint8_t *data, size_t len)
+{
+	RES_CODE res;
+
+	//Read ASN.1 tag
+	res = asn1ReadTag(data, len);
+
+	//Check status code
+	if (res == RES_OK)
+	{
+		//Enforce encoding, class and type
+		res = asn1CheckTag(true, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_SEQUENCE);
+	}
+
+	//Return status code
+	return res;
+}
+
 /**
  * @brief Write an ASN.1 tag
  * @param[in] tag Structure describing the ASN.1 tag

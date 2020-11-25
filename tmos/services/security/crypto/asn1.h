@@ -68,6 +68,8 @@ struct Asn1Tag
    RES_CODE asn1ReadTag(const uint8_t *data, size_t len);
    RES_CODE asn1ReadInt32(const uint8_t *data, size_t len, int32_t *val);
 
+   RES_CODE asn1ReadSequence(const uint8_t *data, size_t len);
+
    RES_CODE asn1WriteTag(bool reverse, uint8_t* data, size_t* written);
 
    RES_CODE asn1CheckTag(bool cnstrd, uint32_t cls, uint32_t type) const;
