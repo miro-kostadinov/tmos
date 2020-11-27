@@ -9,6 +9,7 @@
 #include <hmac.h>
 #include <pem.h>
 #include <x509.h>
+#include <oid.h>
 
 RES_CODE tls_context_t::tls_set_version(tls_version_t version)
 {
@@ -248,8 +249,7 @@ RES_CODE tls_context_t::tlsFinalizeHandshakeHash(const hash_algo_t* hash,
 		return RES_OUT_OF_MEMORY;
 
 	//Original hash context must be preserved
-	memcpy((void*)temp_hash, hash, sizeof(hash_algo_t) + hash->hash_info->algo_info.block_size
-					+ hash->hash_info->digest_size);
+	memcpy((void*)temp_hash, hash, sizeof(hash_algo_t) + hash->hash_info->digest_buf_size);
 
 #if (TLS_MAX_VERSION >= SSL_VERSION_3_0 && TLS_MIN_VERSION <= SSL_VERSION_3_0)
 	//SSL 3.0 currently selected?
@@ -1004,8 +1004,8 @@ RES_CODE tls_context_t::tlsComputeVerifyData(tls_connection_end_t ce)
 			return RES_OUT_OF_MEMORY;
 
 		//The original hash context must be preserved
-		memcpy((void*)hash, handshake_hash.get(), sizeof(hash_algo_t) + hash->hash_info->algo_info.block_size
-				+ hash->hash_info->digest_size);
+		memcpy((void*)hash, handshake_hash.get(), sizeof(hash_algo_t)
+				+ hash->hash_info->digest_buf_size);
 		//Finalize hash computation
 		hash->Result(nullptr);
 
@@ -1564,7 +1564,7 @@ bool tlsIsCertificateAcceptable(const TlsCertDesc *cert,
 	bool acceptable;
 
 	//Make sure that a valid certificate has been loaded
-	if (!cert->certChain || !cert->certChainLength)
+	if (!cert->certChain.length())
 		return false;
 
 	//This flag tells whether the certificate is acceptable
@@ -1653,9 +1653,9 @@ bool tlsIsCertificateAcceptable(const TlsCertDesc *cert,
 			p = certAuthorities->value;
 
 			//Point to the end entity certificate
-			pemCert = cert->certChain;
+			pemCert = cert->certChain.c_str();
 			//Get the total length, in bytes, of the certificate chain
-			pemCertLength = cert->certChainLength;
+			pemCertLength = cert->certChain.length();
 
 			//DER encoded certificate
 			derCertSize = 0;
@@ -1863,6 +1863,276 @@ const hash_info_t* tlsGetHashAlgo(tls_hash_algo_t hash_id)
 	}
 
 	return nullptr;
+}
+
+/**
+ * @brief Get the named curve that matches the specified OID
+ * @param[in] oid Object identifier
+ * @param[in] length OID length
+ * @return Named curve
+ **/
+
+tls_ecnamedcurve_t tlsGetNamedCurve(const uint8_t *oid, size_t length)
+{
+#if (TLS_ECDSA_SIGN_SUPPORT || TLS_ECDHE_ECDSA_SUPPORT)
+   //Make sure the object identifier is valid
+   if(oid == NULL)
+      return TLS_EC_CURVE_NONE;
+#if (TLS_SECP160K1_SUPPORT)
+   //secp160k1 elliptic curve?
+   else if(!oidComp(oid, length, SECP160K1_OID, sizeof(SECP160K1_OID)))
+      return TLS_EC_CURVE_SECP160K1;
+#endif
+#if (TLS_SECP160R1_SUPPORT)
+   //secp160r1 elliptic curve?
+   else if(!oidComp(oid, length, SECP160R1_OID, sizeof(SECP160R1_OID)))
+      return TLS_EC_CURVE_SECP160R1;
+#endif
+#if (TLS_SECP160R2_SUPPORT)
+   //secp160r2 elliptic curve?
+   else if(!oidComp(oid, length, SECP160R2_OID, sizeof(SECP160R2_OID)))
+      return TLS_EC_CURVE_SECP160R2;
+#endif
+#if (TLS_SECP192K1_SUPPORT)
+   //secp192k1 elliptic curve?
+   else if(!oidComp(oid, length, SECP192K1_OID, sizeof(SECP192K1_OID)))
+      return TLS_EC_CURVE_SECP192K1;
+#endif
+#if (TLS_SECP192R1_SUPPORT)
+   //secp192r1 elliptic curve?
+   else if(!oidComp(oid, length, SECP192R1_OID, sizeof(SECP192R1_OID)))
+      return TLS_EC_CURVE_SECP192R1;
+#endif
+#if (TLS_SECP224K1_SUPPORT)
+   //secp224k1 elliptic curve?
+   else if(!oidComp(oid, length, SECP224K1_OID, sizeof(SECP224K1_OID)))
+      return TLS_EC_CURVE_SECP224K1;
+#endif
+#if (TLS_SECP224R1_SUPPORT)
+   //secp224r1 elliptic curve?
+   else if(!oidComp(oid, length, SECP224R1_OID, sizeof(SECP224R1_OID)))
+      return TLS_EC_CURVE_SECP224R1;
+#endif
+#if (TLS_SECP256K1_SUPPORT)
+   //secp256k1 elliptic curve?
+   else if(!oidComp(oid, length, SECP256K1_OID, sizeof(SECP256K1_OID)))
+      return TLS_EC_CURVE_SECP256K1;
+#endif
+#if (TLS_SECP256R1_SUPPORT)
+   //secp256r1 elliptic curve?
+   else if(!oidComp(oid, length, SECP256R1_OID, sizeof(SECP256R1_OID)))
+      return TLS_EC_CURVE_SECP256R1;
+#endif
+#if (TLS_SECP384R1_SUPPORT)
+   //secp384r1 elliptic curve?
+   else if(!oidComp(oid, length, SECP384R1_OID, sizeof(SECP384R1_OID)))
+      return TLS_EC_CURVE_SECP384R1;
+#endif
+#if (TLS_SECP521R1_SUPPORT)
+   //secp521r1 elliptic curve?
+   else if(!oidComp(oid, length, SECP521R1_OID, sizeof(SECP521R1_OID)))
+      return TLS_EC_CURVE_SECP521R1;
+#endif
+#if (TLS_BRAINPOOLP256R1_SUPPORT)
+   //brainpoolP256r1 elliptic curve?
+   else if(!oidComp(oid, length, BRAINPOOLP256R1_OID, sizeof(BRAINPOOLP256R1_OID)))
+      return TLS_EC_CURVE_BRAINPOOLP256R1;
+#endif
+#if (TLS_BRAINPOOLP384R1_SUPPORT)
+   //brainpoolP384r1 elliptic curve?
+   else if(!oidComp(oid, length, BRAINPOOLP384R1_OID, sizeof(BRAINPOOLP384R1_OID)))
+      return TLS_EC_CURVE_BRAINPOOLP384R1;
+#endif
+#if (TLS_BRAINPOOLP512R1_SUPPORT)
+   //brainpoolP512r1 elliptic curve?
+   else if(!oidComp(oid, length, BRAINPOOLP512R1_OID, sizeof(BRAINPOOLP512R1_OID)))
+      return TLS_EC_CURVE_BRAINPOOLP512R1;
+#endif
+   //Unknown identifier?
+   else
+      return TLS_EC_CURVE_NONE;
+#else
+   //ECC not supported
+   return TLS_EC_CURVE_NONE;
+#endif
+}
+
+/**
+ * @brief Retrieve the certificate type
+ * @param[in] certInfo X.509 certificate
+ * @param[out] certType Certificate type
+ * @param[out] certSignAlgo Signature algorithm that has been used to sign the certificate
+ * @param[out] certHashAlgo Hash algorithm that has been used to sign the certificate
+ * @param[out] namedCurve Elliptic curve (only for ECDSA certificates)
+ * @return Error code
+ **/
+
+RES_CODE tlsGetCertificateType(const X509CertificateInfo *certInfo, TlsCertificateType *certType,
+		tls_sign_algo_t *certSignAlgo, tls_hash_algo_t *certHashAlgo, tls_ecnamedcurve_t *namedCurve)
+{
+   //Check parameters
+   if(certInfo == nullptr || certType == nullptr || certSignAlgo == nullptr ||
+      certHashAlgo == nullptr || namedCurve == nullptr)
+   {
+      //Report an error
+      return RES_TLS_INVALID_PARAMETER;
+   }
+
+#if (TLS_RSA_SIGN_SUPPORT  || TLS_RSA_SUPPORT || TLS_DHE_RSA_SUPPORT || TLS_ECDHE_RSA_SUPPORT)
+   //A valid RSA public key has been found?
+   if(!oidComp(certInfo->subjectPublicKeyInfo.oid, certInfo->subjectPublicKeyInfo.oidLen,
+      RSA_ENCRYPTION_OID, sizeof(RSA_ENCRYPTION_OID)))
+   {
+      //Save certificate type
+      *certType = TLS_CERT_RSA_SIGN;
+      //Elliptic curve cryptography is not used
+      *namedCurve = TLS_EC_CURVE_NONE;
+   }
+   else
+#endif
+#if (TLS_DSA_SIGN_SUPPORT || TLS_DHE_DSS_SUPPORT)
+   //A valid DSA public key has been found?
+   if(!oidComp(certInfo->subjectPublicKeyInfo.oid, certInfo->subjectPublicKeyInfo.oidLen,
+      DSA_OID, sizeof(DSA_OID)))
+   {
+      //Save certificate type
+      *certType = TLS_CERT_DSS_SIGN;
+      //Elliptic curve cryptography is not used
+      *namedCurve = TLS_EC_CURVE_NONE;
+   }
+   else
+#endif
+#if (TLS_ECDSA_SIGN_SUPPORT || TLS_ECDHE_ECDSA_SUPPORT)
+   //A valid EC public key has been found?
+   if(!oidComp(certInfo->subjectPublicKeyInfo.oid, certInfo->subjectPublicKeyInfo.oidLen,
+      EC_PUBLIC_KEY_OID, sizeof(EC_PUBLIC_KEY_OID)))
+   {
+      //Save certificate type
+      *certType = TLS_CERT_ECDSA_SIGN;
+
+      //Retrieve the named curve that has been used to generate the EC public key
+      *namedCurve = tlsGetNamedCurve(certInfo->subjectPublicKeyInfo.ecParams.namedCurve,
+         certInfo->subjectPublicKeyInfo.ecParams.namedCurveLen);
+   }
+   else
+#endif
+   //The certificate does not contain any valid public key...
+   {
+      //Report an error
+      return RES_TLS_BAD_CERTIFICATE;
+   }
+
+   //Retrieve the signature algorithm that has been used to sign the certificate
+   if(certInfo->signatureAlgo == nullptr)
+   {
+      //Invalid certificate
+      return RES_TLS_BAD_CERTIFICATE;
+   }
+#if (TLS_RSA_SIGN_SUPPORT)
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      MD5_WITH_RSA_ENCRYPTION_OID, sizeof(MD5_WITH_RSA_ENCRYPTION_OID)))
+   {
+      //MD5 with RSA signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_RSA;
+      *certHashAlgo = TLS_HASH_ALGO_MD5;
+   }
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      SHA1_WITH_RSA_ENCRYPTION_OID, sizeof(SHA1_WITH_RSA_ENCRYPTION_OID)))
+   {
+      //SHA-1 with RSA signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_RSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA1;
+   }
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      SHA256_WITH_RSA_ENCRYPTION_OID, sizeof(SHA256_WITH_RSA_ENCRYPTION_OID)))
+   {
+      //SHA-256 with RSA signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_RSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA256;
+   }
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      SHA384_WITH_RSA_ENCRYPTION_OID, sizeof(SHA384_WITH_RSA_ENCRYPTION_OID)))
+   {
+      //SHA-384 with RSA signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_RSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA384;
+   }
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      SHA512_WITH_RSA_ENCRYPTION_OID, sizeof(SHA512_WITH_RSA_ENCRYPTION_OID)))
+   {
+      //SHA-512 with RSA signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_RSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA512;
+   }
+#endif
+#if (TLS_DSA_SIGN_SUPPORT)
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      DSA_WITH_SHA1_OID, sizeof(DSA_WITH_SHA1_OID)))
+   {
+      //DSA with SHA-1 signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_DSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA1;
+   }
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      DSA_WITH_SHA224_OID, sizeof(DSA_WITH_SHA224_OID)))
+   {
+      //DSA with SHA-224 signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_DSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA224;
+   }
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      DSA_WITH_SHA256_OID, sizeof(DSA_WITH_SHA256_OID)))
+   {
+      //DSA with SHA-256 signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_DSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA256;
+   }
+#endif
+#if (TLS_ECDSA_SIGN_SUPPORT)
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      ECDSA_WITH_SHA1_OID, sizeof(ECDSA_WITH_SHA1_OID)))
+   {
+      //ECDSA with SHA-1 signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_ECDSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA1;
+   }
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      ECDSA_WITH_SHA224_OID, sizeof(ECDSA_WITH_SHA224_OID)))
+   {
+      //ECDSA with SHA-224 signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_ECDSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA224;
+   }
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      ECDSA_WITH_SHA256_OID, sizeof(ECDSA_WITH_SHA256_OID)))
+   {
+      //ECDSA with SHA-256 signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_ECDSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA256;
+   }
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      ECDSA_WITH_SHA384_OID, sizeof(ECDSA_WITH_SHA384_OID)))
+   {
+      //ECDSA with SHA-384 signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_ECDSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA384;
+   }
+   else if(!oidComp(certInfo->signatureAlgo, certInfo->signatureAlgoLen,
+      ECDSA_WITH_SHA512_OID, sizeof(ECDSA_WITH_SHA512_OID)))
+   {
+      //ECDSA with SHA-512 signature algorithm
+      *certSignAlgo = TLS_SIGN_ALGO_ECDSA;
+      *certHashAlgo = TLS_HASH_ALGO_SHA512;
+   }
+#endif
+   else
+   {
+      //The signature algorithm is not supported...
+      return RES_TLS_BAD_CERTIFICATE;
+   }
+
+   //X.509 certificate successfully parsed
+   return RES_OK;
 }
 
 /**

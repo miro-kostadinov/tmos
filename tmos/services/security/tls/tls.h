@@ -619,10 +619,10 @@ enum tls_client_auth_mode_t : char
 /// Certificate descriptor
 struct TlsCertDesc
 {
-   const char* certChain;      		//!< End entity certificate chain (PEM format)
-   size_t certChainLength;     		//!< Length of the certificate chain
+   CSTRING certChain;      		//!< End entity certificate chain (PEM format)
    const char* privateKey;     		//!< Private key (PEM format)
    size_t privateKeyLength;    		//!< Length of the private key
+   size_t privateKeyAvailable;		//!< Size of the private key modulus. Not 0 when private key is not available (e.g. stored in TPM)
    TlsCertificateType type;    		//!< End entity certificate type
    tls_sign_algo_t signAlgo;   		//!< Signature algorithm used to sign the end entity certificate
    tls_hash_algo_t hashAlgo;       	//!< Hash algorithm used to sign the end entity certificate
@@ -837,5 +837,6 @@ struct tls_context_t
 
 void tls_dump_record(const record_ctxt_t* rc);
 
+RES_CODE private_rsa_signature(tls_context_t* context, tls_certificate_verify_t** msg, size_t* len);
 
 #endif /* SERVICES_SECURITY_TLS_TLS_H_ */

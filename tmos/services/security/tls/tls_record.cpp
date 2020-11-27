@@ -660,6 +660,7 @@ RES_CODE tls_context_t::tls_record_read(record_ctxt_t* rc)
 	rc->iv_len = 0;
 	rc->pad_len = 0;
 	rc->tag_len = 0;
+	rc->tls_record.rec_length = 0;
 
 	// 1. Read the TLS record header
 	res = tls_read_cbk(&rc->tls_record, sizeof(tls_record_t));
@@ -698,7 +699,12 @@ RES_CODE tls_context_t::tls_record_read(record_ctxt_t* rc)
 	}
 
     TRACELN_TLS("TLS read record res %u", res);
-    tls_dump_record(rc);
+    if(rc->tls_record.rec_length)
+    	tls_dump_record(rc);
+    else
+    {
+        TRACELN1_TLS("TLS record len=0!");
+    }
 	return res;
 }
 
