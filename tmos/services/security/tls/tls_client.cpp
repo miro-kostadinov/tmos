@@ -2239,6 +2239,11 @@ RES_CODE tls_context_t::tlsSendCertificateVerify()
 	return res;
 }
 
+WEAK RES_CODE private_rsa_signature(tls_context_t* context, tls_certificate_verify_t** msg, size_t* len)
+{
+	return RES_ERROR;
+}
+
 RES_CODE tls_context_t::tls_make_Certificate_verify(tls_certificate_verify_t** msg, size_t* len)
 {
 	RES_CODE res;
@@ -2257,8 +2262,6 @@ RES_CODE tls_context_t::tls_make_Certificate_verify(tls_certificate_verify_t** m
 		//The client's certificate contains a valid RSA public key?
 		if (cert->type == TLS_CERT_RSA_SIGN)
 		{
-			RsaPrivateKey privateKey;
-
 			//Digest all the handshake messages starting at ClientHello (using MD5)
 			res = tlsFinalizeHandshakeHash(handshake_hash.get(), "",
 					verifyData);
@@ -2273,31 +2276,39 @@ RES_CODE tls_context_t::tls_make_Certificate_verify(tls_certificate_verify_t** m
 			//Check status code
 			if (res == RES_OK)
 			{
-				//Decode the PEM structure that holds the RSA private key
-				res = pemReadRsaPrivateKey(cert->privateKey,
-						cert->privateKeyLength, &privateKey);
-			}
-
-			//Check status code
-			if (res == RES_OK)
-			{
-				uint32_t length;
-
-				length = privateKey.n.mpiGetByteLength();
-				*len += length;
-				*msg = (tls_certificate_verify_t*) tsk_malloc(*len);
-
-				if (*msg)
+				if(cert->privateKeyAvailable)
 				{
-					//Point to the digitally-signed element
-					signature = (TlsDigitalSignature *) ((*msg)->signature);
+					RsaPrivateKey privateKey;
 
-					//Generate a RSA signature using the client's private key
-					res = privateKey.tlsGenerateRsaSignature(verifyData,
-							signature->value, length);
+					//Decode the PEM structure that holds the RSA private key
+					res = pemReadRsaPrivateKey(cert->privateKey,
+							cert->privateKeyLength, &privateKey);
+
+					//Check status code
+					if (res == RES_OK)
+					{
+						uint32_t length;
+
+						length = privateKey.n.mpiGetByteLength();
+						*len += length;
+						*msg = (tls_certificate_verify_t*) tsk_malloc(*len);
+
+						if (*msg)
+						{
+							//Point to the digitally-signed element
+							signature = (TlsDigitalSignature *) ((*msg)->signature);
+
+							//Generate a RSA signature using the client's private key
+							res = privateKey.tlsGenerateRsaSignature(verifyData,
+									signature->value, length);
+						}
+						else
+							res = RES_OUT_OF_MEMORY;
+					}
+				} else
+				{
+					res = private_rsa_signature(this, msg, len);
 				}
-				else
-					res = RES_OUT_OF_MEMORY;
 			}
 
 		}
