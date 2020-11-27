@@ -241,38 +241,10 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 			//Check if the hostname must be verified
 			if (!server_name.empty())
 			{
-				int32_t i;
-				int32_t j;
-
-				//Point to the last character of the common name
-				i = certInfo->subject.commonNameLen - 1;
-				//Point to the last character of the hostname
-				j = server_name.length() - 1;
-
-				//Check the common name in the server certificate against
-				//the actual hostname that is being requested
-				while (i >= 0 && j >= 0)
-				{
-					//Wildcard certificate found?
-					if (certInfo->subject.commonName[i] == '*' && i == 0)
-					{
-						//The CN is acceptable
-						j = 0;
-					}
-					//Perform case insensitive character comparison
-					else if (tolower((uint8_t) certInfo->subject.commonName[i])
-							!= server_name[j])
-					{
-						break;
-					}
-
-					//Compare previous characters
-					i--;
-					j--;
-				}
+				res = certInfo->x509CheckSubjectName(server_name.c_str());
 
 				//If the host names do not match, reject the certificate
-				if (i >= 0 || j >= 0)
+				if (res != RES_OK)
 				{
 					//Debug message
 					TRACE_WARNING("Server name mismatch!\r\n");
@@ -753,9 +725,9 @@ RES_CODE tls_context_t::tls_certificate_msg_len(record_ctxt_t* rc)
 		size_t derCertLength;
 
 		//Point to the certificate chain
-		pemCert = cert->certChain;
+		pemCert = cert->certChain.c_str();
 		//Get the total length, in bytes, of the certificate chain
-		pemCertLength = cert->certChainLength;
+		pemCertLength = cert->certChain.length();
 
 		//DER encoded certificate
 		derCert = nullptr;
@@ -819,9 +791,9 @@ RES_CODE tls_context_t::tls_make_certificate_msg(tls_certificate_msg_t* message,
 		size_t derCertLength;
 
 		//Point to the certificate chain
-		pemCert = cert->certChain;
+		pemCert = cert->certChain.c_str();
 		//Get the total length, in bytes, of the certificate chain
-		pemCertLength = cert->certChainLength;
+		pemCertLength = cert->certChain.length();
 
 		//DER encoded certificate
 		derCert = NULL;
