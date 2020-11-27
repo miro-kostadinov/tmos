@@ -277,8 +277,101 @@ RES_CODE X509Name::x509ParseName(const uint8_t *data, size_t length, size_t *tot
 	return RES_OK;
 }
 
+RES_CODE X509GeneralName::x509ParseGeneralName(const uint8_t *data, size_t len, size_t *totalLength)
+{
+	RES_CODE res;
+	Asn1Tag tag;
+
+	//Debug message
+	TRACE_DEBUG("        Parsing GeneralName...\r\n");
+
+	//Read current item
+	res = tag.asn1ReadTag(data, len);
+	//Failed to decode ASN.1 tag?
+	if (res != RES_OK)
+		return res;
+
+	//Explicit tagging shall be used to encode the subject alternative name
+	if (tag.objClass != ASN1_CLASS_CONTEXT_SPECIFIC)
+		return RES_TLS_INVALID_CLASS;
+
+	//Conforming CAs must not issue certificates with subjectAltNames containing
+	//empty GeneralName fields (refer to RFC 5280, section 4.2.1.6)
+	if (tag.length == 0)
+		return RES_TLS_INVALID_SYNTAX;
+
+	//Save subject alternative name
+	type = (X509GeneralNameType) tag.objType;
+	value = (char *) tag.value;
+	length = tag.length;
+
+	//Save the total length of the field
+	*totalLength = tag.totalLength;
+
+	//Successful processing
+	return res;
+}
+
+RES_CODE X509SubjectAltName::x509ParseSubjectAltName(const uint8_t *data, size_t length)
+{
+	RES_CODE res;
+	uint32_t i;
+	size_t n;
+	Asn1Tag tag;
+	X509GeneralName generalName;
+
+	//Debug message
+	TRACE_DEBUG("      Parsing SubjectAltName...\r\n");
 
 
+	//The SubjectAltName structure shall contain a valid sequence
+	res = tag.asn1ReadSequence(data, length);
+	//Failed to decode ASN.1 tag?
+	if (res != RES_OK)
+		return res;
+
+	//Raw contents of the ASN.1 sequence
+	rawData = tag.value;
+	rawDataLen = tag.length;
+
+	//Point to the first item of the sequence
+	data = tag.value;
+	length = tag.length;
+
+	//The subject alternative name extension allows identities to be bound to the
+	//subject of the certificate. These identities may be included in addition
+	//to or in place of the identity in the subject field of the certificate
+	for (i = 0; length > 0; i++)
+	{
+		//Parse GeneralName field
+		res = generalName.x509ParseGeneralName(data, length, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Sanity check
+		if (i < X509_MAX_SUBJECT_ALT_NAMES)
+		{
+			//Save subject alternative name
+			generalNames[i] = generalName;
+		}
+
+		//Next item
+		data += n;
+		length -= n;
+	}
+
+	//If the SubjectAltName extension is present, the sequence must contain at
+	//least one entry (refer to RFC 5280, section 4.2.1.6)
+	if (i == 0)
+		return RES_TLS_INVALID_SYNTAX;
+
+	//Save the number of subject alternative names
+	numGeneralNames = min(i, X509_MAX_SUBJECT_ALT_NAMES);
+
+	//Successful processing
+	return res;
+}
 
 
 RES_CODE X509CertificateInfo::x509ParseVersion(const uint8_t *data, size_t length, size_t *totalLength)
@@ -1471,6 +1564,14 @@ RES_CODE X509CertificateInfo::x509ParseExtensions(const uint8_t *data, size_t le
 			//Parse ExtendedKeyUsage extension
 			res = x509ParseExtendedKeyUsage(tag.value, tag.length);
 		}
+	    //SubjectAltName extension found?
+		else if (!oidComp(oidTag.value, oidTag.length,
+				X509_SUBJECT_ALT_NAME_OID, sizeof(X509_SUBJECT_ALT_NAME_OID)))
+		{
+			//Parse SubjectAltName extension
+			res = extensions.subjectAltName.x509ParseSubjectAltName(
+					tag.value, tag.length);
+		}
 		//SubjectKeyIdentifier extension found?
 		else if (!oidComp(oidTag.value, oidTag.length, X509_SUBJECT_KEY_ID_OID,
 				sizeof(X509_SUBJECT_KEY_ID_OID)))
@@ -2101,5 +2202,156 @@ RES_CODE X509CertificateInfo::x509ValidateCertificate(const X509CertificateInfo 
 
 	return res;
 }
+
+RES_CODE x509CompareSubjectName(const char *subjectName, size_t subjectNameLen,
+		const char *fqdn)
+{
+	size_t i;
+	size_t j;
+	size_t fqdnLen;
+
+	//Retrieve the length of the FQDN
+	fqdnLen = strlen(fqdn);
+
+	//Initialize variables
+	i = 0;
+	j = 0;
+
+	//Parse the subject name
+	while (i < subjectNameLen && j < fqdnLen)
+	{
+		//Wildcard name found?
+		if (subjectName[i] == '*')
+		{
+			//The implementation should not attempt to match a presented
+			//identifier in which the wildcard character comprises a label other
+			//than the left-most label (refer to RFC 6125, section 6.4.3)
+			if (i != 0)
+			{
+				break;
+			}
+
+			//The implementation should not compare against anything but the
+			//left-most label of the reference identifier
+			if (fqdn[j] == '.')
+			{
+				i++;
+			}
+			else
+			{
+				j++;
+			}
+		}
+		else
+		{
+			//Perform case insensitive character comparison
+			if (tolower(subjectName[i]) != fqdn[j])
+			{
+				break;
+			}
+
+			//Compare next characters
+			i++;
+			j++;
+		}
+	}
+
+	//Check whether the subject name matches the specified FQDN
+	if (i == subjectNameLen && j == fqdnLen)
+	{
+		return RES_OK;
+	}
+
+	return RES_IDLE;
+}
+
+RES_CODE X509CertificateInfo::x509CheckSubjectName(const char *fqdn) const
+{
+	RES_CODE res;
+	uint32_t i;
+	size_t n;
+	size_t length;
+	const uint8_t *data;
+	const X509Extensions *extension;
+	X509GeneralName generalName;
+
+	//Point to the X.509 extension of the CA certificate
+	extension = &extensions;
+
+	//Valid FQDN name provided?
+	if (fqdn)
+	{
+		//Initialize flag
+		res = RES_IDLE;
+
+		//Total number of valid DNS names found in the SubjectAltName extension
+		i = 0;
+
+		//Valid SubjectAltName extension?
+		if (extension->subjectAltName.rawDataLen > 0)
+		{
+			//The subject alternative name extension allows identities to be bound
+			//to the subject of the certificate. These identities may be included
+			//in addition to or in place of the identity in the subject field of
+			//the certificate
+			data = extension->subjectAltName.rawData;
+			length = extension->subjectAltName.rawDataLen;
+
+			//Loop through the list of subject alternative names
+			while (res == RES_IDLE && length > 0)
+			{
+				//Parse GeneralName field
+				res = generalName.x509ParseGeneralName(data, length, &n);
+				//Failed to decode ASN.1 tag?
+				if (res != RES_OK)
+					return res;
+				res = RES_IDLE;
+
+				//DNS name found?
+				if (generalName.type == X509_GENERAL_NAME_TYPE_DNS)
+				{
+					//Check whether the alternative name matches the specified FQDN
+					res = x509CompareSubjectName(generalName.value,
+							generalName.length, fqdn);
+
+					//Increment counter
+					i++;
+				}
+
+				//Next item
+				data += n;
+				length -= n;
+			}
+		}
+
+		//No match?
+		if (res == RES_IDLE)
+		{
+			//The implementation must not seek a match for a reference identifier
+			//of CN-ID if the presented identifiers include a DNS-ID, SRV-ID or
+			//URI-ID (refer to RFC 6125, section 6.4.4)
+			if (i == 0 && subject.commonNameLen > 0)
+			{
+				//The implementation may as a last resort check the CN-ID for a match
+				res = x509CompareSubjectName(subject.commonName, subject.commonNameLen, fqdn);
+			}
+		}
+
+		//Check whether the subject name matches the specified FQDN
+		if(res == RES_IDLE)
+			res = RES_TLS_UNKNOWN_IDENTITY;
+	}
+	else
+	{
+		//If no valid FQDN name is provided, then the subject name of the
+		//certificate is not verified
+		res = RES_OK;
+	}
+
+	//Return status code
+	return res;
+
+}
+
 
 #endif

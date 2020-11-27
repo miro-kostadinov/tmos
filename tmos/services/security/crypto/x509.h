@@ -160,10 +160,50 @@ struct X509BasicContraints
    uint32_t pathLenConstraint;
 };
 
+//Maximum number of subject alternative names
+#ifndef X509_MAX_SUBJECT_ALT_NAMES
+   #define X509_MAX_SUBJECT_ALT_NAMES 4u
+#elif (X509_MAX_SUBJECT_ALT_NAMES < 1)
+   #error X509_MAX_SUBJECT_ALT_NAMES parameter is not valid
+#endif
+
+enum X509GeneralNameType
+{
+   X509_GENERAL_NAME_TYPE_OTHER         = 0,
+   X509_GENERAL_NAME_TYPE_RFC822        = 1,
+   X509_GENERAL_NAME_TYPE_DNS           = 2,
+   X509_GENERAL_NAME_TYPE_X400_ADDRESS  = 3,
+   X509_GENERAL_NAME_TYPE_DIRECTORY     = 4,
+   X509_GENERAL_NAME_TYPE_EDI_PARTY     = 5,
+   X509_GENERAL_NAME_TYPE_URI           = 6,
+   X509_GENERAL_NAME_TYPE_IP_ADDRESS    = 7,
+   X509_GENERAL_NAME_TYPE_REGISTERED_ID = 8
+};
+
+struct X509GeneralName
+{
+   X509GeneralNameType type;
+   const char *value;
+   size_t length;
+
+   RES_CODE x509ParseGeneralName(const uint8_t *data, size_t len, size_t *totalLength);
+};
+
+struct X509SubjectAltName
+{
+   const uint8_t *rawData;
+   size_t rawDataLen;
+   uint32_t numGeneralNames;
+   X509GeneralName generalNames[X509_MAX_SUBJECT_ALT_NAMES];
+
+   RES_CODE x509ParseSubjectAltName(const uint8_t *data, size_t length);
+};
+
 struct X509Extensions
 {
    X509BasicContraints basicConstraints;
    uint16_t keyUsage;
+   X509SubjectAltName subjectAltName;
    const uint8_t *subjectKeyId;
    size_t subjectKeyIdLen;
    const uint8_t *authorityKeyId;
@@ -218,6 +258,7 @@ struct X509CertificateInfo
    RES_CODE x509ReadRsaPublicKey(RsaPublicKey* key) const;
    RES_CODE x509ReadDsaPublicKey(DsaPublicKey* key) const;
    RES_CODE x509ValidateCertificate(const X509CertificateInfo *issuerCertInfo) const;
+   RES_CODE x509CheckSubjectName(const char *fqdn) const;
 
 };
 
