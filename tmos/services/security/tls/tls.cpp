@@ -347,7 +347,7 @@ RES_CODE tls_context_t::tls_read(void* data, size_t size, size_t* received, uint
 			}
 
 			//Any error to report?
-			if (res != RES_OK)
+			if (res > RES_EOF)
 			{
 				//Send an alert message to the peer, if applicable
 				tlsProcessError(res);
@@ -512,7 +512,11 @@ RES_CODE tls_context_t::tls_read_cbk(void* data, uint32_t len)
 		if (tls_socket == nullptr || tls_socket->res >= RES_CLOSED)
 			res = RES_TLS_NOT_CONFIGURED;
 		else
+		{
 			res = tls_socket->tsk_read(data, len);
+			if(res != RES_OK && (tls_socket->sock_state & SOCKET_CLOSED))
+				res = RES_EOF;
+		}
 		if(res != RES_OK)
 			break;
 		l = len - tls_socket->len;
