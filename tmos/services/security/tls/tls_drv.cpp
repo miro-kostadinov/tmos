@@ -7,32 +7,8 @@
 
 #include <tmos.h>
 #include <tls_drv.h>
-#include <csocket.h>
-#include <tls.h>
 #include <yarrow.h>
-
-struct tls_module_t: tls_context_t
-{
-	CSocket* client;
-	CSocket  target;
-
-	tls_module_t(CSocket* sock): tls_context_t(), client(sock) {};
-
-	RES_CODE tls_process_read();
-	RES_CODE tls_process_write();
-	RES_CODE tls_sock_open();
-	RES_CODE tls_sock_connect_adr();
-	RES_CODE tls_sock_connect_url();
-	RES_CODE tls_sock_disconect();
-	RES_CODE tls_sock_close();
-#if USE_TLS_LISTEN
-	RES_CODE tls_sock_bind_adr();
-	RES_CODE tls_sock_bind_url();
-	RES_CODE tls_sock_listen();
-	RES_CODE tls_sock_accept();
-	RES_CODE tls_sock_addr();
-#endif
-};
+#include <tls_cache.h>
 
 RES_CODE tls_module_t::tls_process_read()
 {
@@ -105,6 +81,10 @@ RES_CODE tls_module_t::tls_sock_open()
 
 	if(client->sock_state == SOCKET_CLOSED)
 	{
+		res = tls_init_context(this);
+		if(res != RES_OK)
+			return res;
+
 		mode = (const redir_sock_mode_t*)client->mode.as_voidptr;
 		if(mode->mode.sock_type & REDIRECTED_SOCKET)
 		{
@@ -178,6 +158,7 @@ RES_CODE tls_module_t::tls_sock_connect_url()
 		        res = target.res;
 		        if(res == RES_OK)
 		        {
+		        	server_name = client->src.as_ccharptr;
 		        	res = tls_connect(&target);
 					if(res == RES_OK)
 						client->sock_state = SOCKET_CONECTED;

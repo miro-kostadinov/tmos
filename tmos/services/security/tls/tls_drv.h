@@ -10,6 +10,7 @@
 
 #include <tmos.h>
 #include <csocket.h>
+#include <tls.h>
 
 #ifndef TLS_MAX_CONNECTIONS
 #define TLS_MAX_CONNECTIONS 2
@@ -23,6 +24,29 @@
 #define TLS_CLIENT_SIGNAL 2
 #define TLS_CLOSE_SIGNAL  4
 #define TLS_SIGNALS (TLS_CANCEL_SIGNAL | TLS_CLIENT_SIGNAL | TLS_CLOSE_SIGNAL)
+
+struct tls_module_t: tls_context_t
+{
+	CSocket* client;
+	CSocket  target;
+
+	tls_module_t(CSocket* sock): tls_context_t(), client(sock) {};
+
+	RES_CODE tls_process_read();
+	RES_CODE tls_process_write();
+	RES_CODE tls_sock_open();
+	RES_CODE tls_sock_connect_adr();
+	RES_CODE tls_sock_connect_url();
+	RES_CODE tls_sock_disconect();
+	RES_CODE tls_sock_close();
+#if USE_TLS_LISTEN
+	RES_CODE tls_sock_bind_adr();
+	RES_CODE tls_sock_bind_url();
+	RES_CODE tls_sock_listen();
+	RES_CODE tls_sock_accept();
+	RES_CODE tls_sock_addr();
+#endif
+};
 
 
 struct TLS_DRIVER_DATA
@@ -47,6 +71,8 @@ struct TLS_DRIVER_INFO
 void TLS_DCR(TLS_DRIVER_INFO * drv_info, unsigned int reason, HANDLE param);
 void TLS_DSR(TLS_DRIVER_INFO * drv_info, HANDLE hnd);
 
+
+RES_CODE tls_init_context(tls_module_t* context);	//!< must be defined by user
 
 
 
