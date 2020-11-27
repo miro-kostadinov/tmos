@@ -17,6 +17,7 @@ const hash_info_t SHA384_HASH_ALGO[1] =
 	"SHA-384",
 	SHA384_BLOCK_SIZE,
 	SHA384_DIGEST_SIZE,
+	SHA384_BLOCK_SIZE + SHA512_DIGEST_SIZE,
 	sizeof(sha384Oid),
 	sha384Oid,
 	new_sha384_hash

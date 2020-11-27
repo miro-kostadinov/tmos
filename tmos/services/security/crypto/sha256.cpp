@@ -18,6 +18,7 @@ const hash_info_t SHA256_HASH_ALGO[1] =
 	"SHA-256",
 	SHA256_BLOCK_SIZE,
 	SHA256_DIGEST_SIZE,
+	SHA256_BLOCK_SIZE + SHA256_DIGEST_SIZE,
 	sizeof(sha256Oid),
 	sha256Oid,
 	new_sha256_hash

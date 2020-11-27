@@ -17,6 +17,7 @@ const hash_info_t SHA224_HASH_ALGO[1] =
 	"SHA-224",
 	SHA224_BLOCK_SIZE,
 	SHA224_DIGEST_SIZE,
+	SHA224_BLOCK_SIZE + SHA256_DIGEST_SIZE,
 	sizeof(sha224Oid),
 	sha224Oid,
 	new_sha224_hash

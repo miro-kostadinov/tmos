@@ -17,6 +17,7 @@ const hash_info_t SHA1_HASH_ALGO[1] =
 	"SHA-1",
 	SHA1_BLOCK_SIZE,
 	SHA1_DIGEST_SIZE,
+	SHA1_BLOCK_SIZE + SHA1_DIGEST_SIZE,
 	sizeof(sha1Oid),
 	sha1Oid,
 	new_sha1_hash

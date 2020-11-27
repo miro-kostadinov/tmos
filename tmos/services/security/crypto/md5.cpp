@@ -19,6 +19,7 @@ const hash_info_t MD5_HASH_ALGO[1] =
 	"MD5",
 	MD5_BLOCK_SIZE,
 	MD5_DIGEST_SIZE,
+	MD5_BLOCK_SIZE + MD5_DIGEST_SIZE,
 	sizeof(md5Oid),
 	md5Oid,
 	new_md5_hash

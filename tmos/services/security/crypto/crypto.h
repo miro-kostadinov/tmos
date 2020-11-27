@@ -74,6 +74,7 @@ struct hash_info_t
 {
 	algo_info_t		algo_info;
 	uint8_t 		digest_size;
+	uint8_t			digest_buf_size;
 	uint8_t 		oid_size;
 	const uint8_t*	oid;
 	hash_allocator_t new_hash;

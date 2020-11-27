@@ -19,6 +19,7 @@ const hash_info_t SHA512_HASH_ALGO[1] =
 	"SHA-512",
 	SHA512_BLOCK_SIZE,
 	SHA512_DIGEST_SIZE,
+	SHA512_BLOCK_SIZE + SHA512_DIGEST_SIZE,
 	sizeof(sha512Oid),
 	sha512Oid,
 	new_sha512_hash
