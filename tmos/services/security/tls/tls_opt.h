@@ -140,7 +140,7 @@
 
 //Stream cipher support
 #ifndef TLS_STREAM_CIPHER_SUPPORT
-   #define TLS_STREAM_CIPHER_SUPPORT 1
+   #define TLS_STREAM_CIPHER_SUPPORT 0
 #endif
 
 //CBC block cipher support
