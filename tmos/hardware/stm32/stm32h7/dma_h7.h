@@ -90,6 +90,7 @@ typedef struct
 #define DMA_SxCR_TEIE               0x00000004 //!< Transfer error interrupt enable
 #define DMA_SxCR_DMEIE              0x00000002 //!< Direct mode error interrupt enable
 #define DMA_SxCR_EN                 0x00000001 //!< Stream enable / flag stream ready when read low
+#define DMA_SxCR_RESERVED_NOINTS    0x80000000 //!< DISABLE interrupts
 /** @} */
 
 /** @name DMA_SxNDTR:   (dmas Offset: 0x04) DMA stream x number of data register */

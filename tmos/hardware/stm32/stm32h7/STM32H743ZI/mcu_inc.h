@@ -21,14 +21,15 @@
 //#define RAM_SIZE 			(112*1024) 	 //!< 112K RAM size
 //#define SRAM1_SIZE 			(96*1024) 	 //!< 96K SRAM1 size
 //#define SRAM2_SIZE 			(16*1024) 	 //!< 16K SRAM2 size
-//#define FLASH_SIZE 			((*(unsigned short*)0x1FFF7A22) *1024) 	 //!< FLASH size see Device Electronic signature
-//#define FLASH_PAGE_SIZE		0x4000		 //!< 4*16K sectors, 1*64K, 1(-7)*128K
+#define FLASH_SIZE 				(0x200000U)	 		//!< FLASH size (2MB) see Device Electronic signature
+#define FLASH_BANK_SIZE    		(FLASH_SIZE >> 1)   //!< 1 MB
+#define FLASH_SECTOR_SIZE  		0x00020000U       	//!< 128 KB
 //
-//#define BASE_FLASH			(BASE_CODE)			//!< 0x00000000 FLASH base address in the alias region
 //#define BASE_FSMC_R         (BASE_EXT_DEVICE) 	//!< 0xA0000000 FSMC registers base address
 #define BASE_D1_ITCMRAM			(BASE_CODE) 			 //!< 0x00000000 64KB RAM reserved for CPU execution/instruction accessible over ITCM
 #define BASE_D1_ITCMICP         (BASE_CODE + 0x00100000) //!< 0x00100000 (up to 128KB) embedded Test FLASH memory accessible over ITCM
 #define BASE_D1_AXIFLASH        (BASE_CODE + 0x08000000) //!< 0x08000000 (up to 2 MB) embedded FLASH memory accessible over AXI
+#define BASE_FLASH				(BASE_CODE + 0x08000000) //!< 0x08000000 FLASH base address
 #define BASE_FLASH_BANK1        (BASE_CODE + 0x08000000) //!< 0x08000000 (up to 1 MB) Flash Bank1 accessible over AXI
 #define BASE_FLASH_BANK2        (BASE_CODE + 0x08100000) //!< 0x08100000 (up to 1 MB) Flash Bank2 accessible over AXI
 #define BASE_D2_AXISRAM         (BASE_CODE + 0x10000000) //!< 0x10000000 (up to 48KB) system data RAM accessible over over AXI

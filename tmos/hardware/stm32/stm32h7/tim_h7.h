@@ -61,33 +61,30 @@
  ******************************************************************************/
 typedef struct
 {
-  __IO uint32_t TIM_CR1;       //!< (adc Offset: 0x00) TIM control register 1
-  __IO uint32_t TIM_CR2;       //!< (adc Offset: 0x04) TIM control register 2
-  __IO uint32_t TIM_SMCR;      //!< (adc Offset: 0x08) TIM slave mode control register
-  __IO uint32_t TIM_DIER;      //!< (adc Offset: 0x0C) TIM DMA/interrupt enable register
-  __IO uint32_t TIM_SR;        //!< (adc Offset: 0x10) TIM status register
-  __IO uint32_t TIM_EGR;       //!< (adc Offset: 0x14) TIM event generation register
-  __IO uint32_t TIM_CCMR1;     //!< (adc Offset: 0x18) TIM capture/compare mode register 1
-  __IO uint32_t TIM_CCMR2;     //!< (adc Offset: 0x1C) TIM capture/compare mode register 2
-  __IO uint32_t TIM_CCER;      //!< (adc Offset: 0x20) TIM capture/compare enable register
-  __IO uint32_t TIM_CNT;       //!< (adc Offset: 0x24) TIM counter register
-  __IO uint32_t TIM_PSC;       //!< (adc Offset: 0x28) TIM prescaler
-  __IO uint32_t TIM_ARR;       //!< (adc Offset: 0x2C) TIM auto-reload register
-  __IO uint32_t TIM_RCR;       //!< (adc Offset: 0x30) TIM repetition counter register
-  __IO uint32_t TIM_CCR1;	   //!< (adc Offset: 0x34) TIM capture/compare register 1
-  __IO uint32_t TIM_CCR2;	   //!< (adc Offset: 0x38) TIM capture/compare register 2
-  __IO uint32_t TIM_CCR3;	   //!< (adc Offset: 0x3C) TIM capture/compare register 3
-  __IO uint32_t TIM_CCR4;	   //!< (adc Offset: 0x40) TIM capture/compare register 4
-  __IO uint32_t TIM_BDTR;      //!< (adc Offset: 0x44) TIM break and dead-time register
-  __IO uint32_t TIM_DCR;       //!< (adc Offset: 0x48) TIM DMA control register
-  __IO uint32_t TIM_DMAR;      //!< (adc Offset: 0x4C) TIM DMA address for full transfer
-  __I  uint32_t reserved1;     //!< (adc Offset: 0x50) reserved
-  __IO uint32_t TIM_CCMR3;     //!< (adc Offset: 0x54) TIM capture/compare mode register 3
-  __IO uint32_t TIM_CCR5;      //!< (adc Offset: 0x58) TIM capture/compare register5
-  __IO uint32_t TIM_CCR6;      //!< (adc Offset: 0x5C) TIM capture/compare register6
-  __IO uint32_t TIM_AF1;       //!< (adc Offset: 0x60) TIM alternate function option register 1
-  __IO uint32_t TIM_AF2;       //!< (adc Offset: 0x64) TIM alternate function option register 2
-  __IO uint32_t TIM_TISEL;     //!< (adc Offset: 0x68) TIM Input Selection register
+  __IO uint32_t TIM_CR1;       //!< (tim Offset: 0x00) TIM control register 1
+  __IO uint32_t TIM_CR2;       //!< (tim Offset: 0x04) TIM control register 2
+  __IO uint32_t TIM_SMCR;      //!< (tim Offset: 0x08) TIM slave mode control register
+  __IO uint32_t TIM_DIER;      //!< (tim Offset: 0x0C) TIM DMA/interrupt enable register
+  __IO uint32_t TIM_SR;        //!< (tim Offset: 0x10) TIM status register
+  __IO uint32_t TIM_EGR;       //!< (tim Offset: 0x14) TIM event generation register
+  __IO uint32_t TIM_CCMR1;     //!< (tim Offset: 0x18) TIM capture/compare mode register 1
+  __IO uint32_t TIM_CCMR2;     //!< (tim Offset: 0x1C) TIM capture/compare mode register 2
+  __IO uint32_t TIM_CCER;      //!< (tim Offset: 0x20) TIM capture/compare enable register
+  __IO uint32_t TIM_CNT;       //!< (tim Offset: 0x24) TIM counter register
+  __IO uint32_t TIM_PSC;       //!< (tim Offset: 0x28) TIM prescaler
+  __IO uint32_t TIM_ARR;       //!< (tim Offset: 0x2C) TIM auto-reload register
+  __IO uint32_t TIM_RCR;       //!< (tim Offset: 0x30) TIM repetition counter register
+  __IO uint32_t TIM_CCRx[4];   //!< (tim Offset: 0x34) TIM capture/compare register TIM_CCR1-TIM_CCR4
+  __IO uint32_t TIM_BDTR;      //!< (tim Offset: 0x44) TIM break and dead-time register
+  __IO uint32_t TIM_DCR;       //!< (tim Offset: 0x48) TIM DMA control register
+  __IO uint32_t TIM_DMAR;      //!< (tim Offset: 0x4C) TIM DMA address for full transfer
+  __I  uint32_t reserved1;     //!< (tim Offset: 0x50) reserved
+  __IO uint32_t TIM_CCMR3;     //!< (tim Offset: 0x54) TIM capture/compare mode register 3
+  __IO uint32_t TIM_CCR5;      //!< (tim Offset: 0x58) TIM capture/compare register5
+  __IO uint32_t TIM_CCR6;      //!< (tim Offset: 0x5C) TIM capture/compare register6
+  __IO uint32_t TIM_AF1;       //!< (tim Offset: 0x60) TIM alternate function option register 1
+  __IO uint32_t TIM_AF2;       //!< (tim Offset: 0x64) TIM alternate function option register 2
+  __IO uint32_t TIM_TISEL;     //!< (tim Offset: 0x68) TIM Input Selection register
 } TIM_TypeDef;
 
 /*******************************************************************************
@@ -95,7 +92,7 @@ typedef struct
  * @{
  ******************************************************************************/
 
-/** @name TIM_CR1:      (adc Offset: 0x00) TIM control register 1			  */
+/** @name TIM_CR1:      (tim Offset: 0x00) TIM control register 1			  */
 /** @{ */
 #define TIM_CR1_UIFREMAP 			0x0800 //!< UIF status bit remapping
 #define TIM_CR1_CKD                 0x0300 //!< CKD[1:0] bits (clock division)
@@ -108,7 +105,7 @@ typedef struct
 #define TIM_CR1_CEN                 0x0001 //!< Counter enable
 /** @} */
 
-/** @name TIM_CR2:      (adc Offset: 0x04) TIM control register 2			  */
+/** @name TIM_CR2:      (tim Offset: 0x04) TIM control register 2			  */
 /** @{ */
 #define TIM_CR2_MMS2 				0x00F00000 //!< Master mode selection 2
 #define TIM_CR2_MMS2_RESET 			0x00000000 //!<  the UG bit from the TIMx_EGR register is used as trigger output (TRGO2)
@@ -151,20 +148,18 @@ typedef struct
 #define TIM_CR2_CCPC                0x00000001 //!< Capture/Compare Preloaded Control
 /** @} */
 
-/** @name TIM_SMCR:     (adc Offset: 0x08) TIM slave mode control register	 */
+/** @name TIM_SMCR:     (tim Offset: 0x08) TIM slave mode control register	 */
 /** @{ */
-#define TIM_SMCR_TS 				0x00300000 //!<
-#define TIM_SMCR_SMS 				0x00010000 //!<
+#define TIM_SMCR_TS 				0x00300070 //!< Trigger selection
+#define TIM_SMCR_SMS 				0x00010007 //!< Slave mode selection
 #define TIM_SMCR_ETP                0x00008000 //!< External trigger polarity
 #define TIM_SMCR_ECE                0x00004000 //!< External clock enable
-#define TIM_SMCR_ETPS               0x00003000 //!< ETPS[1:0] bits (External trigger prescaler)
-#define TIM_SMCR_ETF                0x00000F00 //!< ETF[3:0] bits (External trigger filter)
+#define TIM_SMCR_ETPS               0x00003000 //!< External trigger prescaler
+#define TIM_SMCR_ETF                0x00000F00 //!< External trigger filter
 #define TIM_SMCR_MSM                0x00000080 //!< Master/slave mode
-#define TIM_SMCR_TS                 0x00000070 //!< TS[2:0] bits (Trigger selection)
-#define TIM_SMCR_SMS                0x00000007 //!< SMS[2:0] bits (Slave mode selection)
 /** @} */
 
-/** @name TIM_DIER:     (adc Offset: 0x0C) TIM DMA/interrupt enable register  */
+/** @name TIM_DIER:     (tim Offset: 0x0C) TIM DMA/interrupt enable register  */
 /** @{ */
 #define TIM_DIER_TDE                0x4000 //!< Trigger DMA request enable
 #define TIM_DIER_COMDE              0x2000 //!< COM DMA request enable
@@ -183,7 +178,7 @@ typedef struct
 #define TIM_DIER_UIE                0x0001 //!< Update interrupt enable
 /** @} */
 
-/** @name TIM_SR:       (adc Offset: 0x10) TIM status register				  */
+/** @name TIM_SR:       (tim Offset: 0x10) TIM status register				  */
 /** @{ */
 #define TIM_SR_CC6IF  				0x00020000 //!< Compare 6 interrupt flag
 #define TIM_SR_CC5IF 				0x00010000 //!< Compare 5 interrupt flag
@@ -202,7 +197,7 @@ typedef struct
 #define TIM_SR_UIF                  0x00000001 //!< Update interrupt Flag
 /** @} */
 
-/** @name TIM_EGR:      (adc Offset: 0x14) TIM event generation register 	  */
+/** @name TIM_EGR:      (tim Offset: 0x14) TIM event generation register 	  */
 /** @{ */
 #define TIM_EGR_B2G 				0x0000 //!< Break 2 generation
 #define TIM_EGR_BG                  0x0080 //!< Break Generation
@@ -215,7 +210,7 @@ typedef struct
 #define TIM_EGR_UG                  0x0001 //!< Update Generation
 /** @} */
 
-/** @name TIM_CCMR1:    (adc Offset: 0x18) TIM capture/compare mode register 1  */
+/** @name TIM_CCMR1:    (tim Offset: 0x18) TIM capture/compare mode register 1  */
 /** @{ */
 
 
@@ -228,7 +223,7 @@ typedef struct
 
 /** @} */
 
-/** @name TIM_CCMR2:    (adc Offset: 0x1C) TIM capture/compare mode register 2  */
+/** @name TIM_CCMR2:    (tim Offset: 0x1C) TIM capture/compare mode register 2  */
 /** @{ */
 #define TIM_CCMR2_IC4F 				0x0000F000 //!< Input capture 4 filter
 #define TIM_CCMR2_IC4PSC 			0x00000C00 //!< Input capture 4 prescaler
@@ -239,7 +234,7 @@ typedef struct
 
 /** @} */
 
-/** @name TIM_CCER:     (adc Offset: 0x20) TIM capture/compare enable register  */
+/** @name TIM_CCER:     (tim Offset: 0x20) TIM capture/compare enable register  */
 /** @{ */
 #define TIM_CCER_CC6P 				0x00200000 //!< Capture/Compare 6 output polarity
 #define TIM_CCER_CC6E 				0x00200000 //!< Capture/Compare 6 output enable
@@ -262,48 +257,48 @@ typedef struct
 #define TIM_CCER_CC1E               0x00000001 //!< Capture/Compare 1 output enable
 /** @} */
 
-/** @name TIM_CNT:      (adc Offset: 0x24) TIM counter register				  */
+/** @name TIM_CNT:      (tim Offset: 0x24) TIM counter register				  */
 /** @{ */
 #define TIM_CNT_UIFCPY 				0x80000000 //!< UIF copy
 #define TIM_CNT_CNT                 0x0000FFFF //!< Counter Value
 /** @} */
 
-/** @name TIM_PSC:      (adc Offset: 0x28) TIM prescaler					  */
+/** @name TIM_PSC:      (tim Offset: 0x28) TIM prescaler					  */
 /** @{ */
 #define TIM_PSC_PSC                 0xFFFF //!< Prescaler Value
 /** @} */
 
-/** @name TIM_ARR:      (adc Offset: 0x2C) TIM auto-reload register			  */
+/** @name TIM_ARR:      (tim Offset: 0x2C) TIM auto-reload register			  */
 /** @{ */
 #define TIM_ARR_ARR                 0xFFFF //!< actual auto-reload Value
 /** @} */
 
-/** @name TIM_RCR:      (adc Offset: 0x30) TIM repetition counter register 	  */
+/** @name TIM_RCR:      (tim Offset: 0x30) TIM repetition counter register 	  */
 /** @{ */
 #define TIM_RCR_REP                 0x00FF //!< Repetition Counter Value
 /** @} */
 
-/** @name TIM_CCR1:     (adc Offset: 0x34) TIM capture/compare register 1	  */
+/** @name TIM_CCR1:     (tim Offset: 0x34) TIM capture/compare register 1	  */
 /** @{ */
 #define TIM_CCR1_CCR1               0xFFFF //!< Capture/Compare 1 Value
 /** @} */
 
-/** @name TIM_CCR2:     (adc Offset: 0x38) TIM capture/compare register 2	  */
+/** @name TIM_CCR2:     (tim Offset: 0x38) TIM capture/compare register 2	  */
 /** @{ */
 #define TIM_CCR2_CCR2               0xFFFF //!< Capture/Compare 2 Value
 /** @} */
 
-/** @name TIM_CCR3:     (adc Offset: 0x3C) TIM capture/compare register 3	  */
+/** @name TIM_CCR3:     (tim Offset: 0x3C) TIM capture/compare register 3	  */
 /** @{ */
 #define TIM_CCR3_CCR3               0xFFFF //!< Capture/Compare 3 Value
 /** @} */
 
-/** @name TIM_CCR4:     (adc Offset: 0x40) TIM capture/compare register 4	  */
+/** @name TIM_CCR4:     (tim Offset: 0x40) TIM capture/compare register 4	  */
 /** @{ */
 #define TIM_CCR4_CCR4               0xFFFF //!< Capture/Compare 4 Value
 /** @} */
 
-/** @name TIM_BDTR:     (adc Offset: 0x44) TIM break and dead-time register	  */
+/** @name TIM_BDTR:     (tim Offset: 0x44) TIM break and dead-time register	  */
 /** @{ */
 #define TIM_BDTR_BK2P 				0x02000000 //!< Break 2 polarity
 #define TIM_BDTR_BK2E 				0x01000000 //!< Break 2 enable
@@ -319,33 +314,30 @@ typedef struct
 #define TIM_BDTR_DTG                0x000000FF //!< DTG[0:7] bits (Dead-Time Generator set-up)
 /** @} */
 
-/** @name TIM_DCR:      (adc Offset: 0x48) TIM DMA control register			  */
+/** @name TIM_DCR:      (tim Offset: 0x48) TIM DMA control register			  */
 /** @{ */
 #define TIM_DCR_DBL                 0x1F00 //!< DBL[4:0] bits (DMA Burst Length)
 #define TIM_DCR_DBA                 0x001F //!< DBA[4:0] bits (DMA Base Address)
 /** @} */
 
-/** @name TIM_DMAR:     (adc Offset: 0x4C) TIM DMA address for full transfer  */
+/** @name TIM_DMAR:     (tim Offset: 0x4C) TIM DMA address for full transfer  */
 /** @{ */
-#define TIM_DMAR_DMAB 				0xFFFF0000 //!< DMA register for burst accesses
-#define TIM_DMAR_DMAB               0x0000FFFF //!< DMA register for burst accesses
+#define TIM_DMAR_DMAB 				0xFFFFFFFF //!< DMA register for burst accesses
 /** @} */
 
-/** @name TIM_CCMR3:    (adc Offset: 0x54) TIM capture/compare mode register 3 */
+/** @name TIM_CCMR3:    (tim Offset: 0x54) TIM capture/compare mode register 3 */
 /** @{ */
-#define TIM_CCMR3_OC6M 				0x01000000 //!< Output compare 6 mode
-#define TIM_CCMR3_OC5M 				0x00010000 //!< Output compare 5 mode
+#define TIM_CCMR3_OC6M 				0x01007000 //!< Output compare 6 mode
+#define TIM_CCMR3_OC5M 				0x00010070 //!< Output compare 5 mode
 #define TIM_CCMR3_OC6CE 			0x00008000 //!< Output compare 6 clear enable
-#define TIM_CCMR3_OC6M 				0x00007000 //!< Output compare 6 mode
 #define TIM_CCMR3_OC6PE 			0x00000800 //!< Output compare 6 preload enable
 #define TIM_CCMR3_OC6FE 			0x00000400 //!< Output compare 6 fast enable
 #define TIM_CCMR3_OC5CE 			0x00000080 //!< Output compare 5 clear enable
-#define TIM_CCMR3_OC5M 				0x00000070 //!< Output compare 5 mode
 #define TIM_CCMR3_OC5PE 			0x00000008 //!< Output compare 5 preload enable
 #define TIM_CCMR3_OC5FE 			0x00000004 //!< Output compare 5 fast enable
 /** @} */
 
-/** @name TIM_CCR5:     (adc Offset: 0x58) TIM capture/compare register5	  */
+/** @name TIM_CCR5:     (tim Offset: 0x58) TIM capture/compare register5	  */
 /** @{ */
 #define TIM_CCR5_GC5C3 				0x80000000 //!< Group Channel 5 and Channel 3
 #define TIM_CCR5_GC5C2 				0x40000000 //!< Group Channel 5 and Channel 2
@@ -353,12 +345,12 @@ typedef struct
 #define TIM_CCR5_CCR5  				0x0000FFFF //!< Capture/Compare 5 value
 /** @} */
 
-/** @name TIM_CCR6:     (adc Offset: 0x5C) TIM capture/compare register6      */
+/** @name TIM_CCR6:     (tim Offset: 0x5C) TIM capture/compare register6      */
 /** @{ */
 #define TIM_CCR6_CCR6  				0x0000 //!< Capture/Compare 6 value
 /** @} */
 
-/** @name TIM_AF1:      (adc Offset: 0x60) TIM alternate function option register 1 */
+/** @name TIM_AF1:      (tim Offset: 0x60) TIM alternate function option register 1 */
 /** @{ */
 #define TIM_AF1_ETRSEL 				0x0003C000 //!< ETR source selection
 #define TIM_AF1_BKCMP2P 			0x00000800 //!< BRK COMP2 input polarity
@@ -370,7 +362,7 @@ typedef struct
 #define TIM_AF1_BKINE 				0x00000001 //!< BRK BKIN input enable
 /** @} */
 
-/** @name TIM_AF2:      (adc Offset: 0x64) TIM alternate function option register 2 */
+/** @name TIM_AF2:      (tim Offset: 0x64) TIM alternate function option register 2 */
 /** @{ */
 #define TIM_AF2_BK2CMP2P 			0x00000800 //!< BRK2 COMP2 input polarity
 #define TIM_AF2_BK2CMP1P 			0x00000400 //!< BRK2 COMP1 input polarity
@@ -381,7 +373,7 @@ typedef struct
 #define TIM_AF2_BK2INE 				0x00000001 //!< BRK2 BKIN input enable
 /** @} */
 
-/** @name TIM_TISEL:    (adc Offset: 0x68) TIM Input Selection register		  */
+/** @name TIM_TISEL:    (tim Offset: 0x68) TIM Input Selection register		  */
 /** @{ */
 #define TIM_TISEL_TI4SEL 			0x0F000000 //!< selects TI4[0] to TI4[15] input
 #define TIM_TISEL_TI3SEL 			0x000F0000 //!< selects TI3[0] to TI3[15] input

@@ -39,6 +39,21 @@ typedef struct
 	__IO uint32_t RCC_PLLxFRACR; 		//!< (rcc Offset: 0x034) RCC PLL1-3 Fractional Divider Configuration Register
 } PLLx_TypeDef;
 
+enum rcc_pll_indx_t
+{
+	RCC_PLL1_INDX		= 0,			//!< Index for PLL1
+	RCC_PLL2_INDX		= 1,			//!< Index for PLL2
+	RCC_PLL3_INDX		= 2 			//!< Index for PLL3
+};
+
+enum rcc_pclk_indx_t
+{
+	RCC_PCLK1_INDX		= 0,			//!< Index for PCLK1, D1
+	RCC_PCLK2_INDX		= 1,			//!< Index for PCLK2, D2
+	RCC_PCLK3_INDX		= 2, 			//!< Index for PCLK3, D2
+	RCC_PCLK4_INDX		= 3 			//!< Index for PCLK4, D3
+};
+
 typedef struct
 {
 	__IO uint32_t RCC_CR; 				//!< (rcc Offset: 0x000) RCC Source Control Register
@@ -200,20 +215,26 @@ typedef struct
 
 /** @name RCC_D1CFGR:	(rcc Offset: 0x018) RCC Domain 1 configuration register */
 /** @{ */
-#define RCC_D1CFGR_D1CPRE		0x00000F00 //!< D1 domain Core prescaler
-#define RCC_D1CFGR_D1PPRE		0x00000070 //!< D1 domain APB3 prescaler
-#define RCC_D1CFGR_HPRE			0x0000000F //!< D1 domain AHB prescaler
+#define RCC_D1CFGR_D1CPRE		0x00000F00 			//!< D1 domain Core prescaler
+#define RCC_D1CFGR_D1CPRE_Get(x) (((x)>>8) & 0x0F)	//!< D1 domain Core prescaler value get
+#define RCC_D1CFGR_D1PPRE		0x00000070 			//!< D1 domain APB3 prescaler
+#define RCC_D1CFGR_D1PPRE_Get(x) (((x)>>4) & 0x07)  //!< D1 domain APB3 prescaler value get
+#define RCC_D1CFGR_HPRE			0x0000000F 			//!< D1 domain AHB prescaler
+#define RCC_D1CFGR_HPRE_Get(x)  ((x) & 0x0F)		//!< D1 domain AHB prescaler value get
 /** @} */
 
 /** @name RCC_D2CFGR:	(rcc Offset: 0x01C) RCC Domain 2 configuration register */
 /** @{ */
-#define RCC_D2CFGR_D2PPRE2 		0x00000700 //!< D2 domain APB2 prescaler
-#define RCC_D2CFGR_D2PPRE1      0x00000070 //!< D2 domain APB1 prescaler
+#define RCC_D2CFGR_D2PPRE2 		0x00000700 			//!< D2 domain APB2 prescaler
+#define RCC_D2CFGR_D2PPRE2_Get(x) (((x)>>8) & 0x07) //!< D2 domain APB2 prescaler value get
+#define RCC_D2CFGR_D2PPRE1      0x00000070 			//!< D2 domain APB1 prescaler
+#define RCC_D2CFGR_D2PPRE1_Get(x) (((x)>>4) & 0x07)	//!< D2 domain APB1 prescaler value get
 /** @} */
 
 /** @name RCC_D3CFGR:	(rcc Offset: 0x020) RCC Domain 3 configuration register */
 /** @{ */
-#define RCC_D3CFGR_D3PPRE       0x00000070 //!< D3 domain APB4 prescaler
+#define RCC_D3CFGR_D3PPRE       0x00000070 			//!< D3 domain APB4 prescaler
+#define RCC_D3CFGR_D3PPRE_Get(x) (((x)>>4) & 0x07) 	//!< D3 domain APB4 prescaler value get
 /** @} */
 
 /** @name RCC_PLLCKSELR:	(rcc Offset: 0x028) RCC PLLs clock source selection register  */
@@ -296,13 +317,27 @@ typedef struct
 
 /** @name RCC_D2CCIP2R:	(rcc Offset: 0x054) RCC Domain 2 Kernel Clock Configuration Register    */
 /** @{ */
-#define RCC_D2CCIP2R_LPTIM1SEL		0x70000000 //!< LPTIM1 kernel clock source selection
-#define RCC_D2CCIP2R_CECSEL			0x00C00000 //!< HDMI-CEC kernel clock source selection
-#define RCC_D2CCIP2R_USBSEL			0x00300000 //!< USBOTG 1 and 2 kernel clock source selection
-#define RCC_D2CCIP2R_I2C123SEL		0x00003000 //!< I2C1,2,3 kernel clock source selection
-#define RCC_D2CCIP2R_RNGSEL			0x00000300 //!< RNG kernel clock source selection
-#define RCC_D2CCIP2R_USART16SEL		0x00000038 //!< USART1 and 6 kernel clock source selection
-#define RCC_D2CCIP2R_USART234578SEL 0x00000007 //!< USART2/3, UART4,5, 7/8 (APB1) kernel clock source selection
+#define RCC_D2CCIP2R_LPTIM1SEL				0x70000000 //!< LPTIM1 kernel clock source selection
+#define RCC_D2CCIP2R_CECSEL					0x00C00000 //!< HDMI-CEC kernel clock source selection
+#define RCC_D2CCIP2R_USBSEL					0x00300000 //!< USBOTG 1 and 2 kernel clock source selection
+#define RCC_D2CCIP2R_I2C123SEL				0x00003000 //!< I2C1,2,3 kernel clock source selection
+#define RCC_D2CCIP2R_RNGSEL					0x00000300 //!< RNG kernel clock source selection
+#define RCC_D2CCIP2R_USART16SEL				0x00000038 //!< USART1 and 6 kernel clock source selection
+#define RCC_D2CCIP2R_USART16SEL_pclk2		0x00000000 //!<  rcc_pclk2 clock is selected as kernel clock (default after reset)
+#define RCC_D2CCIP2R_USART16SEL_pll2		0x00000008 //!<  pll2_q_ck clock is selected as kernel clock
+#define RCC_D2CCIP2R_USART16SEL_pll3		0x00000010 //!<  pll3_q_ck clock is selected as kernel clock
+#define RCC_D2CCIP2R_USART16SEL_hsi			0x00000018 //!<  hsi_ker_ck clock is selected as kernel clock
+#define RCC_D2CCIP2R_USART16SEL_csi			0x00000020 //!<  csi_ker_ck clock is selected as kernel clock
+#define RCC_D2CCIP2R_USART16SEL_lse			0x00000028 //!<  lse_ck clock is selected as kernel clock
+#define RCC_D2CCIP2R_USART16SEL_off			0x00000038 //!<  reserved, the kernel clock is disabled
+#define RCC_D2CCIP2R_USART234578SEL 		0x00000007 //!< USART2/3, UART4,5, 7/8 (APB1) kernel clock source selection
+#define RCC_D2CCIP2R_USART234578SEL_pclk1	0x00000000 //!<  rcc_pclk1 clock is selected as kernel clock (default after reset)
+#define RCC_D2CCIP2R_USART234578SEL_pll2	0x00000001 //!<  pll2_q_ck clock is selected as kernel clock
+#define RCC_D2CCIP2R_USART234578SEL_pll3	0x00000002 //!<  pll3_q_ck clock is selected as kernel clock
+#define RCC_D2CCIP2R_USART234578SEL_hsi		0x00000003 //!<  hsi_ker_ck clock is selected as kernel clock
+#define RCC_D2CCIP2R_USART234578SEL_csi		0x00000004 //!<  csi_ker_ck clock is selected as kernel clock
+#define RCC_D2CCIP2R_USART234578SEL_lse		0x00000005 //!<  lse_ck clock is selected as kernel clock
+#define RCC_D2CCIP2R_USART234578SEL_off		0x00000007 //!<  reserved, the kernel clock is disabled
 /** @} */
 
 /** @name RCC_D3CCIPR:	(rcc Offset: 0x058) RCC Domain 3 Kernel Clock Configuration Register    */
@@ -842,10 +877,14 @@ typedef struct
 
 #ifndef HSI_VALUE
 #define HSI_VALUE            64000000 /*!< Value of the High-speed Internal oscillator in Hz*/
-#endif /* HSI_VALUE */
+#endif
 
 #ifndef CSI_VALUE
 #define CSI_VALUE            4000000 /*!< Value of the Low-power Internal oscillator in Hz*/
+#endif
+
+#ifndef LSE_VALUE
+#define LSE_VALUE    		 32768u    /*!< Value of the LSE oscillator in Hz */
 #endif
 
 
@@ -874,7 +913,12 @@ void RCCPeripheralDisable(unsigned int periph_id);
 void RCCPeripheralLPEnable(unsigned int periph_id);
 void RCCPeripheralLPDisable(unsigned int periph_id);
 
-void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks);
+uint32_t rcc_get_hsi_clk();
+uint32_t RCC_GetPLLxClockFreq_P(rcc_pll_indx_t pll);
+uint32_t RCC_GetPLLxClockFreq_Q(rcc_pll_indx_t pll);
+uint32_t RCC_GetPLLxClockFreq_R(rcc_pll_indx_t pll);
+uint32_t RCC_GetSystemClockFreq();
+uint32_t RCC_GetPCLKxFreq(rcc_pclk_indx_t pclk);
 
 #endif /* RCC_H7_H_ */
 

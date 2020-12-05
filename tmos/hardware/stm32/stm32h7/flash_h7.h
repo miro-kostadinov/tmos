@@ -23,24 +23,24 @@
  ******************************************************************************/
 typedef struct
 {
-	__IO uint32_t FLASH_ACR; 		//!< (flash Offset: 0x000) FLASH access control register
+	__IO uint32_t FLASH_ACR; 		//!< (flash Offset: 0x000) FLASH access control register (bank 0)
 	__IO uint32_t FLASH_KEYR;       //!< (flash Offset: 0x004) Flash Key Register
-	__IO uint32_t FLASH_OPTKEYR;    //!< (flash Offset: 0x008) Flash Option Key Register
+	__IO uint32_t FLASH_OPTKEYR;    //!< (flash Offset: 0x008) Flash Option Key Register (bank 0)
 	__IO uint32_t FLASH_CR;         //!< (flash Offset: 0x00C) Flash Control Register
 	__IO uint32_t FLASH_SR;         //!< (flash Offset: 0x010) Flash Status Register
 	__IO uint32_t FLASH_CCR;        //!< (flash Offset: 0x014) Flash clear control register
-	__IO uint32_t FLASH_OPTCR;      //!< (flash Offset: 0x018) Flash Option Control Register
-	__IO uint32_t FLASH_OPTSR_CUR;  //!< (flash Offset: 0x01C) Flash Option Status Current Register
-	__IO uint32_t FLASH_OPTSR_PRG;  //!< (flash Offset: 0x020) Flash Option Status to Program Register
-	__IO uint32_t FLASH_OPTCCR;     //!< (flash Offset: 0x024) Flash Option Clear Control Register
+	__IO uint32_t FLASH_OPTCR;      //!< (flash Offset: 0x018) Flash Option Control Register (bank 0)
+	__IO uint32_t FLASH_OPTSR_CUR;  //!< (flash Offset: 0x01C) Flash Option Status Current Register (bank 0)
+	__IO uint32_t FLASH_OPTSR_PRG;  //!< (flash Offset: 0x020) Flash Option Status to Program Register (bank 0)
+	__IO uint32_t FLASH_OPTCCR;     //!< (flash Offset: 0x024) Flash Option Clear Control Register (bank 0)
 	__IO uint32_t FLASH_PRAR_CUR;   //!< (flash Offset: 0x028) Flash Current Protection Address Register
 	__IO uint32_t FLASH_PRAR_PRG;   //!< (flash Offset: 0x02C) Flash Protection Address to Program Register
 	__IO uint32_t FLASH_SCAR_CUR;   //!< (flash Offset: 0x030) Flash Current Secure Address Register
 	__IO uint32_t FLASH_SCAR_PRG;	//!< (flash Offset: 0x034) Flash Secure Address to Program Register
 	__IO uint32_t FLASH_WPSN_CUR;   //!< (flash Offset: 0x038) Flash Current Write Protection Register
 	__IO uint32_t FLASH_WPSN_PRG;   //!< (flash Offset: 0x03C) Flash Write Protection to Program Register
-	__IO uint32_t FLASH_BOOT_CUR;   //!< (flash Offset: 0x040) Flash Current Boot Address
-	__IO uint32_t FLASH_BOOT_PRG;   //!< (flash Offset: 0x044) Flash Boot Address to Program
+	__IO uint32_t FLASH_BOOT_CUR;   //!< (flash Offset: 0x040) Flash Current Boot Address (bank 0)
+	__IO uint32_t FLASH_BOOT_PRG;   //!< (flash Offset: 0x044) Flash Boot Address to Program (bank 0)
 	__IO uint32_t reserved0[2]; 	//!< (flash Offset: 0x048) reserved
 	__IO uint32_t FLASH_CRCCR;      //!< (flash Offset: 0x050) Flash CRC Control register
 	__IO uint32_t FLASH_CRCSADD;    //!< (flash Offset: 0x054) Flash CRC Start Address Register
@@ -103,6 +103,10 @@ typedef struct
 #define FLASH_CR_START			   0x00000080 //!< Bank erase start control bit
 #define FLASH_CR_FW	  			   0x00000040 //!< Bank write forcing control bit
 #define FLASH_CR_PSIZE			   0x00000030 //!< Bank program size
+#define FLASH_CR_PSIZE_x8          0x00000000 //!<  program x8
+#define FLASH_CR_PSIZE_x16         0x00000010 //!<  program x16
+#define FLASH_CR_PSIZE_x32         0x00000020 //!<  program x32
+#define FLASH_CR_PSIZE_x64         0x00000030 //!<  program x64
 #define FLASH_CR_BER			   0x00000008 //!< Bank erase request
 #define FLASH_CR_SER 			   0x00000004 //!< Bank sector erase request
 #define FLASH_CR_PG  			   0x00000002 //!< Bank internal buffer control bit
@@ -300,18 +304,17 @@ typedef struct
 
 /** @} */ // @relates FLASH_BankDef
 
+#define FLASH_SECTOR_TOTAL  8U
+#define FLASH_NB_32BITWORD_IN_FLASHWORD  8U
 
 
-uint32_t flash_unlock();
-void flash_lock();
-uint32_t flash_erase_page(uint32_t address);
-uint32_t flash_erase_all();
-uint32_t flash_write_byte(uint32_t address, uint32_t value);
-uint32_t flash_write_hword(uint32_t address, uint32_t value);
-uint32_t flash_write_word(uint32_t address, uint32_t value);
-uint32_t flash_write(uint32_t address, const void* data, uint32_t len);
-uint32_t flash_ob_read();
-uint32_t flash_ob_write(uint32_t value);
+uint32_t flash_unlock(FLASH_BankDef* bank);
+void flash_lock(FLASH_BankDef* bank);
+uint32_t flash_erase_sector(uint32_t address);
+uint32_t flash_mass_erase(uint32_t banks);
+uint32_t flash_write256b(uint32_t dst,	uint32_t src);
+uint32_t flash_ob_chage_start();
+uint32_t flash_ob_chage_end();
 
 
 

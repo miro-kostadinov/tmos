@@ -206,20 +206,20 @@
 #define ID_PERIPH_CRS			((6<<5)| 1) //!< Clock Recovery System
 
 // ------------------- index 7 ->   RCC_APB2ENR  -------------------------------
-#define ID_PERIPH_HRTIM 		((7<<5)| 0) //!< HRTIM
-#define ID_PERIPH_DFSDM1		((7<<5)| 0) //!< DFSDM1
-#define ID_PERIPH_SAI3 			((7<<5)| 0) //!< SAI3
-#define ID_PERIPH_SAI2 			((7<<5)| 0) //!< SAI2
-#define ID_PERIPH_SAI1 			((7<<5)| 0) //!< SAI1
-#define ID_PERIPH_SPI5 			((7<<5)| 0) //!< SPI5
-#define ID_PERIPH_TIM17 		((7<<5)| 0) //!< TIM17
-#define ID_PERIPH_TIM16 		((7<<5)| 0) //!< TIM16
-#define ID_PERIPH_TIM15 		((7<<5)| 0) //!< TIM15
-#define ID_PERIPH_SPI4 			((7<<5)| 0) //!< SPI4
-#define ID_PERIPH_SPI1 			((7<<5)| 0) //!< SPI1
-#define ID_PERIPH_USART6		((7<<5)| 0) //!< USART6
-#define ID_PERIPH_USART1		((7<<5)| 0) //!< USART1
-#define ID_PERIPH_TIM8 			((7<<5)| 0) //!< TIM8
+#define ID_PERIPH_HRTIM 		((7<<5)|29) //!< HRTIM
+#define ID_PERIPH_DFSDM1		((7<<5)|28) //!< DFSDM1
+#define ID_PERIPH_SAI3 			((7<<5)|24) //!< SAI3
+#define ID_PERIPH_SAI2 			((7<<5)|23) //!< SAI2
+#define ID_PERIPH_SAI1 			((7<<5)|22) //!< SAI1
+#define ID_PERIPH_SPI5 			((7<<5)|20) //!< SPI5
+#define ID_PERIPH_TIM17 		((7<<5)|18) //!< TIM17
+#define ID_PERIPH_TIM16 		((7<<5)|17) //!< TIM16
+#define ID_PERIPH_TIM15 		((7<<5)|16) //!< TIM15
+#define ID_PERIPH_SPI4 			((7<<5)|13) //!< SPI4
+#define ID_PERIPH_SPI1 			((7<<5)|12) //!< SPI1
+#define ID_PERIPH_USART6		((7<<5)| 5) //!< USART6
+#define ID_PERIPH_USART1		((7<<5)| 4) //!< USART1
+#define ID_PERIPH_TIM8 			((7<<5)| 1) //!< TIM8
 #define ID_PERIPH_TIM1 			((7<<5)| 0) //!< TIM1
 
 // ------------------- index 8 ->   RCC_APB4ENR  -------------------------------
