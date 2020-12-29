@@ -68,41 +68,9 @@ typedef struct
 #define USART_CR1_RE 				0x00000004 //!< Receiver enable
 #define USART_CR1_UESM 				0x00000002 //!< USART enable in low-power mode
 #define USART_CR1_UE 				0x00000001 //!< USART enable
+
+#define USART_CR1_M 				USART_CR1_M0 //!< Legacy (>8 bit)
 /** @} */
-
-
-	//USART control register 1 [alternate] (USART_CR1)
-	//The same register can be used in FIFO mode enabled (previous section) and FIFO mode disabled (this section).
-	//FIFO mode disabled
-	// Do i have to use #ifndef ?
-
-	//refer to page 2095/3319 on stm32h manual (48.7.2)
-/** @name USART_CR1:	(usart Offset: 0x00) USART control register 1 [alternate] (USART_CR1)  	          */
-/** @{ */
-#define USART_CR1_FIFOEN 			0x20000000 //!< FIFO mode enable
-#define USART_CR1_M1 				0x10000000 //!< Word length
-#define USART_CR1_EOBIE 			0x08000000 //!< End of Block interrupt enable
-#define USART_CR1_RTOIE 			0x04000000 //!< Receiver timeout interrupt enable
-#define USART_CR1_DEAT				0x03E00000 //!< Driver Enable assertion time
-#define USART_CR1_DEDT				0x001F0000 //!< Driver Enable deassertion time
-#define USART_CR1_OVER8 			0x00008000 //!< Oversampling mode
-#define USART_CR1_CMIE 				0x00004000 //!< Character match interrupt enable
-#define USART_CR1_MME 				0x00002000 //!< Mute mode enable
-#define USART_CR1_M0 				0x00001000 //!< Word length
-#define USART_CR1_WAKE 				0x00000800 //!< Receiver wakeup method
-#define USART_CR1_PCE 				0x00000400 //!< Parity control enable
-#define USART_CR1_PS 				0x00000200 //!< Parity selection
-#define USART_CR1_PEIE 				0x00000100 //!< PE interrupt enable
-#define USART_CR1_TXEIE 			0x00000080 //!< Transmit data register empty
-#define USART_CR1_TCIE 				0x00000040 //!< Transmission complete interrupt enable
-#define USART_CR1_RXNEIE 			0x00000020 //!< Receive data register not empty
-#define USART_CR1_IDLEIE 			0x00000010 //!< IDLE interrupt enable
-#define USART_CR1_TE 				0x00000008 //!< Transmitter enable
-#define USART_CR1_RE 				0x00000004 //!< Receiver enable
-#define USART_CR1_UESM 				0x00000002 //!< USART enable in low-power mode
-#define USART_CR1_UE 				0x00000001 //!< USART enable
-/** @} */
-
 
 /** @name USART_CR2:	(usart Offset: 0x04) Control register 2 	          */
 /** @{ */
@@ -290,27 +258,29 @@ typedef struct
 #define USART_PRESC_PRESCALER		0x0000000F //!< Clock prescaler
 /** @} */ // @relates USART_TypeDef
 
-#define USART_STATUS_TC 	USART_SR_TC		//!< TC flag for H7 family
-#define USART_STATUS_TXE 	USART_SR_TXE	//!< TXE flag for H7 family
-#define USART_STATUS_RXNE 	USART_SR_RXNE	//!< RXNE flag for H7 family
-#define USART_STATUS_IDLE 	USART_SR_IDLE	//!< IDLE flag for H7 family
-#define USART_STATUS_ORE 	USART_SR_ORE	//!< Overrun flag for H7 family
+#define USART_STATUS_TC 	USART_ISR_TC		//!< TC flag for H7 family
+#define USART_STATUS_TXE 	USART_ISR_TXFNF		//!< TXE flag for H7 family
+#define USART_STATUS_RXNE 	USART_ISR_RXFNE		//!< RXNE flag for H7 family
+#define USART_STATUS_IDLE 	USART_ISR_IDLE		//!< IDLE flag for H7 family
+#define USART_STATUS_ORE 	USART_ISR_ORE		//!< Overrun flag for H7 family
 
-#define USART_STATUS_RXNEIE USART_CR1_RXNEIE	//!< RXNE enable flag for H7 family
+#define USART_STATUS_RXNEIE USART_CR1_RXFNEIE	//!< RXNE enable flag for H7 family
 #define USART_STATUS_IDLEIE USART_CR1_IDLEIE	//!< IDLE enableflag for H7 family
 
 unsigned int set_usart_baudrate(USART_TypeDef* usart, uint32_t periph_id, uint32_t rate);
 
 /// Maskable status bits
-#define USART_SR_MASKABLE (USART_CR1_IDLEIE | USART_CR1_RXNEIE | USART_CR1_TCIE | USART_CR1_TXEIE)
+#define USART_SR_MASKABLE (USART_CR1_IDLEIE | USART_CR1_RXFNEIE | USART_CR1_TCIE | USART_CR1_TXFEIE)
 
 /// Nonmaskable status bits
-#define USART_SR_NOMASKABLE (USART_SR_FE | USART_SR_NE | USART_SR_ORE)
+#define USART_SR_NOMASKABLE (USART_ISR_FE | USART_ISR_NE | USART_ISR_ORE)
 
 /// ERROR status bits
 #define USART_SR_ERRORS (USART_SR_PE | USART_SR_FE | USART_SR_NE | USART_SR_ORE)
 
-#define get_usart_sr(uart) (uart->USART_SR)		//!< interrupt status for H7 family
+#define get_usart_sr(uart) (uart->USART_ISR)		//!< interrupt status for H7 family
+
+#define USART_CR1_TXEIE USART_CR1_TXFEIE
 
 #define get_usart_imr(uart) \
 	((uart->USART_CR1 & USART_SR_MASKABLE) | \
