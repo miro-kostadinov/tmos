@@ -240,6 +240,15 @@
 #define ID_NO_PERIPH 		(1023)		//!< invalid index for peripheral
 /** @}*/
 
+#define IN_RANGE(a,x,y)		(( (a)>=(x) ) && ( (a) <= ((x)+(y)) ))
+#define IS_SRAM_DTCM(x) 	IN_RANGE(x, BASE_SRAM_DTCM, SIZE_SRAM_DTCM)
+#define IS_SRAM_AXI(x) 		IN_RANGE(x, BASE_SRAM_AXI, SIZE_SRAM_AXI)
+#define IS_SRAM1(x) 		IN_RANGE(x, BASE_SRAM1, SIZE_SRAM1)
+#define IS_SRAM2(x) 		IN_RANGE(x, BASE_SRAM2, SIZE_SRAM2)
+#define IS_SRAM3(x) 		IN_RANGE(x, BASE_SRAM3, SIZE_SRAM3)
+#define IS_SRAM4(x) 		IN_RANGE(x, BASE_SRAM4, SIZE_SRAM4)
+#define IS_SRAM_PTR(x)		(IS_SRAM_DTCM(x) || IS_SRAM_AXI(x) || IS_SRAM1(x)\
+							|| IS_SRAM2(x) || IS_SRAM3(x) || IS_SRAM4(x))
 
 /** Number of USB endpoints */
 #define CHIP_USB_NUMENDPOINTS 6		//the USB HS has 1 control, 5 IN and 5 OUT endpoints

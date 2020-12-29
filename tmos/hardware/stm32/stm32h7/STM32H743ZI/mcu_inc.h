@@ -26,20 +26,28 @@
 #define FLASH_SECTOR_SIZE  		0x00020000U       	//!< 128 KB
 //
 //#define BASE_FSMC_R         (BASE_EXT_DEVICE) 	//!< 0xA0000000 FSMC registers base address
-#define BASE_D1_ITCMRAM			(BASE_CODE) 			 //!< 0x00000000 64KB RAM reserved for CPU execution/instruction accessible over ITCM
+#define BASE_SRAM_ITCM			(BASE_CODE) 			 //!< 0x00000000 64KB RAM reserved for CPU execution/instruction accessible over ITCM
 #define BASE_D1_ITCMICP         (BASE_CODE + 0x00100000) //!< 0x00100000 (up to 128KB) embedded Test FLASH memory accessible over ITCM
 #define BASE_D1_AXIFLASH        (BASE_CODE + 0x08000000) //!< 0x08000000 (up to 2 MB) embedded FLASH memory accessible over AXI
 #define BASE_FLASH				(BASE_CODE + 0x08000000) //!< 0x08000000 FLASH base address
 #define BASE_FLASH_BANK1        (BASE_CODE + 0x08000000) //!< 0x08000000 (up to 1 MB) Flash Bank1 accessible over AXI
 #define BASE_FLASH_BANK2        (BASE_CODE + 0x08100000) //!< 0x08100000 (up to 1 MB) Flash Bank2 accessible over AXI
-#define BASE_D2_AXISRAM         (BASE_CODE + 0x10000000) //!< 0x10000000 (up to 48KB) system data RAM accessible over over AXI
-#define BASE_D1_AXIICP          (BASE_CODE + 0x1FF00000) //!< 0x1FF00000 (up to 128KB) embedded Test FLASH memory accessible over AXI
 
-#define BASE_D1_DTCMRAM         (BASE_SRAM) 			 //!< 0x20000000 128KB system data RAM accessible over DTCM
-#define BASE_D1_AXISRAM         (BASE_SRAM + 0x04000000) //!< 0x24000000 (up to 384KB) system data RAM accessible over over AXI
-#define BASE_D2_AHBSRAM         (BASE_SRAM + 0x10000000) //!< 0x30000000 (up to 48KB) system data RAM accessible over over AXI->AHB Bridge
-#define BASE_D3_SRAM            (BASE_SRAM + 0x18000000) //!< 0x38000000 Backup SRAM(64 KB) over AXI->AHB Bridge
-#define BASE_D3_BKPSRAM         (BASE_SRAM + 0x18800000) //!< 0x38800000 Backup SRAM(4 KB) over AXI->AHB Bridge
+#define BASE_SRAM_DTCM	        (BASE_SRAM) 			 //!< 0x20000000 128KB D1 system data RAM accessible over DTCM
+#define BASE_SRAM_AXI           (BASE_SRAM + 0x04000000) //!< 0x24000000 D1, AXI
+#define BASE_SRAM1		        (BASE_SRAM + 0x10000000) //!< 0x30000000 D2, AHB
+#define BASE_SRAM2		        (BASE_SRAM + 0x10020000) //!< 0x30020000 D2, AHB
+#define BASE_SRAM3		        (BASE_SRAM + 0x10040000) //!< 0x30040000 D2, AHB
+#define BASE_SRAM4              (BASE_SRAM + 0x18000000) //!< 0x38000000 D3, AHB
+#define BASE_BKPSRAM 	        (BASE_SRAM + 0x18800000) //!< 0x38800000 D3 Backup SRAM(4 KB) over AXI->AHB Bridge
+
+#define SIZE_SRAM_ITCM	        (0x00010000) 			 //!< 64KB
+#define SIZE_SRAM_DTCM	        (0x00020000) 			 //!< 128KB
+#define SIZE_SRAM_AXI           (0x00080000) 			 //!< 512KB
+#define SIZE_SRAM1		        (0x00020000)    		 //!< 128K
+#define SIZE_SRAM2		        (0x00020000) 			 //!< 128K
+#define SIZE_SRAM3		        (0x00008000) 			 //!< 32K
+#define SIZE_SRAM4              (0x00010000) 			 //!< 64K
 
 #define BASE_QSPI               (0x90000000) //!< 0x90000000 QSPI memories  accessible over AXI
 

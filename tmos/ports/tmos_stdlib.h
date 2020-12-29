@@ -21,7 +21,7 @@ extern "C" {
 
 #define offsetof(type, member)  __builtin_offsetof (type, member)
 
-
+void svc_pools_init(void);
 void  svc_pool_init(void* start, void* end);
 void* svc_pool_malloc(unsigned int size, void* pool);
 void  svc_pool_free(void* ptr, void* pool);
