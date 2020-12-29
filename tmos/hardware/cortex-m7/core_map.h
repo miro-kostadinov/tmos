@@ -58,8 +58,8 @@
 
 /* System control space */
 #define BASE_SYST	    (BASE_SCS + 0x0010) //!< 0xE000E010 SysTick Base Address
-//#define BASE_NVIC       (BASE_SCS + 0x0100) //!< 0xE000E100 NVIC Base Address
-//#define BASE_SCB        (BASE_SCS + 0x0D00) //!< 0xE000ED00 System Control Block Base Address
+#define BASE_NVIC       (BASE_SCS + 0x0100) //!< 0xE000E100 NVIC Base Address
+#define BASE_SCB        (BASE_SCS + 0x0D00) //!< 0xE000ED00 System Control Block Base Address
 //#define BASE_MPU      	(BASE_SCS + 0x0D90) //!< 0xE000ED90 Memory Protection Unit
 //#define BASE_CDBG		(BASE_SCS + 0x0DF0) //!< 0xE000EDF0 Core Debug Base Address
 
