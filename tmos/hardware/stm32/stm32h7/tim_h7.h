@@ -385,12 +385,21 @@ typedef struct
 // The clock of the involved Timer counter is stopped when the core is halted
 #define DebugFreezeTimer(periph_id) 						\
 {															\
-	__IO uint32_t* reg;										\
-    if(periph_id < ID_NO_PERIPH)							\
-    {														\
-		reg = &DBGMCU->DBGMCU_APB1FZ;						\
-		reg[((periph_id)>>5)-4] |= 1<<((periph_id)&0x1f);	\
-    }														\
+	__IO uint32_t* reg =nullptr;							\
+	switch((periph_id)>>5)									\
+	{														\
+		case 5:												\
+			reg = &DBGMCU->DBGMCU_APB1LFZ1;					\
+			break;											\
+		case 7:												\
+			reg = &DBGMCU->DBGMCU_APB2FZ1;					\
+			break;											\
+		case 8:												\
+			reg = &DBGMCU->DBGMCU_APB4FZ1;					\
+			break;											\
+	}														\
+    if(reg)													\
+		reg[0] |= 1<<((periph_id)&0x1f);					\
 }
 
 

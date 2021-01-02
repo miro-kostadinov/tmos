@@ -92,6 +92,7 @@ typedef struct
 
 /** @name DBGMCU_APB1HFZ1: (dbgmcu offset: 0x44) Debug MCU APB1HFZ1 freeze register*/
 /** @{ */
+#define DBGMCU_APB1HFZ1_DBG_FDCAN  	0x00000100 //!< FDCAN stop in debug
 /** @} */
 
 /** @name DBGMCU_APB2FZ1:  (dbgmcu offset: 0x4C) Debug MCU APB2FZ1 freeze register */
