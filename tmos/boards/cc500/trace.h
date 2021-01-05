@@ -32,7 +32,7 @@
 #define TRACE_IS				TRACE_PEEDI
 
 //--- stack size required to use trace with parameters
-#define TRACE_SIZE		128
+#define TRACE_SIZE		20
 
 
 
@@ -50,12 +50,28 @@
 
 # define TRACE_CHAR( ch)						\
 	do {usr_trace_char(ch);}while(0)
+/*
 # define TRACE(...)								\
 	do											\
 	{											\
 		char tr_buf[80];						\
 		tmos_sprintf(tr_buf, __VA_ARGS__);		\
 		usr_trace_str(tr_buf);					\
+	}while(0)
+*/
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+int tmos_dbgprintf( uint32_t zero, const char *format, ... );
+#ifdef __cplusplus
+}
+#endif
+
+# define TRACE(...)						\
+	do											\
+	{											\
+		tmos_dbgprintf(0, __VA_ARGS__);		\
 	}while(0)
 # define TRACELN(str,...) TRACE("\r\n" str, ##__VA_ARGS__)
 # define TRACE1(str) usr_trace_str(str)
@@ -89,7 +105,7 @@
 #define TRACE_LEVEL_TRACE               6
 
 #define TRACE_DEFAULT_LEVEL          	TRACE_LEVEL_TRACE
-#define TRACE_USB_LEVEL					TRACE_LEVEL_DEBUG
+#define TRACE_USB_LEVEL					TRACE_LEVEL_NONE
 #define TRACE_WML_LEVEL					TRACE_LEVEL_DEBUG
 #define TRACE_MEMORY_LEVEL				TRACE_LEVEL_DEBUG
 #define TRACE_FOCUS_LEVEL				TRACE_LEVEL_DEBUG
@@ -159,7 +175,7 @@
 #define TRACE_USB(...) 			TRACE_LEVEL(TRACE_USB_LEVEL, __VA_ARGS__)
 #define TRACE1_USB(str)			TRACE1_LEVEL(TRACE_USB_LEVEL, str)
 
-#if TRACE_USB_LEVEL >= TRACE_DEFAULT_LEVEL
+#if TRACE_USB_LEVEL >= TRACE_LEVEL_DEBUG
 #	define TRACELN_USB(...)			TRACELN(__VA_ARGS__)
 #	define TRACELN1_USB(...)		TRACELN1(__VA_ARGS__)
 #else

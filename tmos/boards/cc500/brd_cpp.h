@@ -34,68 +34,98 @@
     PendSV_IRQn             = -2,   /*!< 14 Cortex-M3 Pend SV Interrupt      */
     SysTick_IRQn            = -1,   /*!< 15 Cortex-M3 System Tick Interrupt  */
 
-/******  LM3S Specific Interrupt Numbers *************************************/
-    GPIOPortA_IRQn          =  0,   /*!<  GPIO Port A                        */
-    GPIOPortB_IRQn          =  1,   /*!<  GPIO Port B                        */
-    GPIOPortC_IRQn          =  2,   /*!<  GPIO Port C                        */
-    GPIOPortD_IRQn          =  3,   /*!<  GPIO Port D                        */
-    GPIOPortE_IRQn          =  4,   /*!<  GPIO Port E                        */
-    UART0_IRQn              =  5,   /*!<  UART0                              */
-    UART1_IRQn              =  6,   /*!<  UART1                              */
-    SSI0_IRQn               =  7,   /*!<  SSI0                               */
-    I2C0_IRQn               =  8,   /*!<  I2C0                               */
-    PWMFault_IRQn           =  9,   /*!<  PWM Fault                          */
-    PWMGen0_IRQn            = 10,   /*!<  PWM Generator 0                    */
-    PWMGen1_IRQn            = 11,   /*!<  PWM Generator 1                    */
-    PWMGen2_IRQn            = 12,   /*!<  PWM Generator 2                    */
-    QEI0_IRQn               = 13,   /*!<  Quadrature Encoder 0               */
-    ADCSeq0_IRQn            = 14,   /*!<  ADC Sequence 0                     */
-    ADCSeq1_IRQn            = 15,   /*!<  ADC Sequence 1                     */
-    ADCSeq2_IRQn            = 16,   /*!<  ADC Sequence 2                     */
-    ADCSeq3_IRQn            = 17,   /*!<  ADC Sequence 3                     */
-    Watchdog_IRQn           = 18,   /*!<  Watchdog                           */
-    Timer0A_IRQn            = 19,   /*!<  Timer 0A                           */
-    Timer0B_IRQn            = 20,   /*!<  Timer 0B                           */
-    Timer1A_IRQn            = 21,   /*!<  Timer 1A                           */
-    Timer1B_IRQn            = 22,   /*!<  Timer 1B                           */
-    Timer2A_IRQn            = 23,   /*!<  Timer 2A                           */
-    Timer2B_IRQn            = 24,   /*!<  Timer 2B                           */
-    Comp0_IRQn              = 25,   /*!<  Comp 0                             */
-    Comp1_IRQn              = 26,   /*!<  Comp 1                             */
-    Comp2_IRQn              = 27,   /*!<  Comp 2                             */
-    SysCtrl_IRQn            = 28,   /*!<  System Control                     */
-    FlashCtrl_IRQn          = 29,   /*!<  Flash Control                      */
-    GPIOPortF_IRQn          = 30,   /*!<  GPIO Port F                        */
-    GPIOPortG_IRQn          = 31,   /*!<  GPIO Port G                        */
-    GPIOPortH_IRQn          = 32,   /*!<  GPIO Port H                        */
-    UART2_IRQn              = 33,   /*!<  UART2 Rx and Tx                    */
-    SSI1_IRQn               = 34,   /*!<  SSI1 Rx and Tx                     */
-    Timer3A_IRQn            = 35,   /*!<  Timer 3 subtimer A                 */
-    Timer3B_IRQn            = 36,   /*!<  Timer 3 subtimer B                 */
-    I2C1_IRQn               = 37,   /*!<  I2C1 Master and Slave              */
-    QEI1_IRQn               = 38,   /*!<  Quadrature Encoder 1               */
-    CAN0_IRQn               = 39,   /*!<  CAN0                               */
-    CAN1_IRQn               = 40,   /*!<  CAN1                               */
-    CAN2_IRQn               = 41,   /*!<  CAN2                               */
-    Ethernet_IRQn           = 42,   /*!<  Ethernet                           */
-    Hibernate_IRQn          = 43,   /*!<  Hibernate                          */
-    USB0_IRQn               = 44,   /*!<  USB0                               */
-    PWMGen3_IRQn            = 45,   /*!<  PWM Generator 3                    */
-    uDMA_IRQn               = 46,   /*!<  uDMA Software Transfer             */
-    uDMAErr_IRQn            = 47,    /*!<  uDMA Error                        */
-    ADC1Seq0_IRQn           = 48,   /*!<  ADC 1 Sequence 0                   */
-    ADC1Seq1_IRQn           = 49,   /*!<  ADC 1 Sequence 1                   */
-    ADC1Seq2_IRQn           = 50,   /*!<  ADC 1 Sequence 2                   */
-    ADC1Seq3_IRQn           = 51,   /*!<  ADC 1 Sequence 3                   */
-    I2SO_IRQn				= 52,	/*!<  */
-    EPI_IRQn				= 53,	/*!<  */
-    GPIOPortJ_IRQn			= 54,	/*!<  */
-    KEY_DRV_INDX,					//55
-    GUI_DRV_INDX,					//56
-    FILE_DRV_INDX,					//57
-    FD_DRV_INDX,					//58
-    GSM_DRV_INDX,					//59
-    INALID_DRV_INDX	                /*!<  invalid	                         */
+    /******  STM32 F2 specific Interrupt Numbers ***********************************************************/
+    WWDG_IRQn                = 0,   /*!< Window WatchDog Interrupt                                         */
+    PVD_IRQn                 = 1,   /*!< PVD through EXTI Line detection Interrupt                         */
+    TAMP_STAMP_IRQn          = 2,   /*!< Tamper and TimeStamp interrupts through the EXTI line             */
+    RTC_WKUP_IRQn            = 3,   /*!< RTC Wakeup interrupt through the EXTI line                        */
+    FLASH_IRQn               = 4,   /*!< FLASH global Interrupt                                            */
+    RCC_IRQn                 = 5,   /*!< RCC global Interrupt                                              */
+    EXTI0_IRQn               = 6,   /*!< EXTI Line0 Interrupt                                              */
+    EXTI1_IRQn               = 7,   /*!< EXTI Line1 Interrupt                                              */
+    EXTI2_IRQn               = 8,   /*!< EXTI Line2 Interrupt                                              */
+    EXTI3_IRQn               = 9,   /*!< EXTI Line3 Interrupt                                              */
+    EXTI4_IRQn               = 10,  /*!< EXTI Line4 Interrupt                                              */
+    DMA1_Stream0_IRQn        = 11,  /*!< DMA1 Stream 0 global Interrupt                                    */
+    DMA1_Stream1_IRQn        = 12,  /*!< DMA1 Stream 1 global Interrupt                                    */
+    DMA1_Stream2_IRQn        = 13,  /*!< DMA1 Stream 2 global Interrupt                                    */
+    DMA1_Stream3_IRQn        = 14,  /*!< DMA1 Stream 3 global Interrupt                                    */
+    DMA1_Stream4_IRQn        = 15,  /*!< DMA1 Stream 4 global Interrupt                                    */
+    DMA1_Stream5_IRQn        = 16,  /*!< DMA1 Stream 5 global Interrupt                                    */
+    DMA1_Stream6_IRQn        = 17,  /*!< DMA1 Stream 6 global Interrupt                                    */
+    ADC_IRQn                 = 18,  /*!< ADC1, ADC2 and ADC3 global Interrupts                             */
+    CAN1_TX_IRQn             = 19,  /*!< CAN1 TX Interrupt                                                 */
+    CAN1_RX0_IRQn            = 20,  /*!< CAN1 RX0 Interrupt                                                */
+    CAN1_RX1_IRQn            = 21,  /*!< CAN1 RX1 Interrupt                                                */
+    CAN1_SCE_IRQn            = 22,  /*!< CAN1 SCE Interrupt                                                */
+    EXTI9_5_IRQn             = 23,  /*!< External Line[9:5] Interrupts                                     */
+    TIM1_BRK_TIM9_IRQn       = 24,  /*!< TIM1 Break interrupt and TIM9 global interrupt                    */
+    TIM1_UP_TIM10_IRQn       = 25,  /*!< TIM1 Update Interrupt and TIM10 global interrupt                  */
+    TIM1_TRG_COM_TIM11_IRQn  = 26,  /*!< TIM1 Trigger and Commutation Interrupt and TIM11 global interrupt */
+    TIM1_CC_IRQn             = 27,  /*!< TIM1 Capture Compare Interrupt                                    */
+    TIM2_IRQn                = 28,  /*!< TIM2 global Interrupt                                             */
+    TIM3_IRQn                = 29,  /*!< TIM3 global Interrupt                                             */
+    TIM4_IRQn                = 30,  /*!< TIM4 global Interrupt                                             */
+    I2C1_EV_IRQn             = 31,  /*!< I2C1 Event Interrupt                                              */
+    I2C1_ER_IRQn             = 32,  /*!< I2C1 Error Interrupt                                              */
+    I2C2_EV_IRQn             = 33,  /*!< I2C2 Event Interrupt                                              */
+    I2C2_ER_IRQn             = 34,  /*!< I2C2 Error Interrupt                                              */
+    SPI1_IRQn                = 35,  /*!< SPI1 global Interrupt                                             */
+    SPI2_IRQn                = 36,  /*!< SPI2 global Interrupt                                             */
+    USART1_IRQn              = 37,  /*!< USART1 global Interrupt                                           */
+    USART2_IRQn              = 38,  /*!< USART2 global Interrupt                                           */
+    USART3_IRQn              = 39,  /*!< USART3 global Interrupt                                           */
+    EXTI15_10_IRQn           = 40,  /*!< External Line[15:10] Interrupts                                   */
+    RTC_Alarm_IRQn           = 41,  /*!< RTC Alarm (A and B) through EXTI Line Interrupt                   */
+    OTG_FS_WKUP_IRQn         = 42,  /*!< USB OTG FS Wakeup through EXTI line interrupt                     */
+    TIM8_BRK_TIM12_IRQn      = 43,  /*!< TIM8 Break Interrupt and TIM12 global interrupt                   */
+    TIM8_UP_TIM13_IRQn       = 44,  /*!< TIM8 Update Interrupt and TIM13 global interrupt                  */
+    TIM8_TRG_COM_TIM14_IRQn  = 45,  /*!< TIM8 Trigger and Commutation Interrupt and TIM14 global interrupt */
+    TIM8_CC_IRQn             = 46,  /*!< TIM8 Capture Compare Interrupt                                    */
+    DMA1_Stream7_IRQn        = 47,  /*!< DMA1 Stream7 Interrupt                                            */
+    FSMC_IRQn                = 48,  /*!< FSMC global Interrupt                                             */
+    SDIO_IRQn                = 49,  /*!< SDIO global Interrupt                                             */
+    TIM5_IRQn                = 50,  /*!< TIM5 global Interrupt                                             */
+    SPI3_IRQn                = 51,  /*!< SPI3 global Interrupt                                             */
+    UART4_IRQn               = 52,  /*!< UART4 global Interrupt                                            */
+    UART5_IRQn               = 53,  /*!< UART5 global Interrupt                                            */
+    TIM6_DAC_IRQn            = 54,  /*!< TIM6 global and DAC1&2 underrun error  interrupts                 */
+    TIM7_IRQn                = 55,  /*!< TIM7 global interrupt                                             */
+    DMA2_Stream0_IRQn        = 56,  /*!< DMA2 Stream 0 global Interrupt                                    */
+    DMA2_Stream1_IRQn        = 57,  /*!< DMA2 Stream 1 global Interrupt                                    */
+    DMA2_Stream2_IRQn        = 58,  /*!< DMA2 Stream 2 global Interrupt                                    */
+    DMA2_Stream3_IRQn        = 59,  /*!< DMA2 Stream 3 global Interrupt                                    */
+    DMA2_Stream4_IRQn        = 60,  /*!< DMA2 Stream 4 global Interrupt                                    */
+    ETH_IRQn                 = 61,  /*!< Ethernet global Interrupt                                         */
+    ETH_WKUP_IRQn            = 62,  /*!< Ethernet Wakeup through EXTI line Interrupt                       */
+    CAN2_TX_IRQn             = 63,  /*!< CAN2 TX Interrupt                                                 */
+    CAN2_RX0_IRQn            = 64,  /*!< CAN2 RX0 Interrupt                                                */
+    CAN2_RX1_IRQn            = 65,  /*!< CAN2 RX1 Interrupt                                                */
+    CAN2_SCE_IRQn            = 66,  /*!< CAN2 SCE Interrupt                                                */
+    OTG_FS_IRQn              = 67,  /*!< USB OTG FS global Interrupt                                       */
+    DMA2_Stream5_IRQn        = 68,  /*!< DMA2 Stream 5 global interrupt                                    */
+    DMA2_Stream6_IRQn        = 69,  /*!< DMA2 Stream 6 global interrupt                                    */
+    DMA2_Stream7_IRQn        = 70,  /*!< DMA2 Stream 7 global interrupt                                    */
+    USART6_IRQn              = 71,  /*!< USART6 global interrupt                                           */
+    I2C3_EV_IRQn             = 72,  /*!< I2C3 event interrupt                                              */
+    I2C3_ER_IRQn             = 73,  /*!< I2C3 error interrupt                                              */
+    OTG_HS_EP1_OUT_IRQn      = 74,  /*!< USB OTG HS End Point 1 Out global interrupt                       */
+    OTG_HS_EP1_IN_IRQn       = 75,  /*!< USB OTG HS End Point 1 In global interrupt                        */
+    OTG_HS_WKUP_IRQn         = 76,  /*!< USB OTG HS Wakeup through EXTI interrupt                          */
+    OTG_HS_IRQn              = 77,  /*!< USB OTG HS global interrupt                                       */
+    DCMI_IRQn                = 78,  /*!< DCMI global interrupt                                             */
+    CRYP_IRQn                = 79,  /*!< CRYP crypto global interrupt                                      */
+    HASH_RNG_IRQn            = 80,  /*!< Hash and Rng global interrupt                                     */
+
+    KEY_DRV_INDX,					//81
+    GUI_DRV_INDX,					//82
+    FILE_DRV_INDX,					//83
+    GSM_DRV_INDX,					//84
+    GSM_BT_DRV_INDX,				//85  Blue tooth
+#if USE_SECURITY_TLS_DRV
+	TLS_DRV_INDX,					//86  TLS
+#endif
+	INALID_DRV_INDX	                /*!<  invalid	                         */
 };
 
 }
