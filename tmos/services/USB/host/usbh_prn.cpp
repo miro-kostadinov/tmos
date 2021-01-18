@@ -96,6 +96,8 @@ RES_CODE usb_remote_prn_t::get_port_status()
 	req.wLength = 1;
 	res = std_request(&port_status);
     TRACELN("prn: res=%x ps=%02X", res, port_status);
+	if(res != RES_OK)
+		port_status = 0;
 
 	return res;
 }
