@@ -355,7 +355,9 @@ RES_CODE lwip_api_read(CSocket* client)
 
 							} else
 							{
-								res = RES_SIG_ERROR | RES_FATAL;
+								if(res != RES_SIG_OK)
+									res = RES_EOF | FLG_SIGNALED;
+								locked_clr_byte(&client->mode1, TCPHS_OP_ESTABLISHED);
 							}
 
 							sock_data->recv_que.pop(p);
@@ -363,7 +365,8 @@ RES_CODE lwip_api_read(CSocket* client)
 							return res;
 						}
 					}
-				}
+				} else
+					res = RES_EOF | FLG_SIGNALED;
 			}
 		} else
 		{
@@ -1139,10 +1142,15 @@ RES_CODE lwip_sock_bind_adr(CSocket* client, struct netif *netif)
 			if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
 			{
 				if(!client->src.as_charptr)
-					pip = NULL;
+					pip = &netif->ip_addr;//NULL;
 				else
-					pip = &ip;
-				if(!pip || ipaddr_aton(client->src.as_charptr, &ip))
+				{
+					if(ipaddr_aton(client->src.as_charptr, &ip))
+						pip = &ip;
+					else
+						pip = NULL;
+				}
+//				if(!pip || ipaddr_aton(client->src.as_charptr, &ip))
 				{
 					res = tcp_bind(sock_data->pcb, pip, client->dst.as_int);
 
