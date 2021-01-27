@@ -43,6 +43,14 @@ public:
 
 	virtual ~CCache(){};
 
+	void reset()
+	{
+		buf.clear();
+		next.clear();
+		cache_pos =0;
+		cache_offset =0;
+	}
+
 	uint32_t get_cache_pos()
 	{
 		return cache_offset + cache_pos;
