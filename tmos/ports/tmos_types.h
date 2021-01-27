@@ -54,6 +54,9 @@ typedef unsigned int RES_CODE;
 #ifndef max
 #define max(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
 #endif
+#ifndef abs
+#define abs(a) (((a)<0)?(-(a)):(a))
+#endif
 #ifndef NULL
 #define NULL 0
 #endif
