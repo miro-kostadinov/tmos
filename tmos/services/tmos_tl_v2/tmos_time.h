@@ -53,6 +53,7 @@ struct time_t
 	int sscanf(const char* buf, const char* format, ... );
 	unsigned int set_from_xml_datetime(const char* str);
 	unsigned int set_from_xml_date(const char* str);
+	unsigned int set_from_YYMMDDHHMMSS(const char* str);
 	void set_from_YYMMDDHHMMSSZZ(const char* val);
 
 	void sprintf(CSTRING& str, const char* format) const;

@@ -395,6 +395,30 @@ unsigned int time_t::set_from_xml_date(const char* str)
 	return 0;
 }
 
+/** Set from exactly YYMMDDHHMMSS
+ *  	no spacer allowed
+ *
+ * @param val
+ * @return
+ */
+unsigned int time_t::set_from_YYMMDDHHMMSS(const char* str)
+{
+	bool res=true;
+	unsigned int pos=0;
+
+	year = 2000 + read2XX(str, pos, res);
+	mon = read2XX(str, pos, res);
+	mday = read2XX(str, pos, res);
+	hour = read2XX(str, pos, res);
+	minute = read2XX(str, pos, res);
+	second = read2XX(str, pos, res);
+
+	if( res && is_valid() )
+		return pos;
+	return 0;
+}
+
+
 static int read(const char* &val)
 {
 	int res = 0;
