@@ -570,7 +570,7 @@ NET_CODE CURL::url_parse(const char* url, bool path_only)
 		return NET_ERR_URL_INVALID;
 
 	host.clear();
-#ifdef URL_CUSTOM_ROUTING
+#if URL_CUSTOM_ROUTING
 	if(url[0] == '/' && url[1] == 0)
 		url = "~/";
 	if(url[0] == '/' && url[1] == '~')
@@ -764,7 +764,7 @@ NET_CODE CURL::url_resolve(const CURL & old_link)
 	//        c) Otherwise, the embedded URL inherits the scheme of
 	//           the base URL.
 	//
-#ifdef URL_CUSTOM_ROUTING
+#if URL_CUSTOM_ROUTING
 		// if "~/" do not inherit
 		if(host[0] == '~')
 		{
@@ -781,7 +781,7 @@ NET_CODE CURL::url_resolve(const CURL & old_link)
 	host_empty = host.empty();
 	if(!host_empty && host == "/")
 		host_empty = true;
-#ifdef URL_CUSTOM_ROUTING
+#if URL_CUSTOM_ROUTING
 	// copy interface
 	if(old_link.host.start_with("/~") && !host.start_with("/~"))
 	{
@@ -950,7 +950,7 @@ void CURL::url_print(CSTRING& str)
 {
 	unsigned int i, host_pos=0;
 
-#ifdef URL_CUSTOM_ROUTING
+#if URL_CUSTOM_ROUTING
 	if(host.start_with("/~"))
 	{
 		const char* ptr;
