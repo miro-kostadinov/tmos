@@ -125,9 +125,10 @@ unsigned int GEdit::initialize (GMessage& msg)
 	cursor.y0 --;
 	if(pos >= max_chars)
 	{
-		pos -= max_chars-1;
+		max_chars = pos - max_chars +1;
+		pos -= max_chars;
 		set_cursor_on_char();
-		pos += max_chars-1;
+		pos += max_chars;
 	}
 	set_cursor_on_char();
 	if(msg.param)
