@@ -10,6 +10,7 @@
 
 #include <tmos.h>
 
+#define LWIP_TCP_PCBS_CNT 6
 
 
 //*****************************************************************************
@@ -284,7 +285,7 @@
 //#define LWIP_TCP_KEEPALIVE              0
 //#define LWIP_SO_RCVTIMEO                0
 //#define LWIP_SO_RCVBUF                  0
-//#define SO_REUSE                        0
+#define SO_REUSE                        1
 
 //*****************************************************************************
 //
