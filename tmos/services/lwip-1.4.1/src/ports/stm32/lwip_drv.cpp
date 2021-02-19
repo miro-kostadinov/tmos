@@ -598,6 +598,8 @@ WEAK void ethernetif_notify_conn_changed(struct netif *netif)
   * @param  netif: The network interface
   * @retval None
   */
+void lwip_sock_discard(struct netif *netif);
+
 void ethernetif_update_config(struct netif *netif)
 {
 	LWIP_DRIVER_DATA* drv_data = (LWIP_DRIVER_DATA*)netif;
@@ -642,6 +644,8 @@ void ethernetif_update_config(struct netif *netif)
 #endif
 		/* Stop MAC interface */
 		HAL_ETH_Stop(drv_info->hw_base);
+
+		lwip_sock_discard(netif);
 	}
 
 	ethernetif_notify_conn_changed(netif);
@@ -738,9 +742,12 @@ void lwIPInit(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
     //
     drv_data->ip_addr_mode = set->ip_addr_mode;
 
+    netif_set_link_callback(&drv_data->lwip_netif, ethernetif_update_config);
+
     ethernetif_link_status(drv_info);
 
-    ethernetif_update_config(&drv_data->lwip_netif);
+//    ethernetif_update_config(&drv_data->lwip_netif);
+
 }
 
 //*****************************************************************************

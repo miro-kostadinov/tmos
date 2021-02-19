@@ -585,7 +585,7 @@ RES_CODE lwip_sock_open(CSocket* client, struct netif *netif)
 
 //--------------------   CLOSE   ---------------------------------------------//
 
-static void api_tcp_drain(CSocket* client)
+static void api_tcp_drain(CSocket* client, struct netif *netif)
 {
 	lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
 	struct pbuf *p;
@@ -639,7 +639,7 @@ static void api_tcp_drain(CSocket* client)
 
 }
 
-static RES_CODE api_close_internal(CSocket* client, unsigned int rxtx)
+static RES_CODE api_close_internal(CSocket* client, unsigned int rxtx, struct netif *netif)
 {
 	err_t res;
 	lwip_mode_t* sock_mode = (lwip_mode_t*)client->mode.as_voidptr;
@@ -685,13 +685,28 @@ static RES_CODE api_close_internal(CSocket* client, unsigned int rxtx)
 			}
 
 			// Try to close the connection
-			if (rxtx == LWIP_SHUT_RDWR)
+			if(netif_is_link_up(netif))
 			{
-				res = tcp_close(pcb);
+				if (rxtx == LWIP_SHUT_RDWR)
+				{
+					res = tcp_close(pcb);
+				}
+				else
+				{
+					res = tcp_shutdown(pcb, rxtx & LWIP_SHUT_RD, rxtx & LWIP_SHUT_WR);
+				}
 			}
 			else
 			{
-				res = tcp_shutdown(pcb, rxtx & LWIP_SHUT_RD, rxtx & LWIP_SHUT_WR);
+				if (pcb->state == LISTEN)
+				{
+					res = tcp_close(pcb);
+				}
+				else
+				{
+					tcp_abort(pcb);
+					res = ERR_OK;
+				}
 			}
 
 			if (res == ERR_OK)
@@ -752,7 +767,7 @@ RES_CODE lwip_sock_close(CSocket* client, struct netif *netif)
 {
 	RES_CODE res;
 
-	api_tcp_drain(client);
+	api_tcp_drain(client, netif);
 
 	if(client->mode1 & TCPHS_OP_PCB)
 	{
@@ -762,7 +777,7 @@ RES_CODE lwip_sock_close(CSocket* client, struct netif *netif)
 			res = RES_SIG_IDLE;
 		} else
 		{
-			res = api_close_internal(client, LWIP_SHUT_RDWR);
+			res = api_close_internal(client, LWIP_SHUT_RDWR, netif);
 		}
 	} else
 	{
@@ -773,6 +788,33 @@ RES_CODE lwip_sock_close(CSocket* client, struct netif *netif)
 
 }
 
+void lwip_sock_discard(struct netif *netif)
+{
+
+	for(uint32_t i=0; i <LWIP_TCP_PCBS_CNT; i++)
+	{
+		lwip_sock_data_t* sock_data = &g_lwip_socks[i];
+		if(sock_data && sock_data->pcb && sock_data->pcb->callback_arg)
+		{
+			CSocket* client = (CSocket*)sock_data->pcb->callback_arg;
+			api_tcp_drain(client, netif);
+			if(client->res & FLG_BUSY)
+				tsk_HND_SET_STATUS(client, RES_SIG_ERROR|RES_FATAL);
+		}
+	}
+
+	for(uint32_t i=0; i <LWIP_UDP_PCBS_CNT; i++)
+	{
+		lwip_udp_sock_data_t* sock_data = &g_lwip_udp_socks[i];
+		if(sock_data && sock_data->pcb && sock_data->pcb->recv_arg)
+		{
+			CSocket* client = (CSocket*)sock_data->pcb->recv_arg;
+			api_tcp_drain(client, netif);
+			if(client->res & FLG_BUSY)
+				tsk_HND_SET_STATUS(client, RES_SIG_ERROR|RES_FATAL);
+		}
+	}
+}
 //--------------------   DNS   ---------------------------------------------//
 static void ipaddr_nto_cstr(const ip_addr_t* addr, CSTRING* str)
 {
@@ -1142,7 +1184,7 @@ RES_CODE lwip_sock_bind_adr(CSocket* client, struct netif *netif)
 			if(sock_data->pcb && (client->mode1 == TCPHS_NEW) )
 			{
 				if(!client->src.as_charptr)
-					pip = &netif->ip_addr;//NULL;
+					pip = NULL; //&netif->ip_addr;
 				else
 				{
 					if(ipaddr_aton(client->src.as_charptr, &ip))
@@ -1152,6 +1194,9 @@ RES_CODE lwip_sock_bind_adr(CSocket* client, struct netif *netif)
 				}
 //				if(!pip || ipaddr_aton(client->src.as_charptr, &ip))
 				{
+#if SO_REUSE
+					ip_set_option(sock_data->pcb, SOF_REUSEADDR);
+#endif /* SO_REUSE */
 					res = tcp_bind(sock_data->pcb, pip, client->dst.as_int);
 
 					client->error = res;
@@ -1394,7 +1439,7 @@ RES_CODE lwip_api_tcp_delete(CSocket* client, struct netif *netif)
 			res = RES_SIG_IDLE;
 		} else
 		{
-			res = api_close_internal(client, LWIP_SHUT_RDWR);
+			res = api_close_internal(client, LWIP_SHUT_RDWR, netif);
 		}
 	} else
 	{
@@ -1425,6 +1470,7 @@ RES_CODE lwip_process_cmd(CSocket* client, struct netif *netif)
 	{
 	case SOCK_CMD_OPEN:
 		res = lwip_sock_open(client, netif);
+		TRACELN("LWIP: OPEN Socket %u [%s] res:%x",  client->sock_id, client->client.task->name, res);
 		break;
 //#if USE_LWIP_LISTEN
 	case SOCK_CMD_BIND_ADR:
@@ -1457,6 +1503,7 @@ RES_CODE lwip_process_cmd(CSocket* client, struct netif *netif)
 		break;
 
 	case SOCK_CMD_CLOSE:
+		TRACELN("LWIP: CLOSE Socket %u [%s] %x", client->sock_id, client->client.task->name, client->mode1);
 		res = lwip_sock_close(client, netif);
 		break;
 
