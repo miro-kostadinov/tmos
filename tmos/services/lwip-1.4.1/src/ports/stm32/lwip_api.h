@@ -24,7 +24,9 @@ struct lwip_mode_t
 #define LWIP_CMD_TCP_CONNECT	(( 4 <<4)+CMD_COMMAND)
 #define LWIP_CMD_TCP_CLOSE		(( 5 <<4)+CMD_COMMAND)
 #define LWIP_CMD_TCP_DNS		(( 6 <<4)+CMD_COMMAND)
+//last socket command #define SOCK_CMD_DISCONNECT		((11 <<4)+CMD_COMMAND)
 
+#define LWIP_CMD_TCP_CONFIG		(( 12 <<4)+CMD_COMMAND)
 
 #ifndef LWIP_DRV_MAX_API_QUEUE
 #define LWIP_DRV_MAX_API_QUEUE 	3

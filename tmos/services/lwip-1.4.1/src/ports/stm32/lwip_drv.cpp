@@ -819,6 +819,8 @@ void lwIPNetworkConfigChange(LWIP_DRIVER_INFO* drv_info, ip_adr_set* set)
     struct netif *netif = &drv_info->drv_data->lwip_netif;
 	LWIP_DRIVER_DATA* drv_data = drv_info->drv_data;
 
+	if(!set)
+		return;
 
     //
     // Check the parameters.
@@ -998,6 +1000,7 @@ void ethernetif_input(struct netif *netif)
 
 	while( (p = low_level_receive(netif)) )
 	{
+		TRACELN_LWIP("ETH: rx %x %u ", p, p->tot_len);
 		if (ethernet_input(p, netif) != ERR_OK)
 		{
 			LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: input error\n"));
@@ -1153,7 +1156,16 @@ void lwipdrv_thread(LWIP_DRIVER_INFO* drv_info)
 
 			    if(client->cmd & FLAG_COMMAND)
 			    {
-			    	res = lwip_process_cmd(client, &drv_data->lwip_netif);
+			    	if(client->cmd != LWIP_CMD_TCP_CONFIG)
+			    	{
+			    		res = lwip_process_cmd(client, &drv_data->lwip_netif);
+
+			    	}else
+			    	{
+			    		lwip_sock_discard(&drv_data->lwip_netif);
+			    		lwIPNetworkConfigChange(drv_info, (ip_adr_set *)client->src.as_voidptr);
+			    		res = RES_SIG_OK;
+			    	}
 			    } else
 			    {
 				    if(client->cmd & FLAG_WRITE)
