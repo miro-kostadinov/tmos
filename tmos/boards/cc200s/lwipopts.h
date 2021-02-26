@@ -402,7 +402,7 @@
 #define S32_F "d"
 #define X32_F "x"
 //extern void UARTprintf(const char *pcString, ...);
-#define LWIP_PLATFORM_DIAG(x) {TRACELN x;}
+#define LWIP_PLATFORM_DIAG(x) {TRACE x; tsk_sleep(2);}
 #define LWIP_DEBUG
 #endif
 
@@ -412,8 +412,8 @@
 //#define LWIP_DBG_MIN_LEVEL              LWIP_DBG_LEVEL_SERIOUS
 //#define LWIP_DBG_MIN_LEVEL              LWIP_DBG_LEVEL_SEVERE
 
-#define LWIP_DBG_TYPES_ON               LWIP_DBG_STATE
-//#define LWIP_DBG_TYPES_ON               (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH)
+//#define LWIP_DBG_TYPES_ON               LWIP_DBG_STATE
+#define LWIP_DBG_TYPES_ON               (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH)
 
 //#define ETHARP_DEBUG                    LWIP_DBG_ON     // default is OFF
 #define NETIF_DEBUG                     LWIP_DBG_ON     // default is OFF
