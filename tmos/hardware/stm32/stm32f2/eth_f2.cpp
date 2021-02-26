@@ -538,7 +538,7 @@ uint32_t HAL_ETH_GetReceivedFrame_IT(const eth_mac_cfg_t* cfg)
 				cfg->mac_data->rx_len = (status & ETH_DMARXDESC_FL) >> 16;
 				if(!cfg->mac_data->rx_len)
 					break;
-				TRACELN("ETH: rx %x %u * %u ", DmaRxDesc, descriptor_count, cfg->mac_data->rx_len);
+//				TRACELN("ETH: rx %x %u * %u ", DmaRxDesc, descriptor_count, cfg->mac_data->rx_len);
 				return descriptor_count;
 			}
 		} while( descriptor_count < cfg->ETH_RXBUFNB);
@@ -547,7 +547,7 @@ uint32_t HAL_ETH_GetReceivedFrame_IT(const eth_mac_cfg_t* cfg)
 		DmaRxDesc = cfg->mac_data->RxDesc;
 		while(descriptor_count)
 		{
-			TRACELN("ETH: rx drop %u res %x", DmaRxDesc, DmaRxDesc->Status);
+//			TRACELN("ETH: rx drop %u res %x", DmaRxDesc, DmaRxDesc->Status);
 			descriptor_count--;
 			DmaRxDesc->Status = ETH_DMARXDESC_OWN;
 			DmaRxDesc = DmaRxDesc->Buffer2NextDescAddr;
