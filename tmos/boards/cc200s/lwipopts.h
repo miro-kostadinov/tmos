@@ -10,7 +10,7 @@
 
 #include <tmos.h>
 
-#define LWIP_TCP_PCBS_CNT 6
+#define LWIP_TCP_PCBS_CNT 8
 
 
 //*****************************************************************************
