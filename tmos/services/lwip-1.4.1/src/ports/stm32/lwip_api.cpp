@@ -546,6 +546,7 @@ RES_CODE lwip_sock_open(CSocket* client, struct netif *netif)
 						g_lwip_socks[i].recv_pos = 0;
 						client->sock_id = i;
 						client->mode1 = TCPHS_NEW;
+						client->sock_state = SOCKET_OPEN;
 						lwip_tcp_setup(client, pcb);
 						res = RES_SIG_OK;
 					} else
@@ -716,6 +717,7 @@ static RES_CODE api_close_internal(CSocket* client, unsigned int rxtx, struct ne
 				// Set back some callback pointers as conn is going away
 				g_lwip_socks[client->sock_id].pcb = NULL;
 				client->sock_id = SOCKET_ID_INVALID;
+				client->sock_state = SOCKET_CLOSED;
 
 			}
 			else
@@ -849,7 +851,10 @@ err_t lwip_cbf_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 	{
 		client->mode1 = TCPHS_ESTABLISHED;
 		if(client->res & FLG_BUSY)
+		{
+			client->sock_state = SOCKET_CONECTED;
 			tsk_HND_SET_STATUS(client, RES_SIG_OK);
+		}
 
 	}
 
@@ -1303,6 +1308,7 @@ RES_CODE lwip_sock_accept_sock(CSocket* client, struct tcp_pcb* newpcb)
 				g_lwip_socks[i].recv_pos = 0;
 				sock->sock_id = i;
 				sock->mode1 = TCPHS_ESTABLISHED;
+				sock->sock_state = SOCKET_CONECTED;
 				lwip_tcp_setup(sock, newpcb);
 				return RES_SIG_OK;
 			}
@@ -1415,6 +1421,7 @@ RES_CODE lwip_sock_listen(CSocket* client, struct netif *netif)
 				client->mode1 = TCPHS_LISTEN;
 				pcb->callback_arg = client;
 				pcb->accept = lwip_cbf_accept;
+				client->sock_state = SOCKET_LISTEN;
 				res = RES_SIG_OK;
 			}
 		}
