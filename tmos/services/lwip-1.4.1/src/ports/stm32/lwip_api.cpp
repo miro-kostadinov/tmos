@@ -717,8 +717,6 @@ static RES_CODE api_close_internal(CSocket* client, unsigned int rxtx, struct ne
 				// Set back some callback pointers as conn is going away
 				g_lwip_socks[client->sock_id].pcb = NULL;
 				client->sock_id = SOCKET_ID_INVALID;
-				client->sock_state = SOCKET_CLOSED;
-
 			}
 			else
 			{
@@ -733,6 +731,7 @@ static RES_CODE api_close_internal(CSocket* client, unsigned int rxtx, struct ne
 				return RES_SIG_IDLE;
 			}
 		}
+		client->sock_state = SOCKET_CLOSED;
 		return RES_SIG_OK;
 	} else
 	{
@@ -756,6 +755,7 @@ static RES_CODE api_close_internal(CSocket* client, unsigned int rxtx, struct ne
 				client->sock_id = SOCKET_ID_INVALID;
 
 			}
+			client->sock_state = SOCKET_CLOSED;
 			return RES_SIG_OK;
 		}
 #endif
@@ -784,6 +784,7 @@ RES_CODE lwip_sock_close(CSocket* client, struct netif *netif)
 	} else
 	{
 		//nothing to delete
+		client->sock_state = SOCKET_CLOSED;
 		res = RES_SIG_OK;
 	}
 	return (res);
