@@ -79,13 +79,14 @@ err_t lwip_cbf_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 	if(client == NULL)
 		return (ERR_VAL);
 
-	client->dst.as_byteptr += len;
+//	client->dst.as_byteptr += len;
 
 	if(client->mode1 == TCPHS_WRITING)
 	{
 		u8_t apiflags;
 		err_t res;
 
+		client->dst.as_byteptr += len;
 		len = client->len;
 		if(len)
 		{
