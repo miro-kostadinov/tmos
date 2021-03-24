@@ -139,6 +139,34 @@ RES_CODE tls_context_t::tls_record_write(record_ctxt_t* rc)
 			res = tls_write_cbk(rc->data.get(), rc->rec_len);
 	}
     TRACELN_TLS("TLS write res %u", res);
+
+    if(res != RES_OK)
+    {
+    	RES_CODE res2;
+
+    	res2 = tls_message_read(&last_rxrc);
+    	TRACELN("TLS wr_e=%u rd_e=%u", res, res2);
+    	if(res2 == RES_OK)
+    	{
+    		const char* p;
+
+			res2 = last_rxrc.msg_len;
+			p = (char*)last_rxrc.msg_start();
+			while(res2 >100)
+			{
+				tsk_sleep(10);
+				TRACE_BUF(p, 100);
+				p += 100;
+				res2 -= 100;
+			}
+			if(res2)
+			{
+				tsk_sleep(10);
+				TRACE_BUF(p, res2);
+			}
+
+    	}
+    }
 	return res;
 }
 
