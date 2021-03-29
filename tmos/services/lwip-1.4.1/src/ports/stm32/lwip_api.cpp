@@ -87,6 +87,11 @@ err_t lwip_cbf_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 		err_t res;
 
 		client->dst.as_byteptr += len;
+		if(client->dst.as_int < client->src.as_int)
+		{
+			TRACELN_LWIP("LWIP sent ACK %u", client->src.as_int - client->dst.as_int);
+			return (ERR_OK);
+		}
 		len = client->len;
 		if(len)
 		{
