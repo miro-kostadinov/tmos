@@ -113,6 +113,11 @@ public:
 	{
 		return lock_locker;
 	}
+
+	uint32_t get_lock_cnt()
+	{
+		return lock_cnt;
+	}
 };
 
 #endif
