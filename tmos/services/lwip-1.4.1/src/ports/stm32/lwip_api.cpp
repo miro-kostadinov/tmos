@@ -1004,7 +1004,7 @@ void lwip_finish_dns(CSocket* client, ip_addr_t *ipaddr)
 						if(client->error == ERR_OK)
 						{
 							client->mode1 = TCPHS_ESTABLISHED;
-							return;
+							res = RES_SIG_OK;
 						}
 					}
 					break;
