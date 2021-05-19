@@ -8,6 +8,7 @@
 #include <tmos.h>
 #include <usbh_hid.h>
 #include <usb_descriptors.h>
+#include <usb_requests.h>
 #include <usb_svc.h>
 
 //------------------------------------------------------------------------------
@@ -755,7 +756,7 @@ const unsigned char usb_hid_keycode_s[] =
 	 K60, K61, K62, K63, K64, K65, K66, K67, K68, K69, K6A, K6B, K6C, K6D, K6E, K6F  //60
 };
 
-WEAK_C void usb_kbd_post_key(unsigned int key, unsigned int flags)
+WEAK_C void usb_kbd_post_key(usb_remote_kbd_t& kbd, unsigned int key, unsigned int flags)
 {
 	if(key <255)
 	{
@@ -839,7 +840,7 @@ void usb_remote_kbd_t::key_press(uint32_t code)
 	old_keys.key_code[old_keys.len] = code;
 	key_tout[old_keys.len++] = 0;
 	code = usb_scan_to_ascii(code, get_modifier(new_keys.key_modifier), key_lang);
-	usb_kbd_post_key(code, KEY_DOWN_CODE);
+	usb_kbd_post_key(*this, code, KEY_DOWN_CODE);
 
 }
 
@@ -856,7 +857,7 @@ void usb_remote_kbd_t::key_release(uint32_t code)
 	}
 
 	code = usb_scan_to_ascii(code, get_modifier(old_keys.key_modifier), key_lang);
-	usb_kbd_post_key(code, KEY_UP_CODE);
+	usb_kbd_post_key(*this, code, KEY_UP_CODE);
 }
 
 void usb_remote_kbd_t::kbd_process()
@@ -971,7 +972,7 @@ void usb_remote_kbd_t::kbd_timeout()
 				key_tout[i] -= KEY_REPEAT_TIME;
 				code = old_keys.key_code[i];
 				code = usb_scan_to_ascii(code, get_modifier(old_keys.key_modifier), key_lang);
-				usb_kbd_post_key(code, KEY_DOWN_CODE);
+				usb_kbd_post_key(*this, code, KEY_DOWN_CODE);
 			}
 		}
 		key_time = time;
