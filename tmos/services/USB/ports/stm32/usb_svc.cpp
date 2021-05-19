@@ -81,6 +81,7 @@ void usb_svc_setconfiguration(HANDLE hnd, unsigned int cfg)
 	hnd->src.as_int = cfg;
 	hnd->hcontrol(DCR_HANDLE);
 }
+#endif //USB_ENABLE_DEVICE
 
 //-----------------------------------------------------------------------------
 void usb_svc_configendpoints_hook(USB_DRV_INFO drv_info, HANDLE hnd)
@@ -97,7 +98,9 @@ void usb_svc_configendpoints_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 		return;
 	}
 #endif
+#if USB_ENABLE_DEVICE
 	usb_hal_ept_config(drv_info, endpoint);
+#endif
 }
 
 /**
@@ -111,6 +114,7 @@ void usb_svc_configendpoint(HANDLE hnd, const USBGenericDescriptor* ds, int bCfg
 	hnd->hcontrol(DCR_HANDLE);
 }
 
+#if USB_ENABLE_DEVICE
 //-----------------------------------------------------------------------------
 void usb_svc_setaddress_hook(USB_DRV_INFO drv_info, HANDLE hnd)
 {

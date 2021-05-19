@@ -177,6 +177,7 @@ static void stm_otg_core_init2(USB_DRV_INFO drv_info)
 
 }
 
+#if USB_ENABLE_DEVICE
 static void stm_otg_core_init3(USB_DRV_INFO drv_info)
 {
 	uint32_t reg, cfg;
@@ -195,6 +196,7 @@ static void stm_otg_core_init3(USB_DRV_INFO drv_info)
 	}
 	drv_info->hw_base->core_regs.GCCFG = reg;
 }
+#endif //USB_ENABLE_DEVICE
 
 /**
  * Reads a packet from the Rx FIFO
@@ -1285,6 +1287,7 @@ static void stm_host_ch_halt(USB_DRV_INFO drv_info, OTG_HC_REGS* ch_regs)
 #endif // USB_ENABLE_HOST
 
 //---------------  USB driver related functions ------------------------------//
+#if USB_ENABLE_DEVICE
 WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 {
 	USB_DRIVER_DATA* drv_data = drv_info->drv_data;
@@ -1320,6 +1323,7 @@ WEAK_C void usb_drv_event(USB_DRV_INFO drv_info, USB_EVENT event)
 	break;
 	}
 }
+#endif //USB_ENABLE_DEVICE
 
 /**
  * Called once after boot (on DCR_RESET) to reset the driver
