@@ -106,6 +106,7 @@ unsigned int seconds_since(unsigned int time);
 unsigned int ms_since(unsigned int time);
 
 #ifdef __cplusplus
+bool on_out_of_memory(size_t size);
 constexpr void* operator new(size_t size, void* obj)
 {
     return (obj);

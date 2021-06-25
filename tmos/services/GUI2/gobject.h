@@ -118,12 +118,24 @@ struct GObject
 
 	void* operator new(size_t size)
 	{
-		void *p = tsk_malloc(size);
-		if(p)
+		void *p;
+		uint32_t tmp = CURRENT_TIME;
+
+		// Do not return nullptr !!!
+		while ((p = tsk_malloc(size)) == nullptr)
 		{
-			while(locked_set_if_null(&lastAllocated, p))
-				tsk_sleep(1);
+			on_out_of_memory(size);
+			tsk_sleep(1);
+			if (seconds_since(tmp) > 15)
+			{
+				SYST->SYST_CSR = 0;
+				LowLevelReboot();
+			}
 		}
+
+		while(locked_set_if_null(&lastAllocated, p))
+			tsk_sleep(1);
+
 		return p;
 	}
 
