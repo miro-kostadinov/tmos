@@ -1484,7 +1484,7 @@ RES_CODE lwip_process_cmd(CSocket* client, struct netif *netif)
 	{
 	case SOCK_CMD_OPEN:
 		res = lwip_sock_open(client, netif);
-		TRACELN("LWIP: OPEN Socket %u [%s] res:%x",  client->sock_id, client->client.task->name, res);
+//		TRACELN("LWIP: OPEN Socket %u [%s] res:%x",  client->sock_id, client->client.task->name, res);
 		break;
 //#if USE_LWIP_LISTEN
 	case SOCK_CMD_BIND_ADR:
@@ -1517,7 +1517,7 @@ RES_CODE lwip_process_cmd(CSocket* client, struct netif *netif)
 		break;
 
 	case SOCK_CMD_CLOSE:
-		TRACELN("LWIP: CLOSE Socket %u [%s] %x", client->sock_id, client->client.task->name, client->mode1);
+//		TRACELN("LWIP: CLOSE Socket %u [%s] %x", client->sock_id, client->client.task->name, client->mode1);
 		res = lwip_sock_close(client, netif);
 		break;
 
