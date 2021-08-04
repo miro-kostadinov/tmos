@@ -2402,37 +2402,43 @@ RES_CODE tls_context_t::tls_make_Certificate_verify(tls_certificate_verify_t** m
 			//The client's certificate contains a valid RSA public key?
 			if(cert->type == TLS_CERT_RSA_SIGN)
 			{
-				RsaPrivateKey privateKey;
-
-
-				//Decode the PEM structure that holds the RSA private key
-				res = pemReadRsaPrivateKey(cert->privateKey,
-						cert->privateKeyLength, &privateKey);
-
-				//Check status code
-				if(res == RES_OK)
+				if(cert->privateKeyAvailable)
 				{
-					uint32_t length;
+					RsaPrivateKey privateKey;
 
-					length = privateKey.n.mpiGetByteLength();
-					*len += length;
-					*msg = (tls_certificate_verify_t*) tsk_malloc(*len);
 
-					if (*msg)
+					//Decode the PEM structure that holds the RSA private key
+					res = pemReadRsaPrivateKey(cert->privateKey,
+							cert->privateKeyLength, &privateKey);
+
+					//Check status code
+					if(res == RES_OK)
 					{
-						//Point to the digitally-signed element
-						signature = (TlsDigitalSignature2 *) ((*msg)->signature);
+						uint32_t length;
 
-						//Set the relevant signature algorithm
-						signature->algorithm.signature = TLS_SIGN_ALGO_RSA;
-						signature->algorithm.hash = signHashAlgo;
+						length = privateKey.n.mpiGetByteLength();
+						*len += length;
+						*msg = (tls_certificate_verify_t*) tsk_malloc(*len);
 
-						//Use the signature algorithm defined in PKCS #1 v1.5
-						res = privateKey.rsassaPkcs1v15Sign(hash_info,
-								verifyData, signature->signature.value, length);
+						if (*msg)
+						{
+							//Point to the digitally-signed element
+							signature = (TlsDigitalSignature2 *) ((*msg)->signature);
+
+							//Set the relevant signature algorithm
+							signature->algorithm.signature = TLS_SIGN_ALGO_RSA;
+							signature->algorithm.hash = signHashAlgo;
+
+							//Use the signature algorithm defined in PKCS #1 v1.5
+							res = privateKey.rsassaPkcs1v15Sign(hash_info,
+									verifyData, signature->signature.value, length);
+						}
+						else
+							res = RES_OUT_OF_MEMORY;
 					}
-					else
-						res = RES_OUT_OF_MEMORY;
+				} else
+				{
+					res = private_rsa_signature(this, msg, len);
 				}
 
 			}

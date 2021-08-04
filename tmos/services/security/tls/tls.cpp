@@ -83,6 +83,7 @@ tls_context_t::tls_context_t()
 	pskCallback = nullptr;
 #endif
 
+	memclr(certs, sizeof(certs));
 	numCerts = 0;
 	cert = nullptr;
 
