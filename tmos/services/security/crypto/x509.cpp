@@ -277,6 +277,407 @@ RES_CODE X509Name::x509ParseName(const uint8_t *data, size_t length, size_t *tot
 	return RES_OK;
 }
 
+RES_CODE X509SubjectPublicKeyInfo::x509ParseDsaParameters(const uint8_t *data, size_t length)
+{
+#if DSA_SUPPORT
+	RES_CODE res;
+	Asn1Tag tag;
+
+	//Debug message
+	TRACELN1_TLS("        Parsing DSAParameters...");
+
+	//Read DSAParameters structure
+	res = tag.asn1ReadTag(data, length);
+	if (res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(true, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_SEQUENCE);
+	if (res != RES_OK)
+		return res;
+
+	//Point to the first field
+	data = tag.value;
+	length = tag.length;
+
+	//Read the parameter p
+	res = tag.asn1ReadTag(data, length);
+	if (res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
+	if (res != RES_OK)
+		return res;
+
+	//Save the parameter p
+	dsaParams.p = tag.value;
+	dsaParams.pLen = tag.length;
+
+	//Point to the next field
+	data += tag.totalLength;
+	length -= tag.totalLength;
+
+	//Read the parameter q
+	res = tag.asn1ReadTag(data, length);
+	if (res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
+	if (res != RES_OK)
+		return res;
+
+	//Save the parameter q
+	dsaParams.q = tag.value;
+	dsaParams.qLen = tag.length;
+
+	//Point to the next field
+	data += tag.totalLength;
+	length -= tag.totalLength;
+
+	//Read the parameter g
+	res = tag.asn1ReadTag(data, length);
+	if (res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
+	if (res != RES_OK)
+		return res;
+
+	//Save the parameter g
+	dsaParams.g = tag.value;
+	dsaParams.gLen = tag.length;
+
+	//Successful processing
+	return RES_OK;
+#else
+	//Not implemented
+	return RES_TLS_NOT_IMPLEMENTED;
+#endif
+}
+
+RES_CODE X509SubjectPublicKeyInfo::x509ParseEcParameters(const uint8_t *data, size_t length)
+{
+#if EC_SUPPORT
+	RES_CODE res;
+	Asn1Tag tag;
+
+	//Debug message
+	TRACELN1_TLS("        Parsing ECParameters...");
+
+	//Read namedCurve field
+	res = tag.asn1ReadTag(data, length);
+	if(res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_OBJECT_IDENTIFIER);
+	if(res != RES_OK)
+		return res;
+
+	//The namedCurve field identifies all the required values for a particular
+	//set of elliptic curve domain parameters to be represented by an object
+	//identifier
+	ecParams.namedCurve = tag.value;
+	ecParams.namedCurveLen = tag.length;
+
+	//Successful processing
+	return RES_OK;
+#else
+	//Not implemented
+	return RES_TLS_NOT_IMPLEMENTED;
+#endif
+}
+
+RES_CODE X509SubjectPublicKeyInfo::x509ParseAlgorithmIdentifier(const uint8_t *data, size_t length, size_t *totalLength)
+{
+	RES_CODE res;
+	Asn1Tag tag;
+
+	//Debug message
+	TRACELN1_TLS("      Parsing AlgorithmIdentifier...");
+
+	//Read AlgorithmIdentifier field
+	res = tag.asn1ReadTag(data, length);
+	//Failed to decode ASN.1 tag?
+	if (res != RES_OK)
+		return res;
+
+	//Save the total length of the field
+	*totalLength = tag.totalLength;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(true, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_SEQUENCE);
+	if (res != RES_OK)
+		return res;
+
+	//Point to the first field
+	data = tag.value;
+	length = tag.length;
+
+	//Read algorithm identifier (OID)
+	res = tag.asn1ReadTag(data, length);
+	if (res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL,	ASN1_TYPE_OBJECT_IDENTIFIER);
+	if (res != RES_OK)
+		return res;
+
+	//Save the algorithm identifier
+	oid = tag.value;
+	oidLen = tag.length;
+
+	//Point to the next field (if any)
+	data += tag.totalLength;
+	length -= tag.totalLength;
+
+#if RSA_SUPPORT
+	//RSA algorithm identifier?
+	if(tag.asn1CheckOid(RSA_ENCRYPTION_OID, sizeof(RSA_ENCRYPTION_OID)) == RES_OK)
+	{
+		//RSA does not require any additional parameters
+		res = RES_OK;
+	}
+	else
+#endif
+#if DSA_SUPPORT
+	//DSA algorithm identifier?
+	if(tag.asn1CheckOid(DSA_OID, sizeof(DSA_OID)) == RES_OK)
+	{
+		//Read DsaParameters structure
+		res = x509ParseDsaParameters(data, length);
+	}
+	else
+#endif
+#if EC_SUPPORT
+	//EC public key identifier?
+	if(tag.asn1CheckOid(EC_PUBLIC_KEY_OID, sizeof(EC_PUBLIC_KEY_OID)) == RES_OK)
+	{
+		//Read ECParameters structure
+		res = x509ParseEcParameters(data, length);
+	}
+	else
+#endif
+	//The certificate does not contain any valid public key...
+	{
+		//Report an error
+		res = RES_TLS_BAD_CERTIFICATE;
+	}
+
+	//Return status code
+	return res;
+}
+
+RES_CODE X509SubjectPublicKeyInfo::x509ParseRsaPublicKey(const uint8_t *data, size_t length)
+{
+#if RSA_SUPPORT
+	RES_CODE res;
+	Asn1Tag tag;
+
+	//Debug message
+	TRACELN1_TLS("      Parsing RSAPublicKey...");
+
+	//Read RSAPublicKey structure
+	res = tag.asn1ReadTag(data, length);
+	if(res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(true, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_SEQUENCE);
+	if(res != RES_OK)
+		return res;
+
+	//Point to the first field
+	data = tag.value;
+	length = tag.length;
+
+	//Read Modulus field
+	res = tag.asn1ReadTag(data, length);
+	if(res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
+	if(res != RES_OK)
+		return res;
+
+	//Get the modulus
+	rsaPublicKey.n = tag.value;
+	rsaPublicKey.nLen = tag.length;
+
+	//Point to the next field
+	data += tag.totalLength;
+	length -= tag.totalLength;
+
+	//Read PublicExponent field
+	res = tag.asn1ReadTag(data, length);
+	if(res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
+	if(res != RES_OK)
+		return res;
+
+	//Get the public exponent
+	rsaPublicKey.e = tag.value;
+	rsaPublicKey.eLen = tag.length;
+
+	//Successful processing
+	return RES_OK;
+#else
+	//Not implemented
+	return RES_TLS_NOT_IMPLEMENTED;
+#endif
+}
+
+RES_CODE X509SubjectPublicKeyInfo::x509ParseDsaPublicKey(const uint8_t *data, size_t length)
+{
+#if DSA_SUPPORT
+	RES_CODE res;
+	Asn1Tag tag;
+
+	//Debug message
+	TRACELN1_TLS("      Parsing DSAPublicKey...");
+
+	//Read DSAPublicKey structure
+	res = tag.asn1ReadTag(data, length);
+	//Failed to decode ASN.1 tag?
+	if(res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
+	if(res != RES_OK)
+		return res;
+
+	//Save the DSA public value
+	dsaPublicKey.y = tag.value;
+	dsaPublicKey.yLen = tag.length;
+
+	//Successful processing
+	return RES_OK;
+#else
+	//Not implemented
+	return RES_TLS_NOT_IMPLEMENTED;
+#endif
+}
+
+RES_CODE X509SubjectPublicKeyInfo::x509ParseEcPublicKey(const uint8_t *data, size_t length)
+{
+#if EC_SUPPORT
+   //Debug message
+   TRACELN1_TLS("      Parsing ECPublicKey...");
+
+   //Make sure the EC public key is valid
+   if(!length)
+      return RES_TLS_BAD_CERTIFICATE;
+
+   //Save the EC public key
+   ecPublicKey.q = data;
+   ecPublicKey.qLen = length;
+
+   //Successful processing
+   return RES_OK;
+#else
+   //Not implemented
+   return RES_TLS_NOT_IMPLEMENTED;
+#endif
+}
+
+RES_CODE X509SubjectPublicKeyInfo::x509ParseSubjectPublicKeyInfo(const uint8_t *data, size_t length, size_t *totalLength)
+{
+	RES_CODE res;
+	size_t n;
+	Asn1Tag tag;
+
+	//Debug message
+	TRACELN1_TLS("    Parsing SubjectPublicKeyInfo...");
+
+	//Read SubjectPublicKeyInfo field
+	res = tag.asn1ReadTag(data, length);
+	if (res != RES_OK)
+		return res;
+
+	//Save the total length of the field
+	if(totalLength)
+		*totalLength = tag.totalLength;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(true, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_SEQUENCE);
+	if (res != RES_OK)
+		return res;
+
+	//Point to the first field
+	data = tag.value;
+	length = tag.length;
+
+	//Read AlgorithmIdentifier field
+	res = x509ParseAlgorithmIdentifier(data, length, &n);
+	if (res != RES_OK)
+		return res;
+
+	//Point to the next field
+	data += n;
+	length -= n;
+
+	//The SubjectPublicKey structure is encapsulated within a bit string
+	res = tag.asn1ReadTag(data, length);
+	if (res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL,	ASN1_TYPE_BIT_STRING);
+	if (res != RES_OK)
+		return res;
+
+	//The bit string shall contain an initial octet which encodes the number
+	//of unused bits in the final subsequent octet
+	if (tag.length < 1 || tag.value[0] != 0x00)
+		return RES_ERROR;
+
+#if RSA_SUPPORT
+	//RSA algorithm identifier?
+	if(!oidComp(oid, oidLen, RSA_ENCRYPTION_OID, sizeof(RSA_ENCRYPTION_OID)))
+	{
+		//Read RSAPublicKey structure
+		res = x509ParseRsaPublicKey(tag.value + 1, tag.length - 1);
+	}
+	else
+#endif
+#if DSA_SUPPORT
+	//DSA algorithm identifier?
+	if(!oidComp(oid, oidLen, DSA_OID, sizeof(DSA_OID)))
+	{
+		//Read DSAPublicKey structure
+		res = x509ParseDsaPublicKey(tag.value + 1, tag.length - 1);
+	}
+	else
+#endif
+#if EC_SUPPORT
+	//EC public key identifier?
+	if(!oidComp(oid, oidLen, EC_PUBLIC_KEY_OID, sizeof(EC_PUBLIC_KEY_OID)))
+	{
+		//Read ECPublicKey structure
+		res = x509ParseEcPublicKey(tag.value + 1, tag.length - 1);
+	}
+	else
+#endif
+	//The certificate does not contain any valid public key...
+	{
+		//Report an error
+		res = RES_TLS_BAD_CERTIFICATE;
+	}
+
+	//Return status code
+	return res;
+}
+
+
 RES_CODE X509GeneralName::x509ParseGeneralName(const uint8_t *data, size_t len, size_t *totalLength)
 {
 	RES_CODE res;
@@ -681,409 +1082,6 @@ RES_CODE X509CertificateInfo::x509ParseValidity(const uint8_t *data, size_t leng
 	//The NotAfter field may be encoded as UTCTime or GeneralizedTime
 	res = x509ParseTime(data, length, &n, &validity.notAfter);
 
-	return res;
-}
-
-RES_CODE X509CertificateInfo::x509ParseDsaParameters(const uint8_t *data, size_t length)
-{
-#if DSA_SUPPORT
-	RES_CODE res;
-	Asn1Tag tag;
-
-	//Debug message
-	TRACELN1_TLS("        Parsing DSAParameters...");
-
-	//Read DSAParameters structure
-	res = tag.asn1ReadTag(data, length);
-	if (res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(true, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_SEQUENCE);
-	if (res != RES_OK)
-		return res;
-
-	//Point to the first field
-	data = tag.value;
-	length = tag.length;
-
-	//Read the parameter p
-	res = tag.asn1ReadTag(data, length);
-	if (res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
-	if (res != RES_OK)
-		return res;
-
-	//Save the parameter p
-	subjectPublicKeyInfo.dsaParams.p = tag.value;
-	subjectPublicKeyInfo.dsaParams.pLen = tag.length;
-
-	//Point to the next field
-	data += tag.totalLength;
-	length -= tag.totalLength;
-
-	//Read the parameter q
-	res = tag.asn1ReadTag(data, length);
-	if (res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
-	if (res != RES_OK)
-		return res;
-
-	//Save the parameter q
-	subjectPublicKeyInfo.dsaParams.q = tag.value;
-	subjectPublicKeyInfo.dsaParams.qLen = tag.length;
-
-	//Point to the next field
-	data += tag.totalLength;
-	length -= tag.totalLength;
-
-	//Read the parameter g
-	res = tag.asn1ReadTag(data, length);
-	if (res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
-	if (res != RES_OK)
-		return res;
-
-	//Save the parameter g
-	subjectPublicKeyInfo.dsaParams.g = tag.value;
-	subjectPublicKeyInfo.dsaParams.gLen = tag.length;
-
-	//Successful processing
-	return RES_OK;
-#else
-	//Not implemented
-	return RES_TLS_NOT_IMPLEMENTED;
-#endif
-}
-
-RES_CODE X509CertificateInfo::x509ParseEcParameters(const uint8_t *data, size_t length)
-{
-#if EC_SUPPORT
-	RES_CODE res;
-	Asn1Tag tag;
-
-	//Debug message
-	TRACELN1_TLS("        Parsing ECParameters...");
-
-	//Read namedCurve field
-	res = tag.asn1ReadTag(data, length);
-	if(res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_OBJECT_IDENTIFIER);
-	if(res != RES_OK)
-		return res;
-
-	//The namedCurve field identifies all the required values for a particular
-	//set of elliptic curve domain parameters to be represented by an object
-	//identifier
-	subjectPublicKeyInfo.ecParams.namedCurve = tag.value;
-	subjectPublicKeyInfo.ecParams.namedCurveLen = tag.length;
-
-	//Successful processing
-	return RES_OK;
-#else
-	//Not implemented
-	return RES_TLS_NOT_IMPLEMENTED;
-#endif
-}
-
-RES_CODE X509CertificateInfo::x509ParseAlgorithmIdentifier(const uint8_t *data, size_t length, size_t *totalLength)
-{
-	RES_CODE res;
-	Asn1Tag tag;
-
-	//Debug message
-	TRACELN1_TLS("      Parsing AlgorithmIdentifier...");
-
-	//Read AlgorithmIdentifier field
-	res = tag.asn1ReadTag(data, length);
-	//Failed to decode ASN.1 tag?
-	if (res != RES_OK)
-		return res;
-
-	//Save the total length of the field
-	*totalLength = tag.totalLength;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(true, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_SEQUENCE);
-	if (res != RES_OK)
-		return res;
-
-	//Point to the first field
-	data = tag.value;
-	length = tag.length;
-
-	//Read algorithm identifier (OID)
-	res = tag.asn1ReadTag(data, length);
-	if (res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL,	ASN1_TYPE_OBJECT_IDENTIFIER);
-	if (res != RES_OK)
-		return res;
-
-	//Save the algorithm identifier
-	subjectPublicKeyInfo.oid = tag.value;
-	subjectPublicKeyInfo.oidLen = tag.length;
-
-	//Point to the next field (if any)
-	data += tag.totalLength;
-	length -= tag.totalLength;
-
-#if RSA_SUPPORT
-	//RSA algorithm identifier?
-	if(tag.asn1CheckOid(RSA_ENCRYPTION_OID, sizeof(RSA_ENCRYPTION_OID)) == RES_OK)
-	{
-		//RSA does not require any additional parameters
-		res = RES_OK;
-	}
-	else
-#endif
-#if DSA_SUPPORT
-	//DSA algorithm identifier?
-	if(tag.asn1CheckOid(DSA_OID, sizeof(DSA_OID)) == RES_OK)
-	{
-		//Read DsaParameters structure
-		res = x509ParseDsaParameters(data, length);
-	}
-	else
-#endif
-#if EC_SUPPORT
-	//EC public key identifier?
-	if(tag.asn1CheckOid(EC_PUBLIC_KEY_OID, sizeof(EC_PUBLIC_KEY_OID)) == RES_OK)
-	{
-		//Read ECParameters structure
-		res = x509ParseEcParameters(data, length);
-	}
-	else
-#endif
-	//The certificate does not contain any valid public key...
-	{
-		//Report an error
-		res = RES_TLS_BAD_CERTIFICATE;
-	}
-
-	//Return status code
-	return res;
-}
-
-RES_CODE X509CertificateInfo::x509ParseRsaPublicKey(const uint8_t *data, size_t length)
-{
-#if RSA_SUPPORT
-	RES_CODE res;
-	Asn1Tag tag;
-
-	//Debug message
-	TRACELN1_TLS("      Parsing RSAPublicKey...");
-
-	//Read RSAPublicKey structure
-	res = tag.asn1ReadTag(data, length);
-	if(res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(true, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_SEQUENCE);
-	if(res != RES_OK)
-		return res;
-
-	//Point to the first field
-	data = tag.value;
-	length = tag.length;
-
-	//Read Modulus field
-	res = tag.asn1ReadTag(data, length);
-	if(res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
-	if(res != RES_OK)
-		return res;
-
-	//Get the modulus
-	subjectPublicKeyInfo.rsaPublicKey.n = tag.value;
-	subjectPublicKeyInfo.rsaPublicKey.nLen = tag.length;
-
-	//Point to the next field
-	data += tag.totalLength;
-	length -= tag.totalLength;
-
-	//Read PublicExponent field
-	res = tag.asn1ReadTag(data, length);
-	if(res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
-	if(res != RES_OK)
-		return res;
-
-	//Get the public exponent
-	subjectPublicKeyInfo.rsaPublicKey.e = tag.value;
-	subjectPublicKeyInfo.rsaPublicKey.eLen = tag.length;
-
-	//Successful processing
-	return RES_OK;
-#else
-	//Not implemented
-	return RES_TLS_NOT_IMPLEMENTED;
-#endif
-}
-
-RES_CODE X509CertificateInfo::x509ParseDsaPublicKey(const uint8_t *data, size_t length)
-{
-#if DSA_SUPPORT
-	RES_CODE res;
-	Asn1Tag tag;
-
-	//Debug message
-	TRACELN1_TLS("      Parsing DSAPublicKey...");
-
-	//Read DSAPublicKey structure
-	res = tag.asn1ReadTag(data, length);
-	//Failed to decode ASN.1 tag?
-	if(res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_INTEGER);
-	if(res != RES_OK)
-		return res;
-
-	//Save the DSA public value
-	subjectPublicKeyInfo.dsaPublicKey.y = tag.value;
-	subjectPublicKeyInfo.dsaPublicKey.yLen = tag.length;
-
-	//Successful processing
-	return RES_OK;
-#else
-	//Not implemented
-	return RES_TLS_NOT_IMPLEMENTED;
-#endif
-}
-
-RES_CODE X509CertificateInfo::x509ParseEcPublicKey(const uint8_t *data, size_t length)
-{
-#if EC_SUPPORT
-   //Debug message
-   TRACELN1_TLS("      Parsing ECPublicKey...");
-
-   //Make sure the EC public key is valid
-   if(!length)
-      return RES_TLS_BAD_CERTIFICATE;
-
-   //Save the EC public key
-   subjectPublicKeyInfo.ecPublicKey.q = data;
-   subjectPublicKeyInfo.ecPublicKey.qLen = length;
-
-   //Successful processing
-   return RES_OK;
-#else
-   //Not implemented
-   return RES_TLS_NOT_IMPLEMENTED;
-#endif
-}
-
-
-RES_CODE X509CertificateInfo::x509ParseSubjectPublicKeyInfo(const uint8_t *data, size_t length, size_t *totalLength)
-{
-	RES_CODE res;
-	size_t n;
-	Asn1Tag tag;
-
-	//Debug message
-	TRACELN1_TLS("    Parsing SubjectPublicKeyInfo...");
-
-	//Read SubjectPublicKeyInfo field
-	res = tag.asn1ReadTag(data, length);
-	if (res != RES_OK)
-		return res;
-
-	//Save the total length of the field
-	*totalLength = tag.totalLength;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(true, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_SEQUENCE);
-	if (res != RES_OK)
-		return res;
-
-	//Point to the first field
-	data = tag.value;
-	length = tag.length;
-
-	//Read AlgorithmIdentifier field
-	res = x509ParseAlgorithmIdentifier(data, length, &n);
-	if (res != RES_OK)
-		return res;
-
-	//Point to the next field
-	data += n;
-	length -= n;
-
-	//The SubjectPublicKey structure is encapsulated within a bit string
-	res = tag.asn1ReadTag(data, length);
-	if (res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL,	ASN1_TYPE_BIT_STRING);
-	if (res != RES_OK)
-		return res;
-
-	//The bit string shall contain an initial octet which encodes the number
-	//of unused bits in the final subsequent octet
-	if (tag.length < 1 || tag.value[0] != 0x00)
-		return RES_ERROR;
-
-#if RSA_SUPPORT
-	//RSA algorithm identifier?
-	if(!oidComp(subjectPublicKeyInfo.oid, subjectPublicKeyInfo.oidLen,
-					RSA_ENCRYPTION_OID, sizeof(RSA_ENCRYPTION_OID)))
-	{
-		//Read RSAPublicKey structure
-		res = x509ParseRsaPublicKey(tag.value + 1, tag.length - 1);
-	}
-	else
-#endif
-#if DSA_SUPPORT
-	//DSA algorithm identifier?
-	if(!oidComp(subjectPublicKeyInfo.oid, subjectPublicKeyInfo.oidLen,
-					DSA_OID, sizeof(DSA_OID)))
-	{
-		//Read DSAPublicKey structure
-		res = x509ParseDsaPublicKey(tag.value + 1, tag.length - 1);
-	}
-	else
-#endif
-#if EC_SUPPORT
-	//EC public key identifier?
-	if(!oidComp(subjectPublicKeyInfo.oid, subjectPublicKeyInfo.oidLen,
-					EC_PUBLIC_KEY_OID, sizeof(EC_PUBLIC_KEY_OID)))
-	{
-		//Read ECPublicKey structure
-		res = x509ParseEcPublicKey(tag.value + 1, tag.length - 1);
-	}
-	else
-#endif
-	//The certificate does not contain any valid public key...
-	{
-		//Report an error
-		res = RES_TLS_BAD_CERTIFICATE;
-	}
-
-	//Return status code
 	return res;
 }
 
@@ -1692,7 +1690,7 @@ RES_CODE X509CertificateInfo::x509ParseTbsCertificate(const uint8_t *data, size_
 	length -= n;
 
 	//Read SubjectPublicKeyInfo field
-	res = x509ParseSubjectPublicKeyInfo(data, length, &n);
+	res = subjectPublicKeyInfo.x509ParseSubjectPublicKeyInfo(data, length, &n);
 	if (res != RES_OK)
 		return res;
 

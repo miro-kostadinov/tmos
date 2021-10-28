@@ -152,6 +152,14 @@ struct X509SubjectPublicKeyInfo
    X509EcParameters ecParams;
    X509EcPublicKey ecPublicKey;
 #endif
+
+   RES_CODE x509ParseDsaParameters(const uint8_t *data, size_t length);
+   RES_CODE x509ParseEcParameters(const uint8_t *data, size_t length);
+   RES_CODE x509ParseAlgorithmIdentifier(const uint8_t *data, size_t length, size_t *totalLength);
+   RES_CODE x509ParseRsaPublicKey(const uint8_t *data, size_t length);
+   RES_CODE x509ParseDsaPublicKey(const uint8_t *data, size_t length);
+   RES_CODE x509ParseEcPublicKey(const uint8_t *data, size_t length);
+   RES_CODE x509ParseSubjectPublicKeyInfo(const uint8_t *data, size_t length, size_t *totalLength);
 };
 
 struct X509BasicContraints
@@ -233,13 +241,6 @@ struct X509CertificateInfo
    RES_CODE x509ParseSerialNumber(const uint8_t *data, size_t length, size_t *totalLength);
    RES_CODE x509ParseSignature(const uint8_t *data, size_t length, size_t *totalLength);
    RES_CODE x509ParseValidity(const uint8_t *data, size_t length, size_t *totalLength);
-   RES_CODE x509ParseDsaParameters(const uint8_t *data, size_t length);
-   RES_CODE x509ParseEcParameters(const uint8_t *data, size_t length);
-   RES_CODE x509ParseAlgorithmIdentifier(const uint8_t *data, size_t length, size_t *totalLength);
-   RES_CODE x509ParseRsaPublicKey(const uint8_t *data, size_t length);
-   RES_CODE x509ParseDsaPublicKey(const uint8_t *data, size_t length);
-   RES_CODE x509ParseEcPublicKey(const uint8_t *data, size_t length);
-   RES_CODE x509ParseSubjectPublicKeyInfo(const uint8_t *data, size_t length, size_t *totalLength);
    RES_CODE x509ParseIssuerUniqueId(const uint8_t *data, size_t length, size_t *totalLength);
    RES_CODE x509ParseSubjectUniqueId(const uint8_t *data, size_t length, size_t *totalLength);
    RES_CODE x509ParseBasicConstraints(const uint8_t *data, size_t length);

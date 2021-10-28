@@ -19,6 +19,13 @@
 //Error code checking
 #define MPI_CHECK(f) if((res = f) != RES_OK) goto end
 
+enum MpiFormat
+{
+   MPI_FORMAT_LITTLE_ENDIAN = 0,
+   MPI_FORMAT_BIG_ENDIAN    = 1
+};
+
+
 /// Arbitrary precision integer
 
 struct Mpi
@@ -96,6 +103,7 @@ struct Mpi
    RES_CODE tlsReadMpi(const uint8_t* data, size_t size, size_t* length);
    RES_CODE tlsWriteMpi(uint8_t* data, size_t* length) const;
 
+   RES_CODE mpiImport(const uint8_t *data, size_t length, MpiFormat format);
 };
 
 void mpiDump(const char* prepend, const Mpi* a);

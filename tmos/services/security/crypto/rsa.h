@@ -78,5 +78,10 @@ RES_CODE emsaPkcs1v15Decode(const uint8_t *em, size_t emLength, const uint8_t **
 RES_CODE emsaPkcs1v15Encode(const hash_info_t* hash, const uint8_t* digest,
 		uint8_t* em, size_t emLength);
 
+RES_CODE rsaesOaepEncrypt(prng_algo_t* prngAlgo, const RsaPublicKey* key,
+		const hash_info_t* oaep_hinfo, const hash_info_t* mfg_hinfo, const char* label,
+		const uint8_t* message, size_t messageLen, uint8_t* ciphertext,
+		size_t* ciphertextLen);
+
 
 #endif /* SERVICES_SECURITY_CRYPTO_RSA_H_ */

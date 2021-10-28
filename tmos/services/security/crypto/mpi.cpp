@@ -1579,6 +1579,79 @@ RES_CODE Mpi::tlsWriteMpi(uint8_t* data, size_t* length) const
 	return res;
 }
 
+RES_CODE Mpi::mpiImport(const uint8_t *data, size_t length, MpiFormat format)
+{
+	RES_CODE res;
+	uint32_t i;
+
+	//Check input format
+	if (format == MPI_FORMAT_LITTLE_ENDIAN)
+	{
+		//Skip trailing zeroes
+		while (length > 0 && data[length - 1] == 0)
+		{
+			length--;
+		}
+
+		//Ajust the size of the multiple precision integer
+		res = mpiGrow((length + MPI_INT_SIZE - 1) / MPI_INT_SIZE);
+
+		//Check status code
+		if (res == RES_OK)
+		{
+			//Clear the contents of the multiple precision integer
+			memset(mpi_data, 0, mpi_size * MPI_INT_SIZE);
+			//Set sign
+			mpi_sign = 1;
+
+			//Import data
+			for (i = 0; i < length; i++, data++)
+			{
+				mpi_data[i / MPI_INT_SIZE] |= *data << ((i % MPI_INT_SIZE) * 8);
+			}
+		}
+	}
+	else if (format == MPI_FORMAT_BIG_ENDIAN)
+	{
+		//Skip leading zeroes
+		while (length > 1 && *data == 0)
+		{
+			data++;
+			length--;
+		}
+
+		//Ajust the size of the multiple precision integer
+		res = mpiGrow((length + MPI_INT_SIZE - 1) / MPI_INT_SIZE);
+
+		//Check status code
+		if (res == RES_OK)
+		{
+			//Clear the contents of the multiple precision integer
+			memset(mpi_data, 0, mpi_size * MPI_INT_SIZE);
+			//Set sign
+			mpi_sign = 1;
+
+			//Start from the least significant byte
+			data += length - 1;
+
+			//Import data
+			for (i = 0; i < length; i++, data--)
+			{
+				mpi_data[i / MPI_INT_SIZE] |= *data << ((i % MPI_INT_SIZE) * 8);
+			}
+		}
+	}
+	else
+	{
+		//Report an error
+		res = RES_TLS_INVALID_PARAMETER;
+	}
+
+	//Return status code
+	return res;
+}
+
+
 void mpiDump(const char* prepend, const Mpi* a)
 {
 	uint32_t i;

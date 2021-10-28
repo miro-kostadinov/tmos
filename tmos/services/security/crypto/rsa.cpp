@@ -792,5 +792,222 @@ RES_CODE emsaPkcs1v15Encode(const hash_info_t* hash, const uint8_t* digest,
 	return RES_OK;
 }
 
+/**
+ * @brief MGF1 mask generation function
+ * @param[in] hash Hash function
+ * @param[in] hashContext Hash function context
+ * @param[in] seed Seed from which the mask is generated
+ * @param[in] seedLen Length of the seed in bytes
+ * @param[in,out] data Data block to be masked
+ * @param[in] dataLen Length of the data block in bytes
+ **/
+
+void mgf1(hash_algo_t* hash, const uint8_t *seed, size_t seedLen, uint8_t *data, size_t dataLen)
+{
+   size_t i;
+   size_t n;
+   uint32_t counter;
+   uint32_t c;
+
+   //The data is processed block by block
+   for(counter = 0; dataLen > 0; counter++)
+   {
+      //Limit the number of bytes to process at a time
+      n = min(dataLen, hash->hash_info->digest_size);
+
+      //Convert counter to an octet string C of length 4 octets
+      c = __REV(counter);
+
+      //Calculate Hash(mgfSeed || C)
+      hash->Reset();
+      hash->Input(seed, seedLen);
+      hash->Input(&c, sizeof(c));
+      hash->Result(nullptr);
+
+      //Apply the mask
+      for(i = 0; i < n; i++)
+      {
+         data[i] ^= hash->digest8()[i];
+      }
+
+      //Advance data pointer
+      data += n;
+      dataLen -= n;
+   }
+}
+
+/**
+ * @brief EME-OAEP encoding operation
+ * @param[in] prngAlgo PRNG algorithm
+ * @param[in] prngContext Pointer to the PRNG context
+ * @param[in] hash Underlying hash function
+ * @param[in] label Optional label to be associated with the message
+ * @param[in] message Message to be encrypted
+ * @param[in] messageLen Length of the message to be encrypted
+ * @param[out] em Encoded message
+ * @param[in] k Length of the encoded message
+ * @return Error code
+ **/
+/*
+ *                           +----------+---------+-------+
+                        DB = |  lHash   |    PS   |   M   |
+                             +----------+---------+-------+
+                                            |
+                  +----------+              V
+                  |   seed   |--> MGF ---> xor
+                  +----------+              |
+                        |                   |
+               +--+     V                   |
+               |00|    xor <----- MGF <-----|
+               +--+     |                   |
+                 |      |                   |
+                 V      V                   V
+               +--+----------+----------------------------+
+         EM =  |00|maskedSeed|          maskedDB          |
+               +--+----------+----------------------------+
+               |00|          |sha-256 		| PS |01|   M |
+ */
+RES_CODE emeOaepEncode(prng_algo_t* prngAlgo, const hash_info_t* oaep_hinfo,
+		const hash_info_t* mfg_hinfo, const char* label, const uint8_t* message,
+		size_t messageLen, uint8_t *em, size_t k)
+{
+   RES_CODE res;
+   size_t n;
+   uint8_t *db;
+   uint8_t *seed;
+   auto_ptr<hash_algo_t> oaep_hash;
+   auto_ptr<hash_algo_t> mfg_hash;
+
+   //Check the length of the message
+   if(messageLen > (k - 2 * oaep_hinfo->digest_size - 2))
+      return RES_TLS_INVALID_LENGTH;
+
+   //Point to the buffer where to format the seed
+   seed = em + 1;
+   //Point to the buffer where to format the data block
+   db = em + oaep_hinfo->digest_size + 1;
+
+   //Generate a random octet string seed of length hLen
+   res = prngAlgo->prng_read(seed, oaep_hinfo->digest_size);
+   //Any error to report?
+   if(res != RES_OK)
+      return res;
+
+   //Allocate a memory buffer to hold the hash context
+   oaep_hash = oaep_hinfo->new_hash();
+   if(!oaep_hash.get())
+      return RES_OUT_OF_MEMORY;
+   mfg_hash = mfg_hinfo->new_hash();
+   if(!mfg_hash.get())
+      return RES_OUT_OF_MEMORY;
+
+   //If the label L is not provided, let L be the empty string
+   if(label == NULL)
+      label = "";
+
+   //Let lHash = Hash(L)
+   oaep_hash->Input(label, strlen(label));
+   oaep_hash->Result(db);
+
+   //The padding string PS consists of k - mLen - 2hLen - 2 zero octets
+   n = k - messageLen - 2 * oaep_hinfo->digest_size - 2;
+   //Generate the padding string
+   memset(db + oaep_hinfo->digest_size, 0, n);
+
+   //Concatenate lHash, PS, a single octet with hexadecimal value 0x01, and
+   //the message M to form a data block DB of length k - hLen - 1 octets
+   db[oaep_hinfo->digest_size + n] = 0x01;
+   memcpy(db + oaep_hinfo->digest_size + n + 1, message, messageLen);
+
+   //Calculate the length of the data block
+   n = k - oaep_hinfo->digest_size - 1;
+
+   //Let maskedDB = DB xor MGF(seed, k - hLen - 1)
+   mgf1(mfg_hash.get(), seed, oaep_hinfo->digest_size, db, n);
+   //Let maskedSeed = seed xor MGF(maskedDB, hLen)
+   mgf1(mfg_hash.get(), db, n, seed, oaep_hinfo->digest_size);
+
+   //Concatenate a single octet with hexadecimal value 0x00, maskedSeed, and
+   //maskedDB to form an encoded message EM of length k octets
+   em[0] = 0x00;
+
+
+   //Successful processing
+   return RES_OK;
+}
+
+RES_CODE rsaesOaepEncrypt(prng_algo_t* prngAlgo, const RsaPublicKey* key,
+		const hash_info_t* oaep_hinfo, const hash_info_t* mfg_hinfo, const char* label,
+		const uint8_t* message, size_t messageLen, uint8_t* ciphertext,
+		size_t* ciphertextLen)
+{
+	RES_CODE res;
+	uint32_t k;
+	uint8_t *em;
+	Mpi m;
+	Mpi c;
+
+	//Check parameters
+	if (prngAlgo == NULL || key == NULL || message == NULL)
+		return RES_TLS_INVALID_PARAMETER;
+	if (ciphertext == NULL || ciphertextLen == NULL)
+		return RES_TLS_INVALID_PARAMETER;
+
+	//Get the length in octets of the modulus n
+	k = key->n.mpiGetByteLength();
+
+	//Make sure the modulus is valid
+	if (k == 0)
+		return RES_TLS_INVALID_PARAMETER;
+
+	//Point to the buffer where the encoded message EM will be formatted
+	em = ciphertext;
+
+	//EME-OAEP encoding
+	res = emeOaepEncode(prngAlgo, oaep_hinfo, mfg_hinfo, label, message,
+			messageLen, em, k);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Debug message
+	TRACELN1_TLS("  Encoded message:\r\n");
+	TRACE_TLS_ARRAY("    ", em, k);
+
+	//Start of exception handling block
+	do
+	{
+		//Convert the encoded message EM to an integer message representative m
+		res = m.mpiReadRaw(em, k);
+		//Conversion failed?
+		if (res != RES_OK)
+			break;
+
+		//Apply the RSAEP encryption primitive
+		res = key->rsaep(&m, &c);
+		//Any error to report?
+		if (res != RES_OK)
+			break;
+
+		//Convert the ciphertext representative c to a ciphertext of length k octets
+		res = c.mpiWriteRaw(ciphertext, k);
+		//Conversion failed?
+		if (res != RES_OK)
+			break;
+
+		//Length of the resulting ciphertext
+		*ciphertextLen = k;
+
+		//Debug message
+		TRACELN1_TLS("  Ciphertext:");
+		TRACE_TLS_ARRAY("    ", ciphertext, *ciphertextLen);
+
+		//End of exception handling block
+	} while (0);
+
+	//Return status code
+	return res;
+}
+
 #endif // RSA_SUPPORT
 
