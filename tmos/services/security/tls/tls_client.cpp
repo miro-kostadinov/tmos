@@ -2439,6 +2439,9 @@ RES_CODE tls_context_t::tls_make_Certificate_verify(tls_certificate_verify_t** m
 				} else
 				{
 					res = private_rsa_signature(this, msg, len);
+					if(msg)
+						signature = (TlsDigitalSignature2 *) ((*msg)->signature);
+
 				}
 
 			}
