@@ -247,10 +247,14 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 				if (res != RES_OK)
 				{
 					//Debug message
-					TRACE_WARNING("Server name mismatch!\r\n");
+					TRACELN1("Server name mismatch!\r\n");
+#if 0
 					//Report an error
 					res = RES_TLS_BAD_CERTIFICATE;
 					break;
+# else
+					res = RES_OK;
+#endif
 				}
 			}
 		}
@@ -1087,8 +1091,10 @@ RES_CODE tls_context_t::tlsHandshake()
 
 void tls_dump_record(const record_ctxt_t* rc)
 {
+#if TRACE_TLS_LEVEL >= TRACE_LEVEL_DEBUG
 	const tls_record_t* rec = &rc->tls_record;
 
+	tsk_sleep(50);
 	TRACELN1_TLS("------ TLS ---------");
 	TRACELN_TLS("type=%u ver=%x len=%u", rec->rec_type, rec->rec_version, __REV16(rec->rec_length));
 	switch(rec->rec_type)
@@ -1096,28 +1102,23 @@ void tls_dump_record(const record_ctxt_t* rc)
 	case TLS_TYPE_CHANGE_CIPHER_SPEC:
 		TRACELN1_TLS("CHANGE_CIPHER_SPEC");
 		{
-#if TRACE_TLS_LEVEL >= TRACE_LEVEL_DEBUG
 			const tls_change_cipherspec_t* message;
 
 			//Point to the buffer where to format the message
 			message = (tls_change_cipherspec_t*) rc->msg_start();
 			if(message)
 				TRACELN_TLS("type = %u", message->type);
-#endif
 		}
 		break;
 
 	case TLS_TYPE_ALERT:
 		TRACELN1_TLS("ALERT");
 		{
-#if TRACE_TLS_LEVEL >= TRACE_LEVEL_DEBUG
 			const tls_alert_t* message;
 
 			message = (tls_alert_t*) rc->msg_start();
 			if(message)
 				TRACELN_TLS("level=%u description=%u", message->level, message->description);
-
-#endif
 		}
 		break;
 
@@ -1340,4 +1341,5 @@ void tls_dump_record(const record_ctxt_t* rc)
 
 	}
 	TRACELN1_TLS("--------------------");
+#endif
 }
