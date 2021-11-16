@@ -1472,7 +1472,10 @@ RES_CODE tls_context_t::tlsParseCertificateRequest(record_ctxt_t* rc)
 	//Prepare to receive ServerHelloDone message...
 	tls_state = TLS_STATE_SERVER_HELLO_DONE;
 	//Successful processing
-	return RES_OK;
+	if(cert)
+		return RES_OK;
+
+	return RES_TLS_HANDSHAKE_FAILED;
 }
 
 /**

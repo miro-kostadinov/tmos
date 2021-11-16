@@ -754,6 +754,9 @@ RES_CODE tls_context_t::tls_certificate_msg_len(record_ctxt_t* rc)
 		tsk_free(derCert);
 	}
 
+	if(!len)
+		return RES_TLS_NO_CERTIFICATE;
+
 	len += 3 + sizeof(tls_handshake_t);
 	rc->msg_len = len;
 	return RES_OK;

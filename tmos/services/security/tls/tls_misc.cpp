@@ -1712,6 +1712,14 @@ bool tlsIsCertificateAcceptable(const TlsCertDesc *cert,
 						break;
 					}
 
+					//Check if the distinguished name matches the root CA
+					if (n == certInfo->subject.rawDataLen
+							&& !memcmp(p + 2, certInfo->subject.rawData, n))
+					{
+						acceptable = true;
+						break;
+					}
+
 					//Advance data pointer
 					p += n + 2;
 					//Number of bytes left in the list
