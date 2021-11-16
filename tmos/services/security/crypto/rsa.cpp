@@ -1009,5 +1009,188 @@ RES_CODE rsaesOaepEncrypt(prng_algo_t* prngAlgo, const RsaPublicKey* key,
 	return res;
 }
 
+uint32_t emeOaepDecode(const hash_info_t* oaep_hinfo, const hash_info_t* mfg_hinfo,
+		const char *label, uint8_t *em, size_t k, size_t *messageLen)
+{
+	size_t i;
+	size_t m;
+	size_t n;
+	uint8_t *db;
+	uint8_t *seed;
+	auto_ptr<hash_algo_t> oaep_hash;
+	auto_ptr<hash_algo_t> mfg_hash;
+	uint8_t lHash[MAX_HASH_DIGEST_SIZE];
+
+	*messageLen = 0;
+
+	//Allocate a memory buffer to hold the hash context
+	oaep_hash = oaep_hinfo->new_hash();
+	if (!oaep_hash.get())
+		return RES_OUT_OF_MEMORY;
+	mfg_hash = mfg_hinfo->new_hash();
+	if (!mfg_hash.get())
+		return RES_OUT_OF_MEMORY;
+
+	//If the label L is not provided, let L be the empty string
+	if (label == nullptr)
+		label = "";
+
+	//Let lHash = Hash(L)
+	oaep_hash->Input(label, strlen(label));
+	oaep_hash->Result(lHash);
+
+	//Separate the encoded message EM into a single octet Y, an octet string
+	//maskedSeed of length hLen, and an octet string maskedDB of length k - hLen - 1
+	seed = em + 1;
+	db = em + oaep_hinfo->digest_size + 1;
+
+	//Calculate the length of the data block
+	n = k - oaep_hinfo->digest_size - 1;
+
+	//Let seed = maskedSeed xor MGF(maskedDB, hLen)
+	mgf1(mfg_hash.get(), db, n, seed, oaep_hinfo->digest_size);
+	//Let DB = maskedDB xor MGF(seed, k - hLen - 1)
+	mgf1(mfg_hash.get(), seed, oaep_hinfo->digest_size, db, n);
+
+	//Separate DB into an octet string lHash' of length hLen, a padding string
+	//PS consisting of octets with hexadecimal value 0x00, and a message M
+	for (m = 0, i = oaep_hinfo->digest_size; i < n; i++)
+	{
+		//Constant time implementation
+		if (db[i] && !m)
+			m = i;
+	}
+
+	//Make sure the padding string PS is terminated
+	if (!m)
+		return RES_TLS_DECODING_FAILED;
+
+	//If there is no octet with hexadecimal value 0x01 to separate PS from M,
+	//then report a decryption error
+	if (db[m] != 0x01)
+		return RES_TLS_DECODING_FAILED;
+
+	//If lHash does not equal lHash', then report a decryption error
+	for (i = 0; i < oaep_hinfo->digest_size; i++)
+	{
+		if (db[i] != lHash[i])
+			return RES_TLS_DECODING_FAILED;
+	}
+
+	//If Y is nonzero, then report a decryption error
+	if (em[0] != 0x00)
+		return RES_TLS_DECODING_FAILED;
+
+	//Return the length of the decrypted message
+	*messageLen = n - m - 1;
+
+	//Care must be taken to ensure that an opponent cannot distinguish the
+	//different error conditions, whether by error message or timing
+	return RES_OK;
+}
+
+RES_CODE rsaesOaepDecrypt(const RsaPrivateKey *key,
+		const hash_info_t *oaep_hinfo, const hash_info_t *mfg_hinfo,
+		const char *label, const uint8_t *ciphertext, size_t ciphertextLen,
+		uint8_t *message, size_t messageSize, size_t *messageLen)
+{
+   RES_CODE res;
+   uint32_t k;
+   size_t i;
+   size_t j;
+   size_t n;
+   uint8_t b;
+   uint8_t *em;
+   Mpi c;
+   Mpi m;
+
+   //Check parameters
+   if(key == NULL || ciphertext == NULL)
+      return RES_TLS_INVALID_PARAMETER;
+   if(message == NULL || messageSize == 0 || messageLen == NULL)
+      return RES_TLS_INVALID_PARAMETER;
+
+
+   //Get the length in octets of the modulus n
+   k = key->n.mpiGetByteLength();
+
+   //Check the length of the modulus
+   if(k < (2u * oaep_hinfo->digest_size + 2u))
+      return RES_TLS_INVALID_PARAMETER;
+
+   //Check the length of the ciphertext
+   if(ciphertextLen != k)
+      return RES_TLS_INVALID_LENGTH;
+
+   //Allocate a buffer to store the encoded message EM
+   em = (uint8_t*)tsk_malloc(k);
+   //Failed to allocate memory?
+   if(em == NULL)
+      return RES_OUT_OF_MEMORY;
+
+   //Start of exception handling block
+   do
+   {
+      //Convert the ciphertext to an integer ciphertext representative c
+      res = c.mpiReadRaw(ciphertext, ciphertextLen);
+      //Conversion failed?
+      if(res != RES_OK)
+         break;
+
+      //Apply the RSADP decryption primitive
+      res = key->rsadp(&c, &m);
+      //Any error to report?
+      if(res != RES_OK)
+         break;
+
+      //Convert the message representative m to an encoded message EM of
+      //length k octets
+      res = m.mpiWriteRaw(em, k);
+      //Conversion failed?
+      if(res != RES_OK)
+         break;
+
+      //EME-OAEP decoding
+      res = emeOaepDecode(oaep_hinfo, mfg_hinfo, label, em, k, &n);
+      if(res != RES_OK)
+         break;
+
+      //Check whether the output buffer is large enough to hold the decrypted
+      //message
+      if(messageSize < n)
+      {
+    	  res = RES_TLS_BUFFER_OVERFLOW;
+    	  break;
+      }
+
+      //Copy the decrypted message, byte per byte
+      for(i = 0; i < messageSize; i++)
+      {
+         //Read the whole encoded message EM
+         for(b = 0, j = 0; j < k; j++)
+         {
+            //Constant time implementation
+        	 if(j == (k - n + i))
+        		 b = em[j];
+         }
+
+         //Save the value of the current byte
+         message[i] = b;
+      }
+
+      //Return the length of the decrypted message
+      *messageLen = n;
+
+
+      //End of exception handling block
+   } while(0);
+
+   //Release the encoded message
+   tsk_free(em);
+
+   //Return status code
+   return res;
+}
+
 #endif // RSA_SUPPORT
 

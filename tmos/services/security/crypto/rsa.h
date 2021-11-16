@@ -83,5 +83,9 @@ RES_CODE rsaesOaepEncrypt(prng_algo_t* prngAlgo, const RsaPublicKey* key,
 		const uint8_t* message, size_t messageLen, uint8_t* ciphertext,
 		size_t* ciphertextLen);
 
+RES_CODE rsaesOaepDecrypt(const RsaPrivateKey *key,
+		const hash_info_t *oaep_hinfo, const hash_info_t *mfg_hinfo,
+		const char *label, const uint8_t *ciphertext, size_t ciphertextLen,
+		uint8_t *message, size_t messageSize, size_t *messageLen);
 
 #endif /* SERVICES_SECURITY_CRYPTO_RSA_H_ */
