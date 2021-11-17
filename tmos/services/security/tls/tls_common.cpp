@@ -106,6 +106,11 @@ RES_CODE tls_context_t::tls_parse_alert(record_ctxt_t* rc)
 
 #define LOAD24BE(p) ( ((p[0]) << 16) |  ((p[1]) << 8) |  ((p[2]) << 0) )
 
+WEAK RES_CODE private_certificate_verify(const uint8_t *data, size_t length)
+{
+	return RES_OK;
+}
+
 RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 {
 	RES_CODE res;
@@ -225,6 +230,11 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 		//Display ASN.1 structure
 		res = asn1DumpObject(p, n, 0);
 		//Any error to report?
+		if (res != RES_OK)
+			break;
+
+		// Private Certificate Verification
+		res = private_certificate_verify(p, n);
 		if (res != RES_OK)
 			break;
 

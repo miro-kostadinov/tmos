@@ -837,6 +837,7 @@ struct tls_context_t
 
 void tls_dump_record(const record_ctxt_t* rc);
 
+RES_CODE private_certificate_verify(const uint8_t *data, size_t length);
 RES_CODE private_rsa_signature(tls_context_t* context, tls_certificate_verify_t** msg, size_t* len);
 
 #endif /* SERVICES_SECURITY_TLS_TLS_H_ */
