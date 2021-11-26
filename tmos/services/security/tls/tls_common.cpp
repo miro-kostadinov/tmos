@@ -106,7 +106,7 @@ RES_CODE tls_context_t::tls_parse_alert(record_ctxt_t* rc)
 
 #define LOAD24BE(p) ( ((p[0]) << 16) |  ((p[1]) << 8) |  ((p[2]) << 0) )
 
-WEAK RES_CODE private_certificate_verify(const uint8_t *data, size_t length)
+WEAK RES_CODE private_certificate_verify(tls_context_t* context, const uint8_t *data, size_t length)
 {
 	return RES_OK;
 }
@@ -234,7 +234,7 @@ RES_CODE tls_context_t::tls_parse_certificate(record_ctxt_t* rc)
 			break;
 
 		// Private Certificate Verification
-		res = private_certificate_verify(p, n);
+		res = private_certificate_verify(this, p, n);
 		if (res != RES_OK)
 			break;
 
