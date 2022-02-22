@@ -249,9 +249,9 @@ WIFI_CMD_STATE wifi_module_type::wifi_process_row(const char *cmd)
 		}
 
 	}
-	TRACE1_WIFI_DEBUG("^UNK[");
-	TRACE1_WIFI_DEBUG(row);
-	TRACE1_WIFI_DEBUG("]UNK^");
+//	TRACE1_WIFI_DEBUG("^UNK[");
+//	TRACE1_WIFI_DEBUG(row);
+//	TRACE1_WIFI_DEBUG("]UNK^");
     return WIFI_CMD_STATE_UNK;
 }
 
