@@ -476,7 +476,7 @@ void time_t::sprintf(CSTRING& str, const char* format) const
 				str.appendf("%02u", year %100);
 				break;
 			case 'Y':
-				str.appendf("%u", year );
+				str.appendf("%04u", year );
 				break;
 			case 'M':
 				str.appendf("%02u", mon);
