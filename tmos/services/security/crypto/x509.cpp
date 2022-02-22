@@ -684,7 +684,7 @@ RES_CODE X509GeneralName::x509ParseGeneralName(const uint8_t *data, size_t len, 
 	Asn1Tag tag;
 
 	//Debug message
-	TRACE_DEBUG("        Parsing GeneralName...\r\n");
+	TRACE1_TLS("        Parsing GeneralName...");
 
 	//Read current item
 	res = tag.asn1ReadTag(data, len);
@@ -722,7 +722,7 @@ RES_CODE X509SubjectAltName::x509ParseSubjectAltName(const uint8_t *data, size_t
 	X509GeneralName generalName;
 
 	//Debug message
-	TRACE_DEBUG("      Parsing SubjectAltName...\r\n");
+	TRACE1_TLS("      Parsing SubjectAltName...");
 
 
 	//The SubjectAltName structure shall contain a valid sequence
