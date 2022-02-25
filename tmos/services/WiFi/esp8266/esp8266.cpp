@@ -1784,6 +1784,7 @@ RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
     sig &= 255;
     if( sig )
     {
+    	CURRENT_TASK->aloc_sig |= sig;
     	hnd->signal = sig;
 	    hnd->client.task = CURRENT_TASK;
 		wifi_drv_off();
@@ -1824,114 +1825,9 @@ RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
 			    		TRACE_BUF(buf, pc_rcv, TC_TXT_YELLOW);
 			    		buf_in = pc_rcv;
 			    		break;
-//			    		if(pc_rcv == 1 && buf[0] == 0xA0)
-//			    		{
-//						    buf_in = 1;
-//			    			break;
-//			    		}
 			    	}
 			    }
 
-//			    hnd->tsk_read(buf, WIFI_BUF_SIZE, 2);
-//		    	pc_rcv = WIFI_BUF_SIZE - hnd->len;
-//		    	if(pc_rcv)
-//		    	{
-//		    		TRACE_BUF(buf, pc_rcv, TC_TXT_RED);
-//		    	}
-//
-//		    	last = 0;
-//		    	tm = CURRENT_TIME;
-//		    	total = 0;
-
-/*
-			    while(1)
-			    {
-
-			    	//start reading from PC
-			    	if(!(hnd->res & FLG_BUSY))
-						if(!hnd->tsk_start_read(buf, WIFI_BUF_SIZE))
-							break;
-
-			    	//start reading from GSM
-			    	if(!(rcv_hnd.res & FLG_BUSY))
-						if(!rcv_hnd.tsk_start_read(gsm_ack, sizeof(gsm_ack)))
-								break;
-
-			    	sig = tsk_wait_signal(hnd->signal | rcv_hnd.signal, 2*25000);
-
-			    	//process PC
-			    	if(sig & hnd->signal)
-			    	{
-			    		hnd->res &= ~FLG_SIGNALED;
-				    	pc_rcv = WIFI_BUF_SIZE - hnd->len;
-			    		TRACELN(" pc%u:", pc_rcv);
-			    		if(last == 0)
-			    		{
-			    			last =1;
-			    			TRACELN1("");
-			    			log.format("WIFI -> PC %u bytes %u mS", total, CURRENT_TIME - tm);
-			    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
-			    			TRACELN1("");
-			    			tm = CURRENT_TIME;
-			    			total = 0;
-			    		}
-			    		total += pc_rcv;
-				    	if(pc_rcv)
-				    	{
-//				    		TRACE_BUF(buf, pc_rcv, TC_TXT_MAGENTA);
-				    		if (snd_hnd.tsk_write(buf, pc_rcv, 10000) != RES_OK)
-				    		{
-				    			TRACELN1("TIMEOUT\r\n");
-				    		}
-				    	}
-			    	}
-
-			    	//process GSM
-			    	if(sig & rcv_hnd.signal)
-			    	{
-			    		rcv_hnd.res &= ~FLG_SIGNALED;
-				    	gsm_rcv = sizeof(gsm_ack) - rcv_hnd.len;
-			    		TRACELN(" wifi%u:", gsm_rcv);
-			    		if(last == 1)
-			    		{
-			    			last =0;
-			    			TRACELN1("");
-			    			log.format("PC -> WIFI %u bytes %u mS", total, CURRENT_TIME - tm);
-			    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
-			    			TRACELN1("");
-			    			tm = CURRENT_TIME;
-			    			total = 0;
-			    		}
-			    		total += gsm_rcv;
-				    	if(gsm_rcv)
-				    	{
-//				    		TRACE_BUF(gsm_ack, gsm_rcv, TC_TXT_CYAN);
-
-				    		hnd->tsk_cancel();
-					    	pc_rcv = WIFI_BUF_SIZE - hnd->len;
-				    		TRACE(" pccan%u:", pc_rcv);
-					    	if(pc_rcv)
-					    	{
-//					    		TRACE_BUF(buf, pc_rcv, TC_TXT_MAGENTA);
-					    		if(snd_hnd.tsk_write(buf, pc_rcv, 10000) != RES_OK)
-					    		{
-					    			TRACELN1("TIMEOUT\r\n");
-					    		}
-					    	}
-
-				    		hnd->tsk_write(gsm_ack, gsm_rcv);
-				    	}
-			    	}
-			    	if(!sig)
-			    	{
-			    		hnd->tsk_cancel();
-			    		rcv_hnd.tsk_cancel();
-			    		break;
-			    	}
-
-
-			    }
-*/
 
 			    buf_out = 0;
 			    while(1)
@@ -1999,19 +1895,6 @@ RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
 			    	{
 			    		hnd->res &= ~FLG_SIGNALED;
 				    	pc_rcv = rx_size - hnd->len;
-//			    		TRACELN(" pc%u:", pc_rcv);
-//			    		if(last == 0)
-//			    		{
-//			    			last =1;
-//			    			TRACELN1("");
-//			    			log.format("GSM -> PC %u bytes %u mS", total, CURRENT_TIME - tm);
-//			    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
-//			    			TRACELN1("");
-//			    			tm = CURRENT_TIME;
-//			    			total = 0;
-//			    		}
-//			    		total += pc_rcv;
-//						TRACELN("rx %u %u", buf_in, pc_rcv);
 						TRACE_BUF(buf+buf_in, pc_rcv, TC_TXT_RED);
 
 		    			buf_in += pc_rcv;
@@ -2024,18 +1907,6 @@ RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
 			    	{
 			    		rcv_hnd.res &= ~FLG_SIGNALED;
 				    	gsm_rcv = sizeof(gsm_ack)/2 - rcv_hnd.len;
-//			    		TRACELN(" gsm%u:", gsm_rcv);
-//			    		if(last == 1)
-//			    		{
-//			    			last =0;
-//			    			TRACELN1("");
-//			    			log.format("PC -> GSM %u bytes %u mS", total, CURRENT_TIME - tm);
-//			    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
-//			    			TRACELN1("");
-//			    			tm = CURRENT_TIME;
-//			    			total = 0;
-//			    		}
-//			    		total += gsm_rcv;
 				    	if(gsm_rcv)
 				    	{
 				    		hnd_snd.tsk_start_write(gsm_ack+gsm_ack_off, gsm_rcv);
@@ -2053,11 +1924,6 @@ RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
 			    		break;
 			    	}
 			    }
-//			    if(last ==1)
-//	    			log.format("\r\nPC -> GSM %u bytes %u mS\r\n", total, CURRENT_TIME - tm);
-//			    else
-//	    			log.format("\r\nGSM -> PC %u bytes %u mS\r\n", total, CURRENT_TIME - tm);
-//    			TRACE_BUF(log.c_str(), log.length(), TC_TXT_RED);
 
 			    TRACE1_WIFI("\r\n------ UPGRADE END --------");
 			    if(wifi_pin_boot)
@@ -2073,6 +1939,7 @@ RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
 			TRACE1_WIFI("\r\nTIMEOUT\r\n");
 
 	    //restore hnd owner
+    	CURRENT_TASK->aloc_sig &= ~hnd->signal;
     	hnd->signal = old_sig;
 	    hnd->client = old_client;
 	} else
