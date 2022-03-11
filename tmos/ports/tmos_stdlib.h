@@ -42,7 +42,7 @@ inline static void* usr_realloc(void* volatile ptr, unsigned int volatile size);
 #	define tsk_realloc(ptr, size) 	usr_realloc(ptr, size)
 #endif
 
-#define dyn_sizeof(ptr)	((((unsigned short*)ptr)[-2])*4 -4)
+#define dyn_sizeof(ptr)	((((unsigned short*)ptr)[-2])*4u -4u)
 
 /** Convert string to integer
  *

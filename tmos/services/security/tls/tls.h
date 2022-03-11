@@ -534,7 +534,7 @@ struct record_ctxt_t
 		ptr = data.get();
 		if(size)
 		{
-			if(ptr == nullptr || size >= (uint32_t)dyn_sizeof((uint16_t*)(void*)ptr))
+			if(ptr == nullptr || size >= dyn_sizeof((void*)ptr))
 			{
 				ptr = (uint8_t*)tsk_realloc(ptr, size);
 				if(ptr)
