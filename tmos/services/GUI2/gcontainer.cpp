@@ -107,6 +107,18 @@ bool GContainer::is_available()
 	return false;
 }
 
+void GContainer::move(int x, int y)
+{
+	GObject* tmp = children;
+
+	GObject::move(x, y);
+	while (tmp)
+	{
+		tmp->move(x, y);
+		tmp = tmp->nextObj;
+	}
+}
+
 bool GContainer::focus_on_previous() const
 {
 	GObject* tmp;

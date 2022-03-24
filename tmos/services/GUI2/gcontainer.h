@@ -27,6 +27,7 @@ struct GContainer:GObject {
 	virtual GObject* addChild (GObject* child);
 	GObject* get_object(GId xid) override;
 	GObject* addChildRef(GObject* child);
+	void move(int x, int y) override;
 
 protected:
 	unsigned int initialize (GMessage& msg) override;
