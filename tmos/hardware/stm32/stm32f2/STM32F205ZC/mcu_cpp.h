@@ -50,6 +50,7 @@
 #define OTG_HS		CAST(USB_TypeDef 	, BASE_OTG_HS)	//!< OTG HS
 #define OTG_FS		CAST(USB_TypeDef 	, BASE_OTG_FS)	//!< OTG FS
 #define RTC			CAST(RTC_TypeDef 	, BASE_RTC)		//!< RTC
+#define IWDG		CAST(IWDG_TypeDef	, BASE_IWDG)	//!< Independent watchdog
 #define PWR			CAST(PWR_TypeDef 	, BASE_PWR)		//!< Power control
 #define ADC         CAST(ADCS_TypeDef 	, BASE_ADC1)	//!< ADC common
 #define ADC1        CAST(ADC_TypeDef 	, BASE_ADC1)	//!< ADC1

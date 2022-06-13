@@ -24,6 +24,7 @@
 #include "usart_f2.h"
 #include "dma_f2.h"
 #include "pwr_f2.h"
+#include "iwdg_f2.h"
 #include "rtc_f2.h"
 #include "adc_f2.h"
 #include "tim_f2.h"
