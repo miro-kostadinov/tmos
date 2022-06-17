@@ -9,6 +9,47 @@
 #include <tls.h>
 
 
+#if ECB_SUPPORT
+RES_CODE cipher_algo_t::ecb_encrypt(uint8_t* data, size_t len)
+{
+	uint32_t block_size = algo_info->block_size;
+
+	//CBC mode operates in a block-by-block fashion
+	while (len >= block_size)
+	{
+
+		encrypt(data, data, 1);
+
+		data += block_size;
+		len -= block_size;
+	}
+
+	if (len != 0)
+		return RES_TLS_INVALID_PARAMETER;
+
+	return RES_OK;
+}
+
+RES_CODE cipher_algo_t::ecb_decrypt(const uint8_t* c, uint8_t* p, size_t len)
+{
+	uint32_t block_size = algo_info->block_size;
+
+	while (len >= block_size)
+	{
+		decrypt(c, p, 1);
+
+		c += block_size;
+		p += block_size;
+		len -= block_size;
+	}
+
+	if (len != 0)
+		return RES_TLS_INVALID_PARAMETER;
+
+	return RES_OK;
+}
+#endif
+
 #if CBC_SUPPORT
 
 RES_CODE cipher_algo_t::cbc_encrypt(uint8_t* iv, uint8_t* data, size_t len)

@@ -195,6 +195,11 @@ struct cipher_algo_t: public algo_base_t
 	virtual void encrypt(const void* input, void* output, size_t blocks)=0;
 	virtual void decrypt(const void* input, void* output, size_t blocks)=0;
 
+#if ECB_SUPPORT
+	RES_CODE ecb_encrypt(uint8_t* data, size_t len);
+	RES_CODE ecb_decrypt(const uint8_t* c, uint8_t* p, size_t len);
+#endif
+
 #if CBC_SUPPORT
 	// in place encrypt/decrypt
 	RES_CODE cbc_encrypt(uint8_t* iv, uint8_t* data, size_t len);
