@@ -154,7 +154,7 @@ RES_CODE usb_remote_prn_t::scan_printer(uint32_t port_indx)
 
 							// set the interface
 							if(res == RES_OK)
-								res = set_interface(pid->bInterfaceNumber, pid->bAlternateSetting);
+								/*res = */set_interface(pid->bInterfaceNumber, pid->bAlternateSetting);
 
 							// get device id
 							if(res == RES_OK)
