@@ -19,9 +19,8 @@ BUILD_HEX	?= n
 
 # Hardware selection
 CFG_CORE 	?= cortex-m3
-CFG_FAMILY	?= stm32
-CFG_SERIES	?= stm32f2
-CFG_MCU 	?= STM32F205ZC
+CFG_FAMILY	?= lm3s
+CFG_MCU 	?= LM3S5B91_C1
 
 
 # Debugging format.
@@ -33,6 +32,8 @@ DEBUG 		?= dwarf-2
 # Select Target CPU
 
 
+# Select Target board
+
 
 #========================    TMOS settings		===============================#
 
@@ -41,8 +42,8 @@ DEBUG 		?= dwarf-2
 # strncasecmp() toupper() tolower() XNUM_TO_DIGIT()
 USE_TMOS_STRING	?=y
 
-# TMOS_TL_V2
-USE_TMOS_TL_V2	?=y
+# TMOS_TL_V1
+USE_TMOS_TL_V1	?=y
 USE_CSTRING		?=y
 
 # tmos stdlib -> sys_malloc() sys_realloc() svc_free()
@@ -76,12 +77,12 @@ USE_GUI			?=y
 # USB
 USE_USB				?=y
 USB_ENABLE_DEVICE	?=y
-USB_ENABLE_HOST 	?=y
-USB_ENABLE_OTG	 	?=y
+USB_ENABLE_HOST 	?=n
+USB_ENABLE_OTG	 	?=n
 USB_ENABLE_CDC	 	?=y
 USB_ENABLE_PRN	 	?=n
-USB_ENABLE_HID	 	?=y
-USB_ENABLE_MSC		?=y
+USB_ENABLE_HID	 	?=n
+USB_ENABLE_MSC		?=n
 USB_ENABLE_VID		?=n
 
 # AES TMOS
@@ -92,18 +93,6 @@ USE_GPIO_EXPANDER ?=y
 
 #net
 USE_NET			?=y
-
-# Ethernet
-USE_LWIP_1_4_1	?=n
-
-# WiFi
-USE_WIFI			?=n
-USE_WIFI_ESP8266 	?=n
-
-#security
-USE_SECURITY		?=y
-USE_SECURITY_TLS	?=y
-USE_SECURITY_CRYPTO	?=y
 
 
 ################################################################################
