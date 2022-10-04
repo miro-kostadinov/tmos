@@ -165,7 +165,7 @@ void SPFD5414D::tft_write_row(unsigned short row_address_cmd[], unsigned short r
 	}
 	else
 	{
-		row_address_cmd[2] = row_address_cmd[4] = row;
+		row_address_cmd[2] = row_address_cmd[4] = SPFD5414D_DATA(row);
 		lcd_hnd->tsk_write(row_address_cmd, sizeof(spdf5414d_row_address)/2);
 		lcd_hnd->tsk_write(disp_buf, 256);
 		if(disp_buf == video_buf)
