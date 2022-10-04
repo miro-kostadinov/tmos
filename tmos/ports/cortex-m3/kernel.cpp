@@ -182,6 +182,7 @@ extern "C" void sys_kernel_init( void)
 	//------------- initialize dynamic memory  ---------------//
 #if USE_TMOS_STDLIB
 	svc_pool_init(&end, (void*)(BASE_SRAM + RAM_SIZE));
+	TRACELN("===== Dynamic memory %u =====", (char *)(BASE_SRAM + RAM_SIZE) - &end);
 #endif
 
     // initialize main task
