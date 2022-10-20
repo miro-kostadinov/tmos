@@ -36,6 +36,9 @@ void CCache::set_cache_pos(uint32_t pos)
 			{
 				buf = next;
 				next.free();
+			} else
+			{
+				buf.clear();
 			}
 
 			if(pos < buf.length())
