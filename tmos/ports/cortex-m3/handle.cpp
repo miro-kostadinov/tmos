@@ -76,6 +76,8 @@ void CHandle::close()
 			} else
 			{
 				//this is driver îr callback handle...
+				if(res == RES_BUSY)
+					hcontrol(DCR_CANCEL);
 				if( res < RES_BUSY )
 				{
 					hcontrol(DCR_CLOSE);
