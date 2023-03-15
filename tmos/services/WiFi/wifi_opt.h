@@ -37,7 +37,7 @@
 #endif
 
 #ifndef WIFI_FLOW_CONTROL
-#define WIFI_FLOW_CONTROL		1
+#define WIFI_FLOW_CONTROL		0
 #define WIFI_FLOW_RELEASE_SIZE	750
 #define WIFI_FLOW_HOLD_SIZE		1500
 #endif
