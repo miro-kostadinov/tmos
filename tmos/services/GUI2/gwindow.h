@@ -12,30 +12,35 @@
 #include <gcontainer.h>
 #include <gui_drv.h>
 
+enum GUI_SYS_COMMANDS
+{
+// wait
+	gui_sys_cmd_DoWait_Begin =0 ,
+	gui_sys_cmd_DoWait_Restore,
+	gui_sys_cmd_DoWait_End,
+// cpu usage
+	gui_sys_cmd_CPU_usage,
+//...
+	gui_sys_cmd_INVALID
+};
+
 struct GWindow: GContainer
 {
-#if GUI_DISPLAYS > 1
-	unsigned char displays;
-#endif
 protected:
-	CHandle hnd;
-	mqueue<GMessage, MAX_MESSAGES> Queue;
+	CHandle hnd;																			//!< handler used for communication between the application and the GUI object (window)   write/read window queue
+	mqueue<GMessage, MAX_MESSAGES> Queue;		//!< message queue between application and GUI object (window)
+
 public:
-#if GUI_DISPLAYS > 1
-	GWindow (): displays(0xFF)
-#else
 	GWindow ()
-#endif
 	{
+		displays = 0xFF;
 		hnd.mode1 = GUI_HND_UNUSED;
 	};
 	GWindow (GId id_t, const RECT_T& rect_t,
 			unsigned char displays_t, GFlags flags_t = GO_FLG_DEFAULT)
 	:GContainer (id_t, rect_t, flags_t)
-#if GUI_DISPLAYS > 1
-	, displays (displays_t)
-#endif
 	{
+		displays = displays_t;
 		hnd.mode1 = GUI_HND_UNUSED;
 	};
 	virtual ~GWindow()
@@ -46,6 +51,7 @@ public:
 	GUI_GET_OBJECT_TYPE(OBJECT_WINDOW);
 
 protected:
+	// GUI driver methods
 	friend void gui_thread(GUI_DRIVER_INFO* drv_info);
 
 	void draw_this(LCD_MODULE* lcd) override;
