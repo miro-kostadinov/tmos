@@ -44,6 +44,10 @@
 #define GUI_DEBUG_WIN		0
 #endif
 
+#ifndef GUI_DEBUG_INVALIDATE
+#define GUI_DEBUG_INVALIDATE	0
+#endif
+
 #if GUI_DEBUG
 #	define GUI_TRACE_CHAR(ch)	TRACE_CHAR(ch)
 #	define GUI_TRACE(...)		TRACE(__VA_ARGS__)
@@ -72,14 +76,34 @@
 #   define GUI_WIN_TRACELN1(str)
 #endif
 
-#if GUI_DEBUG_MESSAGES || GUI_DEBUG
+#if GUI_DEBUG_MESSAGES || GUI_DEBUG || GUI_DEBUG_INVALIDATE
 #define GUI_GET_OBJECT_TYPE(x)	virtual object_type get_object_type(void)	\
 										{									\
 											return x;						\
 										}
+extern STR_LIST obj_type_str;
+extern void gui_trace_sleep();
+
 #else
 #define GUI_GET_OBJECT_TYPE(X)
 #endif
+
+#if GUI_DEBUG_INVALIDATE
+struct RECT_T;
+struct GObject;
+extern  void trace_enter(const char*line, const RECT_T& rect,  GObject* ob);
+extern void trace_leave(const char*line, const RECT_T& rect, GObject* ob);
+
+#define ENTER_FUNCTION(x, obj)trace_enter(__FUNCTION__,  x, obj);
+#define LEAVE_FUNCTION(x, obj) trace_leave(__FUNCTION__,  x, obj);
+
+#else
+
+#define ENTER_FUNCTION(x, obj)
+#define LEAVE_FUNCTION(x, obj)
+
+#endif
+
 // object messages
 enum WM_MESSAGE:unsigned int
 {
@@ -100,10 +124,17 @@ enum WM_MESSAGE:unsigned int
 	WM_KEY
 };
 
-#if GUI_DEBUG || GUI_DEBUG_MESSAGES
+#if GUI_DEBUG_MESSAGES
 struct GMessage;
 extern STR_LIST wm_dbg_str;
-void trace_message(const GMessage& msg);
+void GDebug_trace_message(const GMessage& msg, bool push= true);
+
+#define GUI_DEBUG_MESSAGES_DELITED() TRACELN("\e[1;33m %X[%d] ( %s 0x%X ) deleted!\e[m", \
+		this->items[indx].dst, this->items[indx].dst->id,	\
+		szlist_at(wm_dbg_str, this->items[indx].code), this->items[indx].param)
+
+#else
+#define GUI_DEBUG_MESSAGES_DELITED()
 #endif
 
 #define MAX_MESSAGES 10
@@ -141,12 +172,17 @@ typedef unsigned char GId;
 #define GUI_HND_DETACH	3
 #define GUI_HND_UNUSED	0
 
-// align mode
+/*
+ *  text styles,  drawing and input control modes
+ */
+// ---------------------------------------------  text alignment
+// align mode  bit[0-3]
+// horizontal bit[0-1]
 #define TA_LEFT			0x00
 #define TA_CENTER		0x01
 #define TA_RIGHT 		0x02
 #define TA_HORIZONTAL	0x03
-
+// vertical  bit[2-3]
 #define TA_TOP			(0x00<<2)
 #define TA_MIDDLE		(0x01<<2)
 #define TA_BOTTOM		(0x02<<2)
@@ -154,38 +190,47 @@ typedef unsigned char GId;
 
 // control styles
 
-// static text
+//-----------------------------------------------  static text
+// align bit[0 - 3]
 #define SS_RIGHT		TA_RIGHT
 #define SS_CENTER    	TA_CENTER
 #define SS_LEFT    		TA_LEFT
 #define SS_TOP    		TA_TOP
 #define SS_MIDDLE    	TA_MIDDLE
 #define SS_BOTTOM  		TA_BOTTOM
-#define SS_WORDWRAP 	(1<<8)
-#define SS_AUTO_SCROLL	(1<<12)
+// control draw  mode  bit[4,5]
+#define SS_WORDWRAP 	(1<<4)
+#define SS_AUTO_SCROLL	(1<<5)
 
 #define SS_DEFAULT		(SS_WORDWRAP|SS_CENTER|SS_MIDDLE)
 
 
-// edit control
+//-----------------------------------------------  edit control
+// align bit[0 - 3]
 #define ES_RIGHT		TA_RIGHT
 #define ES_CENTER    	TA_CENTER
 #define ES_LEFT    		TA_LEFT
 #define ES_TOP    		TA_TOP
 #define ES_MIDDLE    	TA_MIDDLE
 #define ES_BOTTOM  		TA_BOTTOM
+// control draw  mode  bit[4,5]
 #define ES_MULTILINE	SS_WORDWRAP
-#define ES_PASSWORD		(1<<9)
-#define ES_WANTRETURN   (1<<10)
-#define ES_HIDE_CURSOR	(1<<11)
 #define ES_AUTO_SCROLL	SS_AUTO_SCROLL
-#define ES_LEAD_ZERO	(1<<14)
-#define ES_NUMERIC		(1<<15)
+// additional control styles for edit box
+// bit[6 - 11]
+#define ES_PASSWORD		(1<<6)
+#define ES_WANTRETURN   (1<<7)
+#define ES_HIDE_CURSOR	(1<<8)
+#define ES_LEAD_ZERO	(1<<9)
+#define ES_NUMERIC		(1<<10)
+#define ES_USE_VIRTUAL_KB	(1<<11)
 
 #define ES_DEFAULT		(ES_CENTER|ES_MIDDLE|ES_MULTILINE|ES_AUTO_SCROLL)
 
-// list box
-#define LBS_DROPDOWN	(1<<13)
+//-----------------------------------------------   list box
+// additional control styles for list box
+// bit 12
+#define LBS_DROPDOWN	(1<<12)
 #define LBS_DEFAULT		(SS_WORDWRAP|SS_LEFT|SS_MIDDLE)
 
 extern unsigned int current_laguage;
@@ -235,7 +280,7 @@ struct POINT_T
 	union{
 		struct {short int x, y;};
 		int as_int;
-	};
+	}__attribute__((packed));
 	POINT_T() : as_int(0) {}
 	POINT_T(const short int& x_t, const short int& y_t): x(x_t), y(y_t) {}
 	POINT_T(int p): as_int(p) {}
@@ -253,7 +298,7 @@ struct point_t
 	union{
 	struct {short int x, y;};
 	int as_int;
-	};
+	}__attribute__((packed));
 	operator POINT_T() const
 	{
 		return POINT_T (as_int);
@@ -263,7 +308,7 @@ struct point_t
 union rec_t{
 	struct {short int x0, y0, x1, y1;};
 	unsigned long long as_int;
-};
+}__attribute__((packed));
 
 struct RECT_T
 {
@@ -274,7 +319,7 @@ struct RECT_T
 			point_t p0;
 			point_t p1;
 		};
-	};
+	}__attribute__((packed));
 
 	RECT_T ()
 		: as_int(0) {;}
@@ -302,19 +347,16 @@ struct RECT_T
 	void Deflate(int l, int t, int r, int b);
 	void Offset(int x, int y);
 
-#if GUI_DEBUG
-	void dump()
+#if GUI_DEBUG || GUI_DEBUG_INVALIDATE
+	void dump() const
 	{
-		TRACE("[x(%d, %d), y(%d, %d)]", x0, x1, y0, y1);
+		TRACE(" [x(%d, %d), y(%d, %d)]", x0, x1, y0, y1);
 	}
 #else
-	static void dump() {};
+	static void dump() {;}
 #endif
 };
 
-#if GUI_DEBUG
-extern STR_LIST obj_type_str;
-#endif
 
 RES_CODE msg_error(CSTRING& msg, int err_code);
 RES_CODE msg_error(const char *msg, int err_code);
