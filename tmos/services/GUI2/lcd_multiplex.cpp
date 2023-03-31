@@ -11,27 +11,28 @@
 
 void LCD_MULT::invalidate (GObject* object, RECT_T area)
 {
+	ENTER_FUNCTION(area, this)
 	for (int i = 0; i < GUI_DISPLAYS; i++)
 	{
-#if GUI_DISPLAYS > 1
-		if (lcd[i]->display & ((GWindow*)object)->displays)
-#endif
+		if (lcd[i]->displays & object->displays)
 		{
 			parent = lcd[i];
 			rect = lcd[i]->rect;
-			lcd[i]->invalidate(object, area);
+			if(object == this)
+				lcd[i]->invalidate(lcd[i], area);
+			else
+				lcd[i]->invalidate(object, area);
 		}
 		parent = nullptr;
 	}
+	LEAVE_FUNCTION(area, this)
 }
 
 void LCD_MULT::redraw_screen(GObject* object, RECT_T area)
 {
 	for (int i = 0; i < GUI_DISPLAYS; i++)
 	{
-#if GUI_DISPLAYS > 1
-		if (lcd[i]->display & ((GWindow*)object)->displays)
-#endif
+		if (lcd[i]->displays & object->displays)
 		{
 			parent = lcd[i];
 			rect = lcd[i]->rect;
