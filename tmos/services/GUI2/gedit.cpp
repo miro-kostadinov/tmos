@@ -7,7 +7,7 @@
 
 #include <gedit.h>
 #include <lcd.h>
-
+#include <gedit_vkb.h>
 
 //const char *key1_vals = " ,.?!";
 //const char *key2_vals = "àáâãabc2";
@@ -521,6 +521,14 @@ unsigned int GEdit::process_key (GMessage& msg)
 
 	case KEY_USER_DEFINED: // bar code
 	case KEY_OK:
+		if(align & ES_USE_VIRTUAL_KB)
+		{
+			if( !virtual_kb && (virtual_kb = new GEditVKB(this)) )
+			{
+				return virtual_kb->CreateVKB();
+			}
+			return 0;
+		}
 		if(align & ES_WANTRETURN)
 			 process_alpha_key(msg.param, g_key_to_char_ref[CHAR_TABLE_INDEX_ENTER].bg_vals);
 		else
