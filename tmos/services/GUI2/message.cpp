@@ -22,7 +22,6 @@ void processes_all_messages(void)
 	{
 #if GUI_DEBUG_MESSAGES
 		unsigned int t0 = CURRENT_TIME;
-		trace_message(msg);
 #endif
 		if(msg.code == WM_DELETED || !Gdesktop)
 			continue;
@@ -81,7 +80,8 @@ void processes_all_messages(void)
 			}
 		}
 #if GUI_DEBUG_MESSAGES
-		TRACE("\e[4;1;32m %d ms\e[m", ms_since(t0));
+		TRACELN("\e[1;92m executed for %d ms\e[m", ms_since(t0));
+		gui_trace_sleep();
 #endif
 	}
 }
@@ -93,7 +93,7 @@ void send_message(WM_MESSAGE wm,
 		processes_all_messages();
 }
 
-void send_message(GMessage msg, GObject* dst)
+void send_message(GMessage& msg, GObject* dst)
 {
 	if(dst)
 		msg.dst = dst;
