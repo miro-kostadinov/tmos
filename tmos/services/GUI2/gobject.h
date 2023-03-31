@@ -33,7 +33,8 @@ enum object_type:unsigned char
 	OBJECT_MESSAGEBOX,
 	OBJECT_DOWAIT,
 	OBJECT_DISPLAY,
-	OBJECT_DISPLAY_MULTIPLEXER
+	OBJECT_DISPLAY_MULTIPLEXER,
+	OBJECT_CPU_USAGE
 };
 
 struct GTimer
@@ -87,13 +88,19 @@ struct GObject
 	RECT_T client_rect;
 	GContainer* parent;
 	GObject* nextObj;
-	GId id;
-	GFlags flags;
-	uint8_t ref_cnt;
+	struct
+	{
+		GId id;
+		GFlags flags;
+		uint8_t ref_cnt;
+		GFlags displays;
+	}__attribute__((packed));
+
 	static void* lastAllocated;
 	static uint8_t	invalidate_cnt;
+
 	GObject() :
-			parent(nullptr), nextObj(nullptr), id(0), flags(0), ref_cnt(1)
+			parent(nullptr), nextObj(nullptr), id(0), flags(0), ref_cnt(1), displays(1)
 	{
 		if(lastAllocated && lastAllocated == this)
 		{
@@ -103,7 +110,7 @@ struct GObject
 	}
 	GObject(GId id_t, const RECT_T& rect_t, GFlags flags_t = GO_FLG_DEFAULT) :
 			rect(rect_t), parent(nullptr), nextObj(nullptr), id(id_t), flags(flags_t),
-			ref_cnt(1)
+			ref_cnt(1), displays(1)
 	{
 		if(lastAllocated && lastAllocated == this)
 		{
@@ -179,10 +186,7 @@ struct GObject
 	virtual bool get_focus(bool notify_msg = true);	//sets the parent focus on this
 	// Redraw methods
 	virtual void draw(LCD_MODULE* lcd, RECT_T area);
-	virtual void draw_this(LCD_MODULE* lcd)
-	{
-		;
-	}
+	virtual void draw_this(LCD_MODULE* lcd) = 0;		// called to self redraw
 	virtual void invalidate(GObject* object, RECT_T area);
 	// virtual draw methods ( they are used from the module )
 	virtual void allocate_border(void);
