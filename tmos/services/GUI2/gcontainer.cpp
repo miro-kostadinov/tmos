@@ -336,7 +336,7 @@ void GContainer::draw (LCD_MODULE* lcd, RECT_T area)
 {
 	if (area.normalize(rect))
 	{
-		lcd->redraw_rect(this, area);//draw_this (lcd);
+		lcd->redraw_rect(this, area);//call ->draw_this (lcd);
 		GObject* tmp = children;
 		while (tmp)
 		{
