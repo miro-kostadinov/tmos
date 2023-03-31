@@ -38,10 +38,17 @@ unsigned int GWindow::process_key (GMessage& msg)
 
 unsigned int GWindow::process_destroy(GMessage& msg)
 {
-	close();
-	flags &= ~ (GO_FLG_SHOW|GO_FLG_ENABLED|GO_FLG_SELECTED); // hide and disable this window
+	close(); // 1. hide and disable this window, but it is still visible on the display, so the display needs to be refreshed
 	if(parent && parent->focus)
 	{
+		// 2. replace the displays used by the LCD (if more than one) with the one used by CPU_Usage
+		GFlags bkp_displays = parent->displays;
+		parent->displays = displays;
+		parent->invalidate(parent,  rect); // refresh all windows
+		// 3. restore LCD displays
+		parent->displays = bkp_displays;
+/*
+
 		GWindow* tmp = (GWindow *)parent->children;
 		while(tmp)
 		{
@@ -61,6 +68,7 @@ unsigned int GWindow::process_destroy(GMessage& msg)
 			}
 			tmp = (GWindow *)tmp->nextObj;
 		}
+*/
 	}
 	notify_message(WM_QUIT, msg.param);
 	return true;
