@@ -76,6 +76,28 @@ WEAK_C int detect_displays(GUI_DRIVER_INFO* drv_info)
 	return (int)drv_info->lcd[0];
 }
 
+static void GUIExecute_sys_cmd(HANDLE app_handle)
+{
+	if(app_handle)
+	{
+		GUI_SYS_COMMANDS  sys_cmd =(GUI_SYS_COMMANDS)( app_handle->src.as_int);
+		void *param = app_handle->dst.as_voidptr;
+		switch(sys_cmd)
+		{
+		case gui_sys_cmd_DoWait_Begin :
+		case gui_sys_cmd_DoWait_End :
+		case gui_sys_cmd_DoWait_Restore:
+    		GWait::GUIDoWait(sys_cmd);
+			break;
+		case gui_sys_cmd_CPU_usage:
+			CPU_Usage::GUI_CPU_Usage(sys_cmd, (bool)param);
+			break;
+		default :
+			break;
+		}
+		usr_HND_SET_STATUS(app_handle, RES_SIG_OK);
+	}
+}
 
 //*----------------------------------------------------------------------------
 //*			GUI Task
@@ -111,6 +133,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	LCD_MULT mult;
 	for(int i=0; i<GUI_DISPLAYS; i++)
 	{
+		mult.displays |= (1<<i);
 		mult.lcd[i] = drv_info->lcd[i];
 	}
 	mult.addChild(Gdesktop);
@@ -125,9 +148,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 		if( (lcd=drv_info->lcd[i]) )
 		{
 			lcd->children = Gdesktop;
-			#if GUI_DISPLAYS > 1
-				Gdesktop->displays |= (1<<i);
-			#endif
+			Gdesktop->displays |= (1<<i);
 			lcd->lcd_init(splash_screen);
 		}
 	}
@@ -179,8 +200,8 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
         	{
             	if(((HANDLE)gui_hnd.dst.as_voidptr)->cmd & FLAG_COMMAND)
             	{
-            		GWait::GUIDoWait(((HANDLE)gui_hnd.dst.as_voidptr)->src.as_int);
-            		usr_HND_SET_STATUS((HANDLE)gui_hnd.dst.as_voidptr, RES_SIG_OK);
+            		// GUI SYSTEM commands
+            		GUIExecute_sys_cmd((HANDLE)gui_hnd.dst.as_voidptr);
             	}
             	else
             	{
@@ -191,6 +212,9 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
         				if(win->hnd.mode1 == GUI_HND_ATTACH)
         				{
         					msg = *(GMessage *)(((HANDLE)gui_hnd.dst.as_voidptr))->src.as_voidptr;
+#if GUI_DEBUG_MESSAGES
+        					TRACELN1("\e[1;34m HND MSG\e[m "); // blue
+#endif
         					GQueue.push(msg);
         					if(msg.code == WN_DESTROY)
         						win->hnd.mode1 = GUI_HND_DETACH;
@@ -202,6 +226,9 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
         					win->nextObj =Gdesktop->parent->focus->nextObj;
         					Gdesktop->parent->focus->nextObj = win;								//adds the new item to the Z list
         					win->parent = Gdesktop->parent;										//LCD
+#if GUI_DEBUG_MESSAGES
+        					TRACELN1("\e[1;34m HND ATTACH\e[m "); // blue
+#endif
         					GQueue.push(GMessage(WM_INIT, 0, (long long)drv_info->lcd, win));	//send WM_INIT to the new window
         					win->hnd.mode1 = GUI_HND_ATTACH;
         					hnd_ret = RES_SIG_OK;												//signals the window thread
@@ -233,7 +260,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			{
 				if(tmp->hnd.mode0 && tmp->hnd.res == (FLG_BUSY | FLG_OK) )
 				{
-					GUI_TRACELN1("\e[4;1;32m");
+					GUI_TRACELN1("\e[4;1;96m"); // bright Cyan
 					GUI_TRACE("%X[%d] CANCEL\e[m", tmp, tmp->id);
 					usr_HND_SET_STATUS(&tmp->hnd, FLG_SIGNALED);
 				}
@@ -285,7 +312,7 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
             break;
 
 	    case DCR_OPEN:
-	    	if(param->mode.as_int)
+	    	if(param->mode.as_int)		// mode - pointer to Window
 	    	{
 	    		param->mode1 = GUI_HND_OPEN;
 	    	}
