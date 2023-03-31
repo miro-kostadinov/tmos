@@ -56,22 +56,22 @@ typedef void (* GSplash )(LCD_MODULE* lcd);
 struct LCD_MODULE: public GContainer
 {
 
-	short pos_x; //!< current draw pos
-	short pos_y; //!< current draw pos
-	unsigned short size_x;
-	unsigned short size_y;
-	unsigned short dot_pitch_x; //!< in mm x 1000
-	unsigned short dot_pitch_y; //!< in mm x 1000
+	struct
+	{
+		short pos_x; //!< current draw pos
+		short pos_y; //!< current draw pos
+		unsigned short size_x;
+		unsigned short size_y;
+		unsigned short dot_pitch_x; //!< in mm x 1000
+		unsigned short dot_pitch_y; //!< in mm x 1000
+		unsigned short chars_per_row;
+		unsigned short allign;
+		const RENDER_MODE* font;
+		HANDLE lcd_hnd;
+		const PIN_DESC* pins;
+		unsigned int color;
+	} __attribute__((packed));
 	RECT_T	frame;
-	unsigned short chars_per_row;
-	unsigned short allign;
-	const RENDER_MODE* font;
-	HANDLE lcd_hnd;
-	const PIN_DESC* pins;
-#if GUI_DISPLAYS > 1
-	unsigned char	display;
-#endif
-	unsigned int color;
 
 public:
 	LCD_MODULE(	unsigned int x, unsigned int y,
@@ -121,6 +121,10 @@ struct GClientLcd : GObject
 	~GClientLcd(){RelaseLcd();}
 	bool CreateLcd(RECT_T& area, LCD_MODULE* lcd);
 	bool RelaseLcd( );
-
+private:
+	void draw_this(LCD_MODULE* lcd) override
+	{
+		TRACE_ERROR("GUI Error in draw_this");
+	}
 };
 #endif
