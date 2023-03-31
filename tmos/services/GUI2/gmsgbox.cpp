@@ -547,9 +547,7 @@ unsigned int GMsgBox::process_key (GMessage& msg)
 int _MessageBox(const char* Text, const char* Caption, unsigned int Style, unsigned int def_button)
 {
 	GMsgBox box;
-#if GUI_DISPLAYS > 1
 	box.displays = 1;
-#endif
 	box.type = Style;
 	box.body =  Text;
 	box.title = Caption;
@@ -563,9 +561,7 @@ int MessageBox(const char* Text, const char* Caption, unsigned int Style, unsign
 	unsigned int res = 0;
 	if(box)
 	{
-#if GUI_DISPLAYS > 1
 		box->displays = 1;
-#endif
 		box->type = Style;
 		box->body =  Text;
 		box->title = Caption;
@@ -585,9 +581,7 @@ int NumEditBox(CSTRING& value, const char* Caption, unsigned int Style, text_met
 	box = new GMsgBox;
 	if(box.get())
 	{
-#if GUI_DISPLAYS > 1
 		box->displays = 1;
-#endif
 		box->type = 	MBF_EDIT|
 					MBF_EDIT_FLAGS(ES_NUMERIC) |
 					MBF_INPUT_TYPE(KT_DIGIT)|Style;
@@ -621,9 +615,7 @@ int EditBox(CSTRING& value, const char* Caption, unsigned int Style, text_metric
 	GMsgBox box;
 	GMessage msg;
 
-#if GUI_DISPLAYS > 1
 	box.displays = 1;
-#endif
 	box.type = 	Style;
 	box.body =  value;
 	box.title = Caption;
