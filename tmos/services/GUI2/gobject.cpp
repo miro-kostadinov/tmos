@@ -280,35 +280,29 @@ void GObject::redraw_screen(GObject* object, RECT_T area)
 
 void GObject::invalidate(GObject* object, RECT_T area)
 {
+	ENTER_FUNCTION(area, this)
 #if GUI_DEBUG
 	uint32_t t;
-	if(!invalidate_cnt++)
+	if(!invalidate_cnt)
 		t = CURRENT_TIME;
-	GUI_TRACELN(">> Invalidate %u", invalidate_cnt);
-#else
-	invalidate_cnt++;
 #endif
+	GUI_TRACELN(">> draw %u", invalidate_cnt);
+	invalidate_cnt++;
 	if (area)
 	{
 		if(flags & GO_FLG_SHOW)
 			area.normalize(rect);													//cuts the area to the size of the object
 		if(area)
-			parent->invalidate(this, area);											//calls invalidate to the parent with this as parameter
+			parent->invalidate(this, area);								//calls invalidate to the parent with this as parameter
 	}
 	invalidate_cnt--;
-#if GUI_DEBUG
-	GUI_TRACELN("<< Invalidate %u", invalidate_cnt);
+	GUI_TRACELN("<< draw %u", invalidate_cnt);
 	if(!invalidate_cnt && area)
 	{
-		GUI_TRACELN("Invalidate {%u,%u %u,%u} %u ms", area.x0, area.y0, area.x1, area.y1, ms_since(t));
+		GUI_TRACELN("lcd  <<  {%u,%u %u,%u} %u ms", area.x0, area.y0, area.x1, area.y1, ms_since(t));
 		parent->redraw_screen(this, area);
 	}
-#else
-	if(!invalidate_cnt && area)
-	{
-		parent->redraw_screen(this, area);
-	}
-#endif
+	LEAVE_FUNCTION(area, this)
 }
 
 
