@@ -44,9 +44,7 @@ TASK_DECLARE_STATIC(backlight_task, "BLIT", (void (*)(void))backlight_thread, 10
 
 void LCD_MODULE::lcd_init(GSplash splash)
 {
-#if GUI_DISPLAYS > 1
-	if(display == 1)
-#endif
+	if(displays == 1)
 	{
 		usr_task_init_static(&backlight_task_desc, false);
 		backlight_task.sp->r0.as_voidptr = this;
@@ -72,23 +70,25 @@ void LCD_MODULE::backlight_signal(void)
 
 void LCD_MODULE::invalidate (GObject* object, RECT_T area)						//goes through the window list and adjusts the area vertically
 {
-
+	ENTER_FUNCTION(area, this)
 	if(!area.normalize(rect))
+	{
+		LEAVE_FUNCTION(area, this)
 		return;
+	}
 
 	GObject* tmp = object->nextObj;
 	if(object == this)
 	{
 		for (tmp = children; tmp; tmp = tmp->nextObj)
-			tmp->invalidate(tmp, tmp->rect);
+			tmp->invalidate(tmp, area); // tmp->rect
+		LEAVE_FUNCTION(area, this)
 		return;
 	}
 	while (tmp)
 	{
 		if (
-#if GUI_DISPLAYS > 1
-				(((GWindow*)tmp)->displays & display) &&
-#endif
+				(tmp->displays & this->displays) &&
 				(tmp->flags & GO_FLG_SHOW) && !(tmp->flags & GO_FLG_TRANSPARENT) )
 		{
 			if (area.x0 >= tmp->rect.x0 && area.x1 <= tmp->rect.x1)
@@ -101,7 +101,10 @@ void LCD_MODULE::invalidate (GObject* object, RECT_T area)						//goes through t
 				else
 				{
 					if (area.y1 <= tmp->rect.y1)
+					{
+						LEAVE_FUNCTION(area, this)
 						return;													//the whole area is covered
+					}
 					if (area.y1 > tmp->rect.y1 && area.y0 <= tmp->rect.y1)
 						area.y0 = tmp->rect.y1 + 1;								//the whole upper part of the area is covered
 				}
@@ -112,16 +115,15 @@ void LCD_MODULE::invalidate (GObject* object, RECT_T area)						//goes through t
 	adjust_for_screen(&object, area);											//change the area and object to desktop if the display draws only rows or columns
 	for (tmp = object; tmp; tmp = tmp->nextObj)
 	{
-#if GUI_DISPLAYS > 1
-		if (((GWindow*)tmp)->displays & display)
-#endif
+		if (tmp->displays & this->displays)
 		{
 			if (tmp->flags & GO_FLG_SHOW)
 			{
-				tmp->draw(this, area);											//calls the adraw function (for the area) for every window after object in the Z-order
+				tmp->draw(this, area);											//calls the  draw function (for the area) for every window after object in the Z-order
 			}
 		}
 	}
+	LEAVE_FUNCTION(area, this)
 }
 
 void LCD_MODULE::set_font(const RENDER_MODE* afont)
