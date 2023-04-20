@@ -177,7 +177,7 @@ void LCD_MODULE::redraw_rect (GObject* object, RECT_T area)						//redraws an ar
 		GUI_ASSERT_MSG((owner && initial), "GUI Z-order exception!");
 	// 2. preparation of drawing frames if overlaps occur
 		GObject* tmp;
-		int res; // unknown
+		int res=0; // unknown
 		// frame adjustment to the drawing area
 		frame = area;
 		if(!initial->nextObj)
