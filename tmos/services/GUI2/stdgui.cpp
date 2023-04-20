@@ -12,103 +12,71 @@
 
 unsigned int current_laguage;
 
-#if GUI_DEBUG_MESSAGES || GUI_DEBUG || GUI_DEBUG_INVALIDATE
-STR_LIST obj_type_str =
-		SZ(OBJECT_OBJECT) SZ(OBJECT_CONTAINER) SZ(OBJECT_BUTTON) SZ(OBJECT_EDIT)
-		SZ(OBJECT_FBUTTON) SZ(OBJECT_FTEXT) SZ(OBJECT_LISTBOX) SZ(OBJECT_MENU)
-		SZ(OBJECT_RADIO) SZ(OBJECT_TEXT) SZ(OBJECT_WINDOW) SZ(OBJECT_DIALOG)
-		SZ(OBJECT_MESSAGEBOX) SZ(OBJECT_DOWAIT) SZ(OBJECT_DISPLAY)
-		SZ(OBJECT_DISPLAY_MULTIPLEXER)
-		SZ(OBJECT_CPU_USAGE);
-
-void gui_trace_sleep()
-{
-	uint32_t mytime = CURRENT_TASK->time;
-	tsk_sleep(5);
-	CURRENT_TASK->time = mytime;
-}
-#endif
-
-#if GUI_DEBUG_MESSAGES
-STR_LIST wm_dbg_str = SZ(WM_DELETED) SZ(WM_QUIT) SZ(WN_DESTROY) SZ(WM_CLOSE)
-		SZ(WM_COMMAND) SZ(WM_CHANGE) SZ(WM_IDLE) SZ(WM_SET_FLAGS)
-		SZ(WM_CLR_FLAGS) SZ(WM_SETFOCUS) SZ(WM_KILLFOCUS) SZ(WM_TIMER) SZ(WM_INIT) SZ(WM_DRAW) SZ(WM_KEY);
-
-void GDebug_trace_message(const GMessage& msg, bool push)
-{
-	if(msg.code == WM_IDLE)
-		return;
-	if(push)
-		TRACELN1("\e[1;93m< "); // yellow
-	else
-		TRACELN1("\e[1;92m> ");// green
-
-	TRACE("%X[%d]%s: %s,%d", msg.dst, msg.dst->id,
-			szlist_at(wm_dbg_str, msg.code),
-			szlist_at(obj_type_str, msg.dst->get_object_type()),
-			msg.param);
-	if(msg.code == WM_DRAW)
-	{
-		if(msg.lparam)
-			RECT_T(msg.lparam).dump();
-		else
-			msg.dst->rect.dump();
-	}
-	else
-		TRACE(" %lX ", msg.lparam);
-	TRACE1("\e[m");
-	gui_trace_sleep();
-}
-#endif
-
-#if GUI_DEBUG_INVALIDATE
-static unsigned int gui_trace_level;
-
-static void trace_line(const char*line, const RECT_T& rect, GObject* obj)
-{
-	TRACE1("\r\n* ");
-	for(unsigned int i=0; i<gui_trace_level; i++)
-	{
-		TRACE1(" ");
-	}
-	TRACE1(line);
-	if(obj)
-	{
-		TRACE_CHAR(':');
-		TRACE1(szlist_at(obj_type_str, obj->get_object_type()));
-	}
-	rect.dump();
-	gui_trace_sleep();
-}
-
-void trace_enter(const char*line, const RECT_T& rect, GObject* obj)
-{
-	trace_line(line, rect, obj);
-	gui_trace_level++;
-}
-
-void trace_leave(const char*line, const RECT_T& rect, GObject* obj)
-{
-	if(gui_trace_level)
-		gui_trace_level--;
-	trace_line(line, rect, obj);
-}
-#endif
 
 WEAK_C char TranslateKey( unsigned int key_code)
 {
 	return 0;
 }
 
+
+//*----------------------------------------------------------------------------
+//*			sin(x) / cos(x) used for polar transformations
+//*----------------------------------------------------------------------------
+
+static const int16_t sin_x10000_0_90[]=
+{
+    0,  174,  348,  523,  697,  871, 1045, 1218, 1391, 1564, 1736, 1908, 2079,
+ 2249, 2419, 2588, 2756, 2923, 3090, 3255, 3420, 3583, 3746, 3907, 4067, 4226,
+ 4383, 4539, 4694, 4848, 5000, 5150, 5299, 5446, 5591, 5735, 5877, 6018, 6156,
+ 6293, 6427, 6560, 6691, 6819, 6946, 7071, 7193, 7313, 7431, 7547, 7660, 7771,
+ 7880, 7986, 8090, 8191, 8290, 8386, 8480, 8571, 8660, 8746, 8829, 8910, 8987,
+ 9063, 9135, 9205, 9271, 9335, 9396, 9455, 9510, 9563, 9612, 9659, 9702, 9743,
+ 9781, 9816, 9848, 9876, 9902, 9925, 9945, 9961, 9975, 9986, 9993, 9998, 10000
+};
+
+int32_t sin_x10000(int deg)
+{
+	while(1)
+	{
+
+		switch(deg)
+		{
+		case 0 ... 90:
+			return sin_x10000_0_90[deg];
+		case 91 ... 180:
+			return sin_x10000_0_90[180 -deg];
+		case 181 ... 270:
+			return  - sin_x10000_0_90[deg -180];
+		case 271 ... 360:
+			return  - sin_x10000_0_90[360 - deg];
+		default:
+			while( deg > 360 )
+				deg -= 360;
+			while( deg < -360 )
+				deg += 360;
+			if( deg < 0 )
+				deg += 360;
+			break;
+		}
+	}
+	return (int16_t)0;
+}
+
+int32_t cos_x10000(int deg)
+{
+	return sin_x10000(90 - deg);
+}
+
+
 //*----------------------------------------------------------------------------
 //*			Point
 //*----------------------------------------------------------------------------
-POINT_T& POINT_T::operator= (POINT_T p_t)
-{
-	if(this != &p_t)
-		as_int = p_t.as_int;
-	return *this;
-}
+//POINT_T& POINT_T::operator= (POINT_T& p_t)
+//{
+//	if(this != &p_t)
+//		as_int = p_t.as_int;
+//	return *this;
+//}
 bool POINT_T::operator== (POINT_T p_t) const
 {
 	return (as_int == p_t.as_int);
@@ -145,12 +113,12 @@ RECT_T::RECT_T (const POINT_T& p0_t, const short int& xs, const short int& ys )
 }
 
 
-RECT_T& RECT_T::operator= (const RECT_T& rect_t)
-{
-	if(this != &rect_t)
-		as_int = rect_t.as_int;
-	return *this;
-}
+//RECT_T& RECT_T::operator= (const RECT_T& rect_t)
+//{
+//	if(this != &rect_t)
+//		as_int = rect_t.as_int;
+//	return *this;
+//}
 
 RECT_T& RECT_T::operator= (int val)
 {
@@ -177,11 +145,6 @@ short int RECT_T::width() const
 short int RECT_T::height()const
 {
 	return (y1 - y0);
-}
-
-RECT_T::operator bool() const
-{
-	return (as_int != 0);
 }
 
 void RECT_T::Inflate(int x, int y)

@@ -2,6 +2,7 @@
 #define STDGUI_H
 
 #include <tmos.h>
+#include <gdbg_opt.h>
 
 #ifndef GUI_LANGUAGES
 #define GUI_LANGUAGES	2
@@ -32,78 +33,6 @@
 #define GO_OBJ_FRAME_HEIGHT	1
 #endif
 
-#ifndef GUI_DEBUG_MESSAGES
-#define GUI_DEBUG_MESSAGES  0
-#endif
-
-#ifndef GUI_DEBUG
-#define GUI_DEBUG			0
-#endif
-
-#ifndef GUI_DEBUG_WIN
-#define GUI_DEBUG_WIN		0
-#endif
-
-#ifndef GUI_DEBUG_INVALIDATE
-#define GUI_DEBUG_INVALIDATE	0
-#endif
-
-#if GUI_DEBUG
-#	define GUI_TRACE_CHAR(ch)	TRACE_CHAR(ch)
-#	define GUI_TRACE(...)		TRACE(__VA_ARGS__)
-#	define GUI_TRACE1(str)		TRACE1(str)
-#   define GUI_TRACELN(str,...) 	TRACE("\r\n" str, ##__VA_ARGS__)
-#   define GUI_TRACELN1(str) 		TRACE1("\r\n" str)
-#else
-#	define GUI_TRACE_CHAR(ch)
-#	define GUI_TRACE(...)
-#	define GUI_TRACE1(str)
-#   define GUI_TRACELN(str,...)
-#   define GUI_TRACELN1(str)
-#endif
-
-#if GUI_DEBUG_WIN
-#	define GUI_WIN_TRACE_CHAR(ch)	TRACE_CHAR(ch)
-#	define GUI_WIN_TRACE(...)		TRACE(__VA_ARGS__)
-#	define GUI_WIN_TRACE1(str)		TRACE1(str)
-#   define GUI_WIN_TRACELN(str,...) 	TRACE("\r\n" str, ##__VA_ARGS__)
-#   define GUI_WIN_TRACELN1(str) 		TRACE1("\r\n" str)
-#else
-#	define GUI_WIN_TRACE_CHAR(ch)
-#	define GUI_WIN_TRACE(...)
-#	define GUI_WIN_TRACE1(str)
-#   define GUI_WIN_TRACELN(str,...)
-#   define GUI_WIN_TRACELN1(str)
-#endif
-
-#if GUI_DEBUG_MESSAGES || GUI_DEBUG || GUI_DEBUG_INVALIDATE
-#define GUI_GET_OBJECT_TYPE(x)	virtual object_type get_object_type(void)	\
-										{									\
-											return x;						\
-										}
-extern STR_LIST obj_type_str;
-extern void gui_trace_sleep();
-
-#else
-#define GUI_GET_OBJECT_TYPE(X)
-#endif
-
-#if GUI_DEBUG_INVALIDATE
-struct RECT_T;
-struct GObject;
-extern  void trace_enter(const char*line, const RECT_T& rect,  GObject* ob);
-extern void trace_leave(const char*line, const RECT_T& rect, GObject* ob);
-
-#define ENTER_FUNCTION(x, obj)trace_enter(__FUNCTION__,  x, obj);
-#define LEAVE_FUNCTION(x, obj) trace_leave(__FUNCTION__,  x, obj);
-
-#else
-
-#define ENTER_FUNCTION(x, obj)
-#define LEAVE_FUNCTION(x, obj)
-
-#endif
-
 // object messages
 enum WM_MESSAGE:unsigned int
 {
@@ -124,18 +53,6 @@ enum WM_MESSAGE:unsigned int
 	WM_KEY
 };
 
-#if GUI_DEBUG_MESSAGES
-struct GMessage;
-extern STR_LIST wm_dbg_str;
-void GDebug_trace_message(const GMessage& msg, bool push= true);
-
-#define GUI_DEBUG_MESSAGES_DELITED() TRACELN("\e[1;33m %X[%d] ( %s 0x%X ) deleted!\e[m", \
-		this->items[indx].dst, this->items[indx].dst->id,	\
-		szlist_at(wm_dbg_str, this->items[indx].code), this->items[indx].param)
-
-#else
-#define GUI_DEBUG_MESSAGES_DELITED()
-#endif
 
 #define MAX_MESSAGES 10
 
@@ -275,6 +192,9 @@ enum gui_base_keys:unsigned char
 	KEY_USER_DEFINED = 21
 };
 
+int32_t sin_x10000(int deg);
+int32_t cos_x10000(int deg);
+
 struct POINT_T
 {
 	union{
@@ -285,7 +205,7 @@ struct POINT_T
 	POINT_T(const short int& x_t, const short int& y_t): x(x_t), y(y_t) {}
 	POINT_T(int p): as_int(p) {}
 
-	POINT_T& operator= (POINT_T p_t);
+	POINT_T& operator= (const POINT_T& p_t) = default;
 	bool operator== (POINT_T p_t) const;
 	POINT_T operator+(const POINT_T& op) const;
 	POINT_T& operator+=(const POINT_T& op);
@@ -333,14 +253,15 @@ struct RECT_T
     bool normalize (const RECT_T& rect);
     bool normalize (short int x0_t, short int y0_t, short int x1_t, short int y1_t);
 
-    RECT_T& operator= (const RECT_T& rect_t);
+    RECT_T& operator= (const RECT_T& rect_t) = default;
     RECT_T& operator= (int val);
     RECT_T& operator= (unsigned long long val);
     bool operator== (int val) const;
 	bool operator== (RECT_T rect_t) const;
 	short int width() const;
 	short int height()const;
-	operator bool() const;
+	inline operator bool() const
+		{ return (as_int); }
 	void Inflate(int x, int y);
 	void Inflate(int l, int t, int r, int b);
 	void Deflate(int x, int y);
@@ -353,7 +274,7 @@ struct RECT_T
 		TRACE(" [x(%d, %d), y(%d, %d)]", x0, x1, y0, y1);
 	}
 #else
-	static void dump() {;}
+	inline void dump() {;}
 #endif
 };
 
