@@ -29,6 +29,7 @@ struct EM6125: public LCD_MODULE
 	//virtual functions
 	void lcd_init(GSplash splash) override;
 	void lcd_reset() override;
+	void do_reset() override;
 	void draw_bitmap(unsigned int x0, unsigned int y0,
 			const unsigned char* src, unsigned int width, unsigned int rows);
 	void draw_hline(unsigned int x0, unsigned int x1, unsigned int y);

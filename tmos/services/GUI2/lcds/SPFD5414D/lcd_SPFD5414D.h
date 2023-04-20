@@ -64,18 +64,20 @@ struct SPFD5414D: public LCD_MODULE
 
 	//virtual functions
 	void lcd_reset() override;
+	void do_reset() override;
 	void clear_screen() override;
 	void draw_bitmap(int x0, int y0, const char* src,  int width,  int rows) override;
+	void draw_char(int x0, unsigned int ch) override;
 	void draw_point( int x,  int y) override;
 	void draw_hline( int x0,  int x1,  int y) override;
 	void draw_bline( int x0,  int x1,  int y) override;
+	void clear_rect (const RECT_T& area) override;
 	void draw_vline( int y0,  int y1,  int x) override;
 	void invert_vline( int y0,  int y1,  int x) override;
 	void invert_hline( int x0,  int x1,  int y) override;
 	virtual void update_screen() override
 	{;}
 	void redraw_screen(GObject* object, RECT_T area) override;
-	void redraw_rect (GObject* object, RECT_T area) override;
 	void direct_write (GSplash draw_cb) override;
 	void adjust_for_screen (GObject** object, RECT_T &area) override;
 
@@ -85,7 +87,8 @@ protected:
     static const unsigned int lut_to_tft_color[16];
     virtual void tft_write_row(unsigned short address_cmd[]);
 	virtual void tft_init_address_cmd(unsigned short address_cmd[]);
-	virtual void tft_encode_color(const int x_pos, bool invert = false);
+//	virtual void tft_encode_color(const int x_pos, bool invert = false);
+	virtual void tft_encode_color(const int x_pos, const int y_pos, bool invert = false);
 };
 
 #ifndef CSX_PIN_INDX

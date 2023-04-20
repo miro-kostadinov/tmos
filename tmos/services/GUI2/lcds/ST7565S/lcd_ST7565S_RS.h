@@ -27,6 +27,7 @@ struct ST7565S_RS: public ST7565S
 	void lcd_command(unsigned int cmd) override;
 	void draw_point( int x,  int y) override;
 	void draw_bitmap( int x0, int y0, const char* src, int width, int rows) override;
+	void draw_char(int x0, unsigned int ch) override;
 	void draw_hline( int x0,  int x1,  int y) override;
 	void draw_bline( int x0,  int x1,  int y) override;
 	void draw_vline( int y0,  int y1,  int x) override;

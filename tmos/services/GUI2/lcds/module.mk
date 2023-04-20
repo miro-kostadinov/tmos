@@ -1,6 +1,6 @@
 ##########################################################################
 #
-#	Make include for GUI
+#	Make include for GUI2/lcds
 #	
 #   Platform: MPOS rev.2.3
 #
@@ -14,18 +14,9 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= gui_drv.cpp stdgui.cpp gdbg_opt.cpp
-local_cpp_src-y += gwindow.cpp gobject.cpp gcontainer.cpp gbutton.cpp gtext.cpp
-local_cpp_src-y += gdialog.cpp gradio.cpp gedit.cpp gfloating_text.cpp
-local_cpp_src-y += gfloating_button.cpp gmenu.cpp gscroll.cpp gmsgbox.cpp
-local_cpp_src-y += glistbox.cpp message.cpp gdowait.cpp
-local_cpp_src-y += gedit_vkb.cpp gclockview.cpp
+local_cpp_src-y	+= lcd.cpp lcd_multiplex.cpp
 
-local_h_src-y 	+= gui_drv.h stdgui.h gdbg_opt.h
-local_h_src-y 	+= gwindow.h gobject.h gcontainer.h gbutton.h gtext.h message.h
-local_h_src-y 	+= gdialog.h gradio.h gedit.h gfloating_text.h
-local_h_src-y 	+= gfloating_button.h gmenu.h gscroll.h gmsgbox.h glistbox.h gdowait.h
-local_h_src-y 	+= gedit_vkb.h gclockview.h 
+local_h_src-y 	+= lcd.h lcd_multiplex.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -38,7 +29,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 inc_dirs += $(subdirectory)
 
 #submodules
-local_modules-y := fonts lcds
+local_modules-y :=  ST7565S ST7735R SPFD5414D EM6125
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)

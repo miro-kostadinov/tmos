@@ -41,7 +41,9 @@ struct ST7565S: public LCD_MODULE
 
 	//virtual functions
 	void lcd_reset() override;
+	void do_reset() override;
 	void draw_bitmap(int x0, int y0, const char* src,  int width,  int rows) override;
+	void draw_char(int x0, unsigned int ch) override;
 	void draw_point( int x,  int y) override;
 	void draw_hline( int x0,  int x1,  int y) override;
 	void draw_bline( int x0,  int x1,  int y) override;
@@ -50,7 +52,6 @@ struct ST7565S: public LCD_MODULE
 	void invert_hline( int x0,  int x1,  int y) override;
 	virtual void update_screen() override;
 	virtual void redraw_screen (GObject* object, RECT_T area) override;
-	virtual void redraw_rect (GObject* object, RECT_T area) override;
 	void clear_screen() override;
 	void direct_write (GSplash draw_cb) override;
 	void adjust_for_screen (GObject** object, RECT_T &area) override;

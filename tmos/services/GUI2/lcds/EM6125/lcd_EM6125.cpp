@@ -128,6 +128,15 @@ void EM6125::lcd_reset()
 	lcd_hnd->tsk_write(res_emm_init2, sizeof(res_emm_init2));
 }
 
+void EM6125::do_reset()
+{
+	if( ms_since(reset_timeout) > 500 )
+	{
+		reset_timeout = CURRENT_TIME;
+		lcd_reset();
+	}
+
+}
 void EM6125::draw_bitmap(unsigned int x0, unsigned int y0,
 		const unsigned char* src, unsigned int width, unsigned int rows)
 {

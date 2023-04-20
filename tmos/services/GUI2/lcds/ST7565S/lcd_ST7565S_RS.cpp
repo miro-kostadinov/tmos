@@ -32,7 +32,8 @@ void ST7565S_RS::lcd_command(unsigned int cmd)
 
 }
 
-char inline ST7565S_RS::revert_char (char ch)
+#pragma GCC optimize ("Os")
+__attribute__((always_inline)) char ST7565S_RS::revert_char (char ch)
 {
 	unsigned int tmp = __RBIT((unsigned int) ch);
 	ch = *(((char*)&tmp)+3);
@@ -62,13 +63,16 @@ void ST7565S_RS::draw_bitmap( int x0, int y0, const char* src, int width, int ro
 
 		width += x0;
 		offset = 1<< offset;
-		y0 = 1 << (y0&7);
+//		y0 = 1 << (y0&7);
 		while(rows--)
 		{
 			for( int i=x0; i<width; i++)
 			{
 				if((src[0] & offset) && frame.x0 <= i && i <= frame.x1)
-					disp_buf[frame.y0>>3][i] |= revert_char(y0);
+				{
+//					disp_buf[frame.y0>>3][i] |= revert_char(y0);
+					disp_buf[y0>>3][i] |= revert_char( 1<<(y0&7) );
+				}
 				offset <<= 1;
 				if(offset > 255)
 				{
@@ -76,26 +80,75 @@ void ST7565S_RS::draw_bitmap( int x0, int y0, const char* src, int width, int ro
 					src++;
 				}
 			}
-			y0 <<= 1;
+//			y0 <<= 1;
+			y0++;
+		}
+	}
+}
+
+void ST7565S_RS::draw_char(int x0, unsigned int ch)
+{
+	if(ch > 0x1f && font)
+	{
+		ch -= 0x20;
+		int y0 = pos_y;
+		const char* src = font->font_data + ch * font->char_bytes;
+		int width = font->width;
+		int rows = font->height;
+		int offset=0;
+		if(y0 < frame.y0)
+		{
+			offset = frame.y0 - y0;
+			if(offset >= rows)
+				return;
+			y0 += offset;
+			rows -= offset;
+			offset *= width;
+			src += offset /8;
+			offset %= 8;
+		}
+		if(y0 < frame.y1)
+		{
+			rows += y0;
+			if(rows > frame.y1)
+				rows = frame.y1;
+			rows -= y0;
+
+			width += x0;
+			offset = 1<< offset;
+	//		y0 = 1 << (y0&7);
+			while(rows--)
+			{
+				for( int i=x0; i<width; i++)
+				{
+					if((src[0] & offset) && frame.x0 <= i && i <= frame.x1)
+					{
+	//					disp_buf[frame.y0>>3][i] |= revert_char(y0);
+						disp_buf[y0>>3][i] |= revert_char( 1<<(y0&7) );
+					}
+					offset <<= 1;
+					if(offset > 255)
+					{
+						offset = 1;
+						src++;
+					}
+				}
+	//			y0 <<= 1;
+				y0++;
+			}
 		}
 	}
 }
 
 void ST7565S_RS::draw_point( int x, int y)
 {
-	if(color == PIX_WHITE)
+	if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
 	{
-		if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
-		{
-			disp_buf[frame.y0>>3][x] |= revert_char(1 << (y&7));
-		}
-	}
-	else
-	{
-		if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
-		{
-			disp_buf[frame.y0>>3][x] &= ~revert_char(1 << (y&7));
-		}
+		GUI_ASSERT(x <= 131 && (y>>3) <= 7);
+		if(color == PIX_WHITE)
+			disp_buf[y>>3][x] |= revert_char(1 << (y&7));
+		else
+			disp_buf[y>>3][x] &= ~revert_char(1 << (y&7));
 	}
 }
 
@@ -103,19 +156,19 @@ void ST7565S_RS::draw_hline( int x0, int x1, int y)
 {
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
-		y = revert_char(1 << (y&7));
+		char val =revert_char(1 << (y&7));
 		while(x0 <= x1)
 		{
 			if (frame.x0 <= x0 && x0 <= frame.x1)
 			{
-				if(x0 > 131 || (frame.y0>>3) > 7)
+				if(x0 > 131 || (y>>3) > 7)
 				{
 					TRACELN1("Oooops! draw_hline");
 				}
 				if(color == PIX_WHITE)
-					disp_buf[frame.y0>>3][x0] |= y;//revert_char(y);
+					disp_buf[y>>3][x0] |= val;//revert_char(1 << (y&7));
 				else
-					disp_buf[frame.y0>>3][x0] &= ~y;//revert_char(y);
+					disp_buf[y>>3][x0] &= ~val;//revert_char(1 << (y&7));
 			}
 			x0++;
 		}
@@ -126,16 +179,16 @@ void ST7565S_RS::draw_bline( int x0, int x1, int y)
 {
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
-		y = ~revert_char(1 << (y&7));
+		char val = revert_char(1 << (y&7));
 		while(x0 <= x1)
 		{
 			if (frame.x0 <= x0 && x0 <= frame.x1)
 			{
-				if(x0 > 131 || (frame.y0>>3) > 7)
+				if(x0 > 131 || (y>>3) > 7)
 				{
 					TRACELN1("Oooops! draw_bline");
 				}
-				disp_buf[frame.y0>>3][x0] &= y;//revert_char(y);
+				disp_buf[y>>3][x0] &= ~val;//revert_char(1 << (y&7));
 			}
 			x0++;
 		}
@@ -146,16 +199,16 @@ void ST7565S_RS::invert_hline( int x0, int x1, int y)
 {
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
-		y = revert_char(1 << (y&7));
+		char val = revert_char(1 << (y&7));
 		while(x0 <= x1)
 		{
 			if (frame.x0 <= x0 && x0 <= frame.x1)
 			{
-				if(x0 > 131 || (frame.y0>>3) > 7)
+				if(x0 > 131 || (y>>3) > 7)
 				{
 					TRACELN1("Oooops! invert_hline");
 				}
-				disp_buf[frame.y0>>3][x0] ^= y;//revert_char(y);
+				disp_buf[y>>3][x0] ^= val;//revert_char(1 << (y&7));
 			}
 			x0++;
 		}
@@ -164,6 +217,8 @@ void ST7565S_RS::invert_hline( int x0, int x1, int y)
 
 void ST7565S_RS::draw_vline( int y0, int y1, int x)
 {
+/*
+	// only valid for drawing line by line
 	if( (y0<=frame.y0) && (y1>=frame.y0) )
 	{
 		if (frame.x0 <= x && x <= frame.x1)
@@ -175,10 +230,28 @@ void ST7565S_RS::draw_vline( int y0, int y1, int x)
 			disp_buf[frame.y0>>3][x] |= revert_char(1 << (frame.y0&7));
 		}
 	}
+*/
+	if(y0 <= frame.y0)
+		y0 = frame.y0;
+	while(y0 <= y1 && y0 < frame.y1)
+	{
+		if (frame.x0 <= x && x <= frame.x1 && y0>=frame.y0)
+		{
+			if(x > 131 || (y0>>3) > 7)
+			{
+				TRACELN1("Oooops! draw_vline");
+			}
+			disp_buf[y0>>3][x] |= revert_char(1 << (y0&7));
+		}else
+			break;
+		y0++;
+	}
 }
 
 void ST7565S_RS::invert_vline( int y0, int y1, int x)
 {
+/*
+	// only valid for drawing line by line
 	if( (y0<=frame.y0) && (y1>=frame.y0) )
 	{
 		if (frame.x0 <= x && x <= frame.x1)
@@ -190,7 +263,25 @@ void ST7565S_RS::invert_vline( int y0, int y1, int x)
 			disp_buf[frame.y0>>3][x] ^= revert_char(1 << (frame.y0&7));
 		}
 	}
+*/
+	if(y0 <= frame.y0)
+		y0 = frame.y0;
+	while(y0 <= y1 && y0 < frame.y1)
+	{
+		if (frame.x0 <= x && x <= frame.x1 && y0>=frame.y0)
+		{
+			if(x > 131 || (y0>>3) > 7)
+			{
+				TRACELN1("Oooops! invert_vline");
+			}
+			disp_buf[y0>>3][x] ^= revert_char(1 << (y0&7));
+		}else
+			break;
+		y0++;
+	}
 }
+
+#pragma GCC reset_options
 
 void ST7565S_RS::update_screen()
 {

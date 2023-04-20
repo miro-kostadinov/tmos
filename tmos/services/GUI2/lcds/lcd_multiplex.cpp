@@ -11,7 +11,7 @@
 
 void LCD_MULT::invalidate (GObject* object, RECT_T area)
 {
-	ENTER_FUNCTION(area, this)
+	INVALIDATE_ENTER_FUNCTION(area, this)
 	for (int i = 0; i < GUI_DISPLAYS; i++)
 	{
 		if (lcd[i]->displays & object->displays)
@@ -25,7 +25,7 @@ void LCD_MULT::invalidate (GObject* object, RECT_T area)
 		}
 		parent = nullptr;
 	}
-	LEAVE_FUNCTION(area, this)
+	INVALIDATE_LEAVE_FUNCTION(area, this)
 }
 
 void LCD_MULT::redraw_screen(GObject* object, RECT_T area)
@@ -42,14 +42,21 @@ void LCD_MULT::redraw_screen(GObject* object, RECT_T area)
 	}
 }
 
-void LCD_MULT::LPtoDP(POINT_T& size, unsigned char lcd_index)
+void LCD_MULT::LPtoDP(POINT_T& size, const unsigned char lcd_index) const
 {
 	if(lcd_index < GUI_DISPLAYS)
 		lcd[lcd_index]->LPtoDP(size, lcd_index);
 }
 
-void LCD_MULT::DPtoLP(POINT_T& size, unsigned char lcd_index)
+void LCD_MULT::DPtoLP(POINT_T& size, const unsigned char lcd_index) const
 {
 	if(lcd_index < GUI_DISPLAYS)
 		lcd[lcd_index]->DPtoLP(size, lcd_index);
+}
+
+POINT_T LCD_MULT::PolarToDP(const int deg, const int r, const unsigned char lcd_index) const
+{
+	if(lcd_index < GUI_DISPLAYS)
+		return lcd[lcd_index]->PolarToDP(deg, r, lcd_index);
+	return POINT_T();
 }

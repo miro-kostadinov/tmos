@@ -94,6 +94,17 @@ void ST7565S::lcd_reset()
 
 }
 
+void ST7565S::do_reset()
+{
+	if( ms_since(reset_timeout) > 500 )
+	{
+		reset_timeout = CURRENT_TIME;
+		lcd_reset();
+	}
+}
+
+#pragma GCC optimize ("Os")
+
 void ST7565S::draw_bitmap( int x0, int y0, const char* src, int width, int rows)
 {
 	int offset=0;
@@ -117,13 +128,16 @@ void ST7565S::draw_bitmap( int x0, int y0, const char* src, int width, int rows)
 
 		width += x0;
 		offset = 1<< offset;
-		y0 = 1 << (y0&7);
+//		y0 = 1 << (y0&7);
 		while(rows--)
 		{
 			for( int i=x0; i<width; i++)
 			{
 				if((src[0] & offset) && frame.x0 <= i && i <= frame.x1)
-					disp_buf[frame.y0>>3][i] |= y0;
+				{
+//					disp_buf[frame.y0>>3][i] |= revert_char(y0);
+					disp_buf[y0>>3][i] |= 1<<(y0&7);
+				}
 				offset <<= 1;
 				if(offset > 255)
 				{
@@ -131,7 +145,62 @@ void ST7565S::draw_bitmap( int x0, int y0, const char* src, int width, int rows)
 					src++;
 				}
 			}
-			y0 <<= 1;
+//			y0 <<= 1;
+			y0++;
+		}
+	}
+}
+
+void ST7565S::draw_char(int x0, unsigned int ch)
+{
+	if(ch > 0x1f && font)
+	{
+		ch -= 0x20;
+		int y0 = pos_y;
+		const char* src = font->font_data + ch * font->char_bytes;
+		int width = font->width;
+		int rows = font->height;
+		int offset=0;
+		if(y0 < frame.y0)
+		{
+			offset = frame.y0 - y0;
+			if(offset >= rows)
+				return;
+			y0 += offset;
+			rows -= offset;
+			offset *= width;
+			src += offset /8;
+			offset %= 8;
+		}
+		if(y0 < frame.y1)
+		{
+			rows += y0;
+			if(rows > frame.y1)
+				rows = frame.y1;
+			rows -= y0;
+
+			width += x0;
+			offset = 1<< offset;
+	//		y0 = 1 << (y0&7);
+			while(rows--)
+			{
+				for( int i=x0; i<width; i++)
+				{
+					if((src[0] & offset) && frame.x0 <= i && i <= frame.x1)
+					{
+	//					disp_buf[frame.y0>>3][i] |= revert_char(y0);
+						disp_buf[y0>>3][i] |= 1<<(y0&7);
+					}
+					offset <<= 1;
+					if(offset > 255)
+					{
+						offset = 1;
+						src++;
+					}
+				}
+	//			y0 <<= 1;
+				y0++;
+			}
 		}
 	}
 }
@@ -142,11 +211,11 @@ void ST7565S::draw_point( int x, int y)
 	{
 		if(color)
 		{
-			disp_buf[frame.y0>>3][x] |= (1 << (y&7));
+			disp_buf[y>>3][x] |= (1 << (y&7));
 		}
 		else
 		{
-			disp_buf[frame.y0>>3][x] &= ~(1 << (y&7));
+			disp_buf[y>>3][x] &= ~(1 << (y&7));
 		}
 	}
 }
@@ -155,10 +224,10 @@ void ST7565S::draw_hline( int x0, int x1, int y)
 {
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
-		y = 1 << (y&7);
+		int val = 1 << (y&7);
 		while(x0 <= x1 && frame.x0 <= x0 && x0 <= frame.x1)
 		{
-			disp_buf[frame.y0>>3][x0++] |= y;
+			disp_buf[y>>3][x0++] |= val;
 		}
 	}
 }
@@ -167,10 +236,10 @@ void ST7565S::draw_bline( int x0, int x1, int y)
 {
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
-		y = ~(1 << (y&7));
+		int val = ~(1 << (y&7));
 		while(x0 <= x1 && frame.x0 <= x0 && x0 <= frame.x1)
 		{
-			disp_buf[frame.y0>>3][x0++] &= y;
+			disp_buf[y>>3][x0++] &= val;
 		}
 	}
 }
@@ -179,29 +248,61 @@ void ST7565S::invert_hline( int x0, int x1, int y)
 {
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
-		y = 1 << (y&7);
+		int val = 1 << (y&7);
 		while(x0 <= x1 && frame.x0 <= x0 && x0 <= frame.x1)
 		{
-			disp_buf[frame.y0>>3][x0++] ^= y;
+			disp_buf[y>>3][x0++] ^= val;
 		}
 	}
 }
 
 void ST7565S::draw_vline( int y0, int y1, int x)
 {
-	if( (y0<=frame.y0) && (y1>=frame.y0) && frame.x0 <= x && x <= frame.x1)
+//	if( (y0<=frame.y0) && (y1>=frame.y0) && frame.x0 <= x && x <= frame.x1)
+//	{
+//		disp_buf[frame.y0/8][x] |= 1 << (frame.y0&7);
+//	}
+	if(y0 <= frame.y0)
+		y0 = frame.y0;
+	while(y0 <= y1 && y0 < frame.y1)
 	{
-		disp_buf[frame.y0/8][x] |= 1 << (frame.y0&7);
+		if (frame.x0 <= x && x <= frame.x1 && y0>=frame.y0)
+		{
+			if(x > 131 || (y0>>3) > 7)
+			{
+				TRACELN1("Oooops! draw_vline");
+			}
+			disp_buf[y0>>3][x] |= (1 << (y0&7));
+		}else
+			break;
+		y0++;
 	}
 }
 
 void ST7565S::invert_vline( int y0, int y1, int x)
 {
-	if( (y0<=frame.y0) && (y1>=frame.y0) && frame.x0 <= x && x <= frame.x1)
+//	if( (y0<=frame.y0) && (y1>=frame.y0) && frame.x0 <= x && x <= frame.x1)
+//	{
+//		disp_buf[frame.y0>>3][x] ^= 1 << (frame.y0&7);
+//	}
+	if(y0 <= frame.y0)
+		y0 = frame.y0;
+	while(y0 <= y1 && y0 < frame.y1)
 	{
-		disp_buf[frame.y0>>3][x] ^= 1 << (frame.y0&7);
+		if (frame.x0 <= x && x <= frame.x1 && y0>=frame.y0)
+		{
+			if(x > 131 || (y0>>3) > 7)
+			{
+				TRACELN1("Oooops! invert_vline");
+			}
+			disp_buf[y0>>3][x] ^= (1 << (y0&7));
+		}else
+			break;
+		y0++;
 	}
 }
+
+#pragma GCC reset_options
 
 void ST7565S::redraw_screen (GObject* object, RECT_T area)
 {
@@ -264,112 +365,6 @@ void ST7565S::adjust_for_screen (GObject** object, RECT_T& area)				//change the
 	//area.x1 = size_x - 1;														//area.x0 = 0;
 	//*object = children;															//area.x1 = size_x - 1;
 																				//*object = children;
-}
-
-
-void ST7565S::redraw_rect (GObject* object, RECT_T area)						//redraws an area of the object on the LCD by calling its draw (LCD_MODULE, RECT_T) function
-{
-#if GUI_DEBUG
-	unsigned int t0 = CURRENT_TIME;
-	GUI_TRACELN1("\e[4;1;31m");
-#endif
-	if( (unsigned)(CURRENT_TIME-reset_timeout) > 500 )
-	{
-		reset_timeout = CURRENT_TIME;
-		lcd_reset();
-		GUI_TRACE("RST %u ms\r\n", ms_since(t0));
-	}
-	GUI_TRACE("%s[%d]", szlist_at(obj_type_str,object->get_object_type()), (object)?object->id:-1);
-	//1. Try to get the bottom window that contain a redrawing object
-	GObject* initial;
-	if(object)
-	{
-		initial = children;
-		GObject* owner = object->parent;
-		// check that is window
-		if(owner && owner->parent != this)
-		{	// It is a common object, try to find its owner window
-			while(owner)
-			{
-				if(owner->parent && owner->parent->parent == this)
-					break;
-				owner = owner->parent;
-			}
-		}
-		else
-		{
-			// It is a window
-			owner = object;
-		}
-
-		if(owner)
-		{
-			while(initial)
-			{
-				if(initial == owner)
-					break;
-				initial = initial->nextObj;
-			}
-		}
-		if(!owner || !initial )
-		{
-			TRACE_ERROR("GUI Z-order exception!");
-		}
-	// 2. draw
-		frame.x0 = area.x0;
-		frame.x1 = area.x1;
-	    for(frame.y0=area.y0; frame.y0 <= area.y1; frame.y0++)
-	    {
-	    	frame.y1 = frame.y0+1;
-    		GObject* tmp = initial->nextObj;
-    		int res =0;
-    		while(1)
-    		{
-				while(tmp)
-				{
-					if(tmp->displays & this->displays)
-						res |= object->overlapped(tmp, frame);
-					tmp = tmp->nextObj;
-				}
-
-				if(!(object->flags & GO_FLG_TRANSPARENT))
-					clear_rect(frame);
-				object->draw_this(this);
-
-				if(res)
-				{
-					GUI_TRACELN("LCD%u draw {%u,%u %u,%u}", displays, frame.x0, area.y0, frame.x1, area.y1);
-					frame.x0 = frame.x1+1;
-					frame.x1 = area.x1;
-					tmp = initial->nextObj;
-					res =0;
-					if(frame.x0 <= frame.x1)
-					{
-						continue;
-					}
-					else
-					{
-						frame.x0 = area.x0;
-						frame.x1 = area.x1;
-					}
-				}
-				break;
-    		}
-	    }
-	}
-//	uint32_t t = CURRENT_TIME;
-//    for (frame.y0=(area.y0 - (area.y0&7)); frame.y0 <= area.y1; frame.y0 += 8)
-//    {
-//    	update_screen();
-//    }
-//    TRACE(" %u ms", ms_since(t));
-#if GUI_DEBUG
-	if(frame.x0 <= frame.x1)
-	{
-		GUI_TRACELN("LCD%u draw {%u,%u %u,%u}", displays, frame.x0, area.y0, frame.x1, area.y1);
-	}
-    GUI_TRACE(" %d ms\e[m", ms_since(t0));
-#endif
 }
 
 void ST7565S::direct_write(GSplash draw_cb)

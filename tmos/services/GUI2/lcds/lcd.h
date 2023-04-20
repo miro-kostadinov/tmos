@@ -93,26 +93,38 @@ public:
 
 	virtual void update_screen()=0;
 	virtual void clear_screen()=0;
-	void redraw_screen(GObject* object, RECT_T area) override =0 ;
+	virtual void do_reset()=0;
+	virtual void draw_bitmap(int x0, int y0, const char* src, int width, int rows) =0;
+	virtual void draw_char(int x0, unsigned int ch) =0;
+
+	void redraw_screen(GObject* object, RECT_T area) override =0;
 	void invalidate(GObject* object, RECT_T area) override;
-	virtual void redraw_rect (GObject* object, RECT_T area){};
-	virtual void adjust_for_screen (GObject** object, RECT_T &area){};
+	virtual void redraw_rect (GObject* object, RECT_T area);
+	virtual void adjust_for_screen (GObject** object, RECT_T &area)
+		{;}
 
 	void set_font(const RENDER_MODE* afont);
 	void set_xy_all(unsigned int xy, unsigned int all);
-	void clear_rect (const RECT_T& area);
+	void clear_rect (const RECT_T& area) override;
 	const char* get_next_txt_row(const char *txt) const;
 	const char* draw_text(const char *txt);
 	const char* draw_text_no_space(const char *txt);
 	void draw_icon (unsigned char icon);
 	const char* draw_row(const char *txt);
 	virtual void direct_write(GSplash draw_cb){};
-	void LPtoDP(POINT_T& size, unsigned char lcd_index=0) override;
-	void DPtoLP(POINT_T& size, unsigned char lcd_index=0) override;
+	void LPtoDP(POINT_T& size, unsigned char lcd_index=0) const override;
+	void DPtoLP(POINT_T& size, unsigned char lcd_index=0) const override;
+	POINT_T PolarToDP(const int deg, const int r, const unsigned char lcd_index=0) const override;
 	void set_color(unsigned int fg_color)
 	{
 		color = fg_color;
 	}
+protected:
+	inline virtual unsigned int is_lcd() const override __attribute__((optimize("Os"), always_inline))
+	{
+		return 1;
+	}
+
 };
 
 struct GClientLcd : GObject
@@ -127,4 +139,74 @@ private:
 		TRACE_ERROR("GUI Error in draw_this");
 	}
 };
+
+template <class T, uint32_t min_size>
+class stack
+{
+private:
+	uint32_t sp;
+	T*		 memory;
+
+	void stack_alloc()
+	{
+		unsigned int size;
+
+		size = (sp+1)*sizeof(T);
+
+		if( !memory || ( dyn_sizeof((void*)memory) < size) )
+		{
+			void* mem;
+			do{
+				mem = tsk_realloc(memory, size + min_size*sizeof(T));
+				if(!mem)
+				{
+					tsk_sleep(10);
+					GUI_ASSERT((T*)mem);
+				}
+			}while(!mem);
+			memory = (T*)mem;
+		}
+	}
+
+public:
+	stack() :
+		sp(0)
+		,memory(nullptr)
+	{;}
+	~stack()
+	{
+		if(memory)
+		{
+			delete[] memory;
+			memory = nullptr;
+		}
+	}
+
+	void push(const T& data)
+	{
+		stack_alloc();
+		memory[sp++] = data;
+	}
+
+	T pop()
+	{
+		T ret;
+		if(sp)
+			ret = memory[--sp];
+		return ret;
+	}
+
+	bool empty() const
+	{
+		return (sp == 0);
+	}
+
+	const T& top() const
+	{
+		if(sp)
+			return memory[sp];
+		return RECT_T();
+	}
+};
+
 #endif
