@@ -188,7 +188,7 @@ void EM6125::clear_screen()
 	memclr(lcd_buf.video_buf, sizeof(lcd_buf.video_buf));
 }
 
-extern unsigned int cpu_usage;
+//extern unsigned int cpu_usage;
 #if USE_MEMORY_TRACKING
 extern char end;
 #endif
