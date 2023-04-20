@@ -41,35 +41,14 @@ unsigned int GWindow::process_destroy(GMessage& msg)
 	close(); // 1. hide and disable this window, but it is still visible on the display, so the display needs to be refreshed
 	if(parent && parent->focus)
 	{
-		// 2. replace the displays used by the LCD (if more than one) with the one used by CPU_Usage
+		// 2. replace the displays used by the LCD (if more than one) with the one used by Window
 		GFlags bkp_displays = parent->displays;
 		parent->displays = displays;
 		parent->invalidate(parent,  rect); // refresh all windows
 		// 3. restore LCD displays
 		parent->displays = bkp_displays;
-/*
-
-		GWindow* tmp = (GWindow *)parent->children;
-		while(tmp)
-		{
-			if(tmp->flags & GO_FLG_SHOW)
-			{
-#if GUI_DISPLAYS > 1
-				if(tmp->displays & displays)
-				{
-					unsigned int backup = tmp->displays;
-					tmp->displays = displays;
-					tmp->invalidate(this, rect.as_int); //updating only the display from which this window is visible
-					tmp->displays = backup;
-				}
-#else
-				tmp->invalidate(this, rect.as_int); //updating only the display from which this window is visible
-#endif
-			}
-			tmp = (GWindow *)tmp->nextObj;
-		}
-*/
 	}
+	// 4. notifying his owner
 	notify_message(WM_QUIT, msg.param);
 	return true;
 }
