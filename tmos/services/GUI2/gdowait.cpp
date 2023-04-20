@@ -11,7 +11,6 @@
 GWait* GWait::dowait_win =nullptr;
 int32_t GWait::dowait_cnt = 0;
 
-POINT_T PolarToDevXY(int deg, int r, LCD_MODULE* lcd);
 
 unsigned int GWait::initialize (GMessage& msg)
 {
@@ -37,6 +36,16 @@ unsigned int GWait::initialize (GMessage& msg)
 	client_rect  = RECT_T(base.x - R, base.y -R, base.x +R, base.y +R);
 	SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
 	dowait_win->owners = new GWaitOwner(parent->focus);
+	circles_pos = new POINT_T[8];
+	if(circles_pos)
+	{
+		for(int i=0; i < 8; i++)
+		{
+			circles_pos[i] = lcd->PolarToDP(i*45, R-2);
+			circles_pos[i] += base;
+		}
+
+	}
 	return 0;
 }
 
@@ -75,25 +84,26 @@ unsigned int GWait::process_default (GMessage& msg)
 void GWait::draw_this(LCD_MODULE* lcd)
 {
 	uint8_t mask=1;
-	if(R > 5)
+	if(R > 5 && circles_pos)
 	{
 		POINT_T p;//, r(R-2,R-2);
 		for(int i=0; i < 8; i++, mask <<=1)
 		{
-			p = PolarToDevXY(i*45, R-4, lcd);
-			p += base;
+//			p = lcd->PolarToDP(i*45, R-2);
+//			p += base;
+			p = circles_pos[i];
 			if(last_state & mask)
 			{
 				lcd->set_color(PIX_BLACK);
-				fill_circle(p, 2);
+				lcd->fill_circle(p, 2);
 				lcd->set_color(PIX_WHITE);
-				draw_circle(p, 2);
+				lcd->draw_circle(p, 2);
 				continue;
 			}
 			if(new_state & mask)
-				fill_circle(p, 2);
+				lcd->fill_circle(p, 2);
 			else
-				draw_circle(p, 2);
+				lcd->draw_circle(p, 2);
 		}
 	}
 }
@@ -227,7 +237,11 @@ void EndWait()
  * ==========================================================
  */
 
+WEAK volatile unsigned int cpu_usage_percentx100;
+WEAK volatile unsigned int cpu_usage_flags;
+
 CPU_Usage* CPU_Usage::CPU_Usage_win = nullptr;
+
 void CPU_Usage::GUI_CPU_Usage(GUI_SYS_COMMANDS gui_sys_cmd, bool show)
 {
 	if(show)
@@ -239,12 +253,13 @@ void CPU_Usage::GUI_CPU_Usage(GUI_SYS_COMMANDS gui_sys_cmd, bool show)
 		{
 			CPU_Usage_win->nextObj =Gdesktop->parent->focus->nextObj;
 			Gdesktop->parent->focus->nextObj = CPU_Usage_win;					//adds the new item to the Z list
-			CPU_Usage_win->parent = Gdesktop->parent;							//LCD
+			CPU_Usage_win->parent = Gdesktop->parent;							//LCD or LCD_MUX
 #if GUI_DISPLAYS > 1
-			GQueue.push(GMessage(WM_INIT, 0, (long long)((LCD_MULT *)(Gdesktop->parent))->lcd, CPU_Usage_win));
+			CPU_Usage_win->main_lcd = ((LCD_MULT *)(Gdesktop->parent))->lcd[0];
 #else
-			GQueue.push(GMessage(WM_INIT, 0, (long long)((LCD_MODULE *)(Gdesktop->parent)), CPU_Usage_win));
+			CPU_Usage_win->main_lcd = (LCD_MODULE *)(Gdesktop->parent);
 #endif
+			GQueue.push(GMessage(WM_INIT, 0, CPU_Usage_win));
 		}
 	}
 	else
@@ -252,14 +267,10 @@ void CPU_Usage::GUI_CPU_Usage(GUI_SYS_COMMANDS gui_sys_cmd, bool show)
 		if(!CPU_Usage_win)
 			return;
 		// 1. hide and disable this window, but it is still visible on the display, so the display needs to be refreshed
-		CPU_Usage_win->close(); //
-		GContainer* LCD = CPU_Usage_win->parent;
-		// 2. replace the displays used by the LCD (if more than one) with the one used by CPU_Usage
-		GFlags bkp_displays = LCD->displays;
-		LCD->displays = CPU_Usage_win->displays;
-		LCD->invalidate(LCD,  CPU_Usage_win->rect); // refresh all windows
-		// 3. restore LCD displays
-		LCD->displays = bkp_displays;
+		CPU_Usage_win->close();
+		// 2. refresh area
+		CPU_Usage_win->main_lcd->rect.y1 += CPU_USAGE_WIN_HEIGHT;
+		CPU_Usage_win->parent->invalidate(CPU_Usage_win->parent,  CPU_Usage_win->rect); // refresh all windows
 		delete CPU_Usage_win;
 		CPU_Usage_win = nullptr;
 	}
@@ -268,19 +279,19 @@ void CPU_Usage::GUI_CPU_Usage(GUI_SYS_COMMANDS gui_sys_cmd, bool show)
 
 unsigned int CPU_Usage::initialize(GMessage& msg)
 {
-#if GUI_DISPLAYS > 1
-	LCD_MODULE* lcd = ((LCD_MODULE **)msg.lparam)[0];
-#else
-	LCD_MODULE* lcd = (LCD_MODULE *)msg.lparam;
-#endif
 	displays = 1; // use main display
 
-	rect = lcd->rect;
+	rect = main_lcd->rect;
 	rect.Inflate(0, rect.height() -CPU_USAGE_WIN_HEIGHT , 0,  0 );
 	client_rect = rect;
-	flags = GO_FLG_SHOW;
-	SetTimer(CPU_USAGE_TIMER_ID, CPU_USAGE_TIMER_RELOAD);
 
+	if(rect.width() > 100/*100%*/ + 5/*peak icon*/)
+		client_rect.Inflate(rect.width() - 105, 0)	;
+
+	flags = GO_FLG_SHOW;
+	invalidate(this, client_rect);
+	SetTimer(CPU_USAGE_TIMER_ID, CPU_USAGE_TIMER_RELOAD);
+	main_lcd->rect.y1 -= CPU_USAGE_WIN_HEIGHT;
 	return 1;
 }
 
@@ -290,51 +301,66 @@ unsigned int CPU_Usage::process_default (GMessage& msg)
 	{
 		if( msg.param == CPU_USAGE_TIMER_ID)
 		{
-			uint32_t usage = cpu_usage/100;
-			if(!cpu_usage_ready)
+			uint32_t usage = cpu_usage_percentx100/100;
+			if(usage > 100)
+				usage = 100;
+			if(!(cpu_usage_flags & 1)) // ready
 			{
 				TRACELN1("!!!! 100% usage");
 			}
-			cpu_usage_ready =0;
-			bool update = false;
-			if(cpu_peak < usage)
+			else
 			{
-				cpu_usage_pos = cpu_peak = usage;
-				SetTimer(CPU_USAGE_TIMER_PEAK_ID, CPU_USAGE_TIMER_PEAK_RELOAD);
-				update = true;
+				cpu_usage_flags -=1; // clear ready
+				bool update = false;
+				if(cpu_peak < usage)
+				{
+					cpu_usage_pos = cpu_peak = usage;
+					SetTimer(CPU_USAGE_TIMER_PEAK_ID, CPU_USAGE_TIMER_PEAK_RELOAD);
+					update = true;
+				}
+				cpu_average += usage;
+				if(++cpu_usage_cnt >= CPU_USAGE_AVERAGE_COUNT)
+				{
+					if(!update)
+						cpu_usage_pos = cpu_average/4;
+					cpu_usage_cnt = cpu_average =0;
+					if(!IsActiveTimer(CPU_USAGE_TIMER_PEAK_ID))
+						cpu_peak = cpu_usage_pos;
+					update = true;
+				}
+				if(update)
+					invalidate(this, client_rect);
 			}
-			cpu_average += usage;
-			if(++cpu_usage_cnt >= CPU_USAGE_AVERAGE_COUNT)
-			{
-				if(!update)
-					cpu_usage_pos = cpu_average/4;
-				cpu_usage_cnt = cpu_average =0;
-				if(!IsActiveTimer(CPU_USAGE_TIMER_PEAK_ID))
-					cpu_peak = cpu_usage_pos;
-				update = true;
-			}
-			if(update)
-				invalidate(this, rect);
 			SetTimer(CPU_USAGE_TIMER_ID, CPU_USAGE_TIMER_RELOAD);
 		}
 		if( msg.param == CPU_USAGE_TIMER_PEAK_ID)
 		{
 			cpu_peak = cpu_usage_pos;
-			invalidate(this, rect);
+			invalidate(this, client_rect);
 		}
 		return 1;
 	}
 	return 0;
 }
 
+void CPU_Usage::invalidate(GObject* object, RECT_T area)
+{
+	main_lcd->rect.y0 = main_lcd->rect.height();
+	main_lcd->rect.y1 += CPU_USAGE_WIN_HEIGHT;
+	GObject::invalidate(this, area);
+	main_lcd->rect.y0 =0;
+	main_lcd->rect.y1 -= CPU_USAGE_WIN_HEIGHT;
+}
+
 void CPU_Usage::draw_this(LCD_MODULE* lcd)
 {
-	draw_hline(2, cpu_usage_pos +2, rect.y1 - 3);
+	lcd->draw_hline(client_rect.x0, client_rect.x0 + cpu_usage_pos, rect.y0 + CPU_USAGE_WIN_HEIGHT/2);
 	lcd->set_font(&FNT5x7);
 	set_xy_all(lcd, ((rect.y1 -rect.y0) >> 1) - (lcd->font->height >> 1), TA_CENTER);
-	lcd->pos_x = cpu_peak +2;
+	lcd->pos_x = cpu_peak +client_rect.x0;
 	lcd->draw_icon(GICON_SQUARE);
-	//draw_bitmap(cpu_peak +2, rect.y0, src, width, rows)
+	lcd->draw_vline(client_rect.y0, client_rect.y1, client_rect.x0);
+	lcd->draw_vline(client_rect.y0, client_rect.y1, client_rect.x1);
 }
 
 void CPU_usage(bool show)
