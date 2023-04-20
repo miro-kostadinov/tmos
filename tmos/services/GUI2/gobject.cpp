@@ -140,13 +140,6 @@ bool GObject::StopTimer(GId event)
 	return false;
 }
 
-void GObject::clear_rect (const RECT_T& area)
-{
-	int y = area.y0;
-    while(y <= area.y1)
-        draw_bline(area.x0, area.x1, y++);
-}
-
 bool GObject::cut_hline ( int& x0, int& x1, int& y) const
 {
 	if ((int)y < rect.y0 || (int)y > rect.y1 || (int)x0 > rect.x1)
@@ -219,7 +212,7 @@ int GObject::draw_text (LCD_MODULE* lcd, const char *txt)
 
 void GObject::draw_text_line (LCD_MODULE* lcd, const char* txt, unsigned int len)
 {
-	int pos_x, c;
+	int pos_x;//, c;
 
 	if(!txt )
 		return;
@@ -249,6 +242,8 @@ void GObject::draw_text_line (LCD_MODULE* lcd, const char* txt, unsigned int len
 	pos_x += lcd->font->hdistance;
 	for (unsigned int i = 0; i < len && pos_x < client_rect.x1; i++)
 	{
+		lcd->draw_char(pos_x, txt[i]);
+/*
 		if((c = txt[i]) > 0x1f)
 		{
             c -= 0x20;
@@ -256,6 +251,7 @@ void GObject::draw_text_line (LCD_MODULE* lcd, const char* txt, unsigned int len
 			lcd->draw_bitmap(pos_x, lcd->pos_y, lcd->font->font_data + c * lcd->font->char_bytes,
 					lcd->font->width, lcd->font->height);
 		}
+*/
 		pos_x += lcd->font->hspacing;
 	}
 	lcd->pos_y += lcd->font->vspacing;
@@ -278,14 +274,11 @@ void GObject::redraw_screen(GObject* object, RECT_T area)
 	}
 }
 
+
 void GObject::invalidate(GObject* object, RECT_T area)
 {
-	ENTER_FUNCTION(area, this)
-#if GUI_DEBUG
-	uint32_t t;
-	if(!invalidate_cnt)
-		t = CURRENT_TIME;
-#endif
+	INVALIDATE_ENTER_FUNCTION(area, this)
+	uint32_t t=CURRENT_TIME;
 	GUI_TRACELN(">> draw %u", invalidate_cnt);
 	invalidate_cnt++;
 	if (area)
@@ -299,10 +292,14 @@ void GObject::invalidate(GObject* object, RECT_T area)
 	GUI_TRACELN("<< draw %u", invalidate_cnt);
 	if(!invalidate_cnt && area)
 	{
-		GUI_TRACELN("lcd  <<  {%u,%u %u,%u} %u ms", area.x0, area.y0, area.x1, area.y1, ms_since(t));
+		GUI_TRACELN("invalidate: {%u,%u %u,%u} %u ms", area.x0, area.y0, area.x1, area.y1, ms_since(t));
+		gui_trace_sleep();
+		INVALIDATE_TRACELN("invalidate :%u ms",ms_since(t));
+		t = CURRENT_TIME;
 		parent->redraw_screen(this, area);
+		INVALIDATE_TRACELN("redraw :%u ms",ms_since(t));
 	}
-	LEAVE_FUNCTION(area, this)
+	INVALIDATE_LEAVE_FUNCTION(area, this)
 }
 
 
@@ -374,17 +371,46 @@ POINT_T GObject::get_border_size(void)
 	return POINT_T(GO_OBJ_FRAME_WIDTH, GO_OBJ_FRAME_HEIGHT);
 }
 
-void GObject::LPtoDP(POINT_T& size, unsigned char lcd_index)
+void GObject::LPtoDP(POINT_T& size, const unsigned char lcd_index) const
 {
 	if(parent)
 		parent->LPtoDP(size, lcd_index);
 }
 
-void GObject::DPtoLP(POINT_T& size, unsigned char lcd_index)
+void GObject::DPtoLP(POINT_T& size, const unsigned char lcd_index) const
 {
 	if(parent)
 		parent->DPtoLP(size, lcd_index);
 }
+
+POINT_T GObject::PolarToDP(const int deg, const int r, const unsigned char lcd_index) const
+{
+	if(parent)
+		return parent->PolarToDP(deg, r, lcd_index);
+	return POINT_T();
+}
+
+POINT_T GObject::PolarToLP(const int deg, const int r) const
+{
+	POINT_T p;
+	int32_t rx, ry;
+	int64_t rem;
+
+	rx = ry = r * 1000;
+	p.x = tmos_ldivmod((int64_t(cos_x10000(deg)) * rx),10000000L, &rem);
+	p.x += ((int32_t)rem*2)/10000000;
+	p.y = tmos_ldivmod((int64_t(sin_x10000(deg)) * ry),10000000L, &rem);
+	p.y += ((int32_t)rem*2)/10000000;
+	return p;
+
+}
+
+void GObject::clear_rect (const RECT_T& area)
+{
+	if(parent)
+		parent->clear_rect(area);
+}
+
 
 void GObject::draw_border(RECT_T& frame)
 {
@@ -569,81 +595,95 @@ void GObject::invert_hline( int x0, int x1, int y)
 		parent->invert_hline(x0, x1, y);
 }
 
+
 int GObject::overlapped(GObject* obj, RECT_T& frame)
 {
-	int res = 0;
+	int res=0;
 	if (obj && !(obj->flags & GO_FLG_TRANSPARENT) && (obj->flags & GO_FLG_SHOW))
 	{
 		if(frame.y1 <= rect.y0 || rect.y1 < frame.y0 )
-			return 0x000;
+			return OVER_FLG_OUT_OF_FRAME; // out of frame vertically
 		if(frame.x1 < rect.x0 || rect.x1 < frame.x0 )
-			return 0x000;
+			return OVER_FLG_OUT_OF_FRAME; // out of frame horizontally
 
 		if(frame.y1 <= obj->rect.y0 || obj->rect.y1 < frame.y0 )
-			return 0x000;
+			return OVER_FLG_OBJ_OUT_OF_FRAME; // the object is out of frame vertically
 		if(frame.x1 < obj->rect.x0 || obj->rect.x1 < frame.x0 )
-			return 0x000;
+			return OVER_FLG_OBJ_OUT_OF_FRAME; // the object out of frame horizontally
 
-		if(obj->rect.y1 < rect.y0 || rect.y1 < obj->rect.y0)
-			return 0x000;
+		if(obj->rect.y1 <= rect.y0 || rect.y1 < obj->rect.y0)
+			return OVER_FLG_NON_OVERLAP; // not overlapped vertically by the object
 		if(obj->rect.x1 < rect.x0 || rect.x1 < obj->rect.x0)
-			return 0x000;
+			return OVER_FLG_NON_OVERLAP; //not overlapped horizontally by the object
 
-		RECT_T backup(rect.as_int);
+		RECT_T backup(rect.as_int); // backup of our rectangle and replace it with the frame
+		// if the frame partially overlaps the object, reduce the width of the object to that of the frame
 		if(frame.x0 > rect.x0)
+		{
+			//          |--.......      		frame
+			//    |----------------| 	 		this
 			rect.x0 = frame.x0;
+			//          |--.......      		frame
+			//    |xxxxx|----------| 	 		this
+			res |= OVER_FLG_REDUCED_TO_FRAME;
+		}
 		if(frame.x1 < rect.x1)
+		{
+			//  .....----|			      		frame
+			//    |----------------| 	 		this
 			rect.x1 = frame.x1;
+			//  .....----|			      		frame
+			//    |------|xxxxxxxxx| 	 		this
+			res |= OVER_FLG_REDUCED_TO_FRAME;
+		}
+		//
+		//        |------|						frame
+		//   |....|------|....|					this
 
 		if (obj->rect.x0 > rect.x0)
 		{
-			//     |----------------|   		object
-			//                      |-----|     object
-			//    |----------------| 	 		this
+			//        |----......				object
+			//    |-------.......	 	 		this/frame
 			if (obj->rect.x0 > rect.x1)
 			{
+				//          |---..				object
+				//  ...---|						this/frame
 				// does not overlap
-				res = 0x111;
+				res |= OVER_FLG_NON_OVERLAP;
 			}
 			else
 			{
-				//     |--                   		object
-				//    |---                  		this
-
-				//           |-----|				object
-				//    |-------------------|			this
-				//    |......|-----|......| 		x0 - x0  x1 << object x0
-
-				//                |----------|		object
-				//    |-------------------|			this
-				//    |...........|-------| 		x0 - x0  x1 << object x0
+				//       |---...	           		object
+				//    |---.......----|      		this/frame
+				//....|dd|xxxxx......|
 				frame.x0 = rect.x0;
 				frame.x1 = obj->rect.x0;
 
 				if (obj->rect.x1 < rect.x1)
 				{
-					res = 0x010; // partially redraw left and right
+					res |= (OVER_FLG_PARTIAL_ON_LEFT|OVER_FLG_PARTIAL_ON_RIGHT); // partially redraw left and right
 				}
 				else
 				{
-					res = 0x100; // partially redraw on left side
+					res |= OVER_FLG_PARTIAL_ON_LEFT; // partially redraw on left side
 				}
 			}
 		}
 		else
 		{
+			//    |-------.......	 	 				object
+			//        |----......						this/frame
 			if (obj->rect.x1 < rect.x0)
 			{
-				//  |-----|                  		object
-				//         |---------|       		this
+				//  |-----|                  			object
+				//         |---------|       			this/frame
 				// does not overlap
-				res = 0x111;
+				res |= OVER_FLG_NON_OVERLAP;
 			}
 			else
-			{
-				//  |-----                   		object
-				//    |---                   		object
-				//    |---                  		this
+			{	//   or
+				// |----|---.....---|            		object
+				//      |---                  			this
 				if (obj->rect.x1 < rect.x1)
 				{
 					//    |-----|						object
@@ -655,7 +695,7 @@ int GObject::overlapped(GObject* obj, RECT_T& frame)
 					//    |--------|..........| 		x0 >> object x1  x1 - x1
 					frame.x0 = obj->rect.x1;
 					frame.x1 = rect.x1;
-					res = 0x001; // partially redraw on right side
+					res |= OVER_FLG_PARTIAL_ON_RIGHT; // partially redraw on right side
 				}
 				else
 				{
@@ -663,12 +703,14 @@ int GObject::overlapped(GObject* obj, RECT_T& frame)
 					//    |-------------------|  		object
 					//    |-------------------|			this
 					//    |-------------------| 		It no need to be redrawn
-					res = 0x000;
+					res = OVER_FLG_FULL_OVERLAP;
 				}
 			}
 		}
 		rect = backup;
-	}
+	}else
+		res = OVER_FLG_NON_OVERLAP;
+	GUI_ASSERT(res);
 	return res;
 }
 

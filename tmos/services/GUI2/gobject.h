@@ -37,6 +37,27 @@ enum object_type:unsigned char
 	OBJECT_CPU_USAGE
 };
 
+/*==============================================================================
+ 				overlapped(object, frame rectangle) return flags
+  ============================================================================== */
+// b[28,31]
+#define OVER_FLG_DRAWING			(0x80000000)
+#define OVER_FLG_PARTIAL			(0x40000000)
+#define OVER_FLG_FULL_OVERLAP		(0x20000000)
+#define OVER_FLG_UPPERMOST			(0x10000000)
+
+#define OVER_FLG_UPPERMOST_DRAWING	(OVER_FLG_UPPERMOST | OVER_FLG_DRAWING)
+#define OVER_FLG_PARTIAL_DRAWING	(OVER_FLG_PARTIAL | OVER_FLG_DRAWING)
+// b[0,3]
+#define OVER_FLG_OUT_OF_FRAME		(0x00000001)
+#define OVER_FLG_OBJ_OUT_OF_FRAME	(0x00000002 | OVER_FLG_DRAWING)
+#define OVER_FLG_NON_OVERLAP		(0x00000004 | OVER_FLG_DRAWING)
+#define OVER_FLG_REDUCED_TO_FRAME	(0x00000008 | OVER_FLG_DRAWING)
+// b[4,6]
+#define OVER_FLG_PARTIAL_ON_RIGHT	(0x00000010 | OVER_FLG_PARTIAL_DRAWING)
+#define OVER_FLG_PARTIAL_ON_MIDDLE	(0x00000020 | OVER_FLG_PARTIAL_DRAWING)
+#define OVER_FLG_PARTIAL_ON_LEFT	(0x00000040 | OVER_FLG_PARTIAL_DRAWING)
+
 struct GTimer
 {
 	static GTimer* base_timer;
@@ -93,7 +114,10 @@ struct GObject
 		GId id;
 		GFlags flags;
 		uint8_t ref_cnt;
+		union{
 		GFlags displays;
+		GFlags display; // alias of 'displays' used by the LCD
+		};
 	}__attribute__((packed));
 
 	static void* lastAllocated;
@@ -157,12 +181,13 @@ struct GObject
 	bool IsActiveTimer(GId event);
 	bool StopTimer(GId event);
 	// size and position methods
-	virtual void LPtoDP(POINT_T& size, unsigned char lcd_index =0);
-	virtual void DPtoLP(POINT_T& size, unsigned char lcd_index =0);
+	virtual void LPtoDP(POINT_T& size, const unsigned char lcd_index =0) const;
+	virtual void DPtoLP(POINT_T& size, const unsigned char lcd_index =0) const;
+	virtual POINT_T PolarToDP(const int deg, const int r, const unsigned char lcd_index=0) const;
+	POINT_T PolarToLP(const int deg, const int r) const;
 
 	// Draw methods
 
-	void clear_rect(const RECT_T& area);
 	bool cut_hline(int& x0, int& x1, int& y) const;
 	bool cut_vline(int& y0, int& y1, int& x) const;
 	void set_xy_all(LCD_MODULE* lcd, unsigned int xy, unsigned int all) const;
@@ -193,17 +218,20 @@ struct GObject
 	virtual POINT_T get_border_size(void);
 	virtual void draw_border(RECT_T& frame);
 
+	virtual void clear_rect(const RECT_T& area);
 	virtual void draw_point(int x, int y);
 	virtual void draw_hline(int x0, int x1, int y);
 	virtual void draw_bline(int x0, int x1, int y);
 	virtual void draw_vline(int y0, int y1, int x);
 	virtual void invert_vline(int y0, int y1, int x);
 	virtual void invert_hline(int x0, int x1, int y);
+/*
+ * the LCD implement it
+ *
 	virtual void draw_bitmap(int x0, int y0, const char* src, int width,
 			int rows)
-	{
-		;
-	}
+		{;}
+*/
 	virtual int overlapped(GObject* obj,  RECT_T& frame);
 	// queue message
 	unsigned int message(GMessage& msg);
@@ -237,6 +265,12 @@ protected:
 
 	virtual unsigned int process_destroy(GMessage& msg); //The WM_DESTROY message is sent when a window is being destroyed.
 	virtual void redraw_screen(GObject* object, RECT_T area);
+
+	friend struct LCD_MODULE;
+	inline virtual unsigned int is_lcd() const __attribute__((optimize("Os"), always_inline))
+	{
+		return 0;
+	}
 private:
 	// Timer methods
 	GTimer* FindTimer(GId event);
