@@ -278,7 +278,9 @@ void GObject::redraw_screen(GObject* object, RECT_T area)
 void GObject::invalidate(GObject* object, RECT_T area)
 {
 	INVALIDATE_ENTER_FUNCTION(area, this)
+#if INVALIDATE_INFO
 	uint32_t t=CURRENT_TIME;
+#endif
 	GUI_TRACELN(">> draw %u", invalidate_cnt);
 	invalidate_cnt++;
 	if (area)
@@ -295,7 +297,9 @@ void GObject::invalidate(GObject* object, RECT_T area)
 		GUI_TRACELN("invalidate: {%u,%u %u,%u} %u ms", area.x0, area.y0, area.x1, area.y1, ms_since(t));
 		gui_trace_sleep();
 		INVALIDATE_TRACELN("invalidate :%u ms",ms_since(t));
+#if INVALIDATE_INFO
 		t = CURRENT_TIME;
+#endif
 		parent->redraw_screen(this, area);
 		INVALIDATE_TRACELN("redraw :%u ms",ms_since(t));
 	}
