@@ -99,7 +99,7 @@ extern void trace_leave(const char*line, const RECT_T& rect, GObject* ob);
 #if INVALIDATE_INFO
 #define INVALIDATE_TRACELN(str,...) 	TRACE("\r\n" str, ##__VA_ARGS__)
 #else
-#define INVALIDATE_TRACELN(str,...) 	TRACE("\r\n" str, ##__VA_ARGS__)
+#define INVALIDATE_TRACELN(str,...)
 #endif
 
 #if GUI_DEBUG_MESSAGES
