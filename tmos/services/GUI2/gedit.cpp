@@ -9,6 +9,20 @@
 #include <lcd.h>
 #include <gedit_vkb.h>
 
+GEdit::~GEdit()
+{
+	if(edit_menu)
+	{
+		delete edit_menu;
+		edit_menu = nullptr;
+	}
+	if(virtual_kb)
+	{
+		delete virtual_kb;
+		virtual_kb = nullptr;
+	}
+}
+
 //const char *key1_vals = " ,.?!";
 //const char *key2_vals = "‡·‚„abc2";
 //const char *key2_shift_vals = "¿¡¬√ABC2";

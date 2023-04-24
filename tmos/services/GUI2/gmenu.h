@@ -33,11 +33,13 @@ struct menu_template_t
 
 
 struct GEdit;
+struct GEditVKB;
 struct GListBox;
 
 struct GMenu: GObject
 {
 	friend GEdit;
+	friend GEditVKB;
 	friend GListBox;
 
 	menu_template_t*	base;

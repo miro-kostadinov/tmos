@@ -13,7 +13,6 @@
 #include <fonts.h>
 #include <gscroll.h>
 #include <gmenu.h>
-#include <gedit_vkb.h>
 
 #define EDIT_INPUT_TIME		777
 #define EDIT_BLINK_TIME		500
@@ -31,8 +30,12 @@ extern const MENUTEMPLATE g_keyboard_menu[];
 
 enum key_mode:unsigned char {KT_BG_CAPS=1, KT_BG, KT_EN_CAPS, KT_EN, KT_DIGIT};
 
+struct GEditVKB;
+
 struct GEdit:GText
 {
+	friend GEditVKB;
+
 	text_metrics_t text_size;
 	bool	cursor_on;
 	unsigned int pos;
@@ -60,7 +63,8 @@ struct GEdit:GText
 		 virtual_kb(nullptr)
 	{;}
 
-	virtual ~GEdit()
+	virtual ~GEdit();
+/*
 	{
 		if(edit_menu)
 		{
@@ -73,6 +77,7 @@ struct GEdit:GText
 			virtual_kb = nullptr;
 		}
 	}
+*/
 
 	GUI_GET_OBJECT_TYPE(OBJECT_EDIT);
 
