@@ -17,29 +17,17 @@
 #include <gui_drv.h>
 #include <gcontainer.h>
 #include <gedit.h>
+#include <gbutton.h>
 
 
 //contains the text at the top of the screen
-struct GText_VKTXT : GObject
+struct GVKB_edit : GEdit
 {
-	friend GEditVKB;
-
-	CSTRING txt;
-	unsigned int edit_pos;		//position of the cursor on the text
-	unsigned char max_shown_c;	//how many maximum chars On Screen
-
-	GText_VKTXT (GId id_t, const RECT_T& rect_t, const char* txt_t, GFlags flags_t = GO_FLG_DEFAULT)
-		:GObject (id_t, rect_t, flags_t),
-		 txt(txt_t), edit_pos(0), max_shown_c(0)
+	GVKB_edit (GId id_t, const RECT_T& rect_t, CSTRING txt_t, GFlags flags_t = GO_FLG_DEFAULT)
+		:GEdit (id_t, rect_t, txt_t, nullptr, flags_t, ES_LEFT|ES_MIDDLE|ES_AUTO_SCROLL)
 	{;}
 
-	void insert_c(char c);
-	void erase_c();
-
-	void draw_this (LCD_MODULE* lcd) override;
-
 protected:
-	unsigned int initialize (GMessage& msg) override;
 	unsigned int process_key(GMessage& msg) override;
 };
 
@@ -47,37 +35,46 @@ protected:
 //for keeping positions on the KB
 struct KBPos
 {
-	unsigned char x;
-	unsigned char y;
+	union{
+		struct{
+			short int x;
+			short int y;
+		};
+		int as_int;
+	}__attribute__((packed));
 
-	KBPos(unsigned char x_t, unsigned char y_t): x(x_t), y(y_t) {;}
-	KBPos(): x(0), y(0) {;}
+
+	KBPos(short int x_t, short int y_t): x(x_t), y(y_t) {;}
+	KBPos(): as_int(0) {;}
 
 	inline bool operator!=(const KBPos& p1){
-		return ((p1.x!=x || p1.y!= y)?true:false);
+		return (p1.as_int != as_int);
 	}
 };
 
 //contains an alphabet (symbols of one "language") and can draw it
-struct GText_KB : GObject
+struct GVKB_keyboard : GObject
 {
 	friend GEditVKB;
 
 	CSTRING alphabet;	//contains the currently displayed alphabet
-	unsigned char rows, cols;	//num of rows and cols of symbols, used when calculating positions
 	KBPos cursor_pos;	//represents the cursor position on the KB
 	KBPos max_pos;		//the maximum position for the cursor on this page and alphabet
+	struct{
+	unsigned char rows, cols;		//num of rows and cols of symbols, used when calculating positions
 	unsigned char page, max_page;	//used to indicate current page and max page number
+	} __attribute__((packed));
 
 
-	GText_KB (GId id_t, const RECT_T& rect_t, const char* alphabet_t, GFlags flags_t = GO_FLG_DEFAULT)
+	GVKB_keyboard (GId id_t, const RECT_T& rect_t, GFlags flags_t = GO_FLG_DEFAULT)
 		:GObject (id_t, rect_t, flags_t),
-		 alphabet(alphabet_t), rows(0), cols(0), cursor_pos(), max_pos(), page(0), max_page(0)
+		 rows(0), cols(0), page(0), max_page(0)
 	{;}
 
 	void draw_this (LCD_MODULE* lcd) override;
 
 	void fill_kb();
+	void reinitialize();
 	inline char getc();
 
 protected:
@@ -87,39 +84,47 @@ protected:
 
 
 //struct for the OK, ABC and X texts
-struct GText_CTRL : GObject
+struct GVKB_button : GButton
 {
-	CSTRING txt;
-
-
-	GText_CTRL (GId id_t, const RECT_T& rect_t, const char* txt_t,
+	GVKB_button (GId id_t, const RECT_T& rect_t, unsigned int cmd_id, const char* txt_t,
 		GFlags flags_t = GO_FLG_DEFAULT)
-		:GObject (id_t, rect_t, flags_t), txt(txt_t)
+		: GButton (id_t, rect_t, cmd_id, txt_t, flags_t)
+
 	{;}
 
+	void draw_border(RECT_T& frame) override
+	{/* do nothing */;}
 	void draw_this (LCD_MODULE* lcd) override;
 
-protected:
-	unsigned int initialize (GMessage& msg) override;
 };
 
+struct GVKB_Controls : GContainer
+{
+	const RENDER_MODE* font;
+	GVKB_Controls(GId id_t, const RECT_T& rect_t, GFlags flags_t= GO_FLG_DEFAULT)
+		:GContainer(id_t, rect_t, flags_t)
+		,font(nullptr)
+	{;}
 
-enum zone_type:unsigned char {VKB_ZONE_TXT=1, VKB_ZONE_KB, VKB_ZONE_CTRL_1,
-	VKB_ZONE_CTRL_2, VKB_ZONE_CTRL_3, VKB_ZONE_MENU};
+	virtual ~GVKB_Controls()
+	{;}
+protected:
+	unsigned int initialize (GMessage& msg) override;
+	unsigned int process_command(GMessage& msg)	override;
+	unsigned int process_key(GMessage& msg)	override;
+	unsigned int process_default(GMessage& msg)	override;
+};
 
 struct GEditVKB : GContainer
 {
 	GEdit *	base_edit;	//pointer to the GEdit whose text we are editing
-	GText_KB * kb;		//pointer to the keyboard object (child)
-	zone_type zone;		//represents the "zone" of the screen we're in
 	key_mode shift;		//current type of letters
-	GMenu* edit_menu;	//pointer for language menu, only used when changing it
 	const RENDER_MODE* font;	//font size for all text on the VKB
 
 
 	GEditVKB(GEdit* base) :
-		GContainer(), base_edit(base), kb(nullptr), zone(VKB_ZONE_KB),
-		shift(base->shift), edit_menu(nullptr), font(base->text_font)
+		GContainer(), base_edit(base),
+		shift(base->shift), font(base->text_font)
 	{;}
 
 	virtual ~GEditVKB()
@@ -136,10 +141,7 @@ protected:
 	friend void gui_thread(GUI_DRIVER_INFO* drv_info);
 	unsigned int initialize (GMessage& msg) override;
 	unsigned int process_key(GMessage& msg) override;
-
-	unsigned int process_key_txt(GMessage& msg);
-	unsigned int process_key_kb(GMessage& msg);
-	unsigned int process_key_ctrl(GMessage& msg);
+	unsigned int process_command(GMessage& msg)	override;
 };
 
 #endif /* GEDIT_VKB_H_ */

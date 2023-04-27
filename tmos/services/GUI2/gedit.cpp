@@ -537,9 +537,10 @@ unsigned int GEdit::process_key (GMessage& msg)
 	case KEY_OK:
 		if(align & ES_USE_VIRTUAL_KB)
 		{
-			if( !virtual_kb && (virtual_kb = new GEditVKB(this)) )
+			GEditVKB* p = nullptr;
+			if((p = new GEditVKB(this)) )
 			{
-				return virtual_kb->CreateVKB();
+				return p->CreateVKB();
 			}
 			return 0;
 		}

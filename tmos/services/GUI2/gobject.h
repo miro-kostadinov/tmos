@@ -176,6 +176,11 @@ struct GObject
 		return p;
 	}
 
+	void operator delete(void *p)
+	{
+		tsk_free(p);
+		p = nullptr;
+	}
 	// Timer methods
 	bool SetTimer(GId event, unsigned int elapse);
 	void KillTimer(GId event);
