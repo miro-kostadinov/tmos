@@ -48,7 +48,7 @@ unsigned int GContainer::process_default(GMessage& msg)
 unsigned int GContainer::process_command(GMessage& msg)
 {
 	if(parent)
-		return parent->process_default(msg);
+		return parent->process_command(msg);
 	return 0;
 }
 
