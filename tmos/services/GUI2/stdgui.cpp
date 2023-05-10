@@ -5,24 +5,107 @@
  *      Author: Miroslav Kostadinov
  */
 
-#include <tmos.h>
 #include <stdgui.h>
-#include <lcd.h>
-
 
 unsigned int current_laguage;
-
 
 WEAK_C char TranslateKey( unsigned int key_code)
 {
 	return 0;
 }
 
+msgQueue<MAX_MESSAGES> GQueue;
+
+void processes_all_messages(void)
+{
+	GMessage msg;
+	while (GQueue.pop(msg))														//processes all messages in the queue
+	{
+#if GUI_DEBUG_MESSAGES
+		unsigned int t0 = CURRENT_TIME;
+#endif
+		if(msg.code == WM_DELETED || !Gdesktop)
+			continue;
+
+		if (msg.dst == nullptr )
+			msg.dst = Gdesktop->parent;	// lcd message
+
+		if(GWait::dowait_win && msg.code == WN_DESTROY && msg.dst && msg.dst != GWait::dowait_win)
+		{
+			GWaitOwner** powner = &GWait::dowait_win->owners;
+			GWaitOwner* owner;
+
+			while((owner = *powner))
+			{
+				if(owner->owner == msg.dst)
+				{
+					*powner =  owner->next;
+					delete owner;
+					break;
+				}
+				powner =  &owner->next;
+			}
+		}
+
+		if(!msg.dst->message(msg) && msg.code == WM_KEY)   						// send message to desktop
+			Gdesktop->message(msg);
+
+		if(GWait::dowait_win && msg.dst && msg.dst != GWait::dowait_win && GWait::dowait_cnt)
+		{
+			GWaitOwner *tmp = GWait::dowait_win->owners;
+			if(msg.code == WM_INIT && msg.lparam)
+			{
+				// msg.lparam set only if window object
+				while(tmp)
+				{
+					if(tmp->owner == msg.dst && msg.dst->is_available())
+						break;
+					tmp = tmp->next;
+				}
+				if(!tmp)
+					GWait::dowait_win->hide();
+			}
+			if(msg.code == WN_DESTROY)
+			{
+				while(tmp)
+				{
+					if(tmp->owner == Gdesktop->parent->focus && (tmp->flags & GO_FLG_SHOW))//!(GWait::dowait_win->flags & GO_FLG_SHOW))
+					{
+						GWait::dowait_win->SetTimer(ID_BUSY_CLOCK, BUSY_START_TIME);
+						break;
+					}
+					tmp = tmp->next;
+				}
+				if(!tmp)
+					GWait::dowait_win->hide();
+			}
+		}
+#if GUI_DEBUG_MESSAGES
+		TRACELN("\e[1;92m executed for %d ms\e[m", ms_since(t0));
+		gui_trace_sleep();
+#endif
+	}
+}
+
+void send_message(WM_MESSAGE wm_code,
+		WPARAM wparam, LPARAM lparam, GObject* dst)
+{
+	while(!GQueue.push(GMessage(wm_code, wparam, lparam, dst)))
+		processes_all_messages();
+}
+
+void send_message(GMessage& msg, GObject* dst)
+{
+	if(dst)
+		msg.dst = dst;
+	while(!GQueue.push(msg))
+		processes_all_messages();
+}
 
 //*----------------------------------------------------------------------------
 //*			sin(x) / cos(x) used for polar transformations
 //*----------------------------------------------------------------------------
-
+#if USE_GUI_MATH
 static const int16_t sin_x10000_0_90[]=
 {
     0,  174,  348,  523,  697,  871, 1045, 1218, 1391, 1564, 1736, 1908, 2079,
@@ -66,153 +149,5 @@ int32_t cos_x10000(int deg)
 {
 	return sin_x10000(90 - deg);
 }
-
-
-//*----------------------------------------------------------------------------
-//*			Point
-//*----------------------------------------------------------------------------
-//POINT_T& POINT_T::operator= (POINT_T& p_t)
-//{
-//	if(this != &p_t)
-//		as_int = p_t.as_int;
-//	return *this;
-//}
-bool POINT_T::operator== (POINT_T p_t) const
-{
-	return (as_int == p_t.as_int);
-}
-POINT_T POINT_T::operator+(const POINT_T& op) const
-{
-	POINT_T res(x + op.x, y + op.y);
-	return res;
-}
-
-POINT_T& POINT_T::operator+=(const POINT_T& op)
-{
-	x += op.x;
-	y += op.y;
-	return *this;
-}
-
-POINT_T::operator bool() const
-{
-	return (as_int != 0);
-}
-
-//*----------------------------------------------------------------------------
-//*			Rectangle
-//*----------------------------------------------------------------------------
-RECT_T::RECT_T (const POINT_T& p0_t, const POINT_T& p1_t)
-{
-	p0.as_int = p0_t.as_int; p1.as_int = p1_t.as_int;
-}
-RECT_T::RECT_T (const POINT_T& p0_t, const short int& xs, const short int& ys )
-{
-	p0.as_int = p0_t.as_int;
-	x1 = p0.x + xs; y1 = p0.y + ys;
-}
-
-
-//RECT_T& RECT_T::operator= (const RECT_T& rect_t)
-//{
-//	if(this != &rect_t)
-//		as_int = rect_t.as_int;
-//	return *this;
-//}
-
-RECT_T& RECT_T::operator= (int val)
-{
-	x0=y0=x1=y1=val;
-	return *this;
-}
-RECT_T& RECT_T::operator= (unsigned long long val)
-{
-	as_int = val;
-	return *this;
-}
-bool RECT_T::operator== (int val) const
-{
-	return (x0==val && y0== val && x1==val && y1== val);
-}
-bool RECT_T::operator== (RECT_T rect_t) const
-{
-	return (as_int == rect_t.as_int);
-}
-short int RECT_T::width() const
-{
-	return (x1 - x0);
-}
-short int RECT_T::height()const
-{
-	return (y1 - y0);
-}
-
-void RECT_T::Inflate(int x, int y)
-{
-	x0 +=x; x1 -=x;
-	y0 +=y; y1 -=y;
-}
-
-void RECT_T::Inflate(int l, int t, int r, int b)
-{
-	x0 += l; x1 -=r;
-	y0 += t; y1 -=b;
-}
-
-void RECT_T::Deflate(int x, int y)
-{
-	x0 -=x; x1 +=x;
-	y0 -=y; y1 +=y;
-}
-
-void RECT_T::Deflate(int l, int t, int r, int b)
-{
-	x0 -= l; x1 +=r;
-	y0 -= t; y1 +=b;
-}
-
-void RECT_T::Offset(int x, int y)
-{
-	x0 += x; x1 += x;
-	y0 += y; y1 += y;
-}
-
-bool RECT_T::normalize (const RECT_T& rect)
-{
-	return normalize (rect.x0, rect.y0, rect.x1, rect.y1);
-}
-
-bool RECT_T::normalize (short int x0_t, short int y0_t, short int x1_t, short int y1_t)
-{
-	if (x0 > x1_t)
-	{
-		*this = NULL;
-		return false;
-	}
-	if (y0 > y1_t)
-	{
-		*this = NULL;
-		return false;
-	}
-	if (x0 < x0_t)
-		x0 = x0_t;
-	if (y0 < y0_t)
-		y0 = y0_t;
-	if (x1 < x0)
-	{
-		*this = NULL;
-		return false;
-	}
-	if (y1 < y0)
-	{
-		*this = NULL;
-		return false;
-	}
-	if (x1 > x1_t)
-		x1 = x1_t;
-	if (y1 > y1_t)
-		y1 = y1_t;
-	return true;
-}
-
+#endif
 

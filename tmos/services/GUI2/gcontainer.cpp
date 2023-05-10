@@ -5,10 +5,7 @@
  *      Author: edguest
  */
 
-#include <gcontainer.h>
-#include <tmos.h>
-#include <lcd.h>
-
+#include <stdgui.h>
 
 unsigned int GContainer::initialize (GMessage& msg)								//sets the client rectangle and calls the initialize of the children
 {
@@ -76,8 +73,9 @@ GObject* GContainer::addChildRef(GObject* child)
 	return addChild (child);
 }
 
-GObject* GContainer::get_object(GId xid)
+GObject* GContainer::get_object_in_container(GId xid)
 {
+	GObject* res;
 	if(id != xid)
 	{
 		GObject* tmp = children;
@@ -85,8 +83,23 @@ GObject* GContainer::get_object(GId xid)
 		{
 			if(tmp->id == xid)
 				return tmp;
+			res = tmp->get_object_in_container(xid);
+			if(res)
+				return res;
 			tmp = tmp->nextObj;
 		}
+		return nullptr;
+	}
+	return this;
+}
+
+GObject* GContainer::get_object(GId xid)
+{
+	if(id != xid)
+	{
+		GObject* tmp = get_object_in_container(xid);
+		if(tmp)
+			return tmp;
 		return GObject::get_object(xid);
 	}
 	return this;

@@ -7,36 +7,11 @@
 
 #ifndef GOBJECT_H_
 #define GOBJECT_H_
-#include <tmos.h>
+
 #include <stdgui.h>
-#include <message.h>
-#include <fonts.h>
 
 struct LCD_MODULE;
 struct GContainer;
-
-enum object_type:unsigned char
-{
-	OBJECT_OBJECT=0,
-	OBJECT_CONTAINER,
-	OBJECT_BUTTON,
-	OBJECT_EDIT,
-	OBJECT_VKB,
-	OBJECT_FBUTTON,
-	OBJECT_FTEXT,
-	OBJECT_LISTBOX,
-	OBJECT_MENU,
-	OBJECT_RADIO,
-	OBJECT_TEXT,
-// window objects
-	OBJECT_WINDOW,
-	OBJECT_DIALOG,
-	OBJECT_MESSAGEBOX,
-	OBJECT_DOWAIT,
-	OBJECT_DISPLAY,
-	OBJECT_DISPLAY_MULTIPLEXER,
-	OBJECT_CPU_USAGE
-};
 
 /*==============================================================================
  				overlapped(object, frame rectangle) return flags
@@ -221,7 +196,7 @@ struct GObject
 	virtual void invalidate(GObject* object, RECT_T area);
 	// virtual draw methods ( they are used from the module )
 	virtual void allocate_border(void);
-	virtual POINT_T get_border_size(void);
+	virtual POINT_T get_border_size(void) const;
 	virtual void draw_border(RECT_T& frame);
 
 	virtual void clear_rect(const RECT_T& area);
@@ -269,7 +244,8 @@ protected:
 		return 0;
 	}
 
-	virtual unsigned int process_destroy(GMessage& msg); //The WM_DESTROY message is sent when a window is being destroyed.
+	virtual unsigned int process_sysctrl(GMessage& msg);		//proceeds items with WM_SYSCTRL_XXX
+	virtual unsigned int process_destroy(GMessage& msg); 	//The WM_DESTROY message is sent when a window is being destroyed.
 	virtual void redraw_screen(GObject* object, RECT_T area);
 
 	friend struct LCD_MODULE;
@@ -277,6 +253,13 @@ protected:
 	{
 		return 0;
 	}
+	GObject* get_object_in_container(GId xid) __attribute__((optimize("Os"), always_inline))
+	{
+		if(id == xid)
+			return this;
+		return nullptr;
+	}
+
 private:
 	// Timer methods
 	GTimer* FindTimer(GId event);

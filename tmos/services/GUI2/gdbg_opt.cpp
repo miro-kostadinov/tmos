@@ -5,9 +5,7 @@
  *      Author: bratkov
  */
 
-#include <tmos.h>
 #include <stdgui.h>
-#include <lcd.h>
 
 #if GUI_DEBUG_MESSAGES || GUI_DEBUG || GUI_DEBUG_INVALIDATE
 STR_LIST obj_type_str =

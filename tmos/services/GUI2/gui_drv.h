@@ -4,7 +4,7 @@
 
 struct LCD_MODULE;
 
-#define SIG_GUI_TASK		2
+#define SIG_GUI_TASK_CANCEL		2
 
 
 struct GUI_DRIVER_DATA
@@ -30,5 +30,7 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param);
 void GUI_DSR(GUI_DRIVER_INFO* drv_info, HANDLE hnd);
 
 EXTERN_C int detect_displays(GUI_DRIVER_INFO* drv_info);
+
+extern GUI_DRIVER_INFO gui_driver;
 
 #endif

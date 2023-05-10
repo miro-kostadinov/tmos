@@ -8,9 +8,8 @@
 #ifndef LCD_MULTIPLEX_H_
 #define LCD_MULTIPLEX_H_
 
-#include <tmos.h>
+#include <stdgui.h>
 #include <lcd.h>
-#include <gcontainer.h>
 
 struct LCD_MULT: GContainer
 {

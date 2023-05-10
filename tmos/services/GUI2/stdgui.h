@@ -3,6 +3,7 @@
 
 #include <tmos.h>
 #include <gdbg_opt.h>
+#include <mqueue.h>
 
 #ifndef GUI_LANGUAGES
 #define GUI_LANGUAGES	2
@@ -33,7 +34,16 @@
 #define GO_OBJ_FRAME_HEIGHT	1
 #endif
 
-// object messages
+// sin(x)/cos(x) and other math functions
+#ifndef USE_GUI_MATH
+#define USE_GUI_MATH 1
+#endif
+
+// object messages queue
+#ifndef MAX_MESSAGES
+#define MAX_MESSAGES 10
+#endif
+
 enum WM_MESSAGE:unsigned int
 {
 	WM_DELETED =0,
@@ -50,15 +60,131 @@ enum WM_MESSAGE:unsigned int
 	WM_TIMER,
 	WM_INIT,
 	WM_DRAW,
-	WM_KEY
+	WM_SYSCTRL,			// the controls specific action
+	WM_SYSCTRL_SET,		// setting the controls flags (align)
+	WM_SYSCTRL_CLR,		// clearing the controls flags (align)
+	WM_KEY,
+	WM_USER				// after this message follow user defined commands
 };
 
+typedef unsigned long long LPARAM;
+typedef unsigned int  WPARAM;
 
-#define MAX_MESSAGES 10
+struct GObject;
+
+struct GMessage
+{
+	WM_MESSAGE code;
+	WPARAM param;
+	LPARAM lparam;
+	GObject* dst;
+
+	GMessage () : code(WM_QUIT), param(0), lparam(0), dst(nullptr)
+	{;}
+	GMessage (WM_MESSAGE code_, WPARAM wparam_, LPARAM lparam_, GObject* destination_):
+		code (code_), param (wparam_), lparam (lparam_), dst (destination_)
+	{;}
+	GMessage (WM_MESSAGE code_, WPARAM wparam_, GObject* destination_):
+		code (code_), param (wparam_), lparam (0L), dst (destination_)
+	{;}
+
+	GMessage (GMessage&& arg) = delete;
+	GMessage (GMessage& arg) = delete;
+
+	GMessage& operator= (const GMessage& msg) = default;
+};
+
+template< const int size>
+struct msgQueue : mqueue<GMessage, size>
+{
+	msgQueue(): mqueue<GMessage, size>()
+		{;}
+
+	bool del_msg_for(GObject* owner);
+#if GUI_DEBUG_MESSAGES
+	bool pop(GMessage& msg);
+	bool push(const GMessage& msg);
+#endif
+};
+
+template<const int size>
+bool msgQueue<size>::del_msg_for(GObject* msg_owner)
+{
+	unsigned short indx = this->out;
+	bool res = false;
+
+	while(this->in != indx)
+	{
+		if(this->items[indx].dst == msg_owner)
+		{
+			GUI_DEBUG_MESSAGES_DELITED();
+			this->items[indx].code = WM_DELETED;
+			res = true;
+		}
+		if(++indx == size)
+			indx=0;
+	}
+	return res;
+}
+
+#if GUI_DEBUG_MESSAGES
+template<const int size>
+bool msgQueue<size>::pop(GMessage& msg)
+{
+	if(mqueue<GMessage, size>::pop(msg))
+	{
+		GDebug_trace_message(msg, false);
+		return true;
+	}
+	return false;
+}
+
+template<const int size>
+bool msgQueue<size>::push(const GMessage& msg)
+{
+	if(mqueue<GMessage, size>::push(msg))
+	{
+		GDebug_trace_message(msg);
+		return true;
+	}
+	return false;
+}
+#endif
+
+extern msgQueue<MAX_MESSAGES> GQueue;
+
+void processes_all_messages(void);
+void send_message(WM_MESSAGE wm, unsigned int param, unsigned long long lparam, GObject* dst);
+void send_message(GMessage& msg, GObject* dst);
+
 
 #ifndef GUI_IDLE_MSG_PERIOD
 #define GUI_IDLE_MSG_PERIOD	15000 //!< period (in ms ) during which the message is sent WM_IDLE
 #endif
+
+// base object types
+enum object_type:unsigned char
+{
+	OBJECT_OBJECT=0,
+	OBJECT_CONTAINER,
+	OBJECT_BUTTON,
+	OBJECT_EDIT,
+	OBJECT_VKB,
+	OBJECT_FBUTTON,
+	OBJECT_FTEXT,
+	OBJECT_LISTBOX,
+	OBJECT_MENU,
+	OBJECT_RADIO,
+	OBJECT_TEXT,
+// window objects
+	OBJECT_WINDOW,
+	OBJECT_DIALOG,
+	OBJECT_MESSAGEBOX,
+	OBJECT_DOWAIT,
+	OBJECT_DISPLAY,
+	OBJECT_DISPLAY_MULTIPLEXER,
+	OBJECT_CPU_USAGE
+};
 
 // base object flags
 #define GO_FLG_BORDER		0x01
@@ -135,24 +261,20 @@ typedef unsigned char GId;
 #define ES_AUTO_SCROLL	SS_AUTO_SCROLL
 // additional control styles for edit box
 // bit[6 - 11]
-#define ES_PASSWORD		(1<<6)
-#define ES_WANTRETURN   (1<<7)
-#define ES_HIDE_CURSOR	(1<<8)
-#define ES_LEAD_ZERO	(1<<9)
-#define ES_NUMERIC		(1<<10)
+#define ES_PASSWORD			(1<<6)
+#define ES_WANTRETURN   	(1<<7)
+#define ES_HIDE_CURSOR		(1<<8)
+#define ES_LEAD_ZERO		(1<<9)
+#define ES_NUMERIC			(1<<10)
 #define ES_USE_VIRTUAL_KB	(1<<11)
 
 #define ES_DEFAULT		(ES_CENTER|ES_MIDDLE|ES_MULTILINE|ES_AUTO_SCROLL)
 
-//-----------------------------------------------   list box
-// additional control styles for list box
-// bit 12
-#define LBS_DROPDOWN	(1<<12)
-#define LBS_DEFAULT		(SS_WORDWRAP|SS_LEFT|SS_MIDDLE)
+//-----------------------------------------------   button control
 
-extern unsigned int current_laguage;
-
-extern "C" char TranslateKey( unsigned int key_code);
+#define GB_TYPE_NONE		0
+#define GB_TYPE_RADIO		1
+#define GB_TYPE_CHECK		2
 
 // icon index
 #define GICON_CIRCLE			0
@@ -165,121 +287,129 @@ extern "C" char TranslateKey( unsigned int key_code);
 #define GICON_LEFT				7
 #define GICON_RIGHT				8
 
-enum gui_base_keys:unsigned char
+//-----------------------------------------------   list box
+// additional control styles for list box
+// bit 12
+#define LBS_DROPDOWN	(1<<12)
+#define LBS_DEFAULT		(SS_WORDWRAP|SS_LEFT|SS_MIDDLE)
+
+//-----------------------------------------------   message box
+
+#define ID_MB_DLG		0xF0
+#define ID_MB_TITLE		0xF1
+#define ID_MB_TEXT_BOX	0xF2
+
+// buttons text index
+#define IDS_OK			0
+#define IDS_RETRY		1
+#define IDS_YES			2
+#define IDS_NO			3
+#define IDS_CANCEL		4
+
+// buttons flags
+#define MBF_OK			(1<<0)
+#define MBF_RETRY		(1<<1)
+#define MBF_YES			(1<<2)
+#define MBF_NO			(1<<3)
+#define MBF_CANCEL		(1<<4)
+#define MBF_LAST_BTN	(1<<5)
+// control flags
+#define MBF_EDIT		(1<<5)
+#define MBF_CLR			(1<<6)
+
+// control fields
+#define MBF_INPUT_TYPE(type) 	(((type)&0xF)<<8)
+#define MBF_EDIT_FLAGS(flags) 	((flags)<<16)
+#define MBF_BEEP_TYPE(num)		(((num)&0xF)<<12)
+
+#define GET_MBF_INPUT_TYPE(mb_type)	((key_mode)(((mb_type)>>8)&0xF))
+#define GET_MBF_EDIT_FLAGS(mb_type)	(((mb_type)>>16)&0xFFFF)
+#define GET_MBF_BEEP_TYPE(mb_type)	(((mb_type)>>12)&0xF)
+
+#define MB_OK			MBF_OK
+#define MB_OKCANCEL 	(MBF_OK|MBF_CANCEL)
+#define	MB_RETRYCANCEL  (MBF_RETRY|MBF_CANCEL)
+#define MB_YESNO		(MBF_YES|MBF_NO)
+#define MB_YESNOCANCEL  (MBF_YES|MBF_NO|MBF_CANCEL)
+
+#define MB_BEEP(code)	MBF_BEEP_TYPE(code)
+/*
+ * Message(Edit)Box style format
+ * ------------------------------------------------------------------------------
+ *  31   30   29   28   27   26   25   24   23   22   21   20   19   18   17   16
+ *
+ *  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+ * |   beep type      | BG/EN/bg/en/123   | ctrl flags   |   Buttons             |
+ *  nc   nc   nc   nc   nc   nc   nc   nc   nc   CLR  EDI  CANC  NO  YES  RETRY OK
+ */
+
+extern unsigned int current_laguage;
+
+extern "C" char TranslateKey( unsigned int key_code);
+
+enum GUI_KEYS : unsigned char
 {
-	KEY_0		= 1,
-	KEY_1		= 2,
-	KEY_2		= 3,
-	KEY_3		= 4,
-	KEY_4		= 5,
-	KEY_5		= 6,
-	KEY_6		= 7,
-	KEY_7		= 8,
-	KEY_8		= 9,
-	KEY_9		=10,
-	KEY_OK		=11,
-	KEY_ENTER	=11,
-	KEY_CANCEL	=12,
-	KEY_C		=12,
-	KEY_UP		=13,
-	KEY_DOWN	=14,
-	KEY_LEFT	=15,
-	KEY_RIGHT	=16,
-	KEY_ESC		=17,
-	KEY_DP		=18,
-	KEY_SHIFT	=19,
-	KEY_X		=20,
-	KEY_USER_DEFINED = 21
+	KEY_0 = 1,
+	KEY_1,
+	KEY_2,
+	KEY_3,
+	KEY_4,
+	KEY_5,
+	KEY_6,
+	KEY_7,
+	KEY_8,
+	KEY_9,
+	KEY_ENTER,
+	KEY_CANCEL,
+	KEY_UP,
+	KEY_DOWN,
+	KEY_LEFT,
+	KEY_RIGHT,
+	KEY_ESC,
+	KEY_POINT,
+	KEY_SHIFT,
+	KEY_X,
+	KEY_USER_DEFINED
 };
 
+#if USE_GUI_MATH
+// math utility
 int32_t sin_x10000(int deg);
 int32_t cos_x10000(int deg);
-
-struct POINT_T
-{
-	union{
-		struct {short int x, y;};
-		int as_int;
-	}__attribute__((packed));
-	POINT_T() : as_int(0) {}
-	POINT_T(const short int& x_t, const short int& y_t): x(x_t), y(y_t) {}
-	POINT_T(int p): as_int(p) {}
-
-	POINT_T& operator= (const POINT_T& p_t) = default;
-	bool operator== (POINT_T p_t) const;
-	POINT_T operator+(const POINT_T& op) const;
-	POINT_T& operator+=(const POINT_T& op);
-
-	operator bool() const;
-};
-
-struct point_t
-{
-	union{
-	struct {short int x, y;};
-	int as_int;
-	}__attribute__((packed));
-	operator POINT_T() const
-	{
-		return POINT_T (as_int);
-	}
-};
-
-union rec_t{
-	struct {short int x0, y0, x1, y1;};
-	unsigned long long as_int;
-}__attribute__((packed));
-
-struct RECT_T
-{
-	union{
-		struct {short int x0, y0, x1, y1;};
-		unsigned long long as_int;
-		struct {
-			point_t p0;
-			point_t p1;
-		};
-	}__attribute__((packed));
-
-	RECT_T ()
-		: as_int(0) {;}
-	RECT_T (const unsigned long long& val)
-		: as_int(val) {;}
-	RECT_T (const short int& x0_t, const short int& y0_t, const short int& x1_t, const short int& y1_t)
-		: x0(x0_t),  y0(y0_t), x1(x1_t), y1(y1_t) {;}
-	RECT_T (const POINT_T& p0_t, const POINT_T& p1_t);
-	RECT_T (const POINT_T& p0_t, const short int& xs, const short int& ys );
-
-    bool normalize (const RECT_T& rect);
-    bool normalize (short int x0_t, short int y0_t, short int x1_t, short int y1_t);
-
-    RECT_T& operator= (const RECT_T& rect_t) = default;
-    RECT_T& operator= (int val);
-    RECT_T& operator= (unsigned long long val);
-    bool operator== (int val) const;
-	bool operator== (RECT_T rect_t) const;
-	short int width() const;
-	short int height()const;
-	inline operator bool() const
-		{ return (as_int); }
-	void Inflate(int x, int y);
-	void Inflate(int l, int t, int r, int b);
-	void Deflate(int x, int y);
-	void Deflate(int l, int t, int r, int b);
-	void Offset(int x, int y);
-
-#if GUI_DEBUG || GUI_DEBUG_INVALIDATE
-	void dump() const
-	{
-		TRACE(" [x(%d, %d), y(%d, %d)]", x0, x1, y0, y1);
-	}
-#else
-	inline void dump() {;}
 #endif
-};
 
+// GUI base
+#include <basic_shapes.h>
+#include <fonts.h>
+#include <gobject.h>
+#include <gcontainer.h>
+#include <gui_drv.h>
+// GUI lcds
+#include <lcd.h>
+#include <lcd_multiplex.h>
+// GUI api_windows
+#include <gwindow.h>
+#include <gdialog.h>
+#include <gmsgbox.h>
+// GUI controls
+#include <gtext.h>
+#include <gmenu.h>
+#include <gbutton.h>
+#include <gfloating_text.h>
+#include <gradio.h>
+#include <gclockview.h>
+#include <gfloating_button.h>
+#include <gedit.h>
+#include <glistbox.h>
+#include <gdatetime.h>
+// CUI auxiliary
+#include <gscroll.h>
+#include <gdowait.h>
+#include <gedit_vkb.h>
 
-RES_CODE msg_error(CSTRING& msg, int err_code);
-RES_CODE msg_error(const char *msg, int err_code);
+// DEPRECATED
+struct  __attribute__ ((deprecated ("replace with GDateTime")))GTimeEdit;
+struct __attribute__ ((deprecated ("replace with GClockView"))) GClock;
 
 #endif
+

@@ -1,6 +1,6 @@
 ##########################################################################
 #
-#	Make include for GUI2
+#	Make include for GUI2/controls
 #	
 #   Platform: MPOS rev.2.3
 #
@@ -14,11 +14,15 @@ local_c_src-y 	:=
 local_cpp_src-y	:=
 local_h_src-y 	:=
 
-local_cpp_src-y	+= gui_drv.cpp stdgui.cpp gdbg_opt.cpp
-local_cpp_src-y += gobject.cpp gcontainer.cpp basic_shapes.cpp
+local_cpp_src-y	+= gbutton.cpp gfloating_button.cpp
+local_cpp_src-y	+= gedit.cpp gtext.cpp gfloating_text.cpp
+local_cpp_src-y	+= gmenu.cpp gradio.cpp glistbox.cpp
+local_cpp_src-y	+= gclockview.cpp gdatetime.cpp
 
-local_h_src-y 	+= gui_drv.h stdgui.h gdbg_opt.h
-local_h_src-y 	+= gobject.h gcontainer.h basic_shapes.h
+local_h_src-y	+= gbutton.h gfloating_button.h
+local_h_src-y	+= gedit.h gtext.h gfloating_text.h
+local_h_src-y	+= gmenu.h gradio.h glistbox.h
+local_h_src-y	+= gclockview.h gdatetime.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))
@@ -31,7 +35,7 @@ h_sources  	+= $(call changepath,$(local_h_src-y))
 inc_dirs += $(subdirectory)
 
 #submodules
-local_modules-y := fonts lcds api_windows controls
+local_modules-y :=  auxiliary
 
 sub_modules := $(call changepath,$(local_modules-y))
 modules += $(sub_modules)

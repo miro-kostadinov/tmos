@@ -5,9 +5,7 @@
  *      Author: edguest
  */
 
-#include <tmos.h>
-#include <lcd_multiplex.h>
-#include <gwindow.h>
+#include <stdgui.h>
 
 void LCD_MULT::invalidate (GObject* object, RECT_T area)
 {

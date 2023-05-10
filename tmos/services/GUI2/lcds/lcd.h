@@ -1,13 +1,8 @@
 #ifndef	LCD_H
 #define	LCD_H
 
+#include <stdgui.h>
 #include <hardware_cpp.h>
-#include <fonts.h>
-#include <gcontainer.h>
-
-//#define ALL_LEFT		0
-//#define ALL_RIGHT 		1
-//#define ALL_CENTER		2
 
 #define SIG_BACKLIGHT_TASK	1
 

@@ -7,8 +7,8 @@
 
 #ifndef GCONTAINER_H_
 #define GCONTAINER_H_
-#include <tmos.h>
-#include <gobject.h>
+
+#include <stdgui.h>
 
 struct GContainer:GObject {
 
@@ -49,6 +49,7 @@ protected:
 	GObject* last_available();
 	bool close (GObject* toClose);
 	bool close () override;
+	GObject* get_object_in_container(GId xid);
 
 private:
 	bool set_focus_first();

@@ -7,18 +7,7 @@
 //  waiting list is the Zorder for the GUI objects
 //////////////////////////////////////////////////////////////////////////
 
-#include <tmos.h>
-#include <gui_drv.h>
 #include <stdgui.h>
-#include <lcd.h>
-#include <gwindow.h>
-#include <gbutton.h>
-#include <gtext.h>
-#include <gdowait.h>
-
-#if GUI_DISPLAYS > 1
-#include <lcd_multiplex.h>
-#endif
 
 
 //*----------------------------------------------------------------------------
@@ -28,47 +17,20 @@
 
 WEAK_C GWindow* gui_desktop ()
 {
-	GWindow* win;
-	win = new GWindow(1, RECT_T (0, 0, 132, 64), 0x3, GO_FLG_DEFAULT|GO_FLG_SELECTED);
-	win->addChild(new GText (1, RECT_T (0,0,132,30), "A600C", nullptr, GO_FLG_DEFAULT, SS_DEFAULT, &FNT10x21));
-	return win;
+	return new GWindow(1, RECT_T (0, 0, 132, 64), 0x3, GO_FLG_DEFAULT|GO_FLG_SELECTED);
 }
 
 WEAK_C void init_main_menu(void)
 {
-
 }
 
 WEAK_C unsigned int scan_code_to_key(unsigned int scan_cod)
 {
 	return 0;
 }
-//extern TASK_STRU gui_task;
 
-__attribute__ ((weak)) void splash_screen(LCD_MODULE* lcd)
+WEAK void splash_screen(LCD_MODULE* lcd)
 {
-//	int pos;
-//
-//	lcd->set_font(&FNT10x21);
-//	pos = (lcd->size_y - 2* lcd->font->vspacing)/2;
-//	if(pos > 0)
-//	{
-//		lcd->set_xy_all(pos-7, TA_CENTER);
-//		lcd->color = PIX_RED;
-//		lcd->draw_text("TMOS");
-//		lcd->color = PIX_BLUE;
-//		lcd->draw_text("DEMO");
-//	} else
-//	{
-//		pos = (lcd->size_y - lcd->font->vspacing)/2;
-//		lcd->set_xy_all(pos, TA_CENTER);
-//		lcd->color = PIX_RED;
-//		lcd->draw_text("TMOS");
-//		lcd->draw_hline(0, lcd->size_x-1, 0);
-//		lcd->draw_hline(0, lcd->size_x-1, lcd->size_y-1);
-//		lcd->draw_vline(0, lcd->size_y-1, 0);
-//		lcd->draw_vline(0, lcd->size_y-1, lcd->size_x-1);
-//	}
 }
 
 WEAK_C int detect_displays(GUI_DRIVER_INFO* drv_info)
@@ -76,35 +38,13 @@ WEAK_C int detect_displays(GUI_DRIVER_INFO* drv_info)
 	return (int)drv_info->lcd[0];
 }
 
-static void GUIExecute_sys_cmd(HANDLE app_handle)
-{
-	if(app_handle)
-	{
-		GUI_SYS_COMMANDS  sys_cmd =(GUI_SYS_COMMANDS)( app_handle->src.as_int);
-		void *param = app_handle->dst.as_voidptr;
-		switch(sys_cmd)
-		{
-		case gui_sys_cmd_DoWait_Begin :
-		case gui_sys_cmd_DoWait_End :
-		case gui_sys_cmd_DoWait_Restore:
-    		GWait::GUIDoWait(sys_cmd);
-			break;
-		case gui_sys_cmd_CPU_usage:
-			CPU_Usage::GUI_CPU_Usage(sys_cmd, (bool)param);
-			break;
-		default :
-			break;
-		}
-		usr_HND_SET_STATUS(app_handle, RES_SIG_OK);
-	}
-}
+void GUIExecute_sys_cmd(HANDLE app_handle);
 
 //*----------------------------------------------------------------------------
 //*			GUI Task
 //*----------------------------------------------------------------------------
 //*  this is the GUI driver helper task
 //*----------------------------------------------------------------------------
-
 
 void gui_thread(GUI_DRIVER_INFO* drv_info)
 {
@@ -116,7 +56,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
     unsigned int idle_time = CURRENT_TIME;
 
     //prevent these signals not to be used from task handles
-    ALLOCATE_SIGNAL(SIG_GUI_TASK);
+    ALLOCATE_SIGNAL(SIG_GUI_TASK_CANCEL);
     drv_info->drv_data->helper = &gui_hnd;
 
     //wait for static constructors (lcd object)
@@ -128,7 +68,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	{
 		tsk_sleep(10);
 	}
-	//desktop->nextObj = nullptr;
+	// attach  the display(s) to desktop
 #if GUI_DISPLAYS > 1
 	LCD_MULT mult;
 	for(int i=0; i<GUI_DISPLAYS; i++)
@@ -141,7 +81,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	Gdesktop->parent = drv_info->lcd[0];
 #endif
 
-
+	// initialize the display(s)
 	for(int i=0; i<GUI_DISPLAYS; i++)
 	{
 		LCD_MODULE* lcd;
@@ -152,10 +92,16 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			lcd->lcd_init(splash_screen);
 		}
 	}
-//	tsk_sleep(3000);
-
 
 	init_main_menu();
+
+	// show desktop
+	Gdesktop->initialize(msg);
+	Gdesktop->invalidate(Gdesktop, Gdesktop->rect);
+	while(GQueue.pop(msg))
+	{
+		;
+	}
 
 
     // start key handle
@@ -168,12 +114,6 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 	gui_hnd.tsk_safe_open(GUI_DRV_INDX, 0);			//mode = 1 - control handle
 	gui_hnd.tsk_start_read(nullptr, 0);
 
-	Gdesktop->initialize(msg);
-	Gdesktop->invalidate(Gdesktop, Gdesktop->rect);
-	while(GQueue.pop(msg))
-	{
-		;
-	}
 	sig = 0;
 	for (;;)
 	{
@@ -254,7 +194,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			gui_hnd.tsk_start_read(nullptr, 0);
         }
 
-		if(sig & SIG_GUI_TASK)
+		if(sig & SIG_GUI_TASK_CANCEL)
 		{
 			for (tmp = (GWindow*)Gdesktop->nextObj; tmp; tmp = (GWindow*)tmp->nextObj)
 			{
@@ -265,7 +205,7 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 					usr_HND_SET_STATUS(&tmp->hnd, FLG_SIGNALED);
 				}
 			}
-			sig &=~SIG_GUI_TASK;
+			sig &=~SIG_GUI_TASK_CANCEL;
 			if(!sig)
 				continue;
 		}
@@ -319,14 +259,6 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 	    	param->res = RES_OK;
 	    	break;
 
-	    case DCR_HANDLE:
-	    	if(param != drv_data->helper)
-	    	{
-	    		locked_set_byte(&param->mode0, FLG_OK);
-	    		svc_send_signal(&gui_task, SIG_GUI_TASK);
-	    	}
-	    	break;
-
 	    case DCR_CANCEL:
 	    	if(param != drv_data->helper)
 	    	{
@@ -334,7 +266,7 @@ void GUI_DCR(GUI_DRIVER_INFO* drv_info, unsigned int reason, HANDLE param)
 	    		if(!param->svc_list_cancel(drv_data->waiting))
 	    		{
 		    		locked_set_byte(&param->mode0, FLG_SIGNALED);
-		    		svc_send_signal(&gui_task, SIG_GUI_TASK);
+		    		svc_send_signal(&gui_task, SIG_GUI_TASK_CANCEL);
 	    		}
 	    	}
 	    	break;

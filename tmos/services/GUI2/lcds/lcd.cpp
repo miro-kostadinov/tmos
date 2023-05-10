@@ -5,9 +5,7 @@
  *      Author: Miroslav Kostadinov
  */
 
-#include <tmos.h>
-#include <gwindow.h>
-#include <lcds/lcd.h>
+#include <stdgui.h>
 
 volatile unsigned int backlight_time;
 

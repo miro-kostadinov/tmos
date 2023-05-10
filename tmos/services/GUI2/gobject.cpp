@@ -1,6 +1,4 @@
-#include <tmos.h>
-#include <gobject.h>
-#include <lcd.h>
+#include <stdgui.h>
 
 GTimer* GTimer::base_timer = nullptr;
 
@@ -370,7 +368,7 @@ void GObject::allocate_border(void)
 	}
 }
 
-POINT_T GObject::get_border_size(void)
+POINT_T GObject::get_border_size(void) const
 {
 	return POINT_T(GO_OBJ_FRAME_WIDTH, GO_OBJ_FRAME_HEIGHT);
 }
@@ -741,6 +739,9 @@ unsigned int GObject::message (GMessage& msg)
 		return set_flag(msg.param);
 	case WM_CLR_FLAGS:
 		return clr_flag(msg.param);
+	case WM_SYSCTRL_CLR:
+	case WM_SYSCTRL_SET:
+		return process_sysctrl(msg);
 	case WM_IDLE:
 		return process_idle(msg);
 	default:
@@ -758,6 +759,13 @@ unsigned int GObject::initialize(GMessage& msg)
 	if((flags & GO_FLG_SELECTED) && is_available() && parent)
 		get_focus();
 	return 1;
+}
+
+unsigned int GObject::process_sysctrl(GMessage& msg)
+{
+	if(parent)
+		return parent->process_sysctrl(msg);
+	return 0;
 }
 
 unsigned int GObject::process_destroy(GMessage& msg)
@@ -871,7 +879,7 @@ GObject* GObject::get_object(GId xid)
 		return this;
 	else
 	{
-		if(parent)
+		if(parent && !parent->is_lcd())
 			return parent->get_object(xid);
 	}
 	return nullptr;
