@@ -972,7 +972,7 @@ void usb_remote_kbd_t::kbd_timeout()
 				key_tout[i] -= KEY_REPEAT_TIME;
 				code = old_keys.key_code[i];
 				code = usb_scan_to_ascii(code, get_modifier(old_keys.key_modifier), key_lang);
-				usb_kbd_post_key(*this, code, KEY_DOWN_CODE);
+				usb_kbd_post_key(*this, code, KEY_REPEAT_CODE);
 			}
 		}
 		key_time = time;
