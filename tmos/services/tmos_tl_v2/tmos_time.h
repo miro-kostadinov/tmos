@@ -45,6 +45,8 @@ struct time_t
 	static const char mon_name[12][4];
 	static const uint8_t month_lengths[];
 	static const time_t	MAX_TIME;
+
+	static int is_leap_year (int year);
 	bool is_valid() const;
 	bool is_DST(unsigned int change_hour) const;
 

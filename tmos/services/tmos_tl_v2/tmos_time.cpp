@@ -37,7 +37,7 @@ WEAK time_t get_current_time()
 	return tm;
 }
 
-static int is_leap_year (int year)
+int time_t::is_leap_year (int year)
 {
     return (year % 4) == 0 && ((year % 100) != 0 || (year % 400) == 0);
 }
