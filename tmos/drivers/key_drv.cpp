@@ -50,6 +50,7 @@ WEAK_C void on_key(unsigned int key)
 {
 
 }
+
 static void key_post(unsigned int key)
 {
 	//TRACELN("[%2X]%d", key, (key&0x3f));
