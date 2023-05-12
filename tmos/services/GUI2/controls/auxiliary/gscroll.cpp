@@ -7,6 +7,7 @@
 
 #include <stdgui.h>
 
+// sets the scroll flags to the owner
 bool GScroll::ShowScroll(GFlags sb, bool visible)
 {
 	bool res = false;
@@ -15,18 +16,14 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 		if(visible)
 		{
 			if(!(object->flags&GO_FLG_HSCROLL))
-			{
 				object->flags |= GO_FLG_HSCROLL;
-				res = true;
-			}
+			res = true;
 		}
 		else
 		{
 			if(object->flags&GO_FLG_HSCROLL)
-			{
 				object->flags &= ~GO_FLG_HSCROLL;
-				res = true;
-			}
+			res = true;
 		}
 	}
 	if(sb&GO_FLG_VSCROLL)
@@ -97,7 +94,7 @@ void GScroll::draw_scroll(LCD_MODULE* lcd)
 	}
 }
 
-void GScroll::SetScrollPos(GFlags sb, unsigned short p, bool redraw)
+void GScroll::SetScrollPos(GFlags sb, unsigned short position_in_units, bool redraw)
 {
 	RECT_T rect(object->client_rect);
 	unsigned int view_size=0;
@@ -118,51 +115,34 @@ void GScroll::SetScrollPos(GFlags sb, unsigned short p, bool redraw)
 	{
 		view_size -=2;  //size of bottom/right cover
 		//pos = 2 + ((p * ratio)>>10) + ((((p*ratio)&0x3FF) >= 512)?1:0);
-		p = p * ratio;
-		pos = 2 + (p+500)/1000;
+		pos = 2 + (position_in_units * ratio)/1000;
 		if( pos + page  > view_size )
 			pos = view_size - page;
 	}
 
-	if(redraw && (object->flags &(GO_FLG_HSCROLL|GO_FLG_VSCROLL)))
+	if(redraw && (object->flags & sb))
 		send_message(WM_DRAW, 0, rect.as_int, object);
 }
 
-void GScroll::SetScrollRange(GFlags sb, unsigned int p)
+void GScroll::SetScrollRange(GFlags sb, unsigned int range_in_units)
 {
-	unsigned int view_size=0;
+	uint32_t view_size=0;
 	ratio = 0;
+	page = 0;
 
-	if(p)
+	if(range_in_units)
 	{
 		if(sb & GO_FLG_HSCROLL)
 			view_size = object->client_rect.width();
 		if(sb & GO_FLG_VSCROLL)
 			view_size = object->client_rect.height();
-		if(view_size > 4 + GO_SCROLL_WIDTH)
+		if(view_size > 4 )	// top/left frame cover '<' = 2 and bottom/right '>' = 2, total 4
 		{
 			view_size -=4;
-			if(sb &(GO_FLG_HSCROLL|GO_FLG_VSCROLL))
-			{
-
-				if(--p)
-				{
-					if(p == 1)
-						p++;
-					ratio = (view_size * 1000)/p;
-					page = ratio/1000 + (((ratio%1000) >= 500)?1:0);
-					if(!page)
-						page = 3;
-					ratio = ((view_size - page)*1000)/p;
-				}
-				else
-				{
-					ratio = (view_size * 1000)/2;
-					page = ratio/1000 + (((ratio%1000) >= 500)?1:0);
-					if(!page)
-						page = 3;
-				}
-			}
+			// the size is at least
+			ratio = (view_size*1000)/range_in_units; // ratio pixels per unit
+			page = ratio/1000 + (((ratio%1000)>= 500)?1:0); // page in pixels
+			page++;
 		}
 	}
 }
