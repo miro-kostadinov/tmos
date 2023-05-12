@@ -64,6 +64,10 @@ struct GDateTime: GEdit
 		time(t), map(nullptr)
 	{
 		t->sprintf(txt, fmt);
+		// checking the number of available buttons
+#if ((KEY_DRV_COUNT * KEY_RD_COUNT) + KEY_FIX_COUNT) <= 6
+		align |= ES_USE_VIRTUAL_KEYBOARD;
+#endif
 	};
 
 	virtual ~GDateTime()

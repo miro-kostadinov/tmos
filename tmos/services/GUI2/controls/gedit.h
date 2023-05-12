@@ -48,13 +48,23 @@ struct GEdit:GText
 		:GText (id_t, rect_t, txt_t, caption_t, flags_t, edit_flags_t, font_t),
 		 text_size (0), cursor_on(false), pos (txt.length()), last_key (0),
 		 times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(nullptr)
-	{;}
+	{
+		// checking the number of available buttons
+#if KEYBOARD_WITH_ARROWS
+		align |= ES_USE_VIRTUAL_KEYBOARD;
+#endif
+	}
 
 	GEdit ()
 		:GText (),
 		 text_size (0), cursor_on(false), pos (0), last_key (0),
 		 times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(nullptr)
-	{;}
+	{
+		// checking the number of available buttons
+#if KEYBOARD_WITH_ARROWS
+		align |= ES_USE_VIRTUAL_KEYBOARD;
+#endif
+	}
 
 	virtual ~GEdit();
 
@@ -68,6 +78,12 @@ struct GEdit:GText
 	void draw_this (LCD_MODULE* lcd) override;
 	void move(int x, int y) override;
 
+#if	KEYBOARD_WITH_ARROWS
+	inline virtual bool ascii_enter_is_used( void ) const __attribute__((optimize("Os")))
+	{
+		return 1;
+	}
+#endif
 protected:
 	void process_alpha_key(char pressed_key, const char* key_val);
 	bool process_char(unsigned int ch);

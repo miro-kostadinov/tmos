@@ -91,7 +91,6 @@ unsigned int GDateTime::initialize (GMessage& msg)
 	cursor = scroll_rect;
 	cursor.y0 --;
 	set_cursor_on_char();
-	align |= ES_USE_VIRTUAL_KB;
 	if(map)
 		delete map;
 	map = new time_pos_map;
@@ -105,6 +104,8 @@ void GDateTime::show_cursor()
 {
 	RECT_T datetime_rect = cursor;
 	datetime_rect.x1 += text_font->hspacing;
+	if(map->get_type() == 'Y')
+		datetime_rect.x1 += 2*text_font->hspacing;
 	invalidate (this, datetime_rect);
 }
 
@@ -221,6 +222,7 @@ unsigned int GDateTime::inc_dec_time(bool inc)
 			t.mday = val;
 		val = t.mon;
 		break;
+	case 'Y':
 	case 'y':
 		val = t.year -2000;
 		change_value(val, val_0_99, inc);
@@ -242,8 +244,11 @@ unsigned int GDateTime::inc_dec_time(bool inc)
 			send_message(WM_DRAW, 0, 0LL, this);
 		}else
 		{
-			txt[pos] = val/10 + '0';
-			txt[pos+1] = val%10 + '0';
+			uint32_t offset =0;
+			if(map->get_type() == 'Y')
+				offset = 2;
+			txt[pos + offset++] = val/10 + '0';
+			txt[pos + offset] = val%10 + '0';
 			show_cursor();
 		}
 		*time = t;
@@ -253,7 +258,7 @@ unsigned int GDateTime::inc_dec_time(bool inc)
 
 unsigned int GDateTime::move_pos(datetime_move_e move)
 {
-	if(!(align & ES_USE_VIRTUAL_KB))
+	if(!(align & ES_USE_VIRTUAL_KEYBOARD))
 	{
 		switch(move)
 		{

@@ -557,12 +557,11 @@ unsigned int GEdit::process_key (GMessage& msg)
 		text_change();
 		return 1;
 
-	case KEY_USER_DEFINED: // bar code
 	case KEY_ENTER:
-		if(align & ES_USE_VIRTUAL_KB)
-		{
+		if(align & ES_USE_VIRTUAL_KEYBOARD)
 			return GEditVKB::Create(this);
-		}
+	case KEY_ENTER | KEY_ASCII_CODE:
+	case KEY_USER_DEFINED: // bar code
 		if(align & ES_WANTRETURN)
 			 process_alpha_key(msg.param, g_key_to_char_ref[CHAR_TABLE_INDEX_ENTER].bg_vals);
 		else
