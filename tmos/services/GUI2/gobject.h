@@ -225,6 +225,12 @@ struct GObject
 	virtual bool is_available();
 	virtual void move(int x, int y);
 
+#if KEYBOARD_WITH_ARROWS
+	inline virtual bool ascii_enter_is_used( void ) const __attribute__((optimize("Os")))
+	{
+		return 0;
+	}
+#endif
 protected:
 	friend struct GContainer;
 	friend struct GFloating_Button;

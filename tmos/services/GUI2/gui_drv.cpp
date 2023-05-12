@@ -216,7 +216,17 @@ void gui_thread(GUI_DRIVER_INFO* drv_info)
 			if(Gdesktop->parent->focus && (Gdesktop->parent->focus->flags & GO_FLG_SELECTED))
 			{
 				key_hnd.res &= ~FLG_SIGNALED;
-				GQueue.push(GMessage(WM_KEY, scan_code_to_key(key_hnd.src.as_int), 0L, Gdesktop->parent->focus));
+				uint32_t key_code = scan_code_to_key(key_hnd.src.as_int);
+#if KEYBOARD_WITH_ARROWS
+				if((key_code & KEY_ENTER) == KEY_ENTER)
+				{
+					if(!Gdesktop->parent->focus || !Gdesktop->parent->focus->ascii_enter_is_used())
+					{
+						key_code &= ~(KEY_ASCII_CODE);
+					}
+				}
+#endif
+				GQueue.push(GMessage(WM_KEY, key_code, 0L, Gdesktop->parent->focus));
 				key_hnd.tsk_start_read(&key_hnd.src.as_int, 1);
 				sig &= ~key_hnd.signal;
 			}

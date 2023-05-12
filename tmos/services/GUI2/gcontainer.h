@@ -28,6 +28,14 @@ struct GContainer:GObject {
 	GObject* get_object(GId xid) override;
 	GObject* addChildRef(GObject* child);
 	void move(int x, int y) override;
+#if KEYBOARD_WITH_ARROWS
+	inline virtual bool ascii_enter_is_used( void ) const __attribute__((optimize("Os")))
+	{
+		if(focus)
+			return focus->ascii_enter_is_used();
+		return GObject::ascii_enter_is_used();
+	}
+#endif
 
 protected:
 	unsigned int initialize (GMessage& msg) override;

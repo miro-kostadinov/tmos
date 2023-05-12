@@ -39,6 +39,7 @@
 #define USE_GUI_MATH 1
 #endif
 
+#define KEYBOARD_WITH_ARROWS		(((KEY_DRV_COUNT * KEY_RD_COUNT) + KEY_FIX_COUNT) <= 6)
 // object messages queue
 #ifndef MAX_MESSAGES
 #define MAX_MESSAGES 10
@@ -261,12 +262,12 @@ typedef unsigned char GId;
 #define ES_AUTO_SCROLL	SS_AUTO_SCROLL
 // additional control styles for edit box
 // bit[6 - 11]
-#define ES_PASSWORD			(1<<6)
-#define ES_WANTRETURN   	(1<<7)
-#define ES_HIDE_CURSOR		(1<<8)
-#define ES_LEAD_ZERO		(1<<9)
-#define ES_NUMERIC			(1<<10)
-#define ES_USE_VIRTUAL_KB	(1<<11)
+#define ES_PASSWORD				(1<<6)
+#define ES_WANTRETURN   		(1<<7)
+#define ES_HIDE_CURSOR			(1<<8)
+#define ES_LEAD_ZERO			(1<<9)
+#define ES_NUMERIC				(1<<10)
+#define ES_USE_VIRTUAL_KEYBOARD	(1<<11)  //!< set when used small keyboard (only arrows and OK/CANCEL)
 
 #define ES_DEFAULT		(ES_CENTER|ES_MIDDLE|ES_MULTILINE|ES_AUTO_SCROLL)
 
