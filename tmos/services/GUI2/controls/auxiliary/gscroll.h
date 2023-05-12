@@ -14,10 +14,12 @@ struct LCD_MODULE;
 
 struct GScroll
 {
+	struct{
 	unsigned short	pos;
 	unsigned short	page;
 	unsigned int	ratio;
 	GObject*		object;
+	}__attribute__((packed));
 
 	GScroll(GObject* object_t) : pos(0), page(0), ratio(0), object(object_t)
 		{}
