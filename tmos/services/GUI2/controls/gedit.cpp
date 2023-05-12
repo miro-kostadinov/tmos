@@ -681,11 +681,11 @@ bool GEdit::set_cursor_y_char(void)
 		{
 			if (tmp_len && text[len] && !strchr(" -\n\r", text[len]))
 				len = tmp_len;
-			if ((signed int) (index - len) < 0 || text[len] == 0) //if the index is higher than this number, else breaks the cycle
+			if ((signed int) (index - len) < 0 || text[len] == 0) 				//if the index is higher than this number, else breaks the cycle
 				break;
 			else
 				index -= len;													//subtracts it from the index
-			y += text_font->vspacing;									//moves the cursor to the next text line
+			y += text_font->vspacing;											//moves the cursor to the next text line
 			text += len;														//increases the text pointer by the number of char written in the line
 			len = tmp_len = 0;													//resets the number of chars and the last " " or "-" position
 			continue;
@@ -696,7 +696,7 @@ bool GEdit::set_cursor_y_char(void)
 				break;
 			else
 				index -= len;													//else subtracts this number from the index
-			y += text_font->vspacing;									//moves the cursor to the next text line
+			y += text_font->vspacing;											//moves the cursor to the next text line
 			text += len;														//increases the text pointer by the number of char written in the line
 			len = tmp_len = 0;													//resets the number of chars and the last " " or "-" position
 		}
@@ -856,14 +856,17 @@ bool GEdit::set_cursor_x_char(void)
 				}
 			}
 		}
-		if(hscroll)
-			hscroll->SetScrollPos(GO_FLG_HSCROLL, x/text_font->hspacing, true);
 
 		offset  = client_rect.x0 - rect.x0;
 		scroll_rect.x0  += offset;
 		cursor.x0 += offset;
 
 		scroll_rect.x1  = scroll_rect.x0 + text_size.width;
+		if(hscroll)
+		{
+			hscroll->SetScrollRange(GO_FLG_HSCROLL, scroll_rect.width()/text_font->hspacing);
+			hscroll->SetScrollPos(GO_FLG_HSCROLL, x/text_font->hspacing, true);
+		}
 	}
 	cursor.x1 = cursor.x0 + text_font->hspacing;								//sets the width of the cursor according to the spacing of the font
 	cursor.y1 = cursor.y0 + text_font->vspacing;			//sets the height of the cursor according to the font
