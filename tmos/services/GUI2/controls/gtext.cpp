@@ -114,11 +114,8 @@ text_metrics_t GText::SetTextAlign(unsigned int new_align )
 	{
 		if(txt_size.width > scroll_rect.width())
 			scroll_rect.x1 = scroll_rect.x0 + txt_size.width;
-		if(hscroll && (flags & GO_FLG_HSCROLL))
-		{
-			flags &= ~GO_FLG_HSCROLL;
+		if(hscroll )
 			hscroll->ShowScroll(GO_FLG_HSCROLL, true);
-		}
 	}
 
 	// align text vertically
