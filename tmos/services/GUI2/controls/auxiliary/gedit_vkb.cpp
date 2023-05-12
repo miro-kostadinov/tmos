@@ -161,12 +161,11 @@ void GEditVKB::exit_ok()
 		// ATTENTION !  pos_change(pos) where pos is relative position
 		base_edit->pos_change(vk_edit->pos - base_edit->pos, true);
 		base_edit->text_change();
-		if(base_edit->align & ES_USE_VIRTUAL_KB)
-		{
-			send_message(WM_SYSCTRL_CLR, ES_USE_VIRTUAL_KB, 0, base_edit);
-			send_message(WM_KEY, KEY_ENTER, 0, base_edit);
-			send_message(WM_SYSCTRL_SET, ES_USE_VIRTUAL_KB, 0, base_edit);
-		}
+	}
+	// regardless of whether the text has been changed or not, a confirmation message is sent
+	if(base_edit->align & ES_USE_VIRTUAL_KEYBOARD)
+	{
+		send_message(WM_KEY, KEY_ENTER|KEY_ASCII_CODE, 0, base_edit);
 	}
 	exit_cancel();
 }
@@ -257,6 +256,9 @@ unsigned int GVKB_edit::process_key(GMessage& msg)
 
 //	case KEY_UP:
 //		return 1;
+	case KEY_ESC:
+		msg.param = KEY_CANCEL;
+		return GEdit::process_key(msg);
 
 	default:
 		if(GEdit::process_key(msg))
