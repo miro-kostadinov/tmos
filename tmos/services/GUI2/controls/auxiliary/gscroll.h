@@ -16,12 +16,13 @@ struct GScroll
 {
 	struct{
 	unsigned short	pos;
-	unsigned short	page;
+	unsigned char	page;
+	unsigned char	show_init;
 	unsigned int	ratio;
 	GObject*		object;
 	}__attribute__((packed));
 
-	GScroll(GObject* object_t) : pos(0), page(0), ratio(0), object(object_t)
+	GScroll(GObject* object_t) : pos(0), page(0), show_init(0), ratio(0), object(object_t)
 		{}
 
 	bool ShowScroll(GFlags sb, bool visible);

@@ -8,6 +8,7 @@
 #include <stdgui.h>
 
 // sets the scroll flags to the owner
+// ATTENTION: when setting vertical scrolling, the client rectangle is reduced horizontally by the size occupied by the scroll control
 bool GScroll::ShowScroll(GFlags sb, bool visible)
 {
 	bool res = false;
@@ -17,12 +18,14 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 		{
 			if(!(object->flags&GO_FLG_HSCROLL))
 				object->flags |= GO_FLG_HSCROLL;
+			show_init = true;
 			res = true;
 		}
 		else
 		{
 			if(object->flags&GO_FLG_HSCROLL)
 				object->flags &= ~GO_FLG_HSCROLL;
+			show_init = false;
 			res = true;
 		}
 	}
@@ -31,21 +34,23 @@ bool GScroll::ShowScroll(GFlags sb, bool visible)
 		if(visible)
 		{
 			if(!(object->flags&GO_FLG_VSCROLL))
-			{
-				object->client_rect.x1 -= GO_SCROLL_WIDTH;//+1;
 				object->flags |= GO_FLG_VSCROLL;
+			if(!show_init)
+			{
+				object->client_rect.x1 -= GO_SCROLL_WIDTH;
+				show_init = true;
 				res = true;
-				//res = (res || object->set_flag(GO_FLG_VSCROLL));
 			}
 		}
 		else
 		{
 			if(object->flags&GO_FLG_VSCROLL)
-			{
 				object->flags &= ~GO_FLG_VSCROLL;
-				object->client_rect.x1 += GO_SCROLL_WIDTH;//+1;
+			if(show_init)
+			{
+				object->client_rect.x1 += GO_SCROLL_WIDTH;
+				show_init = false;
 				res = true;
-				//res = ( res || object->clr_flag(GO_FLG_VSCROLL));
 			}
 		}
 	}
