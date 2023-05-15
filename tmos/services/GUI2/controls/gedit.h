@@ -33,21 +33,23 @@ struct GEdit:GText
 	friend struct GEditVKB;
 
 	text_metrics_t text_size;
+	RECT_T cursor;
+	struct{
 	bool	cursor_on;
 	unsigned int pos;
 	char last_key;
 	unsigned char times_pressed;
-	RECT_T cursor;
 	unsigned int max_len;
 	key_mode shift;
 	GMenu* edit_menu;
-
+	}__attribute__((packed));
 	GEdit (	GId id_t, const RECT_T& rect_t, CSTRING txt_t, const char* caption_t = nullptr,
 			GFlags flags_t = GO_FLG_DEFAULT, unsigned short edit_flags_t = ES_DEFAULT,
 			const RENDER_MODE* font_t = &FNT5x7)
-		:GText (id_t, rect_t, txt_t, caption_t, flags_t, edit_flags_t, font_t),
-		 text_size (0), cursor_on(false), pos (txt.length()), last_key (0),
-		 times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(nullptr)
+		:GText (id_t, rect_t, txt_t, caption_t, flags_t, edit_flags_t, font_t)
+		 /*text_size (0), no need to initialize (there is a default constructor)*/
+		,cursor_on(false), pos (txt.length()), last_key (0)
+		,times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(nullptr)
 	{
 		// checking the number of available buttons
 #if KEYBOARD_WITH_ARROWS
@@ -56,9 +58,10 @@ struct GEdit:GText
 	}
 
 	GEdit ()
-		:GText (),
-		 text_size (0), cursor_on(false), pos (0), last_key (0),
-		 times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(nullptr)
+		:GText ()
+		 /*text_size (0), no need to initialize (there is a default constructor)*/
+		 ,cursor_on(false), pos (0), last_key (0)
+		 ,times_pressed (0), max_len(-1u), shift (KT_BG_CAPS), edit_menu(nullptr)
 	{
 		// checking the number of available buttons
 #if KEYBOARD_WITH_ARROWS
@@ -93,6 +96,8 @@ protected:
 	void text_change();
 	void pos_change(int val, bool modified_text=true);
 	virtual void show_cursor();
+private:
+	unsigned int process_edit_menu_keys(GMessage& msg);
 };
 
 
