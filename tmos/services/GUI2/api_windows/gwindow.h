@@ -18,7 +18,6 @@ protected:
 public:
 	GWindow ()
 	{
-		displays = 0xFF;
 		hnd.mode1 = GUI_HND_UNUSED;
 	};
 	GWindow (GId id_t, const RECT_T& rect_t,
