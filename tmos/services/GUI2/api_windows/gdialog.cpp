@@ -221,7 +221,6 @@ unsigned int GDialog::initialize (GMessage& msg)
 					client_rect.x1 += get_border_size().x;
 				vscroll->SetScrollRange(GO_FLG_VSCROLL, items);
 				vscroll->SetScrollPos(GO_FLG_VSCROLL, 0, false);
-				flags &= ~GO_FLG_VSCROLL;
 				vscroll->ShowScroll(GO_FLG_VSCROLL, true);
 			}
 		}
