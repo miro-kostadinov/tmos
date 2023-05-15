@@ -360,9 +360,9 @@ void GObject::draw_rectangle(const RECT_T& frame, bool fill)
 
 void GObject::allocate_border(void)
 {
-	if(rect.height() && rect.width())
+	POINT_T pt = get_border_size();
+	if(rect.height() > 2*pt.x && rect.width() > 2*pt.y)
 	{
-		POINT_T pt = get_border_size();
 		client_rect = rect;
 		client_rect.Inflate(pt.x, pt.y);
 	}
