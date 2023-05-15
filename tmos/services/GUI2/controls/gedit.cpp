@@ -429,70 +429,73 @@ void GEdit::show_cursor()
 	invalidate (this, cursor);
 }
 
+unsigned int GEdit::process_edit_menu_keys(GMessage& msg)
+{
+	switch(msg.param)
+	{
+	case KEY_1:
+	case KEY_2:
+	case KEY_3:
+	case KEY_4:
+	case KEY_5:
+	case KEY_6:
+	case KEY_7:
+	case KEY_8:
+	case KEY_9:
+	{
+		menu_template_t* tmp;
+		char  ch = TranslateKey(msg.param);
+		char* hot_pos;
+		if(ch && !(msg.param & KEY_ASCII_CODE))
+		{
+			tmp = edit_menu->menu;
+			while(tmp)
+			{
+				hot_pos = strchr(tmp->item_name.c_str(), '&');
+				if(hot_pos && hot_pos[1] == ch)
+				{
+					shift = (key_mode)tmp->item;
+					break;
+				}
+				tmp = edit_menu->GetMenu(edit_menu->menu->parent, tmp +1);
+			}
+			if(!tmp)
+				return 0;
+		}
+		else
+			return 0;
+	}
+	break;
+
+	case KEY_ENTER:
+		if(edit_menu->item)
+			shift = (key_mode)edit_menu->item->item;
+		break;
+
+	case KEY_ESC:
+	case KEY_SHIFT:
+	case KEY_CANCEL:
+		break;
+
+	default:
+		if(edit_menu->process_key(msg))
+			return 1;
+		return 0;
+	}
+	edit_menu->remove(); //close();
+	send_message(WM_DRAW, 0, edit_menu->rect.as_int, parent);
+	delete edit_menu;
+	edit_menu = nullptr;
+	return 1;
+}
+
 unsigned int GEdit::process_key (GMessage& msg)
 {
 	if(msg.param & KEY_UP_CODE)
 		return 0;
 
 	if(edit_menu)
-	{
-		switch(msg.param)
-		{
-		case KEY_1:
-		case KEY_2:
-		case KEY_3:
-		case KEY_4:
-		case KEY_5:
-		case KEY_6:
-		case KEY_7:
-		case KEY_8:
-		case KEY_9:
-		{
-			menu_template_t* tmp;
-			char  ch = TranslateKey(msg.param);
-			char* hot_pos;
-			if(ch && !(msg.param & KEY_ASCII_CODE))
-			{
-				tmp = edit_menu->menu;
-				while(tmp)
-				{
-					hot_pos = strchr(tmp->item_name.c_str(), '&');
-					if(hot_pos && hot_pos[1] == ch)
-					{
-						shift = (key_mode)tmp->item;
-						break;
-					}
-					tmp = edit_menu->GetMenu(edit_menu->menu->parent, tmp +1);
-				}
-				if(!tmp)
-					return 0;
-			}
-			else
-				return 0;
-		}
-		break;
-
-		case KEY_ENTER:
-			if(edit_menu->item)
-				shift = (key_mode)edit_menu->item->item;
-			break;
-
-		case KEY_ESC:
-		case KEY_SHIFT:
-		case KEY_CANCEL:
-			break;
-
-		default:
-			if(edit_menu->process_key(msg))
-				return 1;
-			return 0;
-		}
-		edit_menu->remove(); //close();
-		send_message(WM_DRAW, 0, edit_menu->rect.as_int, parent);
-		delete edit_menu;
-		edit_menu = nullptr;
-		return 1;
-	}
+		return process_edit_menu_keys(msg);
 
 	switch (msg.param)
 	{
