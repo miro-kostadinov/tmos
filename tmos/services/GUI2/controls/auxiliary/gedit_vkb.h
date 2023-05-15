@@ -1,10 +1,12 @@
 /*
  * gedit_vkb.h
  *
- * On some devices with only 6 buttons, we use GEditVKB to enter text.
- * It is created when the user presses OK on a GEdit field if that GEdit has
- * the ES_USE_VIRTUAL_KB flag. It is a virtual keyboard with on-screen buttons,
- * where the arrow keys are used to traverse them and OK to add them to the text
+ * On some devices with only 6 buttons, we use GEditVKB to enter text. It is
+ * created when the user presses OK on a GEdit field if that GEdit has the
+ * ES_USE_VIRTUAL_KEYBOARD align flag.
+ *
+ * GEditVKB is a virtual keyboard with on-screen buttons, where the arrow keys
+ * are used to traverse them and OK to add them to the text
  *
  *  Created on: Mar 22, 2023
  *      Author: bratkov
@@ -18,7 +20,9 @@
 #include <gbutton.h>
 
 
-//contains the text at the top of the screen
+/**
+ * contains the text at the top of the screen
+ */
 struct GVKB_edit : GEdit
 {
 	GVKB_edit (GId id_t, const RECT_T& rect_t, const GEdit* base, GFlags flags_t = GO_FLG_DEFAULT)
@@ -27,10 +31,11 @@ struct GVKB_edit : GEdit
 		max_len = base->max_len;
 	}
 
+	unsigned int initialize (GMessage& msg) override;
+
 protected:
 	unsigned int process_key(GMessage& msg) override;
 };
-
 
 //for keeping positions on the KB
 struct KBPos
@@ -62,7 +67,7 @@ struct KBPos
 		return * this;
 	}
 };
-
+//for cursor movement directions
 enum cursor_direction_t {
 	cursor_dir_right,
 	cursor_dir_left,
@@ -70,14 +75,17 @@ enum cursor_direction_t {
 	cursor_dir_down,
 	cursor_dir_eol
 };
-//contains an alphabet (symbols of one "language") and can draw it
+/**
+ * contains an alphabet (symbols of one "language") and can draw it
+ */
 struct GVKB_keyboard : GObject
 {
 	CSTRING alphabet;	//contains the currently displayed alphabet
 	KBPos cursor_pos;	//represents the cursor position on the KB
-	KBPos max_pos;		//the maximum position for the cursor on this page and alphabet
+	KBPos max_pos;		//the bottom-most right-most symbol position on this page
+	KBPos max_pos_h;	//last symbol pos on the longest, bottom-most row
 	struct{
-	unsigned char rows, cols;		//num of rows and cols of symbols, used when calculating positions
+	unsigned char rows, cols;		//num of rows and cols of symbols, unchanged after init
 	unsigned char page, max_page;	//used to indicate current page and max page number
 	} __attribute__((packed));
 
@@ -90,7 +98,7 @@ struct GVKB_keyboard : GObject
 
 	void fill_kb();
 	void reinitialize(bool reset_cursor);
-	inline char getc();
+	char getc();
 
 protected:
 	unsigned int initialize (GMessage& msg) override;
@@ -99,8 +107,9 @@ private:
 	bool move_cursor(cursor_direction_t dir);
 };
 
-
-//struct for the OK, ABC and X texts
+/**
+ * for buttons at the bottom of the screen
+ */
 struct GVKB_button : GButton
 {
 	GVKB_button (GId id_t, const RECT_T& rect_t, unsigned int cmd_id, const char* txt_t,
@@ -112,9 +121,11 @@ struct GVKB_button : GButton
 	void draw_border(RECT_T& frame) override
 	{/* do nothing */;}
 	void draw_this (LCD_MODULE* lcd) override;
-
 };
 
+/**
+ * contains the three buttons at the bottom of the screen
+ */
 struct GVKB_Controls : GContainer
 {
 	const RENDER_MODE* font;
@@ -131,6 +142,7 @@ protected:
 	unsigned int process_key(GMessage& msg)	override;
 	unsigned int process_default(GMessage& msg)	override;
 };
+
 
 /**
  * Attention! it is a self-destructing object
@@ -169,5 +181,6 @@ private:
 	void exit_ok();
 	void exit_cancel();
 };
+
 
 #endif /* GEDIT_VKB_H_ */

@@ -8,7 +8,7 @@
 #include <gedit_vkb.h>
 
 
-#define VKB_TEST		0	//set to 1 for easier testing
+#define VKB_TEST		0	//for testing purposes
 
 #define VKB_TXT_OFFSET	1	//num of empty pixel rows below TXT zone
 #define VKB_CTRL_OFFSET	1	//num of empty pixel rows above CTRL zone
@@ -34,7 +34,7 @@ enum vk_button_ctrl_code_t
 /**
  * @param shift_t: key_mode
  * @return: the string from g_keyboard_menu corresponding to shift_t,
- * or "ABC" by default
+ * or "ERR" if it wasn't found
  */
 static const char* get_shift_str(key_mode shift_t)
 {
@@ -52,19 +52,17 @@ static const char* get_shift_str(key_mode shift_t)
 					return name;
 			}else
 				return g_keyboard_menu[kbIndex].item_name;
-//			if(strlen(g_keyboard_menu[kbIndex].item_name) >= 6)
-//				return (g_keyboard_menu[kbIndex].item_name + 3);
 			break;
 		}
 	return "ERR";
 }
 
 
-//---------- GTextVKB ----------//
+//---------- VKB ----------//
 
 /**
  * adds a VKB to the screen Z-order and calls its initialize()
- * @return true
+ * @return whether it was created or not
  */
 bool GEditVKB::Create(GEdit* edit_)
 {
@@ -86,14 +84,13 @@ bool GEditVKB::Create(GEdit* edit_)
 }
 
 /**
- * set up container, create and add all children to it
+ * set up container, create and add its children (calls their initialize() too)
  */
 unsigned int GEditVKB::initialize (GMessage& msg)
 {
 	LCD_MODULE* lcd = ((LCD_MODULE **)msg.lparam)[0];
 	id = vkb_edit_window;
 	client_rect = rect = lcd->rect;  // LCD rectangle, get all display
-	//displays = 1; // use main display, already set to 1 from GObject()
 	flags = GO_FLG_ENABLED | GO_FLG_SHOW | GO_FLG_SELECTED;
 
 #if VKB_TEST
@@ -118,6 +115,10 @@ unsigned int GEditVKB::initialize (GMessage& msg)
 	return GContainer::initialize(msg);
 }
 
+/**
+ * calls the focused child's process_key()
+ * if that failed it may be due to focus change "request", which happens here
+ */
 unsigned int GEditVKB::process_key(GMessage& msg)
 {
 	if(msg.param & KEY_UP_CODE)
@@ -125,6 +126,7 @@ unsigned int GEditVKB::process_key(GMessage& msg)
 
 	if(focus && focus->message(msg))
 		return 1;
+
 	switch(msg.param)
 	{
 	case KEY_DOWN:
@@ -135,6 +137,9 @@ unsigned int GEditVKB::process_key(GMessage& msg)
 	return 0;
 }
 
+/**
+ * processes the requests from the bottom buttons, exit functions get called here
+ */
 unsigned int GEditVKB::process_command(GMessage& msg)
 {
 	if(msg.param == vk_button_x)
@@ -150,6 +155,10 @@ unsigned int GEditVKB::process_command(GMessage& msg)
 	return 0;
 }
 
+/**
+ * if text is different than base_edit's, also change it in base_edit along with
+ * shift, pos etc.	sends confirmation message and calls cancel exit
+ */
 void GEditVKB::exit_ok()
 {
 	//TODO add OK exit
@@ -170,6 +179,9 @@ void GEditVKB::exit_ok()
 	exit_cancel();
 }
 
+/**
+ * frees object and all its children from memory, redraws screen
+ */
 void GEditVKB::exit_cancel()
 {
 	//TODO add cancel exit
@@ -182,6 +194,20 @@ void GEditVKB::exit_cancel()
 
 //---------- GVKB_edit ----------//
 
+/**
+ * TODO in constructor?
+ * gives this the numeric flag if needed
+ */
+unsigned int GVKB_edit::initialize (GMessage& msg)
+{
+	align |= ((GEditVKB*)parent)->base_edit->align & ES_NUMERIC;
+
+	return GEdit::initialize(msg);
+}
+
+/**
+ * menu creation, menu controls, cursor control and delete char
+ */
 unsigned int GVKB_edit::process_key(GMessage& msg)
 {
 	if(msg.param & KEY_UP_CODE)
@@ -211,7 +237,7 @@ unsigned int GVKB_edit::process_key(GMessage& msg)
 							if((shift == KT_BG_CAPS && previous_shift == KT_BG)
 									|| (shift == KT_BG && previous_shift == KT_BG_CAPS))
 								change_cursor_pos = false;
-							if((shift == KT_EN_CAPS && previous_shift == KT_EN)
+							else if((shift == KT_EN_CAPS && previous_shift == KT_EN)
 									|| (shift == KT_EN && previous_shift == KT_EN_CAPS))
 								change_cursor_pos = false;
 
@@ -246,12 +272,13 @@ unsigned int GVKB_edit::process_key(GMessage& msg)
 
 	case KEY_SHIFT:
 		//changes the shift status
-	{
-		RECT_T bkp = rect;
-		rect = parent->rect;
-		GEdit::process_key(msg);
-		rect = bkp;
-	}
+		if(! (align & ES_NUMERIC))
+		{
+			RECT_T bkp = rect;
+			rect = parent->rect;
+			GEdit::process_key(msg);
+			rect = bkp;
+		}
 		return 1;
 
 //	case KEY_UP:
@@ -299,8 +326,7 @@ unsigned int GVKB_keyboard::initialize (GMessage& msg)
 }
 
 /**
- * usually called from GEditVKB::process_key(), as this doesn't have focus.
- * redraws the KB in case of page change
+ * sometimes returns 0 if focus needs to be changed
  */
 unsigned int GVKB_keyboard::process_key(GMessage& msg)
 {
@@ -321,6 +347,18 @@ unsigned int GVKB_keyboard::process_key(GMessage& msg)
 	}
 	break;
 
+	case KEY_ESC:
+	case KEY_CANCEL:
+	{
+		GVKB_edit* vkb_edit = (GVKB_edit*)get_object(vkb_edit_text_id);
+		if(vkb_edit && ! (vkb_edit->align & ES_NUMERIC))
+		{
+			send_message(WM_KEY, KEY_SHIFT, 0LL, vkb_edit);
+			return vkb_edit->get_focus();
+		}
+	}
+	break;
+
 	case KEY_UP:
 	case KEY_UP | KEY_REPEAT_CODE:
 		if(cursor_pos.y)
@@ -334,7 +372,7 @@ unsigned int GVKB_keyboard::process_key(GMessage& msg)
 	case KEY_DOWN | KEY_REPEAT_CODE:
 		if(cursor_pos.y < max_pos.y)
 		{
-			if(cursor_pos.x <= max_pos.x)
+			if(cursor_pos.x <= max_pos.x || cursor_pos.y < max_pos_h.y)
 				move_cursor(cursor_dir_down);
 			else
 				move_cursor(cursor_dir_eol);
@@ -358,8 +396,8 @@ unsigned int GVKB_keyboard::process_key(GMessage& msg)
 
 	case KEY_RIGHT:
 	case KEY_RIGHT | KEY_REPEAT_CODE:
-		if((cursor_pos.y != max_pos.y && cursor_pos.x + 1 < cols) ||
-				(cursor_pos.y == max_pos.y && cursor_pos.x < max_pos.x))
+		if((cursor_pos.y <= max_pos_h.y && cursor_pos.x < max_pos_h.x) ||
+				(cursor_pos.y > max_pos_h.y && cursor_pos.x < max_pos.x))
 		{
 			move_cursor(cursor_dir_right);
 		}else if(page < max_page)
@@ -373,6 +411,11 @@ unsigned int GVKB_keyboard::process_key(GMessage& msg)
 	}
 	return 0;
 }
+
+/**
+ * moves cursor a certain direction and redraws only the relevant parts. called
+ * from GVKB_keyboard::process_key(), except during page change or focus change
+ */
 bool GVKB_keyboard::move_cursor(cursor_direction_t dir)
 {
 	RECT_T redraw_rect;
@@ -438,7 +481,7 @@ void GVKB_keyboard::draw_this (LCD_MODULE* lcd)
 		KBPos tempPos;
 		do
 		{
-			if(tempPos.x == cols)	//end of row reached
+			if(tempPos.x > max_pos_h.x || (tempPos.x > max_pos.x && tempPos.y > max_pos_h.y)) //end of row reached
 			{
 				tempPos.x = 0;
 				pos_x = 1;
@@ -463,9 +506,9 @@ void GVKB_keyboard::draw_this (LCD_MODULE* lcd)
 }
 
 /**
- * gets the whole alphabet from the current shift, places the part
- * that needs to be displayed in alphabet var, and draws it. calculates the
- * values of max_page and max_pos. variable "page" is controlled in process_key()
+ * gets the whole alphabet from the current shift, places the part that needs
+ * to be displayed in alphabet var, and draws it. calculates the values of
+ * max_page, max_pos_h and max_pos. variable "page" is controlled in process_key()
  */
 void GVKB_keyboard::fill_kb()
 {
@@ -493,10 +536,15 @@ void GVKB_keyboard::fill_kb()
 			full_alphabet += g_key_to_char_ref[i].en_vals;
 		break;
 	case KT_DIGIT:
-		full_alphabet += "0123456789.";
-		full_alphabet += g_key_to_char_ref[0].bg_vals;
-		full_alphabet += g_key_to_char_ref[7].bg_vals;
-		full_alphabet += g_key_to_char_ref[12].bg_vals;
+		if(((GEditVKB*)parent)->base_edit->align & ES_NUMERIC)
+			full_alphabet = "0123456789.";
+		else
+		{
+			full_alphabet += "0123456789.";
+			full_alphabet += g_key_to_char_ref[0].bg_vals;
+			full_alphabet += g_key_to_char_ref[7].bg_vals;
+			full_alphabet += g_key_to_char_ref[12].bg_vals;
+		}
 		break;
 	}
 
@@ -516,8 +564,13 @@ void GVKB_keyboard::fill_kb()
 		alphabet = full_alphabet.substr(startPos, min((unsigned) (rows*cols), full_alphabet.length() - startPos));
 		//calculate max positions, div by 0 should be impossible here
 		max_page = (full_alphabet.length() - 1) / (rows*cols);
-		max_pos.x = (alphabet.length() - 1) % cols;
-		max_pos.y = (alphabet.length() - 1) / cols;
+		max_pos.y = (alphabet.length() - 1) / cols;					//rows
+		max_pos_h.x = (alphabet.length() - 1) / (max_pos.y + 1);	//longer cols
+		max_pos_h.y = (alphabet.length() - 1) % (max_pos.y + 1);	//longer rows
+		if(alphabet.length() % (max_pos.y + 1))						//shorter cols
+			max_pos.x = max_pos_h.x - 1;
+		else
+			max_pos.x = max_pos_h.x;
 	}else
 	{
 		//in case of error
@@ -529,6 +582,9 @@ void GVKB_keyboard::fill_kb()
 	send_message(WM_DRAW, 0, client_rect.as_int, this);
 }
 
+/**
+ * redraws
+ */
 void GVKB_keyboard::reinitialize(bool reset_cursor)
 {
 	if(reset_cursor)
@@ -539,14 +595,20 @@ void GVKB_keyboard::reinitialize(bool reset_cursor)
 /**
  * @return the selected char (the one under the "cursor"), using cursor_pos
  */
-inline char GVKB_keyboard::getc()
+char GVKB_keyboard::getc()
 {
-	return alphabet[cursor_pos.y*cols + cursor_pos.x];
+	unsigned int pos_on_alphabet = cursor_pos.y*(max_pos_h.x + 1) + cursor_pos.x;
+	if(cursor_pos.y > max_pos_h.y + 1)
+		pos_on_alphabet -= max_pos.y - max_pos_h.y - 1;
+	return alphabet[pos_on_alphabet];
 }
 
 
 //---------- GText_CTRL ----------//
 
+/**
+ * if selected, inverts the button to simulate a cursor
+ */
 void GVKB_button::draw_this(LCD_MODULE* lcd)
 {
 	if(client_rect.height() > 0 && client_rect.width() > 0)
@@ -562,6 +624,9 @@ void GVKB_button::draw_this(LCD_MODULE* lcd)
 	}
 }
 
+/**
+ * adds its children (the buttons) and calls their initialize() methods
+ */
 unsigned int GVKB_Controls::initialize (GMessage& msg)
 {
 	font = ((GEditVKB*)parent)->font;
@@ -588,20 +653,27 @@ unsigned int GVKB_Controls::initialize (GMessage& msg)
 	return 1;
 }
 
+/**
+ * sends menu request to GVKB_edit if ABC button was pressed, otherwise passes
+ * request to parent
+ */
 unsigned int GVKB_Controls::process_command(GMessage& msg)
 {
 	if(msg.param == vk_button_abc)
 	{
-		GVKB_edit* edit = (GVKB_edit*)get_object(vkb_edit_text_id);
-		if(edit)
+		GVKB_edit* vkb_edit = (GVKB_edit*)get_object(vkb_edit_text_id);
+		if(vkb_edit)
 		{
-			send_message(WM_KEY, KEY_SHIFT, 0LL, edit);
-			return edit->get_focus();
+			send_message(WM_KEY, KEY_SHIFT, 0LL, vkb_edit);
+			return vkb_edit->get_focus();
 		}
 	}
 	return GContainer::process_command(msg);
 }
 
+/**
+ * passes request to children. if it wasn't processed, may change focus instead
+ */
 unsigned int GVKB_Controls::process_key(GMessage& msg)
 {
 	if(msg.param & KEY_UP_CODE)

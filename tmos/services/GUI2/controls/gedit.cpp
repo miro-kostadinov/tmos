@@ -563,6 +563,7 @@ unsigned int GEdit::process_key (GMessage& msg)
 	case KEY_ENTER:
 		if(align & ES_USE_VIRTUAL_KEYBOARD)
 			return GEditVKB::Create(this);
+		[[fallthrough]];
 	case KEY_ENTER | KEY_ASCII_CODE:
 	case KEY_USER_DEFINED: // bar code
 		if(align & ES_WANTRETURN)
