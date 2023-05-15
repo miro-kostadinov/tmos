@@ -54,12 +54,16 @@ void GText::alloc_scrollbars( void )
 
 text_metrics_t GText::SetTextAlign(unsigned int new_align )
 {
-	text_metrics_t txt_size;
+	text_metrics_t size_of_text;
+
+	if(new_align != align )
+		align = new_align;
 
 	client_rect = rect;
-
+//1. if there is a frame, reduce the client rectangle by the dimensions of the frame
 	if(flags & GO_FLG_BORDER)
 		allocate_border();
+//2. if exist caption, then place the caption in the client rectangle and reduce rectangle
 	if(caption && *caption)
 	{
 		if(align & SS_WORDWRAP)
@@ -75,111 +79,113 @@ text_metrics_t GText::SetTextAlign(unsigned int new_align )
 	}
 
 	scroll_rect = client_rect;
-
-	if(new_align != align )
-		align = new_align;
-
-
+//3. the text sizes are calculated
 	if(align & SS_WORDWRAP)
 	{
-		txt_size = get_text_metrics(txt.c_str(), client_rect.width(), text_font);
-		if(vscroll)
-		{
-			if(client_rect.height() && txt_size.height > client_rect.height())
-			{
-				txt_size = get_text_metrics(txt.c_str(), client_rect.width()- GO_SCROLL_WIDTH, text_font);
-				client_rect.Inflate(0, 1);
-				vscroll->SetScrollRange(GO_FLG_VSCROLL, txt_size.height/text_font->vspacing);// /text_font->vspacing);
-				vscroll->SetScrollPos(GO_FLG_VSCROLL, 0 , false);
-				client_rect.Deflate(0, 1);
-			}
-		}
+		// can contain more than one line
+		size_of_text = get_text_metrics(txt.c_str(), client_rect.width(), text_font);
 	}
 	else
 	{
-		txt_size = get_text_metrics(txt.c_str(), -1, text_font);
-		if(hscroll)
-		{
-			hscroll->SetScrollRange(GO_FLG_HSCROLL, txt_size.width/text_font->hspacing);
-			hscroll->SetScrollPos(GO_FLG_HSCROLL, 0 , false);
-		}
+		// all text is placed on one line
+		size_of_text = get_text_metrics(txt.c_str(), -1, text_font);
 	}
-	// check number of rows
-	if(txt_size.height == text_font->vspacing)
-		txt_size.height = text_font->height;	// only one row, resize to char vertical size
-	if(txt_size.height > text_font->vspacing)
-		txt_size.height--;						// exclude last v distance
-	// align text horizontally
-	if(scroll_rect.width())
+//4.  vertical reduction of the space occupied by the text
+	if(size_of_text.height == text_font->vspacing)
+		size_of_text.height = text_font->height;	// only one row, resize to char vertical size
+	if(size_of_text.height > text_font->vspacing)
+		size_of_text.height--;						// multiline text, exclude last v distance
+
+//4. aligning text horizontally
+	GUI_ASSERT(client_rect.width() > text_font->width);
+	if(size_of_text.width > scroll_rect.width())
+		scroll_rect.x1 = scroll_rect.x0 + size_of_text.width;
+	if(hscroll )
 	{
-		if(txt_size.width > scroll_rect.width())
-			scroll_rect.x1 = scroll_rect.x0 + txt_size.width;
-		if(hscroll )
-			hscroll->ShowScroll(GO_FLG_HSCROLL, true);
+		hscroll->ShowScroll(GO_FLG_HSCROLL, true);
+		hscroll->SetScrollRange(GO_FLG_HSCROLL, size_of_text.width/text_font->hspacing);
+		hscroll->SetScrollPos(GO_FLG_HSCROLL, 0 , false);
 	}
 
-	// align text vertically
-	if(scroll_rect.height())
+//5. aligning text vertically
+	GUI_ASSERT(client_rect.height() > text_font->height);
+	if(size_of_text.height <= client_rect.height())
 	{
-		if(txt_size.height <= client_rect.height())
+		switch(align & TA_VERTICAL)
 		{
-			switch(align & TA_VERTICAL)
-			{
-			case TA_TOP:
-				break;
-			case TA_BOTTOM:
-				client_rect.y0 = client_rect.y1 - txt_size.height;
-				break;
-			case TA_MIDDLE:
-				client_rect.y0 += (client_rect.height()+1 - txt_size.height)>>1;
-				break;
-			}
-			scroll_rect.y0 = client_rect.y0;
-			scroll_rect.y1 = scroll_rect.y0 + txt_size.height;
+		case TA_TOP:
+			break;
+		case TA_BOTTOM:
+			client_rect.y0 = client_rect.y1 - size_of_text.height;
+			break;
+		case TA_MIDDLE:
+			client_rect.y0 += (client_rect.height()+1 - size_of_text.height)>>1;
+			break;
 		}
-		else
-		{
-			scroll_rect.y1 = scroll_rect.y0 + txt_size.height;
-			if(vscroll && (flags & GO_FLG_VSCROLL))
-			{
-				flags &= ~GO_FLG_VSCROLL;
-				vscroll->ShowScroll(GO_FLG_VSCROLL, true);
-			}
-		}
+		scroll_rect.y0 = client_rect.y0;
+		scroll_rect.y1 = scroll_rect.y0 + size_of_text.height;
 	}
-//	send_message(WM_DRAW, 0, rect.as_int, this);
-	return txt_size;
+	else
+	{
+		if(vscroll)
+		{
+			vscroll->ShowScroll(GO_FLG_VSCROLL, true);
+			// providing space for the frame when selected
+			client_rect.Inflate(0, 1);
+			scroll_rect = client_rect;
+			size_of_text = get_text_metrics(txt.c_str(), client_rect.width(), text_font);
+			// calculating range of scrolling
+			int range;
+			// all text in rows
+			range = size_of_text.height/text_font->vspacing;
+			// subtracting the visible rows in the client rectangle
+			range -= client_rect.height()/text_font->vspacing;
+			// the client rectangle may also contain an incomplete row.
+			// If there is one, add it to the scroll scope.
+			if(client_rect.height()%text_font->vspacing)
+				range++;
+			vscroll->SetScrollRange(GO_FLG_VSCROLL, range);
+			vscroll->SetScrollPos(GO_FLG_VSCROLL, 0 , false);
+			// restore client rectangle
+			client_rect.Deflate(0, 1);
+		}
+		scroll_rect.y1 = scroll_rect.y0 + size_of_text.height;
+	}
+	return size_of_text;
 }
 
 unsigned int GText::process_key (GMessage& msg)
 {
+	int res = 0;
 	switch (msg.param & KEY_PRESREP_MASK)
 	{
 	case KEY_DOWN:
-		if(scroll_rect.y1 > client_rect.y1)
+		if(scroll_rect.y1 >= client_rect.y1)
 		{
-			scroll_rect.y0 --;
-			scroll_rect.y1 --;
-			if(vscroll)
-				vscroll->SetScrollPos(GO_FLG_VSCROLL, client_rect.y0 - scroll_rect.y0, true);
-			invalidate(this, client_rect);
-			return 1;
+			scroll_rect.Offset(0, -text_font->vspacing);
+			res = 1;
 		}
 		break;
 
 	case KEY_UP:
 		if(scroll_rect.y0 < client_rect.y0)
 		{
-			scroll_rect.y0 ++;
-			scroll_rect.y1 ++;
-			if(vscroll)
-				vscroll->SetScrollPos(GO_FLG_VSCROLL, client_rect.y0 - scroll_rect.y0, true);
-			invalidate(this, client_rect);
-			return 1;
+			scroll_rect.Offset(0, +text_font->vspacing);
+			res = 1;
 		}
 		break;
 	}
-	return 0;
+	if(res)
+	{
+		if(vscroll)
+		{
+			vscroll->SetScrollPos(GO_FLG_VSCROLL, (client_rect.y0 - scroll_rect.y0)/text_font->vspacing, false);
+			invalidate(this, rect); // the rectangle is used to avoid double redrawing
+		}
+		else
+			invalidate(this, client_rect);
+	}
+	return res;
 }
 
 unsigned int GText::process_default (GMessage& msg)
@@ -188,21 +194,11 @@ unsigned int GText::process_default (GMessage& msg)
 	{
 		case WM_KILLFOCUS:
 			client_rect.Deflate(0,1);
-			if(scroll_rect.y1 >= client_rect.y1 && scroll_rect.y0 <= client_rect.y0 )
-			{
-				scroll_rect.Offset(0, -1);
-				if(vscroll)
-					vscroll->SetScrollPos(GO_FLG_VSCROLL, client_rect.y0 - scroll_rect.y0, true);
-			}
 			break;
 		case WM_SETFOCUS:
 			if(get_focus(false))
 			{
-				if(scroll_rect.y0 <= client_rect.y0 && scroll_rect.y1 >= client_rect.y1 )
-					scroll_rect.Offset(0, 1);
 				client_rect.Inflate(0,1);
-				if(vscroll)
-					vscroll->SetScrollPos(GO_FLG_VSCROLL, client_rect.y0 - scroll_rect.y0, true);
 				return 1;
 			}
 			break;
@@ -226,15 +222,12 @@ void GText::draw_caption(LCD_MODULE* lcd)
 		lcd->pos_x = rect.x0 +text_font->hdistance +((flags&GO_FLG_BORDER)?get_border_size().x:0);
 		if(align & SS_WORDWRAP)
 		{
-//			lcd->pos_x = rect.x0 +text_font->hdistance;
 			lcd->pos_y = rect.y0 +text_font->vdistance +((flags&GO_FLG_BORDER)?get_border_size().y:0);
-//			lcd->pos_y = client_rect.y0 -(text_font->vspacing +2*text_font->vdistance);
 			client_rect = rect;
 			draw_text(lcd, caption);
 		}
 		else
 		{
-//			lcd->pos_x = rect.x0 +text_font->hdistance +((flags&GO_FLG_BORDER)?get_border_size().x:0);
 			lcd->pos_y = client_rect.y0;// +text_font->vdistance;
 			client_rect = rect;
 			draw_text_line(lcd, caption, strlen(caption));
@@ -249,7 +242,7 @@ void GText::draw_this (LCD_MODULE* lcd)
 	{
 		lcd->set_color(PIX_WHITE);
 		if(flags & GO_FLG_BORDER)
-			draw_border(rect);
+			lcd->draw_border(rect);
 
 		lcd->set_font(text_font);
 		lcd->allign = (align & (TA_HORIZONTAL|TA_VERTICAL));
@@ -259,14 +252,14 @@ void GText::draw_this (LCD_MODULE* lcd)
 		if(dc.CreateLcd(scroll_rect, lcd))
 		{
 			lcd->pos_x = dc.client_rect.x0;
-			lcd->pos_y = dc.client_rect.y0;// +text_font->vdistance;
+			lcd->pos_y = dc.client_rect.y0;
 			dc.draw_text(lcd, txt.c_str());
 			dc.RelaseLcd();
 		}
 		if(vscroll)
 			vscroll->draw_scroll(lcd);
 		if (flags & GO_FLG_SELECTED)
-			draw_poligon(rect);//client_rect);
+			lcd->draw_poligon(rect);
 	}
 }
 
