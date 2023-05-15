@@ -161,7 +161,6 @@ unsigned int GEditVKB::process_command(GMessage& msg)
  */
 void GEditVKB::exit_ok()
 {
-	//TODO add OK exit
 	GVKB_edit* vk_edit = (GVKB_edit*)get_object(vkb_edit_text_id);
 	if(vk_edit && base_edit->txt != vk_edit->txt)
 	{
@@ -184,7 +183,6 @@ void GEditVKB::exit_ok()
  */
 void GEditVKB::exit_cancel()
 {
-	//TODO add cancel exit
 	close();
 	if(parent)
 		parent->invalidate(parent, rect);
@@ -195,7 +193,6 @@ void GEditVKB::exit_cancel()
 //---------- GVKB_edit ----------//
 
 /**
- * TODO in constructor?
  * gives this the numeric flag if needed
  */
 unsigned int GVKB_edit::initialize (GMessage& msg)
@@ -218,22 +215,24 @@ unsigned int GVKB_edit::process_key(GMessage& msg)
 		if (GEdit::process_key(msg))
 		{
 			GObject *obj;
+			GObject *kb_obj;
 			switch (msg.param)
 			{
 			case KEY_ENTER:
 			case KEY_ESC:
 			case KEY_CANCEL:
 				obj = get_object(vkb_controls_id);
-				if (obj)
+				kb_obj = get_object(vkb_keyboard_id);
+				if (obj && kb_obj)
 				{
 					obj->get_focus();
 					obj = obj->get_object(vkb_control_abc_id);
 					if (obj)
 					{
+						bool change_cursor_pos = true;
 						key_mode previous_shift = ((GEditVKB*) parent)->shift;
 						if (shift != previous_shift)
 						{
-							bool change_cursor_pos = true;
 							if((shift == KT_BG_CAPS && previous_shift == KT_BG)
 									|| (shift == KT_BG && previous_shift == KT_BG_CAPS))
 								change_cursor_pos = false;
@@ -245,13 +244,12 @@ unsigned int GVKB_edit::process_key(GMessage& msg)
 							send_message(WM_DRAW, 0, 0LL, obj);
 
 							((GEditVKB*) parent)->shift = shift;
-							obj = get_object(vkb_keyboard_id);
-							if (obj)
-							{
-								((GVKB_keyboard*) obj)->reinitialize(change_cursor_pos);
-								obj->get_focus();
-							}
+
+							((GVKB_keyboard*) kb_obj)->reinitialize(change_cursor_pos);
 						}
+
+						//keyboard gets focus after exit from shift menu
+						kb_obj->get_focus();
 					}
 				}
 				break;
@@ -315,14 +313,11 @@ unsigned int GVKB_keyboard::initialize (GMessage& msg)
 	//rows = (num pixels - TXT offset - CTRL offset) / character vspacing
 	rows = (rect.height() + 2 - VKB_TXT_OFFSET - VKB_CTRL_OFFSET) / font->vspacing;
 
-	if(rows < 1 || cols < 1)
-	{ //a VKB cannot be created, close it
-		// TODO: ((GEditVKB*)parent)->exit_cancel();
-		return 1;
-	}
+	GUI_ASSERT(rows < 1 || cols < 1); //if a VKB cannot be created
 
-	fill_kb();
-	return GObject::initialize(msg);
+	unsigned int init_res = GObject::initialize(msg);
+	fill_kb();	//draw KB *after* initialization as it affects client_rect
+	return init_res;
 }
 
 /**
@@ -455,6 +450,7 @@ bool GVKB_keyboard::move_cursor(cursor_direction_t dir)
 		redraw_rect.y1 = redraw_rect.y0 + (cursor_pos.y+1)*font->vspacing +1;
 		break;
 	}
+	redraw_rect.Offset(client_rect.x0, 0);
 	send_message(WM_DRAW, 0, (LPARAM)redraw_rect, this);
 	return true;
 }
@@ -462,6 +458,7 @@ bool GVKB_keyboard::move_cursor(cursor_direction_t dir)
 /**
  * draws the symbols on the keyboard (from the current page).
  * if the keyboard has SELECTED flag, also draw the cursor
+ * symbols are centered using client_rect.x0, calculated in fill_kb()
  */
 void GVKB_keyboard::draw_this (LCD_MODULE* lcd)
 {
@@ -477,14 +474,14 @@ void GVKB_keyboard::draw_this (LCD_MODULE* lcd)
 
 		//draw alphabet on screen
 		unsigned int alphaIndex = 0;
-		int pos_x = 1;	//start from 2nd pixel
+		int pos_x = 1 + client_rect.x0;	//start from 2nd pixel
 		KBPos tempPos;
 		do
 		{
 			if(tempPos.x > max_pos_h.x || (tempPos.x > max_pos.x && tempPos.y > max_pos_h.y)) //end of row reached
 			{
 				tempPos.x = 0;
-				pos_x = 1;
+				pos_x = 1 + client_rect.x0;
 				tempPos.y++;
 				lcd->pos_y += lcd->font->vspacing;
 			}
@@ -497,7 +494,7 @@ void GVKB_keyboard::draw_this (LCD_MODULE* lcd)
 		//draw cursor if this is the current zone
 		if(flags & GO_FLG_SELECTED)
 		{
-			pos_x = cursor_pos.x*lcd->font->hspacing;
+			pos_x = cursor_pos.x*lcd->font->hspacing + client_rect.x0;
 			int y = rect.y0 + cursor_pos.y*lcd->font->vspacing;
 			for(int i = 0; i <= lcd->font->vspacing; ++i, y++)
 				lcd->invert_hline(pos_x, pos_x + lcd->font->hspacing, y);
@@ -508,7 +505,8 @@ void GVKB_keyboard::draw_this (LCD_MODULE* lcd)
 /**
  * gets the whole alphabet from the current shift, places the part that needs
  * to be displayed in alphabet var, and draws it. calculates the values of
- * max_page, max_pos_h and max_pos. variable "page" is controlled in process_key()
+ * max_page, max_pos_h and max_pos. variable "page" is controlled in
+ * process_key(). centers the keys by changing client_rect.x0
  */
 void GVKB_keyboard::fill_kb()
 {
@@ -571,6 +569,13 @@ void GVKB_keyboard::fill_kb()
 			max_pos.x = max_pos_h.x - 1;
 		else
 			max_pos.x = max_pos_h.x;
+
+		//center the keyboard if it doesn't go all the way to the right
+		client_rect = rect;
+		if(max_pos_h.x + 1 != cols)
+			//= (all_pixels - num_of_symbols * symbol_spacing) / 2
+			client_rect.x0 = (client_rect.x1 - (max_pos_h.x + 1) *
+					((GEditVKB*) parent)->font->hspacing) >> 1;
 	}else
 	{
 		//in case of error
@@ -579,7 +584,8 @@ void GVKB_keyboard::fill_kb()
 		max_pos = KBPos(2, 0);
 		page = max_page = 0;
 	}
-	send_message(WM_DRAW, 0, client_rect.as_int, this);
+
+	send_message(WM_DRAW, 0, rect.as_int, this);
 }
 
 /**
