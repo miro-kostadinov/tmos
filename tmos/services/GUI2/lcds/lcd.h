@@ -104,7 +104,7 @@ public:
 	const char* get_next_txt_row(const char *txt) const;
 	const char* draw_text(const char *txt);
 	const char* draw_text_no_space(const char *txt);
-	void draw_icon (unsigned char icon);
+	void draw_icon (guistd_icons_index icon);
 	const char* draw_row(const char *txt);
 	virtual void direct_write(GSplash draw_cb){};
 	void LPtoDP(POINT_T& size, unsigned char lcd_index=0) const override;

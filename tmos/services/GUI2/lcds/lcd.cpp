@@ -410,7 +410,7 @@ const char* LCD_MODULE::draw_text_no_space (const char *txt)
     return (txt);
 }
 
-void LCD_MODULE::draw_icon (unsigned char icon)
+void LCD_MODULE::draw_icon (guistd_icons_index icon)
 {
 	draw_bitmap(pos_x, pos_y, (font->icon_data + (icon*font->char_bytes)), font->width, font->height);
 }

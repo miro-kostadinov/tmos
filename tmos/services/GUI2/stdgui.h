@@ -278,15 +278,18 @@ typedef unsigned char GId;
 #define GB_TYPE_CHECK		2
 
 // icon index
-#define GICON_CIRCLE			0
-#define GICON_CHECKED_CIRCLE	1
-#define GICON_SQUARE			2
-#define GICON_CHECKED_SQUARE	3
-#define GICON_SQUARE_SQUARE		4
-#define GICON_UP				5
-#define GICON_DOWN				6
-#define GICON_LEFT				7
-#define GICON_RIGHT				8
+enum guistd_icons_index:uint8_t
+{
+	GICON_CIRCLE,
+	GICON_CHECKED_CIRCLE,
+	GICON_SQUARE,
+	GICON_CHECKED_SQUARE,
+	GICON_SQUARE_SQUARE,
+	GICON_UP,
+	GICON_DOWN,
+	GICON_LEFT,
+	GICON_RIGHT
+};
 
 //-----------------------------------------------   list box
 // additional control styles for list box
