@@ -50,9 +50,10 @@ public:
 	CSTRING			fragment;
 	CSTRING 		user;
 	CSTRING			password;
-
+	struct{
 	unsigned short	url_flags;		//URL_FLAG_XXXX
 	unsigned short	port;			// Port number
+	}__attribute__((packed, aligned(4)));
 	CURL() :
 		host(), path(), params(), query(), fragment(), user(), password(),
 				url_flags(0), port(0)
