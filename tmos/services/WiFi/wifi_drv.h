@@ -45,6 +45,8 @@ struct WIFI_DRIVER_DATA
     unsigned char		wifi_clients;
     unsigned char		wifi_flags_ok;
     unsigned char		wifi_flags_bad;
+	DRIVER_INDEX		iface_driver_index;	//!< Index of the interface driver
+	Task* 				wifi_task;
 
     HANDLE				waiting;
     wifi_module_type* 	wifi_module;		//!< Pointer to the detected wifi module (or NULL)
@@ -69,7 +71,6 @@ struct WIFI_DRIVER_INFO
 	//--- fields specific for this (WiFi) driver -----///
     WIFI_DRIVER_DATA*	drv_data;			//!< pointer to the driver data (RAM) structure
 
-	DRIVER_INDEX		iface_driver_index;	//!< Index of the interface driver
 	const void*			iface_mode_stru[2];	//!< mode for the interface handle
 };
 

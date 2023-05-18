@@ -129,6 +129,7 @@ bool wifi_get_param(const char*row, int& param, unsigned int num)
 RES_CODE esp8266_module::wifi_echo_off(bool lowlevel, uint32_t indx)
 {
 	RES_CODE res;
+	DRIVER_INDEX	iface_driver_index;
 
 	res = RES_ERROR;
 	for(int i=0; i < 3; i++)
@@ -138,8 +139,11 @@ RES_CODE esp8266_module::wifi_echo_off(bool lowlevel, uint32_t indx)
 		if(lowlevel)
 			return RES_OK;
 		tsk_sleep(1000);
-		if(rcv_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[indx]) &&
-			snd_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[indx])	)
+		iface_driver_index = drv_info->drv_data->iface_driver_index;
+		if(!iface_driver_index)
+			return RES_FATAL;
+		if(rcv_hnd.tsk_open(iface_driver_index, drv_info->iface_mode_stru[indx]) &&
+			snd_hnd.tsk_open(iface_driver_index, drv_info->iface_mode_stru[indx])	)
 		{
 			//wait until rx signals get stable
 			wifi_sleep(1000);
@@ -1775,6 +1779,7 @@ RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
 //	CSTRING log;
 	CHandle hnd_snd;
 	uint32_t buf_in, buf_out, rx_size=0, tx_size=0, gsm_ack_off;
+	DRIVER_INDEX	iface_driver_index;
 
     //change hnd client
     old_sig = hnd->signal;
@@ -1800,13 +1805,16 @@ RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
 		res = hnd->tsk_read(buf, 1, 2*25000);
 		wifi_drv_pwron(true);
 
+		iface_driver_index = drv_info->drv_data->iface_driver_index;
+		if(res == RES_OK && !iface_driver_index)
+			res = RES_FATAL;
 		if(res == RES_OK)
 		{
 			// upgrade started
 
 
-			if(rcv_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[1]) &&
-				snd_hnd.tsk_open(drv_info->iface_driver_index, drv_info->iface_mode_stru[1])	)
+			if(rcv_hnd.tsk_open(iface_driver_index, drv_info->iface_mode_stru[1]) &&
+				snd_hnd.tsk_open(iface_driver_index, drv_info->iface_mode_stru[1])	)
 			{
 		    	unsigned int pc_rcv, gsm_rcv;
 

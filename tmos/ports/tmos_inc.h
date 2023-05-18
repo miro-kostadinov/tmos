@@ -32,6 +32,6 @@
 #define DCR_HANDLE			0x0b	//!< DCR call with a handle
 #define DCR_BAUDRATE		0x0c	//!< Baudrate change request
 #define DCR_STOP			0x0d	//!< Request to stop some driver function
-
+#define DCR_START			0x0e	//!< Request to start driver
 
 #endif /* TMOS_INC_H_ */

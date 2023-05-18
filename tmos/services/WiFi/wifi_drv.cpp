@@ -132,7 +132,6 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
         }
     }
 }
-TASK_DECLARE_STATIC(wifi_task, "WIFIT", (void(*)())wifi_thread, 85, 200+TRACE_SIZE);
 
 //*----------------------------------------------------------------------------
 //*			DCR function
@@ -143,11 +142,24 @@ void WIFI_DCR(WIFI_DRIVER_INFO * drv_info, unsigned int reason, HANDLE param)
 
 	switch(reason)
     {
-        case DCR_RESET:
-           	usr_task_init_static(&wifi_task_desc, true);
-           	wifi_task.sp->r0.as_cvoidptr = drv_info;
-           	drv_data->wifi_flags_ok = WIFI_STATE_OFF;
-           	drv_data->wifi_flags_bad = WIFI_STATE_OFF;
+		case DCR_RESET:
+           	drv_data->wifi_flags_bad = WIFI_FLAG_SHUTDOWN;
+			break;
+
+        case DCR_START:
+	    	if(drv_data->iface_driver_index && !drv_data->wifi_task)
+	    	{
+
+	    		drv_data->wifi_task = usr_task_create_dynamic("WIFIT", (TASK_FUNCTION)wifi_thread,
+	    				85,	200+TRACE_SIZE);
+	    		if(drv_data->wifi_task)
+	    		{
+	    			svc_task_schedule(drv_data->wifi_task);
+	    			drv_data->wifi_task->sp->r0.as_cvoidptr = drv_info;
+		           	drv_data->wifi_flags_ok = WIFI_STATE_OFF;
+		           	drv_data->wifi_flags_bad = WIFI_STATE_OFF;
+	    		}
+	    	}
             break;
 
 	    case DCR_OPEN:
@@ -166,7 +178,8 @@ void WIFI_DCR(WIFI_DRIVER_INFO * drv_info, unsigned int reason, HANDLE param)
 	    	if(!param->svc_list_cancel(drv_info->drv_data->waiting))
 	    	{
 	    		param->mode1 = 1;
-	    		svc_send_signal(&wifi_task, WIFI_CANCEL_SIGNAL);
+		    	if(drv_data->wifi_task)
+		    		svc_send_signal(drv_data->wifi_task, WIFI_CANCEL_SIGNAL);
 	    	}
             break;
 
