@@ -20,6 +20,8 @@ void svc_task_schedule(Task* volatile task);
 void svc_task_suspend(Task *task);
 void svc_drv_icontrol(DRIVER_INDEX drv_index, unsigned int reason, void * param);
 
+void swd_trace_str(const char *buf);
+void swd_trace_char(unsigned c);
 void usr_trace_str(const char *buf);
 void usr_trace_char(unsigned c);
 void TRACE_BUF(const void* buf, unsigned int len);

@@ -573,9 +573,11 @@ ENDF(   svc_wfi      )
 
 #define TRACE_PORT 0
 //------------------------------------------------------------------------------
-//void usr_trace_str(const char *buf);
-FUNC(	usr_trace_str		)
-.weak usr_trace_str
+//void swd_trace_str(const char *buf);
+FUNC(	swd_trace_str		)
+
+.weak	usr_trace_str
+.thumb_set	usr_trace_str, swd_trace_str
 
 				movs			r1, #BASE_ITM
                 ldr             r3, [r1, # REG_ITM_TER - BASE_ITM]
@@ -594,13 +596,14 @@ FUNC(	usr_trace_str		)
 4:
 				bx				lr
 
-ENDF(	usr_trace_str		)
-
+ENDF(	swd_trace_str		)
 
 //------------------------------------------------------------------------------
-//void usr_trace_char(char c);
-FUNC(	usr_trace_char		)
-.weak usr_trace_char
+//void swd_trace_char(char c);
+FUNC(	swd_trace_char	)
+
+.weak	usr_trace_char
+.thumb_set	usr_trace_char, swd_trace_char
 
 				movs			r1, #BASE_ITM + (TRACE_PORT * 4)
 				cbz				r0, 2f
@@ -616,8 +619,7 @@ FUNC(	usr_trace_char		)
 2:
 				bx				lr
 
-ENDF(	usr_trace_char		)
-
+ENDF(	swd_trace_char	)
 
 //------------------------------------------------------------------------------
 //unsigned int  locked_inc_byte(volatile unsigned char* Addend);
