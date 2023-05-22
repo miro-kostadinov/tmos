@@ -219,7 +219,7 @@ void GText::draw_caption(LCD_MODULE* lcd)
 	if(caption && *caption)
 	{
 		RECT_T rc(client_rect);
-		lcd->pos_x = rect.x0 +text_font->hdistance +((flags&GO_FLG_BORDER)?get_border_size().x:0);
+		lcd->pos_x = rect.x0 /*+text_font->hdistance*/ +((flags&GO_FLG_BORDER)?get_border_size().x:0); // BUG: the position must be the same as the one at initialization
 		if(align & SS_WORDWRAP)
 		{
 			lcd->pos_y = rect.y0 +text_font->vdistance +((flags&GO_FLG_BORDER)?get_border_size().y:0);

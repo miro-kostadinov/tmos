@@ -361,7 +361,7 @@ void GObject::draw_rectangle(const RECT_T& frame, bool fill)
 void GObject::allocate_border(void)
 {
 	POINT_T pt = get_border_size();
-	if(rect.height() > 2*pt.x && rect.width() > 2*pt.y)
+	if(rect.height() > 2*pt.y && rect.width() > 2*pt.x) // BUG: pt.y and pt.x were swapped
 	{
 		client_rect = rect;
 		client_rect.Inflate(pt.x, pt.y);
