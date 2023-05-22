@@ -533,10 +533,10 @@ ENDF(   tmos_vsprintf        )
 
 FUNC(   tmos_dbg_char       )
         adds        r0, #1
-        push        {r0, r1, r2, r3, lr}
+        push        {r0, r1, r2, r3, r12, lr}
         mov         r0, r3
         bl          usr_trace_char
-        pop         {r0, r1, r2, r3, pc}
+        pop         {r0, r1, r2, r3, r12, pc}
 ENDF(   tmos_dbg_char       )
 
 // int tmos_dbgprintf( uint32_t zero, const char *format, va_list arg );
