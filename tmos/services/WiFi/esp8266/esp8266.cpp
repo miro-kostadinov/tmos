@@ -171,7 +171,7 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 
 
 	TRACE1_WIFI_DEBUG("\r\nWIFI power");
-	drv_data->wifi_flags_ok = WIFI_STATE_OFF;
+	drv_data->wifi_flags_ok &= (WIFI_FLAG_DETECTED|WIFI_FLAG_PRESENT);
 	if(wifi_pin_pwr)
 		PIO_Cfg(wifi_pin_pwr);
 #if WIFI_FLOW_CONTROL
@@ -244,8 +244,6 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 			res = wifi_send_cmd(WFI_MUX"=1", 50);
 			if(WIFI_CMD_STATE_OK == res)
 			{
-				drv_data->wifi_flags_ok = WIFI_FLAG_ON;
-				drv_data->wifi_flags_bad &= ~WIFI_FLAG_ON;
 				// configure AP
 				CSTRING ssid(WIFI_CFG_AP"=");
 				if(wifi_name_pass(ssid))
@@ -256,6 +254,8 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 				if(WIFI_CMD_STATE_OK == res)
 				{
 					wifi_send_cmd(WIFI_CFG_AP"?", 5);
+					drv_data->wifi_flags_ok |= WIFI_FLAG_ON;
+					drv_data->wifi_flags_bad &= ~WIFI_FLAG_ON;
 					wifi_on_pwron(this);
 					return NET_OK;
 				}
@@ -277,6 +277,9 @@ RES_CODE esp8266_module::wifi_drv_off()
 	if(res != NET_OK)
 		return res;
 
+	if(!(drv_data->wifi_flags_ok & WIFI_FLAG_ON))
+		return RES_OK;
+
 	drv_data->wifi_flags_ok &= ~(WIFI_FLAG_ON | WIFI_FLAG_REGISTERED );
 
 #if USE_WIFI_LISTEN
@@ -284,7 +287,9 @@ RES_CODE esp8266_module::wifi_drv_off()
 		wifi_close_listen(listen_socket, NET_ERR_SOCK_ABORT);
 #endif
 	for(unsigned int sid=0; sid < WIFI_ESP8266_MAX_SOCKETS; sid++)
+	{	wifi_esp8266_socket_close(sid);
 		wifi_driver_socket_close(sid, NET_ERR_SOCK_ABORT);
+	}
 
 	//TODO: try to stop
 	//check power state
@@ -296,23 +301,95 @@ RES_CODE esp8266_module::wifi_drv_off()
 }
 
 
-NET_CODE esp8266_module::wifi_reset(bool force)
+NET_CODE esp8266_module::wifi_reset(bool force, wifi_module_type** drv_module)
 {
+	WIFI_DRIVER_DATA *drv_data = drv_info->drv_data;
+	if( (drv_data->wifi_flags_ok & WIFI_FLAG_ON ) &&
+			!(drv_data->wifi_flags_bad & WIFI_FLAG_SHUTDOWN))
+    {
+		if(force || /*used_sockets ||*/ sleep_tout++ > MODULE_SLEEP_TOUT)
+        {
+       		sleep_tout = 0;
+        	WIFI_CMD_STATE rc = wifi_send_cmd("",2);
+            if(  rc & WIFI_CMD_STATE_OK )
+            {
+            	if(rc != WIFI_CMD_STATE_OK)
+            		rc = wifi_send_cmd("E0",2);
+            	else
+            	{
+    				rc = wifi_drv_level();
+    				if(rc == RES_OK && wifi_watchdog_cnt)
+    				{
+    					rc = WIFI_CMD_STATE_OK;
+    					wifi_watchdog_cnt = WIFI_WDT_PERIOD;
+    				}
+    				else
+    					rc = WIFI_CMD_STATE_CMES;
+            	}
+            }
+
+            if(rc != WIFI_CMD_STATE_OK || force )
+            {
+        		sleep_tout = MODULE_SLEEP_TOUT; //do not sleep
+            	if(!wifi_watchdog_cnt--)
+            	{
+            		wifi_watchdog_cnt = WIFI_WDT_PERIOD;
+            		drv_data->wifi_flags_bad |= WIFI_FLAG_SHUTDOWN;
+            		usr_drv_icontrol(WIFI_DRV_INDX, DCR_GET_WAITING, (void *)RES_SIG_IDLE);
+            		wifi_drv_off();
+            		// force WiFi detection again
+            		if(drv_module)
+            			*drv_module = nullptr;
+            		drv_data->wifi_flags_bad = WIFI_STATE_OFF;
+            		drv_data->wifi_flags_ok = WIFI_STATE_OFF;
+            	}
+            }
+        } else
+        {
+    		wifi_on_blink_transfer(this, WIFI_STATE_INDICATOR);
+        }
+    }
     return NET_OK;
 }
 
 NET_CODE esp8266_module::wifi_drv_level()
 {
 	WIFI_DRIVER_DATA * drv_data = drv_info->drv_data;
-	unsigned level =0;
+	unsigned short& level =drv_data->signal_level;
 	RES_CODE res = NET_ERR_WIFI;
+	int32_t rssi;
 
-	if( (drv_data->wifi_flags_ok & WIFI_FLAG_ON ) )
+	if( (drv_data->wifi_flags_ok & (WIFI_FLAG_ON|WIFI_FLAG_REGISTERED))
+			== (WIFI_FLAG_ON|WIFI_FLAG_REGISTERED))
 	{
-		//TODO: get signal strength
+		if(wifi_send_cmd(WIFI_JOIN_TO_AP"?",10) == WIFI_CMD_STATE_ROK)
+		{
+			//+CWJAP_CUR:<ssid>, <bssid>, <channel>, <rssi>
+			if(wifi_get_param(buf, rssi, 4))
+			{
+				// rssi in dBm
+				if(rssi < -57)
+					level = 4;
+				else
+					level = 5;
+				if(rssi < -69)
+					level = 3;
+				if(rssi < -81)
+					level = 2;
+				if(rssi < -93)
+					level = 1;
+				if(rssi < -105)
+					level = 0;
+
+				TRACELN("rssi:%d(%u)", rssi, level);
+			}
+			res = RES_OK;
+		}
+	}else
+	{
+		level = 0;
 		res = RES_OK;
 	}
-	drv_data->signal_level = level;
 	return res;
 }
 
@@ -343,7 +420,7 @@ int esp8266_module::wifi_notification(const char* row)
 				closed_sockets[id] = false;
 				if(pending_connection && pending_connection->sock_id == id)
 				{
-					TRACELN("STATION conn:%u", id);
+					TRACELN_WIFI_DEBUG("STATION conn:%u", id);
 					pending_connection->sock_state = SOCKET_CONECTED;
 					return 1;
 				}
@@ -379,6 +456,26 @@ int esp8266_module::wifi_notification(const char* row)
 	if(cmd_match("+IPD", row))
 	{
 		wifi_data_received(row);
+		return 1;
+	}
+	if(cmd_match("busy p...", row))
+	{
+		// !?
+		return 1;
+	}
+	if(cmd_match("WIFI DISCONNECT", row))
+	{
+		drv_info->drv_data->wifi_flags_ok &= ~WIFI_FLAG_REGISTERED;
+		return 1;
+	}
+	if(cmd_match("WIFI CONNECTED", row))
+	{
+		//TODO:
+		return 1;
+	}
+	if(cmd_match("WIFI GOT IP", row))
+	{
+		drv_info->drv_data->wifi_flags_ok |= WIFI_FLAG_REGISTERED;
 		return 1;
 	}
 /*
@@ -457,7 +554,7 @@ void esp8266_module::wifi_process_tout(void)
 				}
 				wifi_on_disconnect(this);
 
-				TRACELN1("WIFI OFF");
+				TRACELN1_WIFI_DEBUG("WIFI OFF");
 
 				list = waiting_open;
 				waiting_open = NULL;
@@ -628,6 +725,7 @@ NET_CODE esp8266_module::wifi_esp8266_init_net(CSocket * sock)
 			res = wifi_send_cmd(WIFI_GET_LOCAL_IP, 50);
 			if (WIFI_CMD_STATE_ROK == res)
 			{
+//				drv_info->drv_data->wifi_flags_ok |= WIFI_FLAG_REGISTERED;
 				connected_network_name = AP.name;
 				return NET_OK;
 			}
@@ -998,8 +1096,6 @@ void esp8266_module::wifi_driver_socket_close(unsigned int sid, unsigned int rea
 			DEC_ALLOC_SIZE(received_size[sid]);
 		}
 		received_size[sid] = 0;
-		sock->sock_id = SOCKET_ID_INVALID;
-		sock->sock_state = SOCKET_CLOSED;
 
 		// do we have to signal it?
 		if((sock->res & RES_BUSY_WAITING) == RES_BUSY_WAITING)
@@ -1014,6 +1110,8 @@ void esp8266_module::wifi_driver_socket_close(unsigned int sid, unsigned int rea
 			TRACE_WIFI_DEBUG("\r\ndisconnect %d, err %d", sid, reason);
 			wifi_net_error(reason);
 		}
+		sock->sock_id = SOCKET_ID_INVALID;
+		sock->sock_state = SOCKET_CLOSED;
 		alloc_sockets[sid] = NULL;
 #if USE_WIFI_LISTEN
 		accept_id[sid] = WIFI_ESP8266_MAX_SOCKETS;
@@ -1092,7 +1190,7 @@ bool esp8266_module::wifi_data_received(const char* row)
 						INC_ALLOC_SIZE(size);
 						if( rcv_hnd.tsk_read_pkt(mem+received_size[id], size, WIFI_READ_TOT) == RES_OK)
 						{
-							TRACE1("read Ok");
+							TRACE1_WIFI_DEBUG("read Ok");
 //							TRACE_BUF(received_data[id]+received_size[id], size, TC_TXT_CYAN);
 							received_size[id] += size;
 #if WIFI_FLOW_CONTROL
@@ -1283,14 +1381,14 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 	unsigned size, id;
 	CSTRING cmd;
 
-    TRACELN("WIFI: read %d?", sock->len);
+	TRACELN_WIFI_DEBUG("WIFI: read %d?", sock->len);
 	while( sock->sock_state == SOCKET_CONECTED
 			|| (sock->sock_id < WIFI_ESP8266_MAX_SOCKETS && received_size[sock->sock_id])
 			|| (sock->res & FLG_OK))
 	{
 		if(!sock->len)
 		{
-			TRACE1(" done!");
+			TRACE1_WIFI_DEBUG(" done!");
 			is_data_received(sock->sock_state);
 			return RES_SIG_OK;
 		}
@@ -1300,7 +1398,7 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 			if(!(sock->res & FLG_OK))
 			{
 				// ако няма нотификация го слага в списъка с чакащи
-				TRACE1(" wait!");
+				TRACE1_WIFI_DEBUG(" wait!");
 				sock->res = RES_BUSY_WAITING;
 				return RES_IDLE;
 			}
@@ -1331,7 +1429,7 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 			delete received_data[id];
 			received_data[id] = NULL;
 			is_data_received(sock->sock_state);
-			TRACE1(" EOF done!");
+			TRACE1_WIFI_DEBUG(" EOF done!");
 			return RES_SIG_OK;
 		}
 	}
@@ -1548,7 +1646,7 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 		size = sock->len;
 		if(!size)
 		{
-		    TRACELN1("WIFI: write OK");
+		    TRACELN1_WIFI_DEBUG("WIFI: write OK");
 			return RES_SIG_OK;
 		}
 		if(size > 2048)
@@ -1563,7 +1661,7 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 
 		// Send command
 		cmd.format(WIFI_SEND_DATA"=%u,%u", sock->sock_id, size);
-	    TRACELN("WIFI: WRITE %d?", size);
+	    TRACELN_WIFI_DEBUG("WIFI: WRITE %d?", size);
 #if USE_DEPRECATED_AT_CMD
 	    cmd_state |= WIFI_CMD_STATE_HND;
 	    if(wifi_send_cmd(cmd.c_str(), 20) != WIFI_CMD_STATE_RETURNED)
@@ -1614,14 +1712,14 @@ RES_CODE esp8266_module::process_write(CSocket* sock)
 
 		if(timeout)
 		{
-			TRACE("\r\nWIFI: send timeout!");
+			TRACELN1_WIFI_DEBUG("WIFI: send timeout!");
 		}
 //	    wifi_on_blink_transfer(this, GPRS_TRANSFER_INDICATOR);
-		TRACE("\r\nWIFI:state %X", cmd_state);
+		TRACE_WIFI_DEBUG("\r\nWIFI:state %X", cmd_state);
 	    //Check the result
 	    if(cmd_state & WIFI_CMD_STATE_OK)
 	    {
-			TRACE1(" done!");
+			TRACE1_WIFI_DEBUG(" done!");
 			sock->src.as_byteptr += size;
 			sock->len -= size;
 			continue;
@@ -1941,7 +2039,6 @@ RES_CODE esp8266_module::module_upgrade(HANDLE hnd)
 			    	tsk_sleep(100);
 				    wifi_drv_pwron();
 			    }
-			    //gsm_pwron();
 			}
 		} else
 			TRACE1_WIFI("\r\nTIMEOUT\r\n");
