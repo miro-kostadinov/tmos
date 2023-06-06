@@ -114,49 +114,49 @@ struct esp8266_module: public wifi_module_type
 		};
 
 	RES_CODE wifi_echo_off(bool lowlevel, uint32_t indx);
-    virtual RES_CODE wifi_drv_pwron(bool lowlevel = false);
-    virtual RES_CODE wifi_drv_off();
-    virtual NET_CODE wifi_reset(bool force);
-    NET_CODE wifi_drv_level();
+    RES_CODE wifi_drv_pwron(bool lowlevel = false) override;
+    RES_CODE wifi_drv_off() override;
+    NET_CODE wifi_reset(bool force, wifi_module_type** drv_module) override;
+    NET_CODE wifi_drv_level() override;
 #if USE_DEPRECATED_AT_CMD
     RES_CODE wifi_receive_check(char sym);
 #endif
-    virtual bool wifi_data_received(const char* row);
+    bool wifi_data_received(const char* row) override;
 
     NET_CODE wifi_esp8266_init_net(CSocket * sock);
     NET_CODE wifi_esp8266_socket_open(CSocket* sock);
     void wifi_esp8266_socket_close(unsigned int sid);
     void wifi_driver_socket_close(unsigned int sid, unsigned int reason);
 
-    virtual RES_CODE process_cmd(HANDLE client);
-    virtual RES_CODE process_read(CSocket* sock);
-    virtual RES_CODE process_write(CSocket* sock);
-    virtual RES_CODE wifi_sock_open(CSocket* sock);
-    virtual RES_CODE wifi_sock_connect_adr(CSocket* sock);
-    virtual RES_CODE wifi_sock_connect_url(CSocket* sock);
-    virtual RES_CODE wifi_sock_disconect(CSocket* sock);
-    virtual RES_CODE wifi_sock_close(CSocket* sock);
-    virtual RES_CODE wifi_gethostbyname(CSocket* sock);
+    RES_CODE process_cmd(HANDLE client) override;
+    RES_CODE process_read(CSocket* sock) override;
+    RES_CODE process_write(CSocket* sock) override;
+    RES_CODE wifi_sock_open(CSocket* sock) override;
+    RES_CODE wifi_sock_connect_adr(CSocket* sock) override;
+    RES_CODE wifi_sock_connect_url(CSocket* sock) override;
+    RES_CODE wifi_sock_disconect(CSocket* sock) override;
+    RES_CODE wifi_sock_close(CSocket* sock) override;
+    RES_CODE wifi_gethostbyname(CSocket* sock) override;
 #if USE_WIFI_LISTEN
     void 	module_accepted_socket(unsigned int sock_id);
-    virtual RES_CODE wifi_sock_bind_adr(CSocket* sock);
-    virtual RES_CODE wifi_sock_bind_url(CSocket* sock);
-    virtual RES_CODE wifi_sock_listen(CSocket* sock);
-    virtual RES_CODE wifi_sock_accept(CSocket* sock);
-    virtual RES_CODE wifi_sock_addr(CSocket* sock);
+    RES_CODE wifi_sock_bind_adr(CSocket* sock) override;
+    RES_CODE wifi_sock_bind_url(CSocket* sock) override;
+    RES_CODE wifi_sock_listen(CSocket* sock) override;
+    RES_CODE wifi_sock_accept(CSocket* sock) override;
+    RES_CODE wifi_sock_addr(CSocket* sock) override;
 #endif
-    virtual int wifi_notification(const char* row);
-    virtual void wifi_notificatoin_response();
-    virtual void wifi_process_tout();
-    virtual void wifi_cancelation(bool all_station, bool all_softAP);
+    int wifi_notification(const char* row) override;
+    void wifi_notificatoin_response() override;
+    void wifi_process_tout() override;
+    void wifi_cancelation(bool all_station, bool all_softAP) override;
 
-    NET_CODE wifi_get_network_name(CSTRING& name);
+    NET_CODE wifi_get_network_name(CSTRING& name) override;
     unsigned int get_socket_state(unsigned int sock_id);
 
 #if USE_WIFI_ESP8266 < 3 // version 3.0
     bool is_data_received(unsigned char sock_state);
 #endif
-    virtual RES_CODE module_upgrade(HANDLE hnd);
+    RES_CODE module_upgrade(HANDLE hnd) override;
 
 };
 
