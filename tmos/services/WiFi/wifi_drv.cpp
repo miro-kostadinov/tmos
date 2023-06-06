@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////////////////////
 //
-//			WIFI Driver
+//			Qectel M66 Bluetooth Driver
 //
 //////////////////////////////////////////////////////////////////////////
 
 
 #include <tmos.h>
-#include "wifi_drv.h"
+#include <wifi_drv.h>
 //#include "wifi_core.h"
 
 WEAK_C wifi_module_type* wifi_detect(WIFI_DRIVER_INFO* drv_info)
@@ -91,13 +91,13 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
 //    		    		case GSM_DRV_OFF_CMD:
 //    		    			res = gsm_drv_off(drv_data->gsm_module, client);
 //    		    			break;
-    		    		case CMD_WIFI_UPGRADE:
+    		    		case WIFI_DRV_UPGRADE:
         		    		drv_data->wifi_module->module_upgrade((HANDLE)client->dst.as_voidptr);
         					res = RES_SIG_OK;
     		    			break;
     		    		}
     		    	}
-   		    }
+   		    	}
 
             	if(res & FLG_SIGNALED)
             	{
@@ -112,7 +112,7 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
             			client->error = NET_OK;
             		tsk_HND_SET_STATUS(client, res);
             		if(res != RES_SIG_OK && wifi_module)
-                    	wifi_module->wifi_reset(true);
+                    	wifi_module->wifi_reset(true, &wifi_module);
             	}
         	}
         	hlp_hnd->tsk_start_read(NULL, 0);
@@ -122,7 +122,7 @@ void wifi_thread(WIFI_DRIVER_INFO* drv_info)
         if(!signals && wifi_module)
         {
         	wifi_module->wifi_process_tout();
-        	wifi_module->wifi_reset(false);
+        	wifi_module->wifi_reset(false, &wifi_module);
         }
 
         // step 4 - cancelation
@@ -175,13 +175,32 @@ void WIFI_DCR(WIFI_DRIVER_INFO * drv_info, unsigned int reason, HANDLE param)
 	    	break;
 
 	    case DCR_CANCEL:
-	    	if(!param->svc_list_cancel(drv_info->drv_data->waiting))
+	    	if(!param->svc_list_cancel(drv_info->drv_data->wifi_waiting))
 	    	{
 	    		param->mode1 = 1;
 		    	if(drv_data->wifi_task)
 		    		svc_send_signal(drv_data->wifi_task, WIFI_CANCEL_SIGNAL);
 	    	}
             break;
+
+	    case DCR_GET_WAITING:
+	    	{
+	    		HANDLE hnd = drv_info->drv_data->wifi_waiting;
+	    		while(hnd)
+	    		{
+	    			if(hnd->cmd == WIFI_DRV_ON_CMD)
+	    			{
+	    				if(hnd->list_remove(drv_info->drv_data->wifi_waiting))
+	    				{
+	    					svc_HND_SET_STATUS(hnd, (RES_CODE)param);
+	    					hnd = drv_info->drv_data->wifi_waiting;
+	    					continue;
+	    				}
+	    			}
+	    			hnd = hnd->next;
+	    		}
+	    	}
+	    	break;
 
     }
 }
@@ -199,11 +218,11 @@ void WIFI_DSR(WIFI_DRIVER_INFO * drv_info, HANDLE hnd)
 	if(hnd == &drv_data->helper_hnd)
 	{
 		// Request from the helper task...
-		tmp = drv_data->waiting;		//  first waiting handle
+		tmp = drv_data->wifi_waiting;		//  first waiting handle
 		if( tmp )
 		{
 			//return one handle at a time
-			drv_data->waiting = tmp->next;
+			drv_data->wifi_waiting = tmp->next;
 
 			hnd->dst.as_voidptr = tmp;
 			svc_HND_SET_STATUS(hnd, RES_SIG_OK);
@@ -219,7 +238,7 @@ void WIFI_DSR(WIFI_DRIVER_INFO * drv_info, HANDLE hnd)
 			svc_HND_SET_STATUS(tmp, RES_SIG_OK);
 		} else
 		{
-        	hnd->list_add(drv_data->waiting);
+        	hnd->list_add(drv_data->wifi_waiting);
 		}
 	}
 }
