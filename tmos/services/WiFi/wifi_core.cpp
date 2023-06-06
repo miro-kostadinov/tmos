@@ -425,8 +425,10 @@ NET_CODE wifi_module_type::wifi_drv_on()
 	WIFI_DRIVER_DATA * drv_data = drv_info->drv_data;
     drv_data->turnoff_time = 0;
 
+/*
 	if(drv_data->wifi_flags_ok & WIFI_FLAG_REGISTERED )
 		return NET_OK;
+*/
 
 	if( !(drv_data->wifi_flags_ok & WIFI_FLAG_ON))
 	{
@@ -444,7 +446,7 @@ NET_CODE wifi_module_type::wifi_drv_on()
 	res = wifi_check_reg();
 	if(res != NET_OK)
 	{
-		drv_data->wifi_flags_bad |= WIFI_FLAG_REGISTERED;
+//		drv_data->wifi_flags_bad |= WIFI_FLAG_REGISTERED;
 		return res;
 	}
 
@@ -465,8 +467,8 @@ NET_CODE wifi_module_type::wifi_drv_on()
 
 
 	TRACE1_WIFI_DEBUG("\r\nWIFI on");
-	drv_data->wifi_flags_ok |= WIFI_FLAG_REGISTERED;
-	drv_data->wifi_flags_bad &= ~WIFI_FLAG_REGISTERED;
+//	drv_data->wifi_flags_ok |= WIFI_FLAG_REGISTERED;
+//	drv_data->wifi_flags_bad &= ~WIFI_FLAG_REGISTERED;
 	return NET_OK;
 }
 
@@ -501,7 +503,7 @@ RES_CODE wifi_module_type::process_cmd(HANDLE client)
 	RES_CODE res = RES_SIG_ERROR;
 
 
-	if( !(drv_info->drv_data->wifi_flags_bad & WIFI_FLAG_ON) || (client->cmd == CMD_WIFI_UPGRADE))
+	if( !(drv_info->drv_data->wifi_flags_bad & WIFI_FLAG_ON) || (client->cmd == WIFI_DRV_UPGRADE))
 	{
 		switch (client->cmd)
 		{
@@ -550,9 +552,17 @@ RES_CODE wifi_module_type::process_cmd(HANDLE client)
 			res = wifi_sock_close((CSocket*) client);
 			break;
 
-		case CMD_WIFI_UPGRADE:
+		case WIFI_DRV_UPGRADE:
 			module_upgrade((HANDLE)client->dst.as_voidptr);
 			res = RES_SIG_OK;
+			break;
+
+		case WIFI_DRV_ON_CMD:
+			res = wifi_drv_on()|FLG_SIGNALED;
+			break;
+
+		case WIFI_DRV_OFF_CMD:
+			res = wifi_drv_off()|FLG_SIGNALED;
 			break;
 
 		default:
@@ -583,16 +593,15 @@ void wifi_module_type::wifi_cancelation(bool all_station, bool all_softAP)
 
 
 //*----------------------------------------------------------------------------
-//*			WIFI_DRV_OFF_CMD
+//*			WIFI_DRV_OFF_CMD / WIFI_DRV_ON_CMD
 //*----------------------------------------------------------------------------
 
-RES_CODE wifi_drv_off(wifi_module_type *module, HANDLE hnd)
-{
-
-	if (module->wifi_drv_off() == NET_OK)
-	{
-		return RES_SIG_OK;
-	}
-	return RES_SIG_ERROR;
-}
-
+//RES_CODE wifi_drv_off(wifi_module_type *module, HANDLE hnd)
+//{
+//	return (module->wifi_drv_off()|FLG_SIGNALED);
+//}
+//
+//RES_CODE wifi_drv_on(wifi_module_type *module, HANDLE hnd)
+//{
+//	return (module->wifi_drv_on()|FLG_SIGNALED);
+//}

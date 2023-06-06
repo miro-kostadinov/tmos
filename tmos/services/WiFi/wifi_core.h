@@ -69,16 +69,23 @@ struct wifi_module_type
     unsigned int  wifi_pin_rts;
     char buf[WIFI_BUF_SIZE];
 
+//----------------- constructor/destructor -------------------------------------
     wifi_module_type
     	(
     		const WIFI_DRIVER_INFO* pinfo
     		,unsigned int PIN_RTS
     	)
-    	:drv_info(pinfo), row_start(0),
-    		row_end(0), cmd_state(0), received_ch(0), wifi_watchdog_cnt(0)
+    	:drv_info(pinfo)
+    	, row_start(0)
+    	, row_end(0)
+    	, cmd_state(0)
+    	, received_ch(0)
+    	, wifi_watchdog_cnt(0)
+    	, in_command(false)
 #if WIFI_FLOW_CONTROL
-    		, stop_rcv(false), mem_alloc_size(0),
-    		pending_read_data(nullptr)
+    	, stop_rcv(false)
+    	, mem_alloc_size(0),
+    	pending_read_data(nullptr)
 #endif
     	, wifi_pin_rts(PIN_RTS)
     {
@@ -89,9 +96,10 @@ struct wifi_module_type
     	//module_off();
     }
 
+//---------------- start virtual methods (members if any) ----------------------
     virtual RES_CODE wifi_drv_pwron(bool lowlevel = false)=0;
     virtual RES_CODE wifi_drv_off()=0;
-    virtual NET_CODE wifi_reset(bool force)=0;
+    virtual NET_CODE wifi_reset(bool force, wifi_module_type** driver_module)=0;
     virtual NET_CODE wifi_drv_level()=0;
 
     virtual void process_input(unsigned int signals, const char* cmd,
@@ -106,8 +114,6 @@ struct wifi_module_type
     	return false;
     }
 
-    char* get_str_cmd(const char *cmd, unsigned int time);
-    char* get_str_prm(char *row, unsigned int param);
     virtual WIFI_CMD_STATE wifi_process_row(const char *cmd);
     virtual WIFI_CMD_STATE wifi_send_cmd(const char *cmd, unsigned int time);
     virtual RES_CODE process_cmd(HANDLE client);
@@ -127,17 +133,17 @@ struct wifi_module_type
     virtual RES_CODE wifi_sock_accept(CSocket* sock)=0;
     virtual RES_CODE wifi_sock_addr(CSocket* sock)=0;
 #endif
-
-
-    NET_CODE wifi_drv_on();
+    virtual NET_CODE wifi_get_network_name(CSTRING& name);
     virtual RES_CODE module_upgrade(HANDLE hnd)
     	{return NET_ERR_PHY_NOT_READY;}
+//---------------- end virtual methods (members if any) ------------------------
 
-    virtual NET_CODE wifi_get_network_name(CSTRING& name);
+    char* get_str_cmd(const char *cmd, unsigned int time);
+    char* get_str_prm(char *row, unsigned int param);
+    NET_CODE wifi_drv_on();
 
     friend RES_CODE wifi_drv_off(wifi_module_type *module, HANDLE hnd);
     friend void wifi_thread(WIFI_DRIVER_INFO* drv_info);
-
 protected:
     static bool cmd_match(const char* cmd, const char* row);
     static bool cmd_submatch(const char* cmd, const char* row);
@@ -152,10 +158,9 @@ protected:
 // type definition for the commands
 typedef RES_CODE (*WIFI_CBF)(wifi_module_type *module, HANDLE hnd);
 
-RES_CODE wifi_drv_off(wifi_module_type* module, HANDLE hnd);
-
-#define WIFI_DRV_OFF_CMD 		(void *)wifi_drv_off
-#define CMD_WIFI_UPGRADE (( 0xE <<4)+CMD_COMMAND)
+#define WIFI_DRV_ON_CMD 	(( 0xD <<4)+CMD_COMMAND)
+#define WIFI_DRV_UPGRADE 	(( 0xE <<4)+CMD_COMMAND)
+#define WIFI_DRV_OFF_CMD 	(( 0xF <<4)+CMD_COMMAND)
 
 extern "C" NET_CODE wifi_on_deregister(wifi_module_type* mod);
 
