@@ -115,11 +115,16 @@
 #if TRACE_WIFI_LEVEL >= TRACE_LEVEL_DEBUG
 #	define TRACE_CHAR_WIFI_DEBUG(ch)	TRACE_CHAR_DEBUG(ch)
 #	define TRACE_WIFI_DEBUG(...)		TRACE_DEBUG(__VA_ARGS__)
+#	define TRACELN_WIFI_DEBUG(str,...)	TRACELN_DEBUG(str, __VA_ARGS__)
+#	define TRACELN1_WIFI_DEBUG(str)		TRACELN1_DEBUG(str)
 #	define TRACE1_WIFI_DEBUG(str)		TRACE1_DEBUG(str)
 #else
 #	define TRACE_CHAR_WIFI_DEBUG(ch)
 #	define TRACE_WIFI_DEBUG(...)
 #	define TRACE1_WIFI_DEBUG(str)
+#	define TRACELN_WIFI_DEBUG(str,...)
+#	define TRACELN1_WIFI_DEBUG(str)
+#	define TRACELN_WIFI_DEBUG(str,...)
 #endif
 
 
