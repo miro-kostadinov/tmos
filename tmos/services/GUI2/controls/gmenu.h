@@ -20,15 +20,24 @@ struct MENUTEMPLATE
 	short unsigned int	item;
 	short unsigned int	flags;
 	const char*	item_name;
-};
+}__attribute__ ((packed, aligned(4)));
 
 struct menu_template_t
 {
+	struct{
 	int 		parent;
 	short unsigned int 	item;
 	short unsigned int	flags;
+	}__attribute__ ((packed, aligned(4) ));
 	CSTRING		item_name;
 };
+
+struct dev_menu_t
+{
+	short unsigned int	parent;
+	short unsigned int	item;
+	RES_CODE			item_name;
+}__attribute__ ((packed, aligned(4)));
 
 
 struct GMenu: GObject
@@ -107,6 +116,7 @@ struct GMenu: GObject
 	bool Select(int item_id, bool redraw = false);
 	virtual bool RemoveItem(int item_id);
 	bool InsertItem(int item_id, int new_item_id, const CSTRING& new_item_name, short unsigned int new_flg =0);
+	bool AppendItem(int item_id, int new_item_id, const CSTRING& new_item_name, short unsigned int new_flg =0);
 	static bool IsEmpty(menu_template_t* ptr)
 	{
 		return (ptr && !ptr->item && !ptr->parent && ptr->item_name.empty());

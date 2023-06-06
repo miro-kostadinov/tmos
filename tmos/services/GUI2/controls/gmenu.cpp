@@ -279,14 +279,14 @@ bool GMenu::InsertItem(int item_id, int new_item_id, const CSTRING& new_item_nam
 
 	ptr = FindItem(item_id);
 	if(item)
-		item_id = item->item;
+		item_id = item->item; //keeps the selected , update only members menu/item
 	else
-		item_id = -1;
+		item_id = -1; // no item selected, cannot update menu/item members
+
 	if(!ptr )
-	{
-		// not found, insert at top
+	{	// item not found, inserting the new item at topmost
 		if(!base)
-		{ // empty menu
+		{ // if the menu is empty, just add the new item
 			if(!add_item(0, new_item_id, new_item_name, new_flg))
 				return false;
 			item = menu = base;
@@ -299,8 +299,11 @@ bool GMenu::InsertItem(int item_id, int new_item_id, const CSTRING& new_item_nam
 		if(ptr->item == new_item_id)
 			return false;
 		item_pos = ptr - base;
+/*
+ * BUG using pointers of the same type when subtracting
 		if(item_pos)
 			item_pos /= sizeof(menu_template_t);
+*/
 	}
 
 	size = get_base_size();
@@ -331,6 +334,67 @@ bool GMenu::InsertItem(int item_id, int new_item_id, const CSTRING& new_item_nam
 		Select(item_id);
 	return true;
 
+}
+
+bool GMenu::AppendItem(int item_id, int new_item_id, const CSTRING& new_item_name, short unsigned int new_flg)
+{
+	menu_template_t * new_base;
+	menu_template_t* append_to;
+	int item_pos;
+
+	append_to = FindItem(item_id);
+	if(item)
+		item_id = item->item; //keeps the selected , update only members menu/item
+	else
+		item_id = -1; // no item selected, cannot update menu/item members
+
+	if(!append_to )
+	{	// item not found, inserting the new item at top-most
+		if(!base)
+		{ // if the menu is empty, just add the new item
+			if(!add_item(0, new_item_id, new_item_name, new_flg))
+				return false;
+			item = menu = base;
+			return true;
+		}
+		item_pos = get_base_size();
+	}
+	else
+	{
+		while(append_to->parent == (append_to +1)->parent && !IsEmpty(append_to+1))
+			append_to++;
+		if(append_to->item == new_item_id)
+			return false;
+		item_pos = append_to - base +1;
+	}
+
+	size = get_base_size();
+	new_base = (menu_template_t *)tsk_malloc_clear((size +2)*sizeof(menu_template_t));
+	if(!new_base)
+		return false;
+	for(int i=0, j=0; i<size; i++, j++)
+	{
+		if(item_pos == j)
+		{
+			// insert new item
+			new_base[j].parent = (append_to)?append_to->parent:0;
+			new_base[j].item = new_item_id;
+			new_base[j].item_name =new_item_name;
+			new_base[j].flags = new_flg;
+			j++;
+		}
+		new_base[j].parent = base[i].parent;
+		new_base[j].item = base[i].item;
+		new_base[j].item_name = base[i].item_name;
+		new_base[j].flags = base[i].flags;
+		base[i].item_name.free();
+	}
+	tsk_free(base);
+	base = new_base;
+	size++;
+	if(item_id != -1)
+		Select(item_id);
+	return true;
 }
 
 bool GMenu::Select(int item_id, bool redraw)
