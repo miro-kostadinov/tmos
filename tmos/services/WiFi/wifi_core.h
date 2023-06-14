@@ -13,15 +13,11 @@
 
 struct WIFI_DRIVER_INFO;
 
-struct wifi_AP_t
+struct wifi_access_point_t
 {
-	CSTRING name;		// APN name
-	CSTRING user;		// APN user login name
-	CSTRING pass;		// APN user pass
-	uint8_t indx;		// APN index 0=default
-
-	wifi_AP_t():
-		indx(0) {};
+	CSTRING ssid;		// WiFi network
+	CSTRING pwd;		// WiFi password
+	CSTRING bssid;		// WiFi network MAC address
 };
 
 
@@ -133,7 +129,7 @@ struct wifi_module_type
     virtual RES_CODE wifi_sock_accept(CSocket* sock)=0;
     virtual RES_CODE wifi_sock_addr(CSocket* sock)=0;
 #endif
-    virtual NET_CODE wifi_get_network_name(CSTRING& name);
+    virtual NET_CODE wifi_get_current_net_ssid(CSTRING& ssid);
     virtual RES_CODE module_upgrade(HANDLE hnd)
     	{return NET_ERR_PHY_NOT_READY;}
 //---------------- end virtual methods (members if any) ------------------------
@@ -164,8 +160,8 @@ typedef RES_CODE (*WIFI_CBF)(wifi_module_type *module, HANDLE hnd);
 
 extern "C" NET_CODE wifi_on_deregister(wifi_module_type* mod);
 
-extern "C" NET_CODE wifi_on_init_station(wifi_module_type* mod, CSocket* sock, wifi_AP_t* apn);
-extern "C" NET_CODE wifi_on_get_AP(wifi_module_type* mod, CSocket* sock, wifi_AP_t* apn);
+extern "C" NET_CODE wifi_on_init_station(wifi_module_type* mod, CSocket* sock, wifi_access_point_t* network);
+extern "C" NET_CODE wifi_on_get_station_net(wifi_module_type* mod, CSocket* sock,  wifi_access_point_t* network);
 extern "C" void wifi_on_disconnect(wifi_module_type* mod);
 extern "C" void wifi_on_blink_transfer(wifi_module_type* mod, int reason);
 

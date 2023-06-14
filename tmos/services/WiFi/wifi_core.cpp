@@ -11,12 +11,16 @@
 #include <wifi_core.h>
 #include <csocket.h>
 
-WEAK_C NET_CODE wifi_on_init_station(wifi_module_type* mod, CSocket* sock, wifi_AP_t* apn)
+WEAK_C NET_CODE wifi_on_init_station(wifi_module_type* mod
+									,CSocket* sock
+									,wifi_access_point_t* network)
 {
 	return NET_OK;
 }
 
-WEAK_C NET_CODE wifi_on_get_AP(wifi_module_type* mod, CSocket* sock, wifi_AP_t* apn)
+WEAK_C NET_CODE wifi_on_get_AP(	wifi_module_type* mod
+								,CSocket* sock
+								,wifi_access_point_t* network)
 {
 	return NET_ERR_WIFI_NET_NAME;
 }
@@ -413,7 +417,7 @@ void wifi_module_type::hnd_error(HANDLE hnd) const
 }
 
 
-NET_CODE wifi_module_type::wifi_get_network_name(CSTRING& name)
+NET_CODE wifi_module_type::wifi_get_current_net_ssid(CSTRING& ssid)
 {
 	return wifi_net_error(NET_ERR_WIFI_NET_NAME);
 }
