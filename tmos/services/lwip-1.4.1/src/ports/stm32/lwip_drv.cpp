@@ -502,6 +502,10 @@ static void lwIPServiceTimers(struct netif *netif)
 #endif
 }
 
+WEAK char * get_netif_host_name()
+{
+	return nullptr;
+}
 /**
  * Should be called at the beginning of the program to set up the
  * network interface. It calls the function low_level_init() to do the
@@ -524,7 +528,7 @@ err_t ethernetif_init(struct netif *netif)
 
 #if LWIP_NETIF_HOSTNAME
 	/* Initialize interface hostname */
-	netif->hostname = "lwip";
+	netif->hostname = get_netif_host_name();
 #endif /* LWIP_NETIF_HOSTNAME */
 
 	/*
@@ -650,7 +654,7 @@ void ethernetif_update_config(struct netif *netif)
 
 	ethernetif_notify_conn_changed(netif);
 }
-#endif
+#endif /* LWIP_NETIF_LINK_CALLBACK */
 
 //*****************************************************************************
 //
