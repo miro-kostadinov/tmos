@@ -14,7 +14,8 @@
 #ifndef __ASSEMBLY__
 
 #ifdef __cplusplus
-static inline int IS_NOT_NULL(const void* x)		//!< Suppress GCC 7.X warnings
+__attribute__((optimize ("Os"), always_inline))
+inline int IS_NOT_NULL(const void* x)	//!< Suppress GCC 7.X warnings
 {
 	asm volatile (
 			""
