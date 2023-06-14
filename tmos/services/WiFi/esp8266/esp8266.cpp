@@ -22,26 +22,12 @@
 
 WEAK_C void wifi_on_pwron_config(wifi_module_type* mod)
 {
-	//TODO: configure AP and Station (IP,MAC,DHCP...)
-	CSTRING cmd;
-	// config Station
-	mod->wifi_send_cmd("+CWDHCP_CUR=1,1", 5); // DHCP=On
-	// config AP
-	mod->wifi_send_cmd(WIFI_SET_AP_IP"=\"192.168.1.100\"", 5);
-	mod->wifi_send_cmd("+CWDHCPS_CUR=1,60,\"192.168.1.1\",\"192.168.1.99\"", 2);
-	// enable use of router DNS server
-	mod->wifi_send_cmd("+CIPDNS_CUR=0", 2);
-	mod->wifi_watchdog_cnt = WIFI_WDT_PERIOD;
+	//TODO: application specific initialization
 }
 
-WEAK_C void wifi_on_pwron(wifi_module_type* mod)
+WEAK_C void wifi_notify_power(wifi_module_type* mod, WIFI_DRIVER_DATA * drv_data)
 {
 	//TODO: Trace various info
-	unsigned int pwr = 50;
-	CSTRING cmd;
-	cmd.format("+RFPOWER=%u", pwr);
-	mod->wifi_send_cmd(cmd.c_str(), 5);
-	mod->wifi_watchdog_cnt = WIFI_WDT_PERIOD;
 }
 
 WEAK bool wifi_name_pass(CSTRING& name)
@@ -125,6 +111,24 @@ bool wifi_get_param(const char*row, int& param, unsigned int num)
 	return false;
 }
 
+uint16_t wifi_rssi_to_level(const int32_t rssi )
+{
+	uint16_t level;
+	// rssi in dBm
+	if(rssi < -57)	// 4 < -57 dBm
+		level = 4;
+	else
+		level = 5;	// 5 >= -57 dBm
+	if(rssi < -69)	// 3 < -69 dBm
+		level = 3;
+	if(rssi < -81)	// 2 < -81 dBm
+		level = 2;
+	if(rssi < -93)	// 1 < -93 dBm
+		level = 1;
+	if(rssi < -105) // 0 < -105 dBm or unknown
+		level = 0;
+	return level;
+}
 
 RES_CODE esp8266_module::wifi_echo_off(bool lowlevel, uint32_t indx)
 {
@@ -228,12 +232,11 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 		// 1. Enable the module to act as “Station”
 		// 2. AP mode
 		// 3  AP + Station mode
-
-		wifi_on_pwron_config(this);
-
 		res = wifi_send_cmd(WIFI_MODE"=3", 5);
 		if(WIFI_CMD_STATE_OK == res)
 		{
+
+			wifi_on_pwron_config(this);
 #if USE_WIFI_ESP8266 >= 3
 			res = wifi_send_cmd("+CIPRECVMODE=1", 2);
 			if(WIFI_CMD_STATE_OK == res)
@@ -256,7 +259,7 @@ RES_CODE esp8266_module::wifi_drv_pwron(bool lowlevel)
 					wifi_send_cmd(WIFI_CFG_AP"?", 5);
 					drv_data->wifi_flags_ok |= WIFI_FLAG_ON;
 					drv_data->wifi_flags_bad &= ~WIFI_FLAG_ON;
-					wifi_on_pwron(this);
+					wifi_notify_power(this, drv_data);
 					return NET_OK;
 				}
 			}
@@ -293,7 +296,7 @@ RES_CODE esp8266_module::wifi_drv_off()
 
 	//TODO: try to stop
 	//check power state
-
+	wifi_notify_power(this, drv_data);
 	drv_data->signal_level = 0;
 	PIO_Deassert(wifi_pin_pwr);
     TRACE1_WIFI_DEBUG("\r\nWIFI off");
@@ -367,20 +370,7 @@ NET_CODE esp8266_module::wifi_drv_level()
 			//+CWJAP_CUR:<ssid>, <bssid>, <channel>, <rssi>
 			if(wifi_get_param(buf, rssi, 4))
 			{
-				// rssi in dBm
-				if(rssi < -57)
-					level = 4;
-				else
-					level = 5;
-				if(rssi < -69)
-					level = 3;
-				if(rssi < -81)
-					level = 2;
-				if(rssi < -93)
-					level = 1;
-				if(rssi < -105)
-					level = 0;
-
+				level =wifi_rssi_to_level(rssi);
 				TRACELN("rssi:%d(%u)", rssi, level);
 			}
 			res = RES_OK;
@@ -643,13 +633,13 @@ NET_CODE esp8266_module::wifi_esp8266_init_net(CSocket * sock)
 {
 	NET_CODE res;
 	CSTRING cmd;
-	wifi_AP_t AP;
+	wifi_access_point_t net;
 	uint32_t sig = 0;
 	bool found;
 
-	res = wifi_send_cmd(WIFI_GET_LOCAL_IP, 50);
+	res = wifi_send_cmd(WIFI_GET_LOCAL_IP, 50); // for debug info only
 
-	res = wifi_on_init_station(this, sock, &AP);
+	res = wifi_on_init_station(this, sock, &net);
 	if(res != NET_IDLE)
 		return res;
 
@@ -676,7 +666,7 @@ NET_CODE esp8266_module::wifi_esp8266_init_net(CSocket * sock)
 				cmd_state = res & ~WIFI_CMD_STATE_RETURNED;
 				if(!found)
 				{
-					res = wifi_on_get_AP(this, sock, &AP);
+					res = wifi_on_get_station_net(this, sock, &net);
 					if(res == RES_OK)
 						found = true;
 				}
@@ -706,9 +696,9 @@ NET_CODE esp8266_module::wifi_esp8266_init_net(CSocket * sock)
 
 	// If the wifi is already connected to a network different than the one
 	// requested - return NET_IDLE - unavailable
-	if (NET_OK == wifi_get_network_name(cmd))
+	if (NET_OK == wifi_get_current_net_ssid(cmd))
 	{
-		if (0 != strcmp(cmd.c_str(), AP.name.c_str()))
+		if (0 != strcmp(cmd.c_str(), net.ssid.c_str()))
 		{
 			if(sock && sock->mode.as_voidptr &&
 					WIFI_CHANGE_AP_INTERFACE != static_cast<sock_mode_t*>(sock->mode.as_voidptr)->interface )
@@ -716,7 +706,7 @@ NET_CODE esp8266_module::wifi_esp8266_init_net(CSocket * sock)
 		}
 	}
 
-	cmd.format(WIFI_JOIN_TO_AP"=\"%s\",\"%s\"", AP.name.c_str(), AP.pass.c_str());
+	cmd.format(WIFI_JOIN_TO_AP"=\"%s\",\"%s\"", net.ssid.c_str(), net.pwd.c_str());
 	for(int i=0; i < 3; i++)
 	{
 		res = wifi_send_cmd(cmd.c_str(), 50);
@@ -726,7 +716,7 @@ NET_CODE esp8266_module::wifi_esp8266_init_net(CSocket * sock)
 			if (WIFI_CMD_STATE_ROK == res)
 			{
 //				drv_info->drv_data->wifi_flags_ok |= WIFI_FLAG_REGISTERED;
-				connected_network_name = AP.name;
+				connected_network_name = net.ssid;
 				return NET_OK;
 			}
 			break;
@@ -735,23 +725,23 @@ NET_CODE esp8266_module::wifi_esp8266_init_net(CSocket * sock)
 	return NET_ERR_WIFI_REGISTER;
 }
 
-NET_CODE esp8266_module::wifi_get_network_name(CSTRING& name)
+NET_CODE esp8266_module::wifi_get_current_net_ssid(CSTRING& ssid)
 {
 #if !USE_DEPRECATED_AT_CMD
 	if(wifi_send_cmd(WIFI_JOIN_TO_AP"?",10) & WIFI_CMD_STATE_OK)
 	{
 		//+CWJAP_CUR:<ssid>, <bssid>, <channel>, <rssi>
-		if(wifi_get_param(buf, name, 1))
+		if(wifi_get_param(buf, ssid, 1))
 		{
-			if(name != "No AP")
+			if(ssid != "No AP")
 				return NET_OK;
-			name.clear();
+			ssid.clear();
 		}
 	}
 #else
 	if (true != connected_network_name.empty())
 	{
-		name = connected_network_name;
+		ssid = connected_network_name;
 		return NET_OK;
 	}
 #endif

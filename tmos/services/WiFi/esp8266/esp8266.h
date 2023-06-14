@@ -56,9 +56,9 @@
 enum wifi_notify_t:uint8_t
 {
 		WIFI_NOTIFY_IDLE=0,
-				WIFI_NOTIFY_LINK,
-				WIFI_NOTIFY_LINKED,
-				WIFI_NOTIFY_UNLINK
+		WIFI_NOTIFY_LINK,
+		WIFI_NOTIFY_LINKED,
+		WIFI_NOTIFY_UNLINK
 };
 
 struct esp8266_module: public wifi_module_type
@@ -150,7 +150,7 @@ struct esp8266_module: public wifi_module_type
     void wifi_process_tout() override;
     void wifi_cancelation(bool all_station, bool all_softAP) override;
 
-    NET_CODE wifi_get_network_name(CSTRING& name) override;
+    NET_CODE wifi_get_current_net_ssid(CSTRING& ssid) override;
     unsigned int get_socket_state(unsigned int sock_id);
 
 #if USE_WIFI_ESP8266 < 3 // version 3.0
@@ -163,6 +163,7 @@ struct esp8266_module: public wifi_module_type
 bool wifi_get_param(const char*row, CSTRING& param, unsigned int num);
 bool wifi_get_param(const char*row, unsigned int& param, unsigned int num);
 bool wifi_get_param(const char*row, int& param, unsigned int num);
+uint16_t wifi_rssi_to_level(const int32_t rssi );
 
 
 
