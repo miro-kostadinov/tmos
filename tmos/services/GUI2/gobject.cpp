@@ -5,6 +5,29 @@ GTimer* GTimer::base_timer = nullptr;
 void* GObject::lastAllocated = nullptr;
 uint8_t GObject::invalidate_cnt = 0;
 
+GObject::GObject() :
+			u_colors_t(PIX_WHITE, PIX_BLACK),	//default colors
+			parent(nullptr), nextObj(nullptr), id(0), flags(0), ref_cnt(1), displays(1)
+	{
+		if(lastAllocated && lastAllocated == this)
+		{
+			ref_cnt = 0;
+			lastAllocated = nullptr;
+		}
+	}
+
+GObject::GObject(GId id_t, const RECT_T& rect_t, GFlags flags_t) :
+			u_colors_t(PIX_WHITE, PIX_BLACK),	//default colors
+			rect(rect_t), parent(nullptr), nextObj(nullptr), id(id_t), flags(flags_t),
+			ref_cnt(1), displays(1)
+	{
+		if(lastAllocated && lastAllocated == this)
+		{
+			ref_cnt = 0;
+			lastAllocated = nullptr;
+		}
+	}
+
 GObject::~GObject()
 {
 }

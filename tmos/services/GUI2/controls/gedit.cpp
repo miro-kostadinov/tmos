@@ -149,7 +149,6 @@ void GEdit::draw_this(LCD_MODULE* lcd)
 //		draw_border(rect);
 
 	lcd->set_font(text_font);
-	lcd->set_color(PIX_WHITE);
 	lcd->allign = (align & (TA_HORIZONTAL|TA_VERTICAL));
 	draw_caption(lcd);
 

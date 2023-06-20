@@ -507,8 +507,6 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 	CSTRING str;
 	menu_template_t* tmp;
 
-	lcd->set_color(PIX_WHITE);
-
 	if(flags & GO_FLG_BORDER)
 		draw_border(rect);
 
@@ -596,16 +594,32 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 							lcd->pos_x = /*(client_rect.y1 - client_rect.y0) +*/
 									dc.client_rect.x0 + ((lcd->font->hspacing * 4)/3);
 						}
+#if GUI_MONOCHROME
 						dc.draw_text_line(lcd, str.c_str(), str.length());
+#else
+						if(tmp==item && ((flags & GO_FLG_SELECTED)||(item->flags & GMENU_FLG_SHOW_SELECTED_ITEM)))
+						{
+							for (int i = lcd->pos_y - 1; i < lcd->pos_y + row_height - 1; i++)
+								lcd->draw_hline (client_rect.x0, client_rect.x1, i);
+							lcd->fg_color = bg_color;
+							lcd->pos_x = dc.client_rect.x0;
+							dc.draw_text_line(lcd, str.c_str(), str.length());
+							lcd->fg_color = fg_color;
+						}
+						else
+							dc.draw_text_line(lcd, str.c_str(), str.length());
+#endif
 						lcd->pos_x = dc.client_rect.x0;
 					}
 					else
 						lcd->pos_y += text_font->vspacing;
+#if GUI_MONOCHROME
 					if(tmp==item && ((flags & GO_FLG_SELECTED)||(item->flags & GMENU_FLG_SHOW_SELECTED_ITEM)))
 					{
 						for (int i = lcd->pos_y - row_height; i < lcd->pos_y; i++)
 							dc.invert_hline (client_rect.x0, client_rect.x1, i);
 					}
+#endif
 					if(rows)
 					{
 						rows = lcd->pos_x + (rows-1)*text_font->hspacing;

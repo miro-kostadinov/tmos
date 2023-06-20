@@ -33,11 +33,16 @@ void GButton::draw_border(RECT_T& frame)
 
 void GButton::draw_this (LCD_MODULE* lcd)
 {
-	lcd->set_color(PIX_WHITE);
-
 	if(flags & GO_FLG_BORDER)
 		draw_border(rect);
-
+#if !GUI_MONOCHROME
+	if(flags & GO_FLG_SELECTED)
+	{
+		lcd->bg_color = fg_color;
+		lcd->clear_rect(RECT_T(client_rect.x0, client_rect.y0+1, client_rect.x1, client_rect.y1-1));
+		lcd->fg_color = bg_color;
+	}
+#endif
 	lcd->set_font(&FNT5x7);
 	set_xy_all(lcd, ((client_rect.y1 - client_rect.y0) >> 1) - (lcd->font->height >> 1), TA_CENTER);
 	if(type)
@@ -66,12 +71,14 @@ void GButton::draw_this (LCD_MODULE* lcd)
 		draw_text_line(lcd, label.c_str(), label.length());
 	else
 		draw_text(lcd, label.c_str());
+#if GUI_MONOCHROME
 	if (flags & GO_FLG_SELECTED)
 	{
 //		draw_poligon(client_rect, type);
 		for (int i = client_rect.y0 +1; i < client_rect.y1; i++)
 			invert_hline (client_rect.x0, client_rect.x1, i);
 	}
+#endif
 }
 
 

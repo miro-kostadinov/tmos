@@ -88,7 +88,8 @@ protected:
     virtual void tft_write_row(unsigned short address_cmd[]);
 	virtual void tft_init_address_cmd(unsigned short address_cmd[]);
 //	virtual void tft_encode_color(const int x_pos, bool invert = false);
-	virtual void tft_encode_color(const int x_pos, const int y_pos, bool invert = false);
+	virtual void tft_encode_color(const int x_pos, const int y_pos, unsigned int color_t);
+	virtual void tft_invert_color(const int x_pos, const int y_pos);
 };
 
 #ifndef CSX_PIN_INDX

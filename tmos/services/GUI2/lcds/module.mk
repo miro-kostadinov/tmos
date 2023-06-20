@@ -16,7 +16,7 @@ local_h_src-y 	:=
 
 local_cpp_src-y	+= lcd.cpp lcd_multiplex.cpp
 
-local_h_src-y 	+= lcd.h lcd_multiplex.h
+local_h_src-y 	+= lcd.h lcd_multiplex.h base_colors.h
 
 #updating global variables
 as_sources 	+= $(call changepath,$(local_as_src-y))

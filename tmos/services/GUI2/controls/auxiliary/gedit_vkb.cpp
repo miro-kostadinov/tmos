@@ -464,8 +464,6 @@ void GVKB_keyboard::draw_this (LCD_MODULE* lcd)
 {
 	if(client_rect.height() > 0 && client_rect.width() > 0)
 	{
-		lcd->set_color(PIX_WHITE);
-
 		lcd->set_font(((GEditVKB*)parent)->font);
 		lcd->allign = (SS_LEFT|SS_TOP);
 		lcd->pos_x = client_rect.x0;
@@ -485,12 +483,32 @@ void GVKB_keyboard::draw_this (LCD_MODULE* lcd)
 				tempPos.y++;
 				lcd->pos_y += lcd->font->vspacing;
 			}
-
+#if GUI_MONOCHROME
 			lcd->draw_char(pos_x, alphabet[alphaIndex]);
+#else
+			if((flags & GO_FLG_SELECTED) && alphabet[alphaIndex] == this->getc())
+			{
+				//selected char, draw the cursor
+				int pos_x_bkp = pos_x;
+
+				pos_x = cursor_pos.x*lcd->font->hspacing + client_rect.x0;
+				int y = rect.y0 + cursor_pos.y*lcd->font->vspacing;
+				for(int i = 0; i <= lcd->font->vspacing; ++i, y++)
+					lcd->draw_hline(pos_x, pos_x + lcd->font->hspacing, y);
+
+				lcd->fg_color = bg_color;
+				pos_x = pos_x_bkp;
+				lcd->draw_char(pos_x, alphabet[alphaIndex]);
+				lcd->fg_color = fg_color;
+			}
+			else
+				lcd->draw_char(pos_x, alphabet[alphaIndex]);
+#endif
 			pos_x += lcd->font->hspacing;
 		}
 		while(tempPos != max_pos && ++alphaIndex < alphabet.length() && ++(tempPos.x) >= 0);
 
+#if GUI_MONOCHROME
 		//draw cursor if this is the current zone
 		if(flags & GO_FLG_SELECTED)
 		{
@@ -499,6 +517,7 @@ void GVKB_keyboard::draw_this (LCD_MODULE* lcd)
 			for(int i = 0; i <= lcd->font->vspacing; ++i, y++)
 				lcd->invert_hline(pos_x, pos_x + lcd->font->hspacing, y);
 		}
+#endif
 	}
 }
 
@@ -619,14 +638,22 @@ void GVKB_button::draw_this(LCD_MODULE* lcd)
 {
 	if(client_rect.height() > 0 && client_rect.width() > 0)
 	{
-		lcd->set_color(PIX_WHITE);
-
 		lcd->set_font(((GVKB_Controls*)parent)->font);
 		set_xy_all(lcd, ((client_rect.y1 - client_rect.y0) >> 1) - (lcd->font->height >> 1), TA_CENTER);
+#if !GUI_MONOCHROME
+		if((flags & GO_FLG_SELECTED) && (parent->flags & GO_FLG_SELECTED))
+		{
+			lcd->bg_color = fg_color;
+			lcd->clear_rect(RECT_T(client_rect.x0, client_rect.y0, client_rect.x1, client_rect.y1+1));
+			lcd->fg_color = bg_color;
+		}
+#endif
 		draw_text_line(lcd, label.c_str(), label.length());
+#if GUI_MONOCHROME
 		if((flags & GO_FLG_SELECTED) && (parent->flags & GO_FLG_SELECTED))
 			for (int i = client_rect.y0; i <= client_rect.y1; i++)
 				invert_hline (client_rect.x0, client_rect.x1, i);
+#endif
 	}
 }
 
@@ -656,6 +683,15 @@ unsigned int GVKB_Controls::initialize (GMessage& msg)
 			"X", GO_FLG_DEFAULT));
 
 	GContainer::initialize(msg);
+
+	//give colors to the OK and X buttons
+	GObject* buttonObj = get_object(vkb_control_ok_id);
+	if(buttonObj)
+		buttonObj->set_color(PIX_GREEN);
+	buttonObj = get_object(vkb_control_x_id);
+	if(buttonObj)
+		buttonObj->set_color(PIX_RED);
+
 	return 1;
 }
 

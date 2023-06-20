@@ -13,7 +13,7 @@ void GWindow::draw_this(LCD_MODULE* lcd)
 {
 //	clear_rect(rect);								//clears the area
 	if(flags & GO_FLG_BORDER)
-		lcd->draw_border(rect);
+		draw_border(rect);
 }
 
 unsigned int GWindow::initialize (GMessage& msg)

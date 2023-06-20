@@ -176,6 +176,11 @@ void LCD_MODULE::redraw_rect (GObject* object, RECT_T area)						//redraws an ar
 	// 2. preparation of drawing frames if overlaps occur
 		GObject* tmp;
 		int res=0; // unknown
+
+		//draw colors of the LCD are set by default BEFORE draw_this() of the obj
+		//is called. relevant for non-monochrome displays
+		set_colors(object->get_fg_color(), object->get_bg_color());
+
 		// frame adjustment to the drawing area
 		frame = area;
 		if(!initial->nextObj)

@@ -79,7 +79,9 @@ struct text_metrics_t
 	}
 };
 
-struct GObject
+//GObject inherits this struct which only has methods if the GUI is monochrome,
+//otherwise it also contains color support variables
+struct GObject : public u_colors_t
 {
 	RECT_T rect;
 	RECT_T client_rect;
@@ -99,25 +101,9 @@ struct GObject
 	static void* lastAllocated;
 	static uint8_t	invalidate_cnt;
 
-	GObject() :
-			parent(nullptr), nextObj(nullptr), id(0), flags(0), ref_cnt(1), displays(1)
-	{
-		if(lastAllocated && lastAllocated == this)
-		{
-			ref_cnt = 0;
-			lastAllocated = nullptr;
-		}
-	}
-	GObject(GId id_t, const RECT_T& rect_t, GFlags flags_t = GO_FLG_DEFAULT) :
-			rect(rect_t), parent(nullptr), nextObj(nullptr), id(id_t), flags(flags_t),
-			ref_cnt(1), displays(1)
-	{
-		if(lastAllocated && lastAllocated == this)
-		{
-			ref_cnt = 0;
-			lastAllocated = nullptr;
-		}
-	}
+
+	GObject();
+	GObject(GId id_t, const RECT_T& rect_t, GFlags flags_t = GO_FLG_DEFAULT);
 
 	virtual ~GObject();
 

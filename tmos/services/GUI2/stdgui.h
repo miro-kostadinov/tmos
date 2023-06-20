@@ -13,9 +13,11 @@
 #define GUI_DISPLAYS	1
 #endif
 
+/*
 #ifndef GUI_MONOCHROME
 #define GUI_MONOCHROME	1
 #endif
+*/
 
 #ifndef GUI_DEFAULT_DISP
 #define GUI_DEFAULT_DISP	0xFF
@@ -383,6 +385,7 @@ int32_t cos_x10000(int deg);
 #endif
 
 // GUI base
+#include <base_colors.h>
 #include <basic_shapes.h>
 #include <fonts.h>
 #include <gobject.h>
