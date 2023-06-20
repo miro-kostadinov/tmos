@@ -415,29 +415,40 @@ int esp8266_module::wifi_notification(const char* row)
 					return 1;
 				}
 				//1: ESP8266 runs as server
-				if( accept_id[id] == id)
+				TRACELN_WIFI_DEBUG("SERVER conn:%u", id);
+				if(listen_socket)
 				{
-					// already accepted
-					if(!alloc_sockets[id]) // but not allocated
-						module_accepted_socket(id);
-				}
-				else
-				{
-					if(accept_id[id] == WIFI_ESP8266_MAX_SOCKETS)
+					if( accept_id[id] == id)
 					{
-						accept_id[id] = id;
-						module_accepted_socket(id);
+						// already accepted
+						if(!alloc_sockets[id]) // but not allocated
+							module_accepted_socket(id);
 					}
 					else
 					{
-						// mismatch between id and accepted
-						if(alloc_sockets[id])
+						if(accept_id[id] == WIFI_ESP8266_MAX_SOCKETS)
 						{
-							wifi_driver_socket_close(id, NET_ERR_SOCK_DISCONNECT);
+							accept_id[id] = id;
+							module_accepted_socket(id);
 						}
-						accept_id[id] = id;
-						module_accepted_socket(id);
+						else
+						{
+							// mismatch between id and accepted
+							if(alloc_sockets[id])
+							{
+								wifi_driver_socket_close(id, NET_ERR_SOCK_DISCONNECT);
+							}
+							accept_id[id] = id;
+							module_accepted_socket(id);
+						}
 					}
+				}
+				else
+				{
+					TRACELN_WIFI_DEBUG("SERVER conn:%u REJECT", id);
+					notify_state = wifi_notify_t(WIFI_NOTIFY_REJECT_CONNECTION_FIRST+id);
+					tsk_send_signal(CURRENT_TASK, WIFI_NOTIFY_SIGNAL);
+
 				}
 				return 1;
 			}
@@ -514,6 +525,24 @@ void esp8266_module::wifi_notificatoin_response()
 			get_socket_state(10);
 		}
 #endif
+		break;
+	case WIFI_NOTIFY_REJECT_CONNECTION_FIRST ... WIFI_NOTIFY_REJECT_CONNECTION_LAST:
+		{
+			CSTRING cmd;
+			uint32_t id = notify_state - WIFI_NOTIFY_REJECT_CONNECTION_FIRST;
+			cmd.format("+CIPCLOSEMODE=%u,1", id);
+			if(wifi_send_cmd(cmd.c_str(), 45) & WIFI_CMD_STATE_OK)
+			{
+				cmd.format(WIFI_DISCONNECT"=%u", id);
+				if(wifi_send_cmd(cmd.c_str(), 45) & WIFI_CMD_STATE_OK)
+				{
+					get_socket_state(id);
+					TRACELN_WIFI_DEBUG("REJECT %u", id);
+
+				}
+			}
+			notify_state = WIFI_NOTIFY_IDLE;
+		}
 		break;
 	}
 }
@@ -894,6 +923,7 @@ RES_CODE esp8266_module::wifi_close_listen(CSocket* sock, unsigned int reason)
 		{
 			listen_port = 0;
 			listen_socket = nullptr;
+//			wifi_send_cmd(WIFI_SERVER"=0", 5);
 
 			sock->sock_state = SOCKET_CLOSED;
 			// do we have to signal it?
@@ -996,15 +1026,18 @@ unsigned int esp8266_module::get_socket_state(unsigned int sock_id)
 				{
 					if(status == 5) // Connected
 					{
-						TRACE_WIFI_DEBUG("\r\nMisssing connections!");
+						TRACELN1_WIFI_DEBUG("The Station does NOT connect to an AP");
 					}
 				}
 
 				if(tmos_sscanf(buf, WIFI_CONNECTION_STAT":%u", &id) && id < WIFI_ESP8266_MAX_SOCKETS)
 				{
-					// +CIPSTATUS:id,type,addr,port,tetype
+					// +CIPSTATUS:<link ID>,<type>,<remote IP>,<remote port>,<local port>,<tetype>
 					if(wifi_get_param(buf, status, WIFI_CONNECTION_TYPE_INDX))
 					{
+						//<tetype>:
+						// 0: ESP8266 runs as a client.
+						// 1: ESP8266 runs as a server.
 						scaned |= (1<<id);
 						if(status == 1)
 						{
@@ -1434,7 +1467,7 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 	const char *rcv_pending;
 	CSTRING cmd;
 
-    TRACELN("WIFI: read %d?", sock->len);
+    TRACELN_WIFI_DEBUG("WIFI: read %d?", sock->len);
 	while(sock->sock_id < WIFI_ESP8266_MAX_SOCKETS && sock->sock_state == SOCKET_CONECTED)
 	{
 		if(!received_size[sock->sock_id] && closed_sockets[sock->sock_id])
@@ -1447,7 +1480,7 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 
 		if(!sock->len)
 		{
-			TRACE1(" done!");
+			TRACE1_WIFI_DEBUG(" done!");
 			return (sock->res & FLG_OK)| FLG_SIGNALED;
 		}
 
@@ -1456,7 +1489,7 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 			if(!(sock->res & FLG_OK))
 			{
 				// ако няма нотификация го слага в списъка с чакащи
-				TRACE1(" wait!");
+				TRACE1_WIFI_DEBUG(" wait!");
 				sock->res |= RES_BUSY_WAITING;
 				return RES_IDLE;
 			}
@@ -1495,7 +1528,7 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 			size = 1024;
 
 		cmd.format("+CIPRECVDATA=%u,%u", sock->sock_id, size);
-	    TRACELN("WIFI: read %d from %d", size, received_size[sock->sock_id]);
+	    TRACELN_WIFI_DEBUG("WIFI: read %d from %d", size, received_size[sock->sock_id]);
 
 	    rcv_pending = ":";
 	    // изпраща командата за четене
@@ -1525,7 +1558,7 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 								if( rcv_hnd.tsk_read_pkt(sock->dst.as_voidptr, size, WIFI_READ_TOT) == RES_OK)
 								{
 									size -= rcv_hnd.len;
-									TRACE("(%d)\r\n", size);
+									TRACE_WIFI_DEBUG("(%d)\r\n", size);
 									sock->dst.as_byteptr += size;
 									sock->len -= size;
 									if(received_size[sock->sock_id] >= size)
@@ -1545,7 +1578,7 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 						}
 						else
 						{
-							TRACELN1("WIFI:Invalid data params STOP!");
+							TRACE1_WIFI_ERROR("\r\nWIFI:Invalid data params STOP!");
 							break;
 						}
 
@@ -1569,7 +1602,7 @@ RES_CODE esp8266_module::process_read(CSocket* sock)
 	}// има още за четене и ако няма приети данни ще го прати да чака
 	wifi_sleep(120);
 	wifi_net_error(NET_ERR_SOCK_READ);
-	TRACE_ERROR("\r\nWIFI:%s read INVALID", sock->client.task->name);
+	TRACE_WIFI_ERROR("\r\nWIFI:%s read INVALID", sock->client.task->name);
 	return RES_FATAL|FLG_SIGNALED;
 }
 #endif
@@ -1821,18 +1854,24 @@ RES_CODE esp8266_module::wifi_sock_bind_url(CSocket* sock)
 	return RES_SIG_ERROR;
 }
 
+//esptool.py -p /dev/ttyUSB0 --no-stub write_flash --flash_size 2MB-c1 0x0 img/boot_v1.7.bin 0x01000 img/user1.2048.new.5.bin 0x1fb000 img/blank.bin 0x1fc000 img/esp_init_data_default_v08.bin 0xfe000 img/blank.bin 0x1fe000 img/blank.bin
 RES_CODE esp8266_module::wifi_sock_listen(CSocket* sock)
 {
 	CSTRING cmd;
 	if(listen_socket && sock == listen_socket)
 	{
-		cmd.format(WIFI_SERVER"=1,%u", listen_port);
-		if(wifi_send_cmd(cmd.c_str(), 5) == WIFI_CMD_STATE_OK)
-		{
-			wifi_send_cmd(WIFI_SRVER_TIMEOUT"=180", 5);
-			sock->sock_state = SOCKET_LISTEN;
-			return RES_SIG_OK;
-		}
+
+//		cmd.format("+CIPSERVERMAXCONN=%u", sock->src.as_int);
+//		if(wifi_send_cmd(cmd.c_str(), 5) == WIFI_CMD_STATE_OK)
+//		{
+			cmd.format(WIFI_SERVER"=1,%u", listen_port);
+			if(wifi_send_cmd(cmd.c_str(), 5) == WIFI_CMD_STATE_OK)
+			{
+				wifi_send_cmd(WIFI_SRVER_TIMEOUT"=1800", 5); // 30 min timeout
+				sock->sock_state = SOCKET_LISTEN;
+				return RES_SIG_OK;
+			}
+//		}
 	}
 	else
 		wifi_net_error(NET_ERR_SOCK_CONNECT);
@@ -1846,7 +1885,10 @@ RES_CODE esp8266_module::wifi_sock_accept(CSocket* sock)
 		listen_socket->res = RES_BUSY_WAITING;
 		get_socket_state(10);
 		if(listen_socket->res & FLG_SIGNALED)
+		{	// module_accepted_socket(id) has already accepted a connection
+			// and signaled the handler
 			return (listen_socket->res ^ FLG_SIGNALED);
+		}
 		listen_socket->res = RES_BUSY_WAITING;
 		return RES_IDLE;
 	}
