@@ -53,12 +53,14 @@
 #define WIFI_SET_LIST_OPTION	"+CWLAPOPT"
 #endif
 
-enum wifi_notify_t:uint8_t
+enum wifi_notify_t:uint16_t
 {
 		WIFI_NOTIFY_IDLE=0,
 		WIFI_NOTIFY_LINK,
 		WIFI_NOTIFY_LINKED,
-		WIFI_NOTIFY_UNLINK
+		WIFI_NOTIFY_UNLINK,
+		WIFI_NOTIFY_REJECT_CONNECTION_FIRST,
+		WIFI_NOTIFY_REJECT_CONNECTION_LAST=	WIFI_NOTIFY_REJECT_CONNECTION_FIRST +(WIFI_ESP8266_MAX_SOCKETS-1)
 };
 
 struct esp8266_module: public wifi_module_type
@@ -79,7 +81,6 @@ struct esp8266_module: public wifi_module_type
     unsigned short listen_port;
     unsigned short accept_id[WIFI_ESP8266_MAX_SOCKETS];
     static unsigned short local_port;
-    RES_CODE wifi_close_listen(CSocket* sock, unsigned int reason);
 #endif
     wifi_notify_t notify_state;
     unsigned int  wifi_pin_pwr;
@@ -144,6 +145,7 @@ struct esp8266_module: public wifi_module_type
     RES_CODE wifi_sock_listen(CSocket* sock) override;
     RES_CODE wifi_sock_accept(CSocket* sock) override;
     RES_CODE wifi_sock_addr(CSocket* sock) override;
+    RES_CODE wifi_close_listen(CSocket* sock, unsigned int reason);
 #endif
     int wifi_notification(const char* row) override;
     void wifi_notificatoin_response() override;
