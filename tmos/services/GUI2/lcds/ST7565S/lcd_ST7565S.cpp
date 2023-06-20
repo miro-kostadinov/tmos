@@ -209,7 +209,7 @@ void ST7565S::draw_point( int x, int y)
 {
 	if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
 	{
-		if(color)
+		if(color == PIX_WHITE)
 		{
 			disp_buf[y>>3][x] |= (1 << (y&7));
 		}
