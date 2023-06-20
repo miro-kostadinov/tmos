@@ -159,6 +159,7 @@ void wifi_module_type::process_input(unsigned int signals, const char* cmd,
 					TRACE1_WIFI_DEBUG("\e[33m");
 					TRACE_CHAR_WIFI_DEBUG(ch);
 					TRACE1_WIFI_DEBUG("\e[m");
+					TRACE_WIFI_DEBUG_SLEEP(2);
 					cmd_state |= WIFI_CMD_STATE_STARTED;
 					if(hnd_start && strchr(hnd_start,ch) )
 					{

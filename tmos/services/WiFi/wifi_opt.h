@@ -69,7 +69,7 @@
 #endif
 
 #ifndef TRACE_WIFI_LEVEL
-#define TRACE_WIFI_LEVEL	TRACE_LEVEL_DEBUG
+#define TRACE_WIFI_LEVEL	TRACE_LEVEL_NONE //TRACE_LEVEL_DEBUG
 #endif
 
 #ifndef TRACE_GPRS_LEVEL
@@ -87,6 +87,12 @@
 //*----------------------------------------------------------------------------
 //*			WIFI TRACE
 //*----------------------------------------------------------------------------
+inline void _TRACE_WIFI_SLEEP(uint32_t t)
+{
+	uint32_t tmp = CURRENT_TASK->time;
+	tsk_sleep(t);
+	CURRENT_TASK->time = tmp;
+}
 
 #define TRACE_CHAR_WIFI(ch) 		TRACE_CHAR_LEVEL(TRACE_WIFI_LEVEL, ch)
 #define TRACE_WIFI(...) 			TRACE_LEVEL(TRACE_WIFI_LEVEL, __VA_ARGS__)
@@ -118,6 +124,7 @@
 #	define TRACELN_WIFI_DEBUG(str,...)	TRACELN_DEBUG(str, __VA_ARGS__)
 #	define TRACELN1_WIFI_DEBUG(str)		TRACELN1_DEBUG(str)
 #	define TRACE1_WIFI_DEBUG(str)		TRACE1_DEBUG(str)
+#	define TRACE_WIFI_DEBUG_SLEEP(x) 			_TRACE_WIFI_SLEEP(x)
 #else
 #	define TRACE_CHAR_WIFI_DEBUG(ch)
 #	define TRACE_WIFI_DEBUG(...)
@@ -125,6 +132,7 @@
 #	define TRACELN_WIFI_DEBUG(str,...)
 #	define TRACELN1_WIFI_DEBUG(str)
 #	define TRACELN_WIFI_DEBUG(str,...)
+#	define TRACE_WIFI_DEBUG_SLEEP(x)
 #endif
 
 
