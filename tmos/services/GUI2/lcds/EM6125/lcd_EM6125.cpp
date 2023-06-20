@@ -189,7 +189,7 @@ void EM6125::clear_screen()
 }
 
 //extern unsigned int cpu_usage;
-#if USE_MEMORY_TRACKING
-extern char end;
-#endif
+//#if USE_MEMORY_TRACKING
+//extern char end;
+//#endif
 
