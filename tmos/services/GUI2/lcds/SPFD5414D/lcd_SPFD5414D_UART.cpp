@@ -51,7 +51,7 @@ static const unsigned short spdf5414d_lsb_row_address[] =
 	MSB2LSB(SPFD5414D_RAMWR)
 };
 
-static inline void rotate(uint32_t * const value)
+static inline __attribute__ ((always_inline)) void rotate(uint32_t * const value)
 {
 	asm volatile (
 	"		ldr				r3, [%0]		 \n\t"
@@ -66,7 +66,7 @@ static inline void rotate(uint32_t * const value)
 	);
 }
 
-static inline uint16_t rotate(uint16_t value)
+static inline __attribute__ ((always_inline)) uint16_t rotate(uint16_t value)
 {
 	asm volatile (
     "       rbit            %0, %0			 \n\t"
