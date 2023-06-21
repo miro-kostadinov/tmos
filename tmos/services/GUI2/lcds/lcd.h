@@ -112,6 +112,12 @@
 								(((x)&0x080)?0x002:0) | \
 								(((x)&0x100)?0x001:0)   \
 							)
+
+//pixel LSB format
+// 0000000G | GGBBBBB1 | 0000000G | GGRRRRR1
+//        0 | 1201234_ |        3 | 4501234_
+#define PIX2LSB_RGB(x)	((MSB2LSB(x>>16) << 16) | MSB2LSB(x))
+
 typedef void (* GSplash )(LCD_MODULE* lcd);
 
 struct LCD_MODULE: public GContainer
