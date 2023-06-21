@@ -530,7 +530,7 @@ void SPFD5414D::tft_write_row(unsigned short address_cmd[])
 	address_cmd[2] = SPFD5414D_DATA(frame.x0); address_cmd[4] = SPFD5414D_DATA(frame.x1);
 	address_cmd[7] = SPFD5414D_DATA(frame.y0); address_cmd[9] = SPFD5414D_DATA(frame.y0);
 	unsigned int * dst = tft_buf;
-	for(int x= 0; x < 128; x+=2)
+	for(int x= 0; x < 64; x++)
 	{
 		*dst++ = lut_to_tft_color[(disp_buf[frame.y0][x] & 0xF0)>>4];
 		*dst++ = lut_to_tft_color[disp_buf[frame.y0][x] & 0x0F];
