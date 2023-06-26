@@ -36,7 +36,10 @@ struct GButton: GObject
 
 	GButton (GId id_t, const RECT_T& rect_t, unsigned int msg_code,
 			const char* label_t, GFlags flags_t = GO_FLG_DEFAULT|GO_FLG_BORDER, unsigned char type_t = GB_TYPE_NONE )
-		:GObject (id_t, rect_t, flags_t), label (label_t), code (msg_code), type(type_t){};
+		:GObject (id_t, rect_t, flags_t), label (label_t), code (msg_code), type(type_t)
+	{
+		set_colors(PIX_LIGHTBLUE, PIX_BLACK);
+	};
 
 	GUI_GET_OBJECT_TYPE(OBJECT_BUTTON)
 

@@ -540,9 +540,11 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 			client_rect = rect;
 			//draw_text(lcd, str.c_str());
 			draw_text_line(lcd, str.c_str(), str.length());
+			lcd->set_color(PIX_LIGHTBLUE);
 			draw_hline(	rect.x0 +rect.width()/8,
 						rect.x1 -rect.width()/8,
 						lcd->pos_y);
+			lcd->set_color(get_fg_color());
 			client_rect = rc;
 		}
 
@@ -581,6 +583,7 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 				int y = get_item_pos(tmp);
 				if( y >= sy && y < ey )
 				{
+					lcd->set_colors(get_fg_color(), get_bg_color());
 					str = tmp->item_name;
 					rows = remove_amp(str);
 					if(str.length())
@@ -588,38 +591,30 @@ void GMenu::draw_this (LCD_MODULE* lcd)
 						if(tmp->flags & GMENU_FLG_CHECK_ITEM)
 						{
 							if (tmp->flags & GO_FLG_CHECKED)
+							{
+								lcd->set_color(PIX_GREEN);
 								lcd->draw_icon(GICON_CHECKED_SQUARE);
+								lcd->set_color(get_fg_color());
+							}
 							else
 								lcd->draw_icon(GICON_SQUARE);
 							lcd->pos_x = /*(client_rect.y1 - client_rect.y0) +*/
 									dc.client_rect.x0 + ((lcd->font->hspacing * 4)/3);
 						}
-#if GUI_MONOCHROME
-						dc.draw_text_line(lcd, str.c_str(), str.length());
-#else
+
 						if(tmp==item && ((flags & GO_FLG_SELECTED)||(item->flags & GMENU_FLG_SHOW_SELECTED_ITEM)))
 						{
-							for (int i = lcd->pos_y - 1; i < lcd->pos_y + row_height - 1; i++)
-								lcd->draw_hline (client_rect.x0, client_rect.x1, i);
-							lcd->fg_color = bg_color;
-							lcd->pos_x = dc.client_rect.x0;
+							lcd->set_colors(PIX_BLACK, PIX_LIGHTBLUE);
+							lcd->clear_rect(RECT_T(lcd->pos_x, lcd->pos_y-((lcd->pos_y>0)?1:0), client_rect.x1, lcd->pos_y + text_font->vspacing));
 							dc.draw_text_line(lcd, str.c_str(), str.length());
-							lcd->fg_color = fg_color;
 						}
 						else
 							dc.draw_text_line(lcd, str.c_str(), str.length());
-#endif
 						lcd->pos_x = dc.client_rect.x0;
 					}
 					else
 						lcd->pos_y += text_font->vspacing;
-#if GUI_MONOCHROME
-					if(tmp==item && ((flags & GO_FLG_SELECTED)||(item->flags & GMENU_FLG_SHOW_SELECTED_ITEM)))
-					{
-						for (int i = lcd->pos_y - row_height; i < lcd->pos_y; i++)
-							dc.invert_hline (client_rect.x0, client_rect.x1, i);
-					}
-#endif
+
 					if(rows)
 					{
 						rows = lcd->pos_x + (rows-1)*text_font->hspacing;
