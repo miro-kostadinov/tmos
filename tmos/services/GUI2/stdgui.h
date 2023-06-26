@@ -13,11 +13,6 @@
 #define GUI_DISPLAYS	1
 #endif
 
-/*
-#ifndef GUI_MONOCHROME
-#define GUI_MONOCHROME	1
-#endif
-*/
 
 #ifndef GUI_DEFAULT_DISP
 #define GUI_DEFAULT_DISP	0xFF
