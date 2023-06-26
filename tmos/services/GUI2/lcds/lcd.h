@@ -138,15 +138,15 @@ struct LCD_MODULE: public GContainer
 		const PIN_DESC* pins;
 		//draw colors are only allocated if the GUI is monochrome, otherwise they
 		//are inherited from GObject. same names for compatibility
-#if GUI_MONOCHROME
-		unsigned int bg_color;
-		union{
-			unsigned int fg_color;
-			unsigned int color;		//alias for fg_color
-		};
-#endif
 	} __attribute__((packed));
 	RECT_T	frame;
+#if GUI_MONOCHROME
+protected:
+	struct{
+		color_t fg_color;
+		color_t bg_color;
+	}__attribute__((packed));
+#endif
 
 public:
 	LCD_MODULE(	unsigned int x, unsigned int y,
@@ -156,7 +156,7 @@ public:
 	{
 		rect = RECT_T (0, 0, x - 1, y - 1);
 #if GUI_MONOCHROME
-		color = PIX_WHITE;
+		fg_color = PIX_WHITE;
 		bg_color = PIX_BLACK;
 #endif
 	}
@@ -195,10 +195,29 @@ public:
 	POINT_T PolarToDP(const int deg, const int r, const unsigned char lcd_index=0) const override;
 
 #if GUI_MONOCHROME
-	inline void set_color(unsigned int fg_color_t)__attribute__((optimize("Os"), always_inline)) //override
+	__attribute__((optimize("Os"), always_inline))
+	void set_color(color_t fg_color_t)__attribute__((optimize("Os"), always_inline)) //shadows u_colors
 	{
-		color = fg_color_t;
+		if(fg_color_t != PIX_BLACK)
+			fg_color = PIX_WHITE;
+		else
+			fg_color = PIX_BLACK;
 	}
+	__attribute__((optimize("Os"), always_inline))
+	void set_background(color_t  background)__attribute__((optimize("Os"), always_inline)) //shadows u_colors
+	{
+		if(background != PIX_BLACK)
+			bg_color = PIX_WHITE;
+		else
+			bg_color = PIX_BLACK;
+	}
+	__attribute__((optimize("Os"), always_inline))
+	void set_colors(color_t fg_color_t, unsigned int bg_color_t)
+	{
+		set_color(fg_color_t);
+		set_background(bg_color_t);
+	}
+
 #endif
 protected:
 	inline virtual unsigned int is_lcd() const override __attribute__((optimize("Os"), always_inline))
