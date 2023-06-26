@@ -136,7 +136,10 @@ void ST7565S::draw_bitmap( int x0, int y0, const char* src, int width, int rows)
 				if((src[0] & offset) && frame.x0 <= i && i <= frame.x1)
 				{
 //					disp_buf[frame.y0>>3][i] |= revert_char(y0);
-					disp_buf[y0>>3][i] |= 1<<(y0&7);
+					if(fg_color != PIX_BLACK)
+						disp_buf[y0>>3][i] |= 1<<(y0&7);
+					else
+						disp_buf[y0>>3][i] |= ~(1<<(y0&7));
 				}
 				offset <<= 1;
 				if(offset > 255)
@@ -189,7 +192,10 @@ void ST7565S::draw_char(int x0, unsigned int ch)
 					if((src[0] & offset) && frame.x0 <= i && i <= frame.x1)
 					{
 	//					disp_buf[frame.y0>>3][i] |= revert_char(y0);
-						disp_buf[y0>>3][i] |= 1<<(y0&7);
+						if(fg_color != PIX_BLACK)
+							disp_buf[y0>>3][i] |= 1<<(y0&7);
+						else
+							disp_buf[y0>>3][i] |= ~(1<<(y0&7));
 					}
 					offset <<= 1;
 					if(offset > 255)
@@ -209,7 +215,7 @@ void ST7565S::draw_point( int x, int y)
 {
 	if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
 	{
-		if(color == PIX_WHITE)
+		if(fg_color != PIX_BLACK)
 		{
 			disp_buf[y>>3][x] |= (1 << (y&7));
 		}
@@ -227,7 +233,10 @@ void ST7565S::draw_hline( int x0, int x1, int y)
 		int val = 1 << (y&7);
 		while(x0 <= x1 && frame.x0 <= x0 && x0 <= frame.x1)
 		{
-			disp_buf[y>>3][x0++] |= val;
+			if(fg_color != PIX_BLACK)
+				disp_buf[y>>3][x0] |= val;
+			else
+				disp_buf[y>>3][x0] &= ~val;
 		}
 	}
 }
@@ -236,10 +245,13 @@ void ST7565S::draw_bline( int x0, int x1, int y)
 {
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
-		int val = ~(1 << (y&7));
+		int val = 1 << (y&7);
 		while(x0 <= x1 && frame.x0 <= x0 && x0 <= frame.x1)
 		{
-			disp_buf[y>>3][x0++] &= val;
+			if(bg_color != PIX_BLACK)
+				disp_buf[y>>3][x0++] |= val;
+			else
+				disp_buf[y>>3][x0++] &= ~val;
 		}
 	}
 }
@@ -272,7 +284,14 @@ void ST7565S::draw_vline( int y0, int y1, int x)
 			{
 				TRACELN1("Oooops! draw_vline");
 			}
-			disp_buf[y0>>3][x] |= (1 << (y0&7));
+			if(fg_color != PIX_BLACK)
+			{
+				disp_buf[y0>>3][x] |= (1 << (y0&7));
+			}
+			else
+			{
+				disp_buf[y0>>3][x] &= ~(1 << (y0&7));
+			}
 		}else
 			break;
 		y0++;

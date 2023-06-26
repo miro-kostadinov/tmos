@@ -71,7 +71,10 @@ void ST7565S_RS::draw_bitmap( int x0, int y0, const char* src, int width, int ro
 				if((src[0] & offset) && frame.x0 <= i && i <= frame.x1)
 				{
 //					disp_buf[frame.y0>>3][i] |= revert_char(y0);
-					disp_buf[y0>>3][i] |= revert_char( 1<<(y0&7) );
+					if(fg_color != PIX_BLACK)
+						disp_buf[y0>>3][i] |= revert_char(1 << (y0&7));
+					else
+						disp_buf[y0>>3][i] &= ~revert_char(1 << (y0&7));
 				}
 				offset <<= 1;
 				if(offset > 255)
@@ -124,7 +127,10 @@ void ST7565S_RS::draw_char(int x0, unsigned int ch)
 					if((src[0] & offset) && frame.x0 <= i && i <= frame.x1)
 					{
 	//					disp_buf[frame.y0>>3][i] |= revert_char(y0);
-						disp_buf[y0>>3][i] |= revert_char( 1<<(y0&7) );
+						if(fg_color != PIX_BLACK)
+							disp_buf[y0>>3][i] |= revert_char(1 << (y0&7));
+						else
+							disp_buf[y0>>3][i] &= ~revert_char(1 << (y0&7));
 					}
 					offset <<= 1;
 					if(offset > 255)
@@ -145,7 +151,7 @@ void ST7565S_RS::draw_point( int x, int y)
 	if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
 	{
 		GUI_ASSERT(x <= 131 && (y>>3) <= 7);
-		if(color == PIX_WHITE)
+		if(fg_color != PIX_BLACK)
 			disp_buf[y>>3][x] |= revert_char(1 << (y&7));
 		else
 			disp_buf[y>>3][x] &= ~revert_char(1 << (y&7));
@@ -165,7 +171,7 @@ void ST7565S_RS::draw_hline( int x0, int x1, int y)
 				{
 					TRACELN1("Oooops! draw_hline");
 				}
-				if(color == PIX_WHITE)
+				if(fg_color != PIX_BLACK)
 					disp_buf[y>>3][x0] |= val;//revert_char(1 << (y&7));
 				else
 					disp_buf[y>>3][x0] &= ~val;//revert_char(1 << (y&7));
@@ -188,7 +194,11 @@ void ST7565S_RS::draw_bline( int x0, int x1, int y)
 				{
 					TRACELN1("Oooops! draw_bline");
 				}
-				disp_buf[y>>3][x0] &= ~val;//revert_char(1 << (y&7));
+				if(bg_color != PIX_BLACK)
+					disp_buf[y>>3][x0] |= val;
+				else
+					disp_buf[y>>3][x0] &= ~val;
+//				disp_buf[y>>3][x0] &= ~val;//revert_char(1 << (y&7));
 			}
 			x0++;
 		}
@@ -241,7 +251,11 @@ void ST7565S_RS::draw_vline( int y0, int y1, int x)
 			{
 				TRACELN1("Oooops! draw_vline");
 			}
-			disp_buf[y0>>3][x] |= revert_char(1 << (y0&7));
+			if(fg_color != PIX_BLACK)
+				disp_buf[y0>>3][x] |= revert_char(1 << (y0&7));
+			else
+				disp_buf[y0>>3][x] &= ~revert_char(1 << (y0&7));
+//			disp_buf[y0>>3][x] |= revert_char(1 << (y0&7));
 		}else
 			break;
 		y0++;
