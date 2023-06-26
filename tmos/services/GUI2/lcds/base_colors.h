@@ -23,12 +23,12 @@
 //value for R and B is 0x1F (5 bits), max value for G is 0x3F (6 bits)
 										//R		G	  B
 #define TEMPLATE_COLOR_BLACK			0x00, 0x00, 0x00	//<-
-#define TEMPLATE_COLOR_BLUE				0x00, 0x00, 0x1f
+#define TEMPLATE_COLOR_BLUE				0x00, 0x1F, 0x1F //0x00, 0x00, 0x1f
 #define TEMPLATE_COLOR_GREEN			0x00, 0x3F, 0x00
 #define TEMPLATE_COLOR_RED				0x1F, 0x00, 0x00
 #define TEMPLATE_COLOR_LIGHTMAGENTA		0x0F, 0x08, 0x0E
 #define TEMPLATE_COLOR_BROWN			0x08, 0x04, 0x01
-#define TEMPLATE_COLOR_LIGHTBLUE		0x0A, 0x0D, 0x0E
+#define TEMPLATE_COLOR_LIGHTBLUE		0x14, 0x34, 0x1F //original 0x0A, 0x0D, 0x0E
 #define TEMPLATE_COLOR_LIGHTGRAY		0x14, 0x2A, 0x14 //66%, originally all 0x02
 #define TEMPLATE_COLOR_DARKGRAY			0x0A, 0x15, 0x0A //33%, originally all 0x04
 #define TEMPLATE_COLOR_LIGHTGREEN		0x09, 0x0E, 0x09
@@ -180,104 +180,103 @@ enum tft_color_lut:unsigned char
 #define PIX_YELLOW			PIX_EXPAND_MACRO(YELLOW, 		PIX_FORMAT_PATTERN)
 #define PIX_WHITE			PIX_EXPAND_MACRO(WHITE, 		PIX_FORMAT_PATTERN)
 
+template<typename scolor_t, bool type_t>
+struct s_colors;
 
+template <typename scolor_t>
+struct s_colors<scolor_t, false>
+{
 
-//colors struct changes according to the monochrome and format flags. most funcs
-//outside of here that deal with colors use unsigned int to pass them as arguments
-template<typename scolor_t, typename lcolor_t> struct u_colors{
-#if !GUI_MONOCHROME
-	u_colors(scolor_t fg, scolor_t bg)
+protected:
+		//if the LCD supports color we store two colors in each GObject
+	struct{
+		scolor_t bg_color;
+		scolor_t fg_color;
+	}__attribute__((packed));
+public:
+	s_colors(scolor_t fg, scolor_t bg)
 		:bg_color(bg)
 		,fg_color(fg)
 	{;}
-	union {
-		//if the LCD supports color we store two colors in each GObject
-		struct{
-			scolor_t bg_color;
-			union{
-				scolor_t fg_color;
-				scolor_t color;		//alias for fg_color
-			};
-		};
-		lcolor_t colors;
-	}__attribute__((packed));
 
-	inline void set_color(scolor_t fg_color_t)__attribute__((optimize("Os"), always_inline))
+	inline __attribute__((optimize("Os"), always_inline))
+	void set_color(scolor_t fg_color_t)
 	{
 		fg_color = fg_color_t;
 	}
-	inline void set_colors(scolor_t fg_color_t, scolor_t bg_color_t)__attribute__((optimize("Os"), always_inline))
+	inline __attribute__((optimize("Os"), always_inline))
+	void set_background(scolor_t background)
+	{
+		bg_color = background;
+	}
+	inline __attribute__((optimize("Os"), always_inline))
+	void set_colors(scolor_t fg_color_t, scolor_t bg_color_t)
 	{
 		fg_color = fg_color_t;
 		bg_color = bg_color_t;
 	}
-	inline scolor_t get_fg_color()__attribute__((optimize("Os"), always_inline))
+	__attribute__((optimize("Os"), always_inline))
+	scolor_t get_fg_color()
 	{
 		return fg_color;
 	}
-	inline scolor_t get_bg_color()__attribute__((optimize("Os"), always_inline))
+	__attribute__((optimize("Os"), always_inline))
+	scolor_t get_bg_color()
 	{
 		return bg_color;
 	}
-#else
-	u_colors(scolor_t bg, scolor_t fg)
+};
+
+
+template <typename scolor_t>
+struct s_colors<scolor_t, true>
+{
+	s_colors()
+	{;}
+	s_colors(scolor_t bg, scolor_t fg)
 	{;}
 
-	inline void set_color(scolor_t fg_color_t)__attribute__((optimize("Os"), always_inline))
+	inline __attribute__((optimize("Os"), always_inline))
+	void set_color(scolor_t fg_color_t)
 	{
 		;
 	}
-	inline void set_colors(scolor_t fg_color_t, scolor_t bg_color_t)__attribute__((optimize("Os"), always_inline))
+	inline __attribute__((optimize("Os"), always_inline))
+	void set_background(scolor_t background)
 	{
 		;
 	}
-	inline scolor_t get_fg_color()__attribute__((optimize("Os"), always_inline))
+	inline __attribute__((optimize("Os"), always_inline))
+	void set_colors(scolor_t fg_color_t, scolor_t bg_color_t)
+	{
+		;
+	}
+	__attribute__((optimize("Os"), always_inline))
+	scolor_t get_fg_color()
 	{
 		return PIX_WHITE;
 	}
-	inline scolor_t get_bg_color()__attribute__((optimize("Os"), always_inline))
+	__attribute__((optimize("Os"), always_inline))
+	scolor_t get_bg_color()
 	{
 		return PIX_BLACK;
 	}
-#endif
 };
 
-//decides the size of the colors struct
-typedef struct u_colors
-#if PIX_FORMAT == PIX_RGB_FORMAT
-<unsigned int, unsigned long long>
-#elif PIX_FORMAT == PIX_565_FORMAT
-<unsigned short, unsigned int>
-#elif PIX_FORMAT == PIX_4BIT_FORMAT
-<unsigned char, unsigned short>
-#endif
-u_colors_t;
 
-//unused additional color support
-/*
-//color variable type
+//colors struct changes according to the monochrome and format flags. most funcs
+//outside of here that deal with colors use unsigned int to pass them as arguments
+
 typedef
-#if GUI_MONOCHROME
-unsigned int
-#elif PIX_FORMAT == PIX_RGB_FORMAT
+#if PIX_FORMAT == PIX_RGB_FORMAT
 unsigned int
 #elif PIX_FORMAT == PIX_565_FORMAT
 unsigned short
 #elif PIX_FORMAT == PIX_4BIT_FORMAT
 unsigned char
 #endif
-color_var_t;
+color_t;
 
-static inline color_var_t __attribute__((optimize("Os"), always_inline)) get_inverse_color(color_var_t color_t)
-{
-#if PIX_FORMAT == PIX_RGB_FORMAT
-	return ((PIX_WHITE - color_t) | PIX);
-#elif PIX_FORMAT == PIX_565_FORMAT
-	return (~color_t);
-#elif PIX_FORMAT == PIX_4BIT_FORMAT
-	return (PIX_WHITE - color_t);
-#endif
-}
-*/
+typedef struct s_colors<color_t, GUI_MONOCHROME>  u_colors_t;
 
 #endif /* SERVICES_GUI2_LCDS_BASE_COLORS_H_ */
