@@ -98,77 +98,6 @@ void SPFD5414D::clear_screen()
 	memclr(disp_buf, sizeof(disp_buf));
 }
 
-/*
- * tft_encode_color row by row
-void SPFD5414D::tft_encode_color(const int x_pos, bool invert)
-{
-	if (frame.x0 <= x_pos && x_pos <= frame.x1)
-	{
-		unsigned char pix = disp_buf[frame.y0][x_pos>>1];
-		unsigned char pix_color;
-		if(invert)
-		{
-			if(x_pos & 1)
-			{
-				pix_color = lut_white - (pix & 0x0F);
-				pix = (pix & 0xF0) | pix_color;
-			}
-			else
-			{
-				pix_color = (lut_white<<4) - (pix & 0xF0);
-				pix = (pix & 0x0F) | pix_color;
-			}
-		}
-		else
-		{
-			switch(color)
-			{
-			case PIX_BLACK:
-				pix_color = lut_black; break;
-#if !GUI_MONOCHROME
-			case PIX_BLUE:
-				pix_color = lut_blue; break;
-			case PIX_GREEN:
-				pix_color = lut_green; break;
-			case PIX_CYAN:
-				pix_color = lut_cyan; break;
-			case PIX_RED:
-				pix_color = lut_red; break;
-			case PIX_MAGENTA:
-				pix_color = lut_magenta; break;
-			case PIX_BROWN:
-				pix_color = lut_brown; break;
-			case PIX_LIGHTGRAY:
-				pix_color = lut_lightgray; break;
-			case PIX_DARKGRAY:
-				pix_color = lut_darkgray; break;
-			case PIX_LIGHTBLUE:
-				pix_color = lut_lightblue; break;
-			case PIX_LIGHTGREEN:
-				pix_color = lut_lightgreen; break;
-			case PIX_LIGHTCYAN:
-				pix_color = lut_lightcyan; break;
-			case PIX_LIGHTRED:
-				pix_color = lut_lightred; break;
-			case PIX_LIGHTMAGENTA:
-				pix_color = lut_lightmagenta; break;
-			case PIX_YELLOW:
-				pix_color = lut_yellow; break;
-			case PIX_WHITE:
-				pix_color = lut_white; break;
-#endif
-			default:
-				pix_color = lut_white;
-			}
-			if(x_pos & 1)
-				pix = (pix & 0xF0) | pix_color;
-			else
-				pix = (pix & 0x0F) | (pix_color << 4);
-		}
-		disp_buf[frame.y0][x_pos>>1] = pix; //PIX_WHITE;//_COLOR_ color;
-	}
-}
-*/
 
 #pragma GCC optimize ("Os")
 
@@ -177,9 +106,9 @@ void SPFD5414D::tft_encode_color(const int x_pos, bool invert)
  * function is a placeholder for compatibility. no need for conversion if we're
  * using the 4bit PIX format
  */
-static inline __attribute__((always_inline)) tft_color_lut pix_to_4bit(unsigned int color_t)
+static inline __attribute__((always_inline)) tft_color_lut pix_to_4bit(color_t color)
 {
-	return tft_color_lut(color_t);
+	return tft_color_lut(color);
 }
 #else
 /**
@@ -232,21 +161,39 @@ static tft_color_lut pix_to_4bit(unsigned int color_t)
 }
 #endif
 
-void SPFD5414D::tft_encode_color(const int x_pos, const int y_pos, unsigned int color_t)
+void SPFD5414D::tft_use_foreground_color(const int x_pos, const int y_pos)
 {
 	if (frame.x0 <= x_pos && x_pos <= frame.x1)
 	{
 		unsigned char pix = disp_buf[y_pos][x_pos >> 1];
 		unsigned char pix_color;
 
-		pix_color = pix_to_4bit(color_t);
+		pix_color = pix_to_4bit(fg_color);
 
 		if (x_pos & 1)
 			pix = (pix & 0xF0) | pix_color;
 		else
 			pix = (pix & 0x0F) | (pix_color << 4);
 
-		disp_buf[y_pos][x_pos >> 1] = pix; //PIX_WHITE;//_COLOR_ color;
+		disp_buf[y_pos][x_pos >> 1] = pix;
+	}
+}
+
+void SPFD5414D::tft_use_background_color(const int x_pos, const int y_pos)
+{
+	if (frame.x0 <= x_pos && x_pos <= frame.x1)
+	{
+		unsigned char pix = disp_buf[y_pos][x_pos >> 1];
+		unsigned char pix_color;
+
+		pix_color = pix_to_4bit(bg_color);
+
+		if (x_pos & 1)
+			pix = (pix & 0xF0) | pix_color;
+		else
+			pix = (pix & 0x0F) | (pix_color << 4);
+
+		disp_buf[y_pos][x_pos >> 1] = pix;
 	}
 }
 
@@ -294,21 +241,6 @@ void SPFD5414D::draw_bitmap( int x0, int y0, const char* src, int width, int row
 		rows -= y0;
 
 		offset = 1<< offset;
-/*
- * draw_bitmap row by row
-		while(width--)
-		{
-			if(src[0] & offset)
-				tft_encode_color(x0);
-			offset <<= 1;
-			if(offset > 255)
-			{
-				offset = 1;
-				src++;
-			}
-			x0++;
-		}
-*/
 		width += x0;
 		while(rows--)
 		{
@@ -316,7 +248,7 @@ void SPFD5414D::draw_bitmap( int x0, int y0, const char* src, int width, int row
 			{
 				if(src[0] & offset)
 				{
-					tft_encode_color(i, y0, fg_color);
+					tft_use_foreground_color(i, y0);
 				}
 				offset <<= 1;
 				if(offset > 255)
@@ -367,7 +299,7 @@ void SPFD5414D::draw_char(int x0, unsigned int ch)
 				{
 					if(src[0] & offset)
 					{
-						tft_encode_color(i, y0, fg_color);
+						tft_use_foreground_color(i, y0);
 					}
 					offset <<= 1;
 					if(offset > 255)
@@ -385,33 +317,30 @@ void SPFD5414D::draw_char(int x0, unsigned int ch)
 
 void SPFD5414D::draw_point( int x, int y)
 {
-//	if(frame.y0 == y)
 	if(frame.y0 <= y && y < frame.y1 && frame.x0 <= x && x <= frame.x1)
 	{
-		tft_encode_color(x, y, fg_color);
+		tft_use_foreground_color(x, y);
 	}
 }
 
 void SPFD5414D::draw_hline( int x0, int x1, int y)
 {
-//	if(y==frame.y0)
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
 		while(x0 <= x1)
 		{
-			tft_encode_color(x0++, y, fg_color);
+			tft_use_foreground_color(x0++, y);
 		}
 	}
 }
 
 void SPFD5414D::draw_bline( int x0, int x1, int y)
 {
-//	if(y==frame.y0)
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
 		while(x0 <= x1)
 		{
-			tft_encode_color(x0++, y, bg_color);
+			tft_use_background_color(x0++, y);
 		}
 	}
 }
@@ -427,14 +356,14 @@ void SPFD5414D::clear_rect (const RECT_T& area)
 			int x0 = clr_area.x0, x1 = clr_area.x1;
 			if(x0 & 1)
 			{
-				tft_encode_color(x0++, y, bg_color);
+				tft_use_background_color(x0++, y);
 			}
 
 			if(x1 & 1)
 				x1++;
 			else
 			{
-				tft_encode_color(x1, y, bg_color);
+				tft_use_background_color(x1, y);
 			}
 			if(x1 > x0 && (x1-x0) >= 2)
 				memset(&disp_buf[y][x0 >> 1], pix_to_4bit(bg_color) | (pix_to_4bit(bg_color) << 4), (x1 -x0)>>1);
@@ -446,10 +375,6 @@ void SPFD5414D::clear_rect (const RECT_T& area)
 
 void SPFD5414D::draw_vline( int y0, int y1, int x)
 {
-//	if((y0 <= frame.y0) && (y1 >= frame.y0))
-//	{
-//		tft_encode_color(x);
-//	}
 	if(frame.x0 <= x && x <= frame.x1)
 	{
 		if(y0 <= frame.y0)
@@ -458,7 +383,7 @@ void SPFD5414D::draw_vline( int y0, int y1, int x)
 		{
 			if (y0>=frame.y0)
 			{
-				tft_encode_color(x, y0, fg_color);
+				tft_use_foreground_color(x, y0);
 			}else
 				break;
 			y0++;
@@ -468,10 +393,6 @@ void SPFD5414D::draw_vline( int y0, int y1, int x)
 
 void SPFD5414D::invert_vline( int y0, int y1, int x)
 {
-//	if((y0 <= frame.y0) && (y1 >= frame.y0))
-//	{
-//		tft_encode_color(x, true);
-//	}
 	if(frame.x0 <= x && x <= frame.x1)
 	{
 		if(y0 <= frame.y0)
@@ -490,7 +411,6 @@ void SPFD5414D::invert_vline( int y0, int y1, int x)
 
 void SPFD5414D::invert_hline( int x0, int x1, int y)
 {
-//	if(y==frame.y0)
 	if( (y>=frame.y0) && (y<frame.y1))
 	{
 		while(x0 <= x1)
