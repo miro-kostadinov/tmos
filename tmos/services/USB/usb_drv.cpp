@@ -19,6 +19,9 @@
 #include <usb_host.h>
 #include <tmos_atomic.h>
 #endif
+#if USE_NET
+#include <csocket.h>
+#endif
 
 
 void usbdrv_thread(USB_DRV_INFO drv_info)
@@ -214,34 +217,46 @@ void USB_DSR(USB_DRV_INFO drv_info, HANDLE hnd)
 
 	if (hnd->cmd & FLAG_COMMAND)
 	{
-		if(hnd->mode.as_voidptr)
+		if(hnd->cmd == CMD_COMMAND)
 		{
-			// this is a client handle...
-			if( (tmp=drv_data->helper) )
+			if(hnd->mode.as_voidptr)
 			{
-				//the helper task is waiting for object...
-				drv_data->helper = NULL;
-				tmp->dst.as_voidptr = hnd;
-				svc_HND_SET_STATUS(tmp, RES_SIG_OK);
+				// this is a client handle...
+				if( (tmp=drv_data->helper) )
+				{
+					//the helper task is waiting for object...
+					drv_data->helper = NULL;
+					tmp->dst.as_voidptr = hnd;
+					svc_HND_SET_STATUS(tmp, RES_SIG_OK);
+				} else
+				{
+					//queue while helper task is busy
+					hnd->next = drv_data->waiting;
+					drv_data->waiting = hnd;
+				}
+
 			} else
 			{
-				//queue while helper task is busy
-				hnd->next = drv_data->waiting;
-				drv_data->waiting = hnd;
+				// this should be the helper task
+				if( (tmp=drv_data->waiting) )
+				{
+					drv_data->waiting = tmp->next;
+					hnd->dst.as_voidptr = tmp;
+					svc_HND_SET_STATUS(hnd, RES_SIG_OK);
+				} else
+				{
+					drv_data->helper = hnd;
+				}
 			}
-
 		} else
 		{
-			// this should be the helper task
-			if( (tmp=drv_data->waiting) )
-			{
-				drv_data->waiting = tmp->next;
-				hnd->dst.as_voidptr = tmp;
+			// SOCK_CMD_CLOSE and SOCK_CMD_XXX commands...
+#if USE_NET
+			if(hnd->cmd == SOCK_CMD_CLOSE)
 				svc_HND_SET_STATUS(hnd, RES_SIG_OK);
-			} else
-			{
-				drv_data->helper = hnd;
-			}
+			else
+#endif
+				svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
 		}
 		return;
 	}
