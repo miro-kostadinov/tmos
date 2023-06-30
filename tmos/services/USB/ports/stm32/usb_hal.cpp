@@ -1536,14 +1536,29 @@ void usb_drv_start_rx(USB_DRV_INFO drv_info, HANDLE hnd)
 					} else
 					{
 						svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+						endpoint->epd_out.epd_pending = nullptr;
 						TRACELN_USB(" Read%d fail (st=%02x) ", eptnum , endpoint->epd_out.epd_state);
 					}
 				} else
 #endif
 				{
 #if USB_ENABLE_DEVICE
-					stm_start_rx(drv_info, eptnum, endpoint);
-					endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING;
+					if(drv_info->drv_data->usb_state > USBST_DEVICE_SUSPENDED)
+					{
+						if(hnd->len == 0)
+						{
+							svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_OK);
+							endpoint->epd_out.epd_pending = nullptr;
+						} else
+						{
+							stm_start_rx(drv_info, eptnum, endpoint);
+							endpoint->epd_out.epd_state = ENDPOINT_STATE_RECEIVING;
+						}
+					} else
+					{
+						svc_HND_SET_STATUS(hnd, FLG_SIGNALED | RES_FATAL);
+						endpoint->epd_out.epd_pending = nullptr;
+					}
 #endif
 				}
 			}
