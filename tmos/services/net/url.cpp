@@ -946,7 +946,7 @@ NET_CODE CURL::url_resolve(const CURL & old_link)
 	return NET_OK;
 }
 
-void CURL::url_print(CSTRING& str)
+void CURL::url_print(CSTRING& str) const
 {
 	unsigned int i, host_pos=0;
 

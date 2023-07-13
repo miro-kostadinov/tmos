@@ -26,9 +26,9 @@
 /* Note: the ordering here is related to the order of elements in
    `supported_schemes' in url.c.  */
 #define URL_FLAG_SCHEME_FILE				0x08
-#define URL_FLAG_SCHEME_FTP					0x10
-#define URL_FLAG_SCHEME_HTTP				0x20
-#define URL_FLAG_SCHEME_HTTPS				0x30
+#define URL_FLAG_SCHEME_FTP					0x10	//ftp://
+#define URL_FLAG_SCHEME_HTTP				0x20	//http://
+#define URL_FLAG_SCHEME_HTTPS				0x30	//...
 #define URL_FLAG_SCHEME_INVALID				0x80
 #define URL_FLAG_SCHEME_MASK				0xF8
 
@@ -62,7 +62,7 @@ public:
 	CURL& operator= (const CURL& url);
 	NET_CODE url_parse(const char* url, bool path_only=false);
 	NET_CODE url_resolve(const CURL& old_link);
-	void url_print(CSTRING& str);
+	void url_print(CSTRING& str) const;
 };
 
 
