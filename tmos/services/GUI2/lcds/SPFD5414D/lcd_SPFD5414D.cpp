@@ -36,7 +36,7 @@ enum tft_color_lut:unsigned char
 };
 */
 
-const unsigned int SPFD5414D::lut_to_tft_color[16] =
+static const unsigned int lut_to_tft_color[16] =
 {
 	PIX_RGB_BLACK,
 	PIX_RGB_BLUE,
