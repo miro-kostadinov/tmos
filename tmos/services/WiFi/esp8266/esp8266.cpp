@@ -791,7 +791,7 @@ void esp8266_module::wifi_esp8266_socket_close(unsigned int sid)
 				for(int i=0; i< 500; i++)
 				{
 					wifi_sleep(10);
-					if(alloc_sockets[sid]->sock_state == SOCKET_OPEN)
+					if(closed_sockets[sid])
 					{
 						TRACE_WIFI_DEBUG("\r\nDisconnect %d", sid);
 						break;
@@ -868,6 +868,15 @@ NET_CODE esp8266_module::wifi_esp8266_socket_open(CSocket* sock)
 					sock->sock_state = SOCKET_OPEN;
 					alloc_sockets[sid] = sock;
 					closed_sockets[sid] = false;
+					// discard socket data
+					if(received_data[sid])
+					{
+						delete received_data[sid];
+						received_data[sid] = nullptr;
+					}
+					DEC_ALLOC_SIZE(received_size[sid]); //
+					received_size[sid] = 0;
+
 					used_sockets++;
 					return NET_OK;
 				}
@@ -1788,6 +1797,7 @@ RES_CODE esp8266_module::wifi_sock_connect_url(CSocket* sock)
 						break;
 				}
 				pending_connection = nullptr;
+/*
 				if(received_data[sid])
 				{
 					delete received_data[sid];
@@ -1795,6 +1805,7 @@ RES_CODE esp8266_module::wifi_sock_connect_url(CSocket* sock)
 				}
 				DEC_ALLOC_SIZE(received_size[sid]);
 				received_size[sid] = 0;
+*/
 				if(sock->sock_state == SOCKET_CONECTED)
 				{
 					TRACE_WIFI_DEBUG("\r\nLink %d", sid);
