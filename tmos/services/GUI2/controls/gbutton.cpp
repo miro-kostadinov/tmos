@@ -72,7 +72,7 @@ void GButton::draw_this (LCD_MODULE* lcd)
 	if(flags & GO_FLG_SELECTED)
 	{
 		lcd->set_background(get_fg_color());
-		lcd->clear_rect(RECT_T(lcd->pos_x/*client_rect.x0*/, client_rect.y0+1, client_rect.x1, client_rect.y1));
+		lcd->clear_rect(RECT_T(lcd->pos_x/*client_rect.x0*/, client_rect.y0+1, client_rect.x1, client_rect.y1-1));
 		lcd->set_color(get_bg_color());
 	}
 	text_metrics_t size = get_text_metrics(label.c_str(), client_rect.width() -lcd->pos_x, &FNT5x7);
