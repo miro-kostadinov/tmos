@@ -31,13 +31,13 @@
 #define WIFI_STATE_OFF			0x00
 
 //-----------------			WiFi error codes				 	 -----------------//
-#define NET_ERR_WIFI				0x200	//!< WiFi communication general error
-#define NET_ERR_WIFI_ON				0x201	//!< Failed to power on the wifi module
-#define NET_ERR_WIFI_SHUTDOWN		0x202	//!< Failed the wifi module in shutdown mode
-#define NET_ERR_WIFI_OFF			0x203	//!< Failed to power off the wifi module
-#define NET_ERR_WIFI_REGISTER		0x206	//!< Failed to register
-#define NET_ERR_WIFI_REJECTED		0x207	//!<
-#define NET_ERR_WIFI_NET_NAME		0x208	//!< Failed to get network name
+#define NET_ERR_WIFI				0xF0	//!< WiFi communication general error
+#define NET_ERR_WIFI_ON				0xF1	//!< Failed to power on the wifi module
+#define NET_ERR_WIFI_SHUTDOWN		0xF2	//!< Failed the wifi module in shutdown mode
+#define NET_ERR_WIFI_OFF			0xF3	//!< Failed to power off the wifi module
+#define NET_ERR_WIFI_REGISTER		0xF6	//!< Failed to register
+#define NET_ERR_WIFI_REJECTED		0xF7	//!<
+#define NET_ERR_WIFI_NET_NAME		0xF8	//!< Failed to get network name
 
 
 
