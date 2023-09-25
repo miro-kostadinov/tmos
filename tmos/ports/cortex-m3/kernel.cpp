@@ -220,7 +220,7 @@ extern "C" void sys_kernel_init( void)
 //*----------------------------------------------------------------------------
 extern "C" void __cxa_pure_virtual()
 {
-	TRACE_ERROR("\r\nERROR: pure virtual function is called!");
+	TRACE_ERROR("\r\n\e[31mERROR: pure virtual function is called!\e[m");
 }
 
 /*-----------------------------------------------------------
