@@ -15,6 +15,7 @@
 #define SHA384_BLOCK_SIZE 128
 #define SHA384_DIGEST_SIZE 48
 
+extern const uint8_t SHA384_OID[9];
 extern const hash_info_t SHA384_HASH_ALGO[1];
 
 

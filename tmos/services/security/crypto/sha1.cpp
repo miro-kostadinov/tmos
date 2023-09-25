@@ -10,7 +10,7 @@
 #if SHA1_SUPPORT
 
 //SHA-1 object identifier (1.3.14.3.2.26)
-const uint8_t sha1Oid[] = {0x2B, 0x0E, 0x03, 0x02, 0x1A};
+const uint8_t SHA1_OID[] = {0x2B, 0x0E, 0x03, 0x02, 0x1A};
 
 const hash_info_t SHA1_HASH_ALGO[1] =
 {
@@ -18,8 +18,8 @@ const hash_info_t SHA1_HASH_ALGO[1] =
 	SHA1_BLOCK_SIZE,
 	SHA1_DIGEST_SIZE,
 	SHA1_BLOCK_SIZE + SHA1_DIGEST_SIZE,
-	sizeof(sha1Oid),
-	sha1Oid,
+	sizeof(SHA1_OID),
+	SHA1_OID,
 	new_sha1_hash
 };
 

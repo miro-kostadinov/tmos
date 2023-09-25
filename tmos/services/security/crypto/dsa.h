@@ -25,6 +25,16 @@ extern const uint8_t DSA_WITH_SHA3_384_OID[9];
 extern const uint8_t DSA_WITH_SHA3_512_OID[9];
 
 
+/// DSA domain parameters
+struct DsaDomainParameters
+{
+   Mpi p; ///<Prime modulus
+   Mpi q; ///<Group order
+   Mpi g; ///<Group generator
+
+   RES_CODE x509ExportDsaParameters(uint8_t* output, size_t* written) const;
+};
+
 /// DSA public key
 struct DsaPublicKey
 {
@@ -34,6 +44,7 @@ struct DsaPublicKey
    Mpi y; ///<Public key
 
    void dsapk_free();
+   RES_CODE x509ExportDsaPublicKey(uint8_t* output, size_t* written) const;
 };
 
 /// DSA private key

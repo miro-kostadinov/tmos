@@ -240,6 +240,12 @@
    #define RSA_SUPPORT 1
 #endif
 
+//RSA-PSS certificate support
+#ifndef X509_RSA_PSS_SUPPORT
+   #define X509_RSA_PSS_SUPPORT 1
+#endif
+
+
 //DSA support
 #ifndef DSA_SUPPORT
    #define DSA_SUPPORT 1

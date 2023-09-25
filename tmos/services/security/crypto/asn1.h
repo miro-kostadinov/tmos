@@ -78,6 +78,12 @@ struct Asn1Tag
 
 uint32_t asn1WriteTagLen(Asn1Type objType, size_t len);
 
+RES_CODE asn1WriteInt32(int32_t value, bool reverse, uint8_t *data, size_t *written);
+
 RES_CODE asn1DumpObject(const uint8_t* data, size_t length, uint32_t level);
+
+RES_CODE x509FormatNameAttribute(Asn1Type type, const uint8_t* oid, size_t oidLen,
+   const char* value, size_t valueLen, uint8_t* output, size_t* written);
+
 
 #endif /* SERVICES_SECURITY_CRYPTO_ASN1_H_ */

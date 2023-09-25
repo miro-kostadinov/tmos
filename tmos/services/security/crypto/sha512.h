@@ -15,6 +15,7 @@
 #define SHA512_BLOCK_SIZE 128
 #define SHA512_DIGEST_SIZE 64
 
+extern const uint8_t SHA512_OID[9];
 extern const hash_info_t SHA512_HASH_ALGO[1];
 
 struct sha512_algo_t: public hash_algo_t

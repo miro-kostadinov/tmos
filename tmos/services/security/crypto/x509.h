@@ -13,6 +13,278 @@
 #include <tmos_time.h>
 #include <rsa.h>
 #include <dsa.h>
+#if EC_SUPPORT
+#include <ec.h>
+#endif
+
+//RSA certificate support
+#ifndef X509_RSA_SUPPORT
+   #define X509_RSA_SUPPORT 1
+#endif
+
+//RSA-PSS certificate support
+#ifndef X509_RSA_PSS_SUPPORT
+   #define X509_RSA_PSS_SUPPORT 0
+#endif
+
+//DSA certificate support
+#ifndef X509_DSA_SUPPORT
+   #define X509_DSA_SUPPORT 0
+#endif
+
+//ECDSA certificate support
+#ifndef X509_ECDSA_SUPPORT
+   #define X509_ECDSA_SUPPORT 1
+#endif
+
+//MD5 hash support (insecure)
+#ifndef X509_MD5_SUPPORT
+   #define X509_MD5_SUPPORT 0
+#endif
+
+//SHA-1 hash support (weak)
+#ifndef X509_SHA1_SUPPORT
+   #define X509_SHA1_SUPPORT 0
+#endif
+
+//SHA-224 hash support (weak)
+#ifndef X509_SHA224_SUPPORT
+   #define X509_SHA224_SUPPORT 0
+#endif
+
+//SHA-256 hash support
+#ifndef X509_SHA256_SUPPORT
+   #define X509_SHA256_SUPPORT 1
+#endif
+
+//SHA-384 hash support
+#ifndef X509_SHA384_SUPPORT
+   #define X509_SHA384_SUPPORT 1
+#endif
+
+//SHA-512 hash support
+#ifndef X509_SHA512_SUPPORT
+   #define X509_SHA512_SUPPORT 1
+#endif
+
+//SHA3-224 hash support
+#ifndef X509_SHA3_224_SUPPORT
+   #define X509_SHA3_224_SUPPORT 0
+#endif
+
+//SHA3-256 hash support
+#ifndef X509_SHA3_256_SUPPORT
+   #define X509_SHA3_256_SUPPORT 0
+#endif
+
+//SHA3-384 hash support
+#ifndef X509_SHA3_384_SUPPORT
+   #define X509_SHA3_384_SUPPORT 0
+#endif
+
+//SHA3-512 hash support
+#ifndef X509_SHA3_512_SUPPORT
+   #define X509_SHA3_512_SUPPORT 0
+#endif
+
+//secp112r1 elliptic curve support (weak)
+#ifndef X509_SECP112R1_SUPPORT
+   #define X509_SECP112R1_SUPPORT 0
+#endif
+
+//secp112r2 elliptic curve support (weak)
+#ifndef X509_SECP112R2_SUPPORT
+   #define X509_SECP112R2_SUPPORT 0
+#endif
+
+//secp128r1 elliptic curve support (weak)
+#ifndef X509_SECP128R1_SUPPORT
+   #define X509_SECP128R1_SUPPORT 0
+#endif
+
+//secp128r2 elliptic curve support (weak)
+#ifndef X509_SECP128R2_SUPPORT
+   #define X509_SECP128R2_SUPPORT 0
+#endif
+
+//secp160k1 elliptic curve support (weak)
+#ifndef X509_SECP160K1_SUPPORT
+   #define X509_SECP160K1_SUPPORT 0
+#endif
+
+//secp160r1 elliptic curve support (weak)
+#ifndef X509_SECP160R1_SUPPORT
+   #define X509_SECP160R1_SUPPORT 0
+#endif
+
+//secp160r2 elliptic curve support (weak)
+#ifndef X509_SECP160R2_SUPPORT
+   #define X509_SECP160R2_SUPPORT 0
+#endif
+
+//secp192k1 elliptic curve support
+#ifndef X509_SECP192K1_SUPPORT
+   #define X509_SECP192K1_SUPPORT 0
+#endif
+
+//secp192r1 elliptic curve support (NIST P-192)
+#ifndef X509_SECP192R1_SUPPORT
+   #define X509_SECP192R1_SUPPORT 0
+#endif
+
+//secp224k1 elliptic curve support
+#ifndef X509_SECP224K1_SUPPORT
+   #define X509_SECP224K1_SUPPORT 0
+#endif
+
+//secp224r1 elliptic curve support (NIST P-224)
+#ifndef X509_SECP224R1_SUPPORT
+   #define X509_SECP224R1_SUPPORT 0
+#endif
+
+//secp256k1 elliptic curve support
+#ifndef X509_SECP256K1_SUPPORT
+   #define X509_SECP256K1_SUPPORT 0
+#endif
+
+//secp256r1 elliptic curve support (NIST P-256)
+#ifndef X509_SECP256R1_SUPPORT
+   #define X509_SECP256R1_SUPPORT 1
+#endif
+
+//secp384r1 elliptic curve support (NIST P-384)
+#ifndef X509_SECP384R1_SUPPORT
+   #define X509_SECP384R1_SUPPORT 1
+#endif
+
+//secp521r1 elliptic curve support (NIST P-521)
+#ifndef X509_SECP521R1_SUPPORT
+   #define X509_SECP521R1_SUPPORT 1
+#endif
+
+//brainpoolP160r1 elliptic curve support
+#ifndef X509_BRAINPOOLP160R1_SUPPORT
+   #define X509_BRAINPOOLP160R1_SUPPORT 0
+#endif
+
+//brainpoolP192r1 elliptic curve support
+#ifndef X509_BRAINPOOLP192R1_SUPPORT
+   #define X509_BRAINPOOLP192R1_SUPPORT 0
+#endif
+
+//brainpoolP224r1 elliptic curve support
+#ifndef X509_BRAINPOOLP224R1_SUPPORT
+   #define X509_BRAINPOOLP224R1_SUPPORT 0
+#endif
+
+//brainpoolP256r1 elliptic curve support
+#ifndef X509_BRAINPOOLP256R1_SUPPORT
+   #define X509_BRAINPOOLP256R1_SUPPORT 0
+#endif
+
+//brainpoolP320r1 elliptic curve support
+#ifndef X509_BRAINPOOLP320R1_SUPPORT
+   #define X509_BRAINPOOLP320R1_SUPPORT 0
+#endif
+
+//brainpoolP384r1 elliptic curve support
+#ifndef X509_BRAINPOOLP384R1_SUPPORT
+   #define X509_BRAINPOOLP384R1_SUPPORT 0
+#endif
+
+//brainpoolP512r1 elliptic curve support
+#ifndef X509_BRAINPOOLP512R1_SUPPORT
+   #define X509_BRAINPOOLP512R1_SUPPORT 0
+#endif
+
+//Ed25519 elliptic curve support
+#ifndef X509_ED25519_SUPPORT
+   #define X509_ED25519_SUPPORT 0
+#endif
+
+//Ed448 elliptic curve support
+#ifndef X509_ED448_SUPPORT
+   #define X509_ED448_SUPPORT 0
+#endif
+
+//Minimum acceptable size for RSA modulus
+#ifndef X509_MIN_RSA_MODULUS_SIZE
+   #define X509_MIN_RSA_MODULUS_SIZE 1024u
+#elif (X509_MIN_RSA_MODULUS_SIZE < 512)
+   #error X509_MIN_RSA_MODULUS_SIZE parameter is not valid
+#endif
+
+//Maximum acceptable size for RSA modulus
+#ifndef X509_MAX_RSA_MODULUS_SIZE
+   #define X509_MAX_RSA_MODULUS_SIZE 4096u
+#elif (X509_MAX_RSA_MODULUS_SIZE < X509_MIN_RSA_MODULUS_SIZE)
+   #error X509_MAX_RSA_MODULUS_SIZE parameter is not valid
+#endif
+
+//Minimum acceptable size for DSA prime modulus
+#ifndef X509_MIN_DSA_MODULUS_SIZE
+   #define X509_MIN_DSA_MODULUS_SIZE 1024u
+#elif (X509_MIN_DSA_MODULUS_SIZE < 512)
+   #error X509_MIN_DSA_MODULUS_SIZE parameter is not valid
+#endif
+
+//Maximum acceptable size for DSA prime modulus
+#ifndef X509_MAX_DSA_MODULUS_SIZE
+   #define X509_MAX_DSA_MODULUS_SIZE 4096u
+#elif (X509_MAX_DSA_MODULUS_SIZE < X509_MIN_DSA_MODULUS_SIZE)
+   #error X509_MAX_DSA_MODULUS_SIZE parameter is not valid
+#endif
+
+//Default size of serial numbers
+#ifndef X509_SERIAL_NUMBER_SIZE
+   #define X509_SERIAL_NUMBER_SIZE 20u
+#elif (X509_SERIAL_NUMBER_SIZE < 1)
+   #error X509_SERIAL_NUMBER_SIZE parameter is not valid
+#endif
+
+//Maximum number of subject alternative names
+#ifndef X509_MAX_SUBJECT_ALT_NAMES
+   #define X509_MAX_SUBJECT_ALT_NAMES 4u
+#elif (X509_MAX_SUBJECT_ALT_NAMES < 1)
+   #error X509_MAX_SUBJECT_ALT_NAMES parameter is not valid
+#endif
+
+//Maximum number of certificate issuer names
+#ifndef X509_MAX_CERT_ISSUER_NAMES
+   #define X509_MAX_CERT_ISSUER_NAMES 4u
+#elif (X509_MAX_CERT_ISSUER_NAMES < 1)
+   #error X509_MAX_CERT_ISSUER_NAMES parameter is not valid
+#endif
+
+//Maximum number of custom extensions
+#ifndef X509_MAX_CUSTOM_EXTENSIONS
+   #define X509_MAX_CUSTOM_EXTENSIONS 2u
+#elif (X509_MAX_CUSTOM_EXTENSIONS < 1)
+   #error X509_MAX_CUSTOM_EXTENSIONS parameter is not valid
+#endif
+
+//Maximum digest size
+#if (X509_SHA3_512_SUPPORT && SHA3_512_SUPPORT)
+   #define X509_MAX_HASH_DIGEST_SIZE 64
+#elif (X509_SHA512_SUPPORT && SHA512_SUPPORT)
+   #define X509_MAX_HASH_DIGEST_SIZE 64
+#elif (X509_SHA3_384_SUPPORT && SHA3_384_SUPPORT)
+   #define X509_MAX_HASH_DIGEST_SIZE 48
+#elif (X509_SHA384_SUPPORT && SHA384_SUPPORT)
+   #define X509_MAX_HASH_DIGEST_SIZE 48
+#elif (X509_SHA3_256_SUPPORT && SHA3_256_SUPPORT)
+   #define X509_MAX_HASH_DIGEST_SIZE 32
+#elif (X509_SHA256_SUPPORT && SHA256_SUPPORT)
+   #define X509_MAX_HASH_DIGEST_SIZE 32
+#elif (X509_SHA3_224_SUPPORT && SHA3_224_SUPPORT)
+   #define X509_MAX_HASH_DIGEST_SIZE 28
+#elif (X509_SHA224_SUPPORT && SHA224_SUPPORT)
+   #define X509_MAX_HASH_DIGEST_SIZE 28
+#elif (X509_SHA1_SUPPORT && SHA1_SUPPORT)
+   #define X509_MAX_HASH_DIGEST_SIZE 20
+#elif (X509_MD5_SUPPORT && MD5_SUPPORT)
+   #define X509_MAX_HASH_DIGEST_SIZE 16
+#endif
 
 //X.509 related constants
 extern const uint8_t X509_COMMON_NAME_OID[3];
@@ -49,11 +321,25 @@ extern const uint8_t X509_INHIBIT_ANY_POLICY_OID[3];
 
 extern const uint8_t X509_NS_CERT_TYPE_OID[9];
 
+extern const uint8_t X509_CHALLENGE_PASSWORD_OID[9];
+extern const uint8_t X509_EXTENSION_REQUEST_OID[9];
+
 enum X509Version : uint8_t
 {
    X509_VERSION_1 = 0x00,
    X509_VERSION_2 = 0x01,
    X509_VERSION_3 = 0x02,
+};
+
+enum X509SignatureAlgo : uint8_t
+{
+   X509_SIGN_ALGO_NONE    = 0,
+   X509_SIGN_ALGO_RSA     = 1,
+   X509_SIGN_ALGO_RSA_PSS = 2,
+   X509_SIGN_ALGO_DSA     = 3,
+   X509_SIGN_ALGO_ECDSA   = 4,
+   X509_SIGN_ALGO_ED25519 = 5,
+   X509_SIGN_ALGO_ED448   = 6
 };
 
 struct X509Name
@@ -92,6 +378,7 @@ struct X509Name
    size_t 			pseudonymLen;
 
    RES_CODE x509ParseName(const uint8_t *data, size_t length, size_t *totalLength);
+   RES_CODE x509FormatName(uint8_t* output, size_t* written) const;
 };
 
 struct X509Validity
@@ -106,6 +393,9 @@ struct X509RsaPublicKey
    size_t nLen;
    const uint8_t *e;
    size_t eLen;
+
+   RES_CODE x509FormatRsaPublicKey(uint8_t *output, size_t *written) const;
+
 };
 
 struct X509DsaParameters
@@ -116,18 +406,24 @@ struct X509DsaParameters
    size_t qLen;
    const uint8_t *g;
    size_t gLen;
+
+   RES_CODE x509FormatDsaParameters(uint8_t* output, size_t* written) const;
 };
 
 struct X509DsaPublicKey
 {
    const uint8_t *y;
    size_t yLen;
+
+   RES_CODE x509FormatDsaPublicKey(uint8_t *output, size_t *written) const;
 };
 
 struct X509EcParameters
 {
    const uint8_t *namedCurve;
    size_t namedCurveLen;
+
+   RES_CODE x509FormatEcParameters(uint8_t* output, size_t* written) const;
 };
 
 
@@ -135,6 +431,8 @@ struct X509EcPublicKey
 {
    const uint8_t *q;
    size_t qLen;
+
+   RES_CODE x509FormatEcPublicKey(uint8_t* output, size_t* written) const;
 };
 
 struct X509SubjectPublicKeyInfo
@@ -160,12 +458,31 @@ struct X509SubjectPublicKeyInfo
    RES_CODE x509ParseDsaPublicKey(const uint8_t *data, size_t length);
    RES_CODE x509ParseEcPublicKey(const uint8_t *data, size_t length);
    RES_CODE x509ParseSubjectPublicKeyInfo(const uint8_t *data, size_t length, size_t *totalLength);
+   RES_CODE x509FormatSubjectPublicKeyInfo(const void* publicKey, uint8_t* keyId,
+		   uint8_t* output, size_t* written) const;
+   RES_CODE x509FormatAlgorithmIdentifier(const void* params, uint8_t* output,
+		   size_t* written) const;
+#if EC_SUPPORT
+   RES_CODE x509ExportEcPublicKey(const EcPoint* publicKey, uint8_t* output, size_t* written) const;
+#endif
 };
 
-struct X509BasicContraints
+struct X509BasicConstraints
 {
-   bool ca;
+   bool critical;
+   bool cA;
    uint32_t pathLenConstraint;
+
+   RES_CODE x509FormatBasicConstraints(uint8_t* output, size_t* written) const;
+};
+
+struct X509KeyUsage
+{
+   bool	    critical;
+   uint16_t bitmap;
+
+   RES_CODE x509FormatKeyUsage(uint8_t* output, size_t* written) const;
+
 };
 
 //Maximum number of subject alternative names
@@ -205,18 +522,47 @@ struct X509SubjectAltName
    X509GeneralName generalNames[X509_MAX_SUBJECT_ALT_NAMES];
 
    RES_CODE x509ParseSubjectAltName(const uint8_t *data, size_t length);
+   RES_CODE x509FormatSubjectAltName(uint8_t* output, size_t* written) const;
 };
+
+struct X509SubjectKeyId
+{
+   bool   critical;
+   const uint8_t* value;
+   size_t length;
+
+   RES_CODE x509FormatSubjectKeyId(uint8_t* output, size_t* written) const;
+};
+
+struct X509AuthorityKeyId
+{
+   bool critical;
+   const uint8_t* keyId;
+   size_t keyIdLen;
+
+   RES_CODE x509FormatAuthorityKeyId(uint8_t* output, size_t* written) const;
+};
+
+struct X509NsCertType
+{
+   bool	   critical;
+   uint8_t bitmap;
+
+   RES_CODE x509FormatNsCertType(uint8_t* output, size_t* written) const;
+};
+
 
 struct X509Extensions
 {
-   X509BasicContraints basicConstraints;
-   uint16_t keyUsage;
+   X509BasicConstraints basicConstraints;
+   X509KeyUsage keyUsage;
    X509SubjectAltName subjectAltName;
-   const uint8_t *subjectKeyId;
-   size_t subjectKeyIdLen;
-   const uint8_t *authorityKeyId;
-   size_t authorityKeyIdLen;
-   uint8_t nsCertType;
+   X509SubjectKeyId subjectKeyId;
+   X509AuthorityKeyId authKeyId;
+   X509NsCertType nsCertType;
+
+   RES_CODE x509FormatExtensionRequest(uint8_t* output, size_t* written) const;
+   RES_CODE x509ParseNsCertType(bool critical, const uint8_t *data, size_t length);
 };
 
 
@@ -248,7 +594,6 @@ struct X509CertificateInfo
    RES_CODE x509ParseExtendedKeyUsage(const uint8_t *data, size_t length);
    RES_CODE x509ParseSubjectKeyId(const uint8_t *data, size_t length);
    RES_CODE x509ParseAuthorityKeyId(const uint8_t *data, size_t length);
-   RES_CODE x509ParseNsCertType(const uint8_t *data, size_t length);
    RES_CODE x509ParseExtensions(const uint8_t *data, size_t length, size_t *totalLength);
    RES_CODE x509ParseTbsCertificate(const uint8_t *data, size_t length, size_t *totalLength);
    RES_CODE x509ParseSignatureAlgo(const uint8_t *data, size_t length, size_t *totalLength);

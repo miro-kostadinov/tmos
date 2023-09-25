@@ -6,6 +6,7 @@
  */
 #include <tmos.h>
 #include <mpi.h>
+#include <asn1.h>
 
 
 #if MPI_SUPPORT
@@ -1651,6 +1652,53 @@ RES_CODE Mpi::mpiImport(const uint8_t *data, size_t length, MpiFormat format)
 	return res;
 }
 
+RES_CODE Mpi::asn1WriteMpi(bool reverse, uint8_t* data, size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+	Asn1Tag tag;
+
+	//Retrieve the length of the multiple precision integer
+	n = mpiGetBitLength();
+
+	//An integer value is always encoded in the smallest possible number of
+	//octets
+	n = (n / 8) + 1;
+
+	//Valid output stream?
+	if (data != NULL)
+	{
+		//Use reverse encoding?
+		if (reverse)
+			data -= n;
+
+		//The value of the multiple precision integer is encoded MSB first
+		res = mpiWriteRaw(data, n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+	}
+
+	//The integer is encapsulated within an ASN.1 structure
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_INTEGER;
+	tag.length = n;
+	tag.value = data;
+
+	//Compute the length of the corresponding ASN.1 structure
+	res = tag.asn1WriteTag(false, data, NULL);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Number of bytes written to the output stream
+	if (written != NULL)
+		*written = tag.totalLength;
+
+	//Successful processing
+	return RES_OK;
+}
 
 void mpiDump(const char* prepend, const Mpi* a)
 {

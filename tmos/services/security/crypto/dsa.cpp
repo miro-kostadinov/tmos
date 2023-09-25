@@ -34,6 +34,69 @@ const uint8_t DSA_WITH_SHA3_512_OID[9] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x
 
 
 
+RES_CODE DsaDomainParameters::x509ExportDsaParameters(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+	size_t length;
+	uint8_t *ptr;
+	Asn1Tag tag;
+
+	//Point to the buffer where to write the ASN.1 structure
+	ptr = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//Write parameter p
+	res = p.asn1WriteMpi(false, ptr, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	ptr += n;
+	length += n;
+
+	//Write parameter q
+	res = q.asn1WriteMpi(false, ptr, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	ptr += n;
+	length += n;
+
+	//Write parameter g
+	res = g.asn1WriteMpi(false, ptr, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	ptr += n;
+	length += n;
+
+	//The DSA domain parameters are encapsulated within a sequence
+	tag.constructed = true;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_SEQUENCE;
+	tag.length = length;
+	tag.value = output;
+
+	//Write DSAParameters structure
+	res = tag.asn1WriteTag(false, output, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Total number of bytes that have been written
+	*written = n;
+
+	//Successful processing
+	return RES_OK;
+}
+
 void DsaPublicKey::dsapk_free()
 {
 	p.mpi_free();
@@ -41,6 +104,24 @@ void DsaPublicKey::dsapk_free()
 	g.mpi_free();
 	y.mpi_free();
 };
+
+RES_CODE DsaPublicKey::x509ExportDsaPublicKey(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+
+	//Write public key
+	res = y.asn1WriteMpi(false, output, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Total number of bytes that have been written
+	*written = n;
+
+	//Successful processing
+	return RES_OK;
+}
 
 void DsaPrivateKey::dsapk_free()
 {

@@ -14,6 +14,7 @@
 #define SHA224_BLOCK_SIZE 64
 #define SHA224_DIGEST_SIZE 28
 
+extern const uint8_t SHA224_OID[9];
 extern const hash_info_t SHA224_HASH_ALGO[1];
 
 

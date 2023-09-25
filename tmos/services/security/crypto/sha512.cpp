@@ -12,7 +12,7 @@
 
 
 //SHA-512 object identifier (2.16.840.1.101.3.4.2.3)
-const uint8_t sha512Oid[] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03};
+const uint8_t SHA512_OID[] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03};
 
 const hash_info_t SHA512_HASH_ALGO[1] =
 {
@@ -20,8 +20,8 @@ const hash_info_t SHA512_HASH_ALGO[1] =
 	SHA512_BLOCK_SIZE,
 	SHA512_DIGEST_SIZE,
 	SHA512_BLOCK_SIZE + SHA512_DIGEST_SIZE,
-	sizeof(sha512Oid),
-	sha512Oid,
+	sizeof(SHA512_OID),
+	SHA512_OID,
 	new_sha512_hash
 };
 

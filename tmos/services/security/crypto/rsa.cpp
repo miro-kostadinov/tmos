@@ -21,6 +21,8 @@ const uint8_t RSA_ENCRYPTION_OID[9] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01,
 const uint8_t MD5_WITH_RSA_ENCRYPTION_OID[9] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x04};
 //SHA-1 with RSA encryption OID (1.2.840.113549.1.1.5)
 const uint8_t SHA1_WITH_RSA_ENCRYPTION_OID[9] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x05};
+//SHA-224 with RSA encryption OID (1.2.840.113549.1.1.14)
+const uint8_t SHA224_WITH_RSA_ENCRYPTION_OID[9] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0E};
 //SHA-256 with RSA encryption OID (1.2.840.113549.1.1.11)
 const uint8_t SHA256_WITH_RSA_ENCRYPTION_OID[9] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0B};
 //SHA-384 with RSA encryption OID (1.2.840.113549.1.1.12)
@@ -36,6 +38,14 @@ const uint8_t RSASSA_PKCS1_v1_5_WITH_SHA3_384_OID[9] = {0x60, 0x86, 0x48, 0x01, 
 //RSA PKCS #1 v1.5 signature with SHA-3-512 OID (2.16.840.1.101.3.4.3.16)
 const uint8_t RSASSA_PKCS1_v1_5_WITH_SHA3_512_OID[9] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03, 0x10};
 
+//RSASSA-PSS OID (1.2.840.113549.1.1.10)
+const uint8_t RSASSA_PSS_OID[9] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A};
+
+//Padding string
+static const uint8_t padding[] =
+{
+   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
 
 void RsaPublicKey::rspk_free()
 {
@@ -252,6 +262,59 @@ RES_CODE RsaPublicKey::rsaesPkcs1v15Encrypt(prng_algo_t* prngAlgo, const uint8_t
 	return res;
 }
 
+RES_CODE RsaPublicKey::x509ExportRsaPublicKey(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	size_t nn;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//Write Modulus field
+	res = n.asn1WriteMpi(false, p, &nn);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += nn;
+	length += nn;
+
+	//Write PublicExponent field
+	res = e.asn1WriteMpi(false, p, &nn);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += nn;
+	length += nn;
+
+	//The public key is encapsulated within a sequence
+	tag.constructed = true;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_SEQUENCE;
+	tag.length = length;
+	tag.value = output;
+
+	//Write RSAPublicKey structure
+	res = tag.asn1WriteTag(false, output, &nn);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Total number of bytes that have been written
+	*written = nn;
+
+	//Successful processing
+	return RES_OK;
+}
+
 /**
  * @brief RSA decryption primitive
  *
@@ -424,6 +487,171 @@ RES_CODE RsaPrivateKey::tlsGenerateRsaSignature(const uint8_t* digest,
    //RSA signature generation is not supported
    return RES_TLS_NOT_IMPLEMENTED;
 #endif
+}
+
+RES_CODE emsaPssEncode(prng_algo_t* prngAlgo, const hash_info_t* hash,
+		size_t saltLen, const uint8_t* digest, uint8_t* em, uint32_t emBits)
+{
+	RES_CODE res;
+	size_t n;
+	size_t emLen;
+	uint8_t *db;
+	uint8_t *salt;
+	uint8_t h[MAX_HASH_DIGEST_SIZE];
+	auto_ptr<hash_algo_t> hashContext;
+
+	//The encoded message is an octet string of length emLen = ceil(emBits / 8)
+	emLen = (emBits + 7) / 8;
+
+	//If emLen < hLen + sLen + 2, output "encoding error" and stop
+	if (emLen < (hash->digest_size + saltLen + 2))
+		return RES_TLS_INVALID_LENGTH;
+
+	//The padding string PS consists of emLen - sLen - hLen - 2 zero octets
+	n = emLen - saltLen - hash->digest_size - 2;
+
+	//Point to the buffer where to format the data block DB
+	db = em;
+	//Point to the buffer where to generate the salt
+	salt = db + n + 1;
+
+	//Generate a random octet string salt of length sLen
+	res = prngAlgo->prng_read(salt, saltLen);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Allocate a memory buffer to hold the hash context
+	hashContext = hash->new_hash();
+	//Failed to allocate memory?
+	if (!hashContext.get())
+		return RES_OUT_OF_MEMORY;
+
+	//Let H = Hash(00 00 00 00 00 00 00 00 || mHash || salt)
+	hashContext->Input(padding, sizeof(padding));
+	hashContext->Input(digest, hash->digest_size);
+	hashContext->Input(salt, saltLen);
+	hashContext->Result(h);
+
+	//Let DB = PS || 0x01 || salt
+	memclr(db, n);
+	db[n] = 0x01;
+
+	//Calculate the length of the data block
+	n += saltLen + 1;
+
+	//Let maskedDB = DB xor MGF(H, emLen - hLen - 1)
+	mgf1(hashContext.get(), h, hash->digest_size, db, n);
+
+	//Set the leftmost 8emLen - emBits bits of the leftmost octet in maskedDB
+	//to zero
+	db[0] &= 0xFF >> (8 * emLen - emBits);
+
+	//Let EM = maskedDB || H || 0xbc
+	memcpy(em + n, h, hash->digest_size);
+	em[n + hash->digest_size] = 0xBC;
+
+	//Successful processing
+	return RES_OK;
+}
+
+
+RES_CODE RsaPrivateKey::rsassaPssSign(prng_algo_t* prngAlgo, const hash_info_t* hash, size_t saltLen,
+   const uint8_t *digest, uint8_t *signature, size_t *signatureLen) const
+{
+	RES_CODE res;
+	uint32_t k;
+	uint32_t modBits;
+	uint8_t *em;
+	Mpi m;
+	Mpi s;
+
+	//Check parameters
+	if (prngAlgo == nullptr)
+		return RES_TLS_INVALID_PARAMETER;
+	if ( hash == nullptr || digest == nullptr)
+		return RES_TLS_INVALID_PARAMETER;
+	if (signature == nullptr || signatureLen == 0)
+		return RES_TLS_INVALID_PARAMETER;
+
+	//Debug message
+	TRACE1_TLS("RSASSA-PSS signature generation...");
+	TRACE1_TLS("  Modulus:");
+	TRACE_MPI("    ", &n);
+	TRACE1_TLS("  Public exponent:");
+	TRACE_MPI("    ", &e);
+	TRACE1_TLS("  Private exponent:");
+	TRACE_MPI("    ", &d);
+	TRACE1_TLS("  Prime 1:");
+	TRACE_MPI("    ", &p);
+	TRACE1_TLS("  Prime 2:");
+	TRACE_MPI("    ", &q);
+	TRACE1_TLS("  Prime exponent 1:");
+	TRACE_MPI("    ", &dp);
+	TRACE1_TLS("  Prime exponent 2:");
+	TRACE_MPI("    ", &dq);
+	TRACE1_TLS("  Coefficient:");
+	TRACE_MPI("    ", &qinv);
+	TRACE1_TLS("  Message digest:");
+	TRACE_TLS_ARRAY("    ", digest, hash->digest_size);
+
+	//modBits is the length in bits of the modulus n
+	modBits = n.mpiGetBitLength();
+
+	//Make sure the modulus is valid
+	if (modBits == 0)
+		return RES_TLS_INVALID_PARAMETER;
+
+	//Calculate the length in octets of the modulus n
+	k = (modBits + 7) / 8;
+
+	//Point to the buffer where the encoded message EM will be formatted
+	em = signature;
+
+	//Apply the EMSA-PSS encoding operation to the message M to produce an
+	//encoded message EM of length ceil((modBits - 1) / 8) octets
+	res = emsaPssEncode(prngAlgo, hash, saltLen, digest, em, modBits - 1);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Debug message
+	TRACE1_TLS("  Encoded message:");
+	TRACE_TLS_ARRAY("    ", em, (modBits + 6) / 8);
+
+	//Start of exception handling block
+	do
+	{
+		//Convert the encoded message EM to an integer message representative m
+		res = m.mpiReadRaw(em, (modBits + 6) / 8);
+		//Conversion failed?
+		if (res != RES_OK)
+			break;
+
+		//Apply the RSASP1 signature primitive
+		res = rsasp1(&m, &s);
+		//Any error to report?
+		if (res != RES_OK)
+			break;
+
+		//Convert the signature representative s to a signature of length k octets
+		res = s.mpiWriteRaw(signature, k);
+		//Conversion failed?
+		if (res != RES_OK)
+			break;
+
+		//Length of the resulting signature
+		*signatureLen = k;
+
+		//Debug message
+		TRACE1_TLS("  Signature:");
+		TRACE_TLS_ARRAY("    ", signature, *signatureLen);
+
+		//End of exception handling block
+	} while (0);
+
+	//Return status code
+	return res;
 }
 
 /**
@@ -902,7 +1130,7 @@ RES_CODE emeOaepEncode(prng_algo_t* prngAlgo, const hash_info_t* oaep_hinfo,
       return RES_OUT_OF_MEMORY;
 
    //If the label L is not provided, let L be the empty string
-   if(label == NULL)
+   if(label == nullptr)
       label = "";
 
    //Let lHash = Hash(L)
@@ -948,9 +1176,9 @@ RES_CODE rsaesOaepEncrypt(prng_algo_t* prngAlgo, const RsaPublicKey* key,
 	Mpi c;
 
 	//Check parameters
-	if (prngAlgo == NULL || key == NULL || message == NULL)
+	if (prngAlgo == nullptr || key == nullptr || message == nullptr)
 		return RES_TLS_INVALID_PARAMETER;
-	if (ciphertext == NULL || ciphertextLen == NULL)
+	if (ciphertext == nullptr || ciphertextLen == nullptr)
 		return RES_TLS_INVALID_PARAMETER;
 
 	//Get the length in octets of the modulus n
@@ -1105,9 +1333,9 @@ RES_CODE rsaesOaepDecrypt(const RsaPrivateKey *key,
    Mpi m;
 
    //Check parameters
-   if(key == NULL || ciphertext == NULL)
+   if(key == nullptr || ciphertext == nullptr)
       return RES_TLS_INVALID_PARAMETER;
-   if(message == NULL || messageSize == 0 || messageLen == NULL)
+   if(message == nullptr || messageSize == 0 || messageLen == nullptr)
       return RES_TLS_INVALID_PARAMETER;
 
 
@@ -1125,7 +1353,7 @@ RES_CODE rsaesOaepDecrypt(const RsaPrivateKey *key,
    //Allocate a buffer to store the encoded message EM
    em = (uint8_t*)tsk_malloc(k);
    //Failed to allocate memory?
-   if(em == NULL)
+   if(em == nullptr)
       return RES_OUT_OF_MEMORY;
 
    //Start of exception handling block

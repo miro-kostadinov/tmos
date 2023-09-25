@@ -17,6 +17,7 @@ extern const uint8_t PKCS1_OID[8];
 extern const uint8_t RSA_ENCRYPTION_OID[9];
 extern const uint8_t MD5_WITH_RSA_ENCRYPTION_OID[9];
 extern const uint8_t SHA1_WITH_RSA_ENCRYPTION_OID[9];
+extern const uint8_t SHA224_WITH_RSA_ENCRYPTION_OID[9];
 extern const uint8_t SHA256_WITH_RSA_ENCRYPTION_OID[9];
 extern const uint8_t SHA384_WITH_RSA_ENCRYPTION_OID[9];
 extern const uint8_t SHA512_WITH_RSA_ENCRYPTION_OID[9];
@@ -24,6 +25,7 @@ extern const uint8_t RSASSA_PKCS1_v1_5_WITH_SHA3_224_OID[9];
 extern const uint8_t RSASSA_PKCS1_v1_5_WITH_SHA3_256_OID[9];
 extern const uint8_t RSASSA_PKCS1_v1_5_WITH_SHA3_384_OID[9];
 extern const uint8_t RSASSA_PKCS1_v1_5_WITH_SHA3_512_OID[9];
+extern const uint8_t RSASSA_PSS_OID[9];
 
 
 struct RsaPublicKey
@@ -43,6 +45,7 @@ struct RsaPublicKey
 	RES_CODE rsaesPkcs1v15Encrypt(prng_algo_t* prngAlgo, const uint8_t* message,
 			size_t messageLength, uint8_t* ciphertext,
 			size_t* ciphertextLength) const;
+	RES_CODE x509ExportRsaPublicKey(uint8_t* output, size_t* written) const;
 };
 
 struct RsaPrivateKey
@@ -62,6 +65,9 @@ struct RsaPrivateKey
 
 	RES_CODE tlsGenerateRsaSignature(const uint8_t* digest, uint8_t* signature,
 			size_t signatureLength)	const;
+
+	RES_CODE rsassaPssSign(prng_algo_t* prngAlgo, const hash_info_t* hash, size_t saltLen,
+	   const uint8_t *digest, uint8_t *signature, size_t *signatureLen) const;
 
 	RES_CODE rsassaPkcs1v15Sign(const hash_info_t* hash, const uint8_t* digest,
 			uint8_t* signature, size_t signatureLength) const;
@@ -87,5 +93,8 @@ RES_CODE rsaesOaepDecrypt(const RsaPrivateKey *key,
 		const hash_info_t *oaep_hinfo, const hash_info_t *mfg_hinfo,
 		const char *label, const uint8_t *ciphertext, size_t ciphertextLen,
 		uint8_t *message, size_t messageSize, size_t *messageLen);
+
+void mgf1(hash_algo_t* hash, const uint8_t *seed, size_t seedLen, uint8_t *data, size_t dataLen);
+
 
 #endif /* SERVICES_SECURITY_CRYPTO_RSA_H_ */

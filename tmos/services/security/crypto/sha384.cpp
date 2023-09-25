@@ -10,7 +10,7 @@
 #if SHA384_SUPPORT
 
 //SHA-384 object identifier (2.16.840.1.101.3.4.2.2)
-const uint8_t sha384Oid[] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02};
+const uint8_t SHA384_OID[] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02};
 
 const hash_info_t SHA384_HASH_ALGO[1] =
 {
@@ -18,8 +18,8 @@ const hash_info_t SHA384_HASH_ALGO[1] =
 	SHA384_BLOCK_SIZE,
 	SHA384_DIGEST_SIZE,
 	SHA384_BLOCK_SIZE + SHA512_DIGEST_SIZE,
-	sizeof(sha384Oid),
-	sha384Oid,
+	sizeof(SHA384_OID),
+	SHA384_OID,
 	new_sha384_hash
 };
 

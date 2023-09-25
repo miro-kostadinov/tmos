@@ -362,6 +362,51 @@ uint32_t asn1WriteTagLen(Asn1Type objType, size_t len)
 	return len + 2;
 }
 
+RES_CODE asn1WriteInt32(int32_t value, bool reverse, uint8_t *data, size_t *written)
+{
+	size_t i;
+	size_t n;
+	uint16_t msb;
+
+	//An integer value is always encoded in the smallest possible number of
+	//octets
+	for (n = 4; n > 1; n--)
+	{
+		//Retrieve the upper 9 bits
+		msb = (value >> (n * 8 - 9)) & 0x01FF;
+
+		//The upper 9 bits shall not have the same value (all 0 or all 1)
+		if (msb != 0x0000 && msb != 0x01FF)
+			break;
+	}
+
+	//Valid output stream?
+	if (data != nullptr)
+	{
+		//Use reverse encoding?
+		if (reverse)
+			data -= n + 2;
+
+		//Write tag type
+		data[0] = ASN1_CLASS_UNIVERSAL | ASN1_TYPE_INTEGER;
+		//Write tag length
+		data[1] = n & 0xFF;
+
+		//Write contents octets
+		for (i = 0; i < n; i++)
+		{
+			data[1 + n - i] = (value >> (i * 8)) & 0xFF;
+		}
+	}
+
+	//Number of bytes written to the output stream
+	if (written != nullptr)
+		*written = n + 2;
+
+	//Successful processing
+	return RES_OK;
+}
+
 #ifndef TRACE_TLS_LEVEL
 #define TRACE_TLS_LEVEL TRACE_LEVEL_NONE
 #endif
@@ -596,5 +641,86 @@ RES_CODE asn1DumpObject(const uint8_t* data, size_t length, uint32_t level)
 #endif
 
 	//ASN.1 object successfully decoded
+	return RES_OK;
+}
+
+RES_CODE x509FormatNameAttribute(Asn1Type type, const uint8_t* oid, size_t oidLen,
+   const char* value, size_t valueLen, uint8_t* output, size_t* written)
+{
+	RES_CODE res;
+	size_t n;
+	size_t length;
+	uint8_t* p;
+	Asn1Tag tag;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//Format AttributeType field
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_OBJECT_IDENTIFIER;
+	tag.length = oidLen;
+	tag.value = oid;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, p, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//Format AttributeValue field
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = type;
+	tag.length = valueLen;
+	tag.value = (uint8_t*) value;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, p, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//The attribute type and value are encapsulated within a sequence
+	tag.constructed = true;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_SEQUENCE;
+	tag.length = length;
+	tag.value = output;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, output, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//The sequence is encapsulated within a set
+	tag.constructed = true;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_SET;
+	tag.length = n;
+	tag.value = output;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, output, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Total number of bytes that have been written
+	*written = n;
+
+	//Successful processing
 	return RES_OK;
 }

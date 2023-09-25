@@ -80,6 +80,10 @@ const uint8_t X509_INHIBIT_ANY_POLICY_OID[3] = {0x55, 0x1D, 0x36};
 //Netscape Certificate Type OID (2.16.840.1.113730.1.1)
 const uint8_t X509_NS_CERT_TYPE_OID[9] = {0x60, 0x86, 0x48, 0x01, 0x86, 0xF8, 0x42, 0x01, 0x01};
 
+//PKCS#9 Challenge Password OID (1.2.840.113549.1.9.7)
+const uint8_t X509_CHALLENGE_PASSWORD_OID[9] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x09, 0x07};
+//PKCS#9 Extension Request OID (1.2.840.113549.1.9.14)
+const uint8_t X509_EXTENSION_REQUEST_OID[9] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x09, 0x0E};
 
 RES_CODE X509Name::x509ParseName(const uint8_t *data, size_t length, size_t *totalLength)
 {
@@ -276,6 +280,372 @@ RES_CODE X509Name::x509ParseName(const uint8_t *data, size_t length, size_t *tot
 	//Name field successfully parsed
 	return RES_OK;
 }
+
+RES_CODE X509Name::x509FormatName(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+
+	//Initialize status code
+	res = RES_OK;
+
+	//Raw ASN.1 sequence?
+	if (rawData != nullptr && rawDataLen > 0)
+	{
+		//Copy raw ASN.1 sequence
+		memcpy(output, rawData, rawDataLen);
+		//Total number of bytes that have been written
+		*written = rawDataLen;
+	}
+	else
+	{
+		//Point to the buffer where to write the Name structure
+		p = output;
+		//Length of the Name structure
+		length = 0;
+
+		//Valid Country Name attribute?
+		if (countryName != nullptr && countryNameLen > 0)
+		{
+			//Encode Country Name attribute
+			res = x509FormatNameAttribute(ASN1_TYPE_PRINTABLE_STRING,
+					X509_COUNTRY_NAME_OID, sizeof(X509_COUNTRY_NAME_OID),
+					countryName, countryNameLen, p, &n);
+			//Any error to report?
+			if (res != RES_OK)
+				return res;
+
+			//Advance data pointer
+			p += n;
+			length += n;
+		}
+
+		//Valid State Or Province Name attribute?
+		if (stateOrProvinceName != nullptr && stateOrProvinceNameLen > 0)
+		{
+			//Encode State Or Province Name attribute
+			res = x509FormatNameAttribute(ASN1_TYPE_UTF8_STRING,
+					X509_STATE_OR_PROVINCE_NAME_OID,
+					sizeof(X509_STATE_OR_PROVINCE_NAME_OID),
+					stateOrProvinceName, stateOrProvinceNameLen, p, &n);
+			//Any error to report?
+			if (res != RES_OK)
+				return res;
+
+			//Advance data pointer
+			p += n;
+			length += n;
+		}
+
+		//Valid Locality Name attribute?
+		if (localityName != nullptr && localityNameLen > 0)
+		{
+			//Encode Locality Name attribute
+			res = x509FormatNameAttribute(ASN1_TYPE_UTF8_STRING,
+					X509_LOCALITY_NAME_OID, sizeof(X509_LOCALITY_NAME_OID),
+					localityName, localityNameLen, p, &n);
+			//Any error to report?
+			if (res != RES_OK)
+				return res;
+
+			//Advance data pointer
+			p += n;
+			length += n;
+		}
+
+		//Valid Organization Name attribute?
+		if (organizationName != nullptr && organizationNameLen > 0)
+		{
+			//Encode Organization Name attribute
+			res = x509FormatNameAttribute(ASN1_TYPE_UTF8_STRING,
+					X509_ORGANIZATION_NAME_OID,
+					sizeof(X509_ORGANIZATION_NAME_OID), organizationName,
+					organizationNameLen, p, &n);
+			//Any error to report?
+			if (res != RES_OK)
+				return res;
+
+			//Advance data pointer
+			p += n;
+			length += n;
+		}
+
+		//Valid Organizational Unit Name attribute?
+		if (organizationalUnitName != nullptr && organizationalUnitNameLen > 0)
+		{
+			//Encode Organizational Unit Name attribute
+			res = x509FormatNameAttribute(ASN1_TYPE_UTF8_STRING,
+					X509_ORGANIZATIONAL_UNIT_NAME_OID,
+					sizeof(X509_ORGANIZATIONAL_UNIT_NAME_OID),
+					organizationalUnitName, organizationalUnitNameLen, p, &n);
+			//Any error to report?
+			if (res != RES_OK)
+				return res;
+
+			//Advance data pointer
+			p += n;
+			length += n;
+		}
+
+		//Valid Common Name attribute?
+		if (commonName != nullptr && commonNameLen > 0)
+		{
+			//Encode Common Name attribute
+			res = x509FormatNameAttribute(ASN1_TYPE_UTF8_STRING,
+					X509_COMMON_NAME_OID, sizeof(X509_COMMON_NAME_OID),
+					commonName, commonNameLen, p, &n);
+			//Any error to report?
+			if (res != RES_OK)
+				return res;
+
+			//Advance data pointer
+			p += n;
+			length += n;
+		}
+
+		//The Name structure is encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = length;
+		tag.value = output;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, output, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Total number of bytes that have been written
+		*written = n;
+	}
+
+	//Successful processing
+	return RES_OK;
+}
+
+
+RES_CODE X509RsaPublicKey::x509FormatRsaPublicKey(uint8_t *output, size_t *written) const
+{
+	RES_CODE res;
+	size_t nn;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//Write Modulus field
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_INTEGER;
+	tag.length = nLen;
+	tag.value = n;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, p, &nn);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += nn;
+	length += nn;
+
+	//Write PublicExponent field
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_INTEGER;
+	tag.length = eLen;
+	tag.value = e;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, p, &nn);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += nn;
+	length += nn;
+
+	//The public key is encapsulated within a sequence
+	tag.constructed = true;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_SEQUENCE;
+	tag.length = length;
+	tag.value = output;
+
+	//Write RSAPublicKey structure
+	res = tag.asn1WriteTag(false, output, &nn);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Total number of bytes that have been written
+	*written = nn;
+
+	//Successful processing
+	return RES_OK;
+}
+
+RES_CODE X509DsaParameters::x509FormatDsaParameters(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+	size_t length;
+	uint8_t *ptr;
+	Asn1Tag tag;
+
+	//Point to the buffer where to write the ASN.1 structure
+	ptr = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//Write parameter p
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_INTEGER;
+	tag.length = pLen;
+	tag.value = p;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, ptr, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	ptr += n;
+	length += n;
+
+	//Write parameter q
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_INTEGER;
+	tag.length = qLen;
+	tag.value = q;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, ptr, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	ptr += n;
+	length += n;
+
+	//Write parameter g
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_INTEGER;
+	tag.length = gLen;
+	tag.value = g;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, ptr, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	ptr += n;
+	length += n;
+
+	//The DSA domain parameters are encapsulated within a sequence
+	tag.constructed = true;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_SEQUENCE;
+	tag.length = length;
+	tag.value = output;
+
+	//Write DSAParameters structure
+	res = tag.asn1WriteTag(false, output, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Total number of bytes that have been written
+	*written = n;
+
+	//Successful processing
+	return RES_OK;
+}
+
+
+RES_CODE X509DsaPublicKey::x509FormatDsaPublicKey(uint8_t *output, size_t *written) const
+{
+	RES_CODE res;
+	size_t n;
+	Asn1Tag tag;
+
+	//Write public key
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_INTEGER;
+	tag.length = yLen;
+	tag.value = y;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, output, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Total number of bytes that have been written
+	*written = n;
+
+	//Successful processing
+	return RES_OK;
+}
+
+RES_CODE X509EcParameters::x509FormatEcParameters(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+	Asn1Tag tag;
+
+	//The namedCurve field identifies all the required values for a particular
+	//set of elliptic curve domain parameters to be represented by an object
+	//identifier
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_OBJECT_IDENTIFIER;
+	tag.length = namedCurveLen;
+	tag.value = namedCurve;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, output, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Total number of bytes that have been written
+	*written = n;
+
+	//Successful processing
+	return RES_OK;
+}
+
+RES_CODE X509EcPublicKey::x509FormatEcPublicKey(uint8_t* output, size_t* written) const
+{
+	//Copy the EC public key
+	memcpy(output, q, qLen);
+
+	//Total number of bytes that have been written
+	*written = qLen;
+
+	//Successful processing
+	return RES_OK;
+}
+
 
 RES_CODE X509SubjectPublicKeyInfo::x509ParseDsaParameters(const uint8_t *data, size_t length)
 {
@@ -677,6 +1047,679 @@ RES_CODE X509SubjectPublicKeyInfo::x509ParseSubjectPublicKeyInfo(const uint8_t *
 	return res;
 }
 
+RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* publicKey, uint8_t* keyId,
+		   uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+#if DSA_SUPPORT
+	   //Valid DSA public key?
+	   if(publicKey != nullptr && !oidComp(oid, oidLen, DSA_OID, sizeof(DSA_OID)))
+	   {
+	      DsaDomainParameters params;
+
+	      //Retrieve DSA domain parameters
+	      params.p = ((DsaPublicKey *) publicKey)->p;
+	      params.q = ((DsaPublicKey *) publicKey)->q;
+	      params.g = ((DsaPublicKey *) publicKey)->g;
+
+	      //Format AlgorithmIdentifier field
+	      res = x509FormatAlgorithmIdentifier(&params, p, &n);
+	   }
+	   else
+	#endif
+	{
+		//Format AlgorithmIdentifier field
+		res = x509FormatAlgorithmIdentifier(nullptr, p, &n);
+	}
+
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//The bit string shall contain an initial octet which encodes the number
+	//of unused bits in the final subsequent octet
+	p[0] = 0;
+
+#if (RSA_SUPPORT)
+	   //RSA or RSA-PSS algorithm identifier?
+	   if(!oidComp(oid, oidLen, RSA_ENCRYPTION_OID, sizeof(RSA_ENCRYPTION_OID)) ||
+	      !oidComp(oid, oidLen, RSASSA_PSS_OID, sizeof(RSASSA_PSS_OID)))
+	   {
+	      //Valid RSA public key?
+	      if(publicKey != nullptr)
+	      {
+	         //Export the RSA public key to ASN.1 format
+	         res = ((RsaPublicKey*)publicKey)->x509ExportRsaPublicKey(p + 1, &n);
+	      }
+	      else
+	      {
+	         //Format RSAPublicKey structure
+	         res = rsaPublicKey.x509FormatRsaPublicKey(p + 1, &n);
+	      }
+	   }
+	   else
+	#endif
+#if (DSA_SUPPORT)
+	   //DSA algorithm identifier?
+	   if(!oidComp(oid, oidLen, DSA_OID, sizeof(DSA_OID)))
+	   {
+	      //Valid DSA public key?
+	      if(publicKey != nullptr)
+	      {
+	         //Export the DSA public key to ASN.1 format
+	         res = ((DsaPublicKey*)publicKey)->x509ExportDsaPublicKey(p + 1, &n);
+	      }
+	      else
+	      {
+	         //Format DSAPublicKey structure
+	         res = dsaPublicKey.x509FormatDsaPublicKey(p + 1, &n);
+	      }
+	   }
+	   else
+	#endif
+#if ECDSA_SUPPORT
+	   //EC public key identifier?
+	   if(!oidComp(oid, oidLen, EC_PUBLIC_KEY_OID, sizeof(EC_PUBLIC_KEY_OID)))
+	   {
+	      //Valid EC public key?
+	      if(publicKey != nullptr)
+	      {
+	         //Export the EC public key to ASN.1 format
+	         res = x509ExportEcPublicKey((EcPoint*)publicKey, p + 1, &n);
+	      }
+	      else
+	      {
+	         //Format ECPublicKey structure
+	         res = ecPublicKey.x509FormatEcPublicKey(p + 1, &n);
+	      }
+	   }
+	   else
+	#endif
+#if ED25519_SUPPORT
+	//Ed25519 algorithm identifier?
+	if (!oidComp(oid, oidLen, ED25519_OID, sizeof(ED25519_OID)))
+	{
+		//Valid EdDSA public key?
+		if (publicKey != nullptr)
+		{
+			//Export the EdDSA public key to ASN.1 format
+			res = x509ExportEddsaPublicKey(publicKey, ED25519_PUBLIC_KEY_LEN,
+					p + 1, &n);
+		}
+		else
+		{
+			//The SubjectPublicKey contains the byte stream of the public key
+			res = ecPublicKey.x509FormatEcPublicKey(p + 1, &n);
+		}
+	}
+	else
+#endif
+#if ED448_SUPPORT
+	//Ed448 algorithm identifier?
+	if (!oidComp(oid, oidLen, ED448_OID, sizeof(ED448_OID)))
+	{
+		//Valid EdDSA public key?
+		if (publicKey != nullptr)
+		{
+			//Export the EdDSA public key to ASN.1 format
+			res = x509ExportEddsaPublicKey(publicKey, ED448_PUBLIC_KEY_LEN,
+					p + 1, &n);
+		}
+		else
+		{
+			//The SubjectPublicKey contains the byte stream of the public key
+			res = ecPublicKey.x509FormatEcPublicKey(p + 1, &n);
+		}
+	}
+	else
+#endif
+	//Unknown algorithm identifier?
+	{
+		//Report an error
+		res = RES_TLS_INVALID_PARAMETER;
+	}
+
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//The keyIdentifier parameter is optional
+	if (keyId != nullptr)
+	{
+		auto_ptr<sha1_algo_t> sha1;
+
+		sha1 = (sha1_algo_t*) new_sha1_hash();
+		if (sha1.get())
+		{
+			//The keyIdentifier is composed of the 160-bit SHA-1 hash of the value
+			//of the bit string subjectPublicKey (excluding the tag, length, and
+			//number of unused bits)
+			sha1->Reset();
+			sha1->Input(p + 1, n);
+			sha1->Result(keyId);
+
+		} else
+			res = RES_OUT_OF_MEMORY;
+
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+	}
+
+	//The public key is encapsulated within a bit string
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_BIT_STRING;
+	tag.length = n + 1;
+	tag.value = p;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, p, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//The SubjectPublicKeyInfo structure is encapsulated within a sequence
+	tag.constructed = true;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_SEQUENCE;
+	tag.length = length;
+	tag.value = output;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, output, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Total number of bytes that have been written
+	*written = n;
+
+	//Successful processing
+	return RES_OK;
+}
+
+RES_CODE X509SubjectPublicKeyInfo::x509FormatAlgorithmIdentifier(const void* params, uint8_t* output,
+		   size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//Format algorithm OID
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_OBJECT_IDENTIFIER;
+	tag.length = oidLen;
+	tag.value = oid;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, p, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+#if RSA_SUPPORT
+	   //RSA algorithm identifier?
+	   if(!oidComp(oid, oidLen, RSA_ENCRYPTION_OID, sizeof(RSA_ENCRYPTION_OID)))
+	   {
+	      //The parameters field must have ASN.1 type NULL for this algorithm
+	      //identifier (refer to RFC 3279, section 2.3.1)
+	      tag.constructed = false;
+	      tag.objClass = ASN1_CLASS_UNIVERSAL;
+	      tag.objType = ASN1_TYPE_NULL;
+	      tag.length = 0;
+	      tag.value = nullptr;
+
+	      //Write the corresponding ASN.1 tag
+	      res = tag.asn1WriteTag(false, p, &n);
+	   }
+	   //RSA-PSS algorithm identifier?
+	   else if(!oidComp(oid, oidLen, RSASSA_PSS_OID, sizeof(RSASSA_PSS_OID)))
+	   {
+	      //The parameters may be either absent or present when used as subject
+	      //public key information (refer to RFC 4055, section 3.1)
+	      n = 0;
+	   }
+	   else
+	#endif
+#if DSA_SUPPORT
+	   //DSA algorithm identifier?
+	   if(!oidComp(oid, oidLen, DSA_OID, sizeof(DSA_OID)))
+	   {
+	      //Valid DSA domain parameters?
+	      if(params != nullptr)
+	      {
+	         //Export the DSA domain parameters to ASN.1 format
+	         res = ((const DsaDomainParameters*)params)->x509ExportDsaParameters(p, &n);
+	      }
+	      else
+	      {
+	         //Format DSAParameters structure
+	         res = dsaParams.x509FormatDsaParameters(p, &n);
+	      }
+	   }
+	   else
+	#endif
+#if ECDSA_SUPPORT
+	   //ECDSA algorithm identifier?
+	   if(!oidComp(oid, oidLen, EC_PUBLIC_KEY_OID, sizeof(EC_PUBLIC_KEY_OID)))
+	   {
+	      //Format ECParameters structure
+	      res = ecParams.x509FormatEcParameters(p, &n);
+	   }
+	   else
+	#endif
+#if ED25519_SUPPORT
+	//X25519 or Ed25519 algorithm identifier?
+	if (!oidComp(oid, oidLen, X25519_OID, sizeof(X25519_OID))
+			|| !oidComp(oid, oidLen, ED25519_OID, sizeof(ED25519_OID)))
+	{
+		//For all of the OIDs, the parameters must be absent (refer to RFC 8410,
+		//section 3)
+		n = 0;
+	}
+	else
+#endif
+#if ED448_SUPPORT
+	//X448 or Ed448 algorithm identifier?
+	if (!oidComp(oid, oidLen, X448_OID, sizeof(X448_OID))
+			|| !oidComp(oid, oidLen, ED448_OID, sizeof(ED448_OID)))
+	{
+		//For all of the OIDs, the parameters must be absent (refer to RFC 8410,
+		//section 3)
+		n = 0;
+	}
+	else
+#endif
+	//Unknown algorithm identifier?
+	{
+		//Report an error
+		res = RES_TLS_INVALID_PARAMETER;
+	}
+
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//The AlgorithmIdentifier structure is encapsulated within a sequence
+	tag.constructed = true;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_SEQUENCE;
+	tag.length = length;
+	tag.value = output;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, output, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Total number of bytes that have been written
+	*written = n;
+
+	//Successful processing
+	return RES_OK;
+}
+
+#if EC_SUPPORT
+RES_CODE X509SubjectPublicKeyInfo::x509ExportEcPublicKey(const EcPoint* publicKey,
+		uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	const EcCurveInfo *curveInfo;
+	EcDomainParameters params;
+
+	//Retrieve EC domain parameters
+	curveInfo = ecGetCurveInfo(ecParams.namedCurve, ecParams.namedCurveLen);
+
+	//Make sure the specified elliptic curve is supported
+	if (curveInfo != nullptr)
+	{
+		//Load EC domain parameters
+		res = params.ecLoadDomainParameters(curveInfo);
+	}
+	else
+	{
+		//Invalid EC domain parameters
+		res = RES_TLS_WRONG_IDENTIFIER;
+	}
+
+	//Check status code
+	if (res == RES_OK)
+	{
+		//Format ECPublicKey structure
+		res = params.ecExport(publicKey, output, written);
+	}
+
+	//Return status code
+	return res;
+}
+#endif
+
+
+RES_CODE X509BasicConstraints::x509FormatBasicConstraints(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	uint32_t value;
+	size_t n;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+	uint8_t buffer[3];
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//The basic constraints extension identifies whether the subject of the
+	//certificate is a CA and the maximum depth of valid certification paths
+	//that include this certificate
+	if (cA || critical)
+	{
+		//Format the extension identifier
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OBJECT_IDENTIFIER;
+		tag.length = sizeof(X509_BASIC_CONSTRAINTS_OID);
+		tag.value = X509_BASIC_CONSTRAINTS_OID;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Advance data pointer
+		p += n;
+		length += n;
+
+		//An extension includes the critical flag, with a default value of false
+		if (critical)
+		{
+			//Mark the extension as critical
+			buffer[0] = 0xFF;
+
+			//Format the critical field
+			tag.constructed = false;
+			tag.objClass = ASN1_CLASS_UNIVERSAL;
+			tag.objType = ASN1_TYPE_BOOLEAN;
+			tag.length = 1;
+			tag.value = buffer;
+
+			//Write the corresponding ASN.1 tag
+			res = tag.asn1WriteTag(false, p, &n);
+			//Any error to report?
+			if (res != RES_OK)
+				return res;
+
+			//Advance data pointer
+			p += n;
+			length += n;
+		}
+
+		//Total number of bytes that have been written
+		*written = length;
+
+		//Length of the extension value
+		length = 0;
+
+		//Check whether the cA boolean is set
+		if (cA)
+		{
+			//The cA boolean indicates whether the certified public key may be used
+			//to verify certificate signatures
+			buffer[0] = 0xFF;
+
+			//Format the cA field
+			tag.constructed = false;
+			tag.objClass = ASN1_CLASS_UNIVERSAL;
+			tag.objType = ASN1_TYPE_BOOLEAN;
+			tag.length = 1;
+			tag.value = buffer;
+
+			//Write the corresponding ASN.1 tag
+			res = tag.asn1WriteTag(false, p, &length);
+			//Any error to report?
+			if (res != RES_OK)
+				return res;
+
+			//Where pathLenConstraint does not appear, no limit is imposed
+			if (pathLenConstraint >= 0)
+			{
+				//The pathLenConstraint field gives the maximum number of non-self-issued
+				//intermediate certificates that may follow this certificate in a valid
+				//certification path
+				value = pathLenConstraint;
+
+				//Encode pathLenConstraint value
+				res = asn1WriteInt32(value, false, p + length, &n);
+
+				//Update the length of the extension value
+				length += n;
+			}
+		}
+
+		//The BasicConstraints extension is encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = length;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//The extension value is encapsulated in an octet string
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OCTET_STRING;
+		tag.length = n;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, output + *written, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Adjust the length of the extension
+		*written += n;
+
+		//The extension is encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = *written;
+		tag.value = output;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, output, &length);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+	}
+
+	//Total number of bytes that have been written
+	*written = length;
+
+	//Successful processing
+	return RES_OK;
+}
+
+RES_CODE X509KeyUsage::x509FormatKeyUsage(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	uint32_t k;
+	size_t n;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+	uint8_t buffer[3];
+
+	//Initialize status code
+	res = RES_OK;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//The key usage extension defines the purpose of the key contained in the
+	//certificate
+	if (bitmap != 0 || critical)
+	{
+		//Format the extension identifier
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OBJECT_IDENTIFIER;
+		tag.length = sizeof(X509_KEY_USAGE_OID);
+		tag.value = X509_KEY_USAGE_OID;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Advance data pointer
+		p += n;
+		length += n;
+
+		//An extension includes the critical flag, with a default value of false
+		if (critical)
+		{
+			//Mark the extension as critical
+			buffer[0] = 0xFF;
+
+			//Format the critical field
+			tag.constructed = false;
+			tag.objClass = ASN1_CLASS_UNIVERSAL;
+			tag.objType = ASN1_TYPE_BOOLEAN;
+			tag.length = 1;
+			tag.value = buffer;
+
+			//Write the corresponding ASN.1 tag
+			res = tag.asn1WriteTag(false, p, &n);
+			//Any error to report?
+			if (res != RES_OK)
+				return res;
+
+			//Advance data pointer
+			p += n;
+			length += n;
+		}
+
+		//Calculate the length, in bits, of the KeyUsage value
+		for (k = 16; k > 0; k--)
+		{
+			if (bitmap & (1 << (k - 1)))
+				break;
+		}
+
+		//Total number of bytes needed to encode the KeyUsage value
+		n = 0;
+
+		//Encode bit string value
+		if (k <= 8)
+		{
+			buffer[n++] = 8 - k;
+			buffer[n++] = __RBIT8(bitmap & 0xFF);
+		}
+		else
+		{
+			buffer[n++] = 16 - k;
+			buffer[n++] = __RBIT8(bitmap & 0xFF);
+			buffer[n++] = __RBIT8((bitmap >> 8) & 0xFF);
+		}
+
+		//Format the bit string using ASN.1
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_BIT_STRING;
+		tag.length = n;
+		tag.value = buffer;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//The extension value is encapsulated in an octet string
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OCTET_STRING;
+		tag.length = n;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Adjust the length of the extension
+		length += n;
+
+		//The extension is encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = length;
+		tag.value = output;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, output, &length);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+	}
+
+	//Total number of bytes that have been written
+	*written = length;
+
+	//Successful processing
+	return RES_OK;
+}
+
 
 RES_CODE X509GeneralName::x509ParseGeneralName(const uint8_t *data, size_t len, size_t *totalLength)
 {
@@ -774,6 +1817,596 @@ RES_CODE X509SubjectAltName::x509ParseSubjectAltName(const uint8_t *data, size_t
 	return res;
 }
 
+RES_CODE X509SubjectAltName::x509FormatSubjectAltName(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	uint32_t i;
+	size_t n;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+
+	//Initialize status code
+	res = RES_OK;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//The subject alternative name extension allows identities to be bound to the
+	//subject of the certificate. These identities may be included in addition
+	//to or in place of the identity in the subject field of the certificate
+	if (numGeneralNames > 0)
+	{
+		//Format the extension identifier
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OBJECT_IDENTIFIER;
+		tag.length = sizeof(X509_SUBJECT_ALT_NAME_OID);
+		tag.value = X509_SUBJECT_ALT_NAME_OID;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Advance data pointer
+		p += n;
+		//Total number of bytes that have been written
+		*written = n;
+
+		//Loop through subject alternative names
+		for (i = 0; i < numGeneralNames; i++)
+		{
+			//Format the current name
+			tag.constructed = false;
+			tag.objClass = ASN1_CLASS_CONTEXT_SPECIFIC;
+			tag.objType = (Asn1Type)generalNames[i].type;
+			tag.length = generalNames[i].length;
+			tag.value = (uint8_t*) generalNames[i].value;
+
+			//Write the corresponding ASN.1 tag
+			res = tag.asn1WriteTag(false, p, &n);
+			//Any error to report?
+			if (res != RES_OK)
+				return res;
+
+			//Advance data pointer
+			p += n;
+			length += n;
+		}
+
+		//Point to the first object
+		p = output + *written;
+
+		//The names are encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = length;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//The extension value is encapsulated in an octet string
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OCTET_STRING;
+		tag.length = n;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Adjust the length of the extension
+		*written += n;
+
+		//The extension is encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = *written;
+		tag.value = output;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, output, &length);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+	}
+
+	//Total number of bytes that have been written
+	*written = length;
+
+	//Successful processing
+	return RES_OK;
+}
+
+RES_CODE X509SubjectKeyId::x509FormatSubjectKeyId(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+	size_t len;
+	uint8_t *p;
+	Asn1Tag tag;
+
+	//Initialize status code
+	res = RES_OK;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	len = 0;
+
+	//The subject key identifier extension provides a means of identifying
+	//certificates that contain a particular public key
+	if (value != nullptr && length > 0)
+	{
+		//Format the extension identifier
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OBJECT_IDENTIFIER;
+		tag.length = sizeof(X509_SUBJECT_KEY_ID_OID);
+		tag.value = X509_SUBJECT_KEY_ID_OID;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Advance data pointer
+		p += n;
+		len += n;
+
+		//Format the KeyIdentifier field
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OCTET_STRING;
+		tag.length = length;
+		tag.value = value;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//The extension value is encapsulated in an octet string
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OCTET_STRING;
+		tag.length = n;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Adjust the length of the extension
+		len += n;
+
+		//The extension is encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = len;
+		tag.value = output;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, output, &len);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+	}
+
+	//Total number of bytes that have been written
+	*written = len;
+
+	//Successful processing
+	return RES_OK;
+}
+
+RES_CODE X509AuthorityKeyId::x509FormatAuthorityKeyId(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+
+	//Initialize status code
+	res = RES_OK;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//The authority key identifier extension provides a means of identifying the
+	//public key corresponding to the private key used to sign a certificate
+	if (keyId != nullptr && keyIdLen > 0)
+	{
+		//Format the extension identifier
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OBJECT_IDENTIFIER;
+		tag.length = sizeof(X509_AUTHORITY_KEY_ID_OID);
+		tag.value = X509_AUTHORITY_KEY_ID_OID;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Advance data pointer
+		p += n;
+		length += n;
+
+		//Explicit tagging shall be used to encode the keyIdentifier field
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_CONTEXT_SPECIFIC;
+		tag.objType = (Asn1Type)0;
+		tag.length = keyIdLen;
+		tag.value = keyId;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//The KeyIdentifier field is encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = n;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//The extension value is encapsulated in an octet string
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OCTET_STRING;
+		tag.length = n;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Adjust the length of the extension
+		length += n;
+
+		//The extension is encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = length;
+		tag.value = output;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, output, &length);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+	}
+
+	//Total number of bytes that have been written
+	*written = length;
+
+	//Successful processing
+	return RES_OK;
+}
+
+RES_CODE X509NsCertType::x509FormatNsCertType(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	uint32_t k;
+	size_t n;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+	uint8_t buffer[2];
+
+	//Initialize status code
+	res = RES_OK;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//The NetscapeCertType extension limit the use of a certificate
+	if (bitmap != 0)
+	{
+		//Format the extension identifier
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OBJECT_IDENTIFIER;
+		tag.length = sizeof(X509_NS_CERT_TYPE_OID);
+		tag.value = X509_NS_CERT_TYPE_OID;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Advance data pointer
+		p += n;
+		length += n;
+
+		//Calculate the length, in bits, of the NetscapeCertType value
+		for (k = 8; k > 0; k--)
+		{
+			if (bitmap & (1 << (k - 1)))
+				break;
+		}
+
+		//Encode bit string value
+		buffer[0] = 8 - k;
+		buffer[1] = __RBIT8(bitmap);
+
+		//Format the bit string using ASN.1
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_BIT_STRING;
+		tag.length = sizeof(buffer);
+		tag.value = buffer;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//The extension value is encapsulated in an octet string
+		tag.constructed = false;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_OCTET_STRING;
+		tag.length = n;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &n);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Adjust the length of the extension
+		length += n;
+
+		//The extension is encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = length;
+		tag.value = output;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, output, &length);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+	}
+
+	//Total number of bytes that have been written
+	*written = length;
+
+	//Successful processing
+	return RES_OK;
+}
+
+/**
+ * @brief Format ExtensionRequest attribute
+ * @param[in] extensionReq Value of the attribute
+ * @param[out] output Buffer where to format the ASN.1 structure
+ * @param[out] written Length of the resulting ASN.1 structure
+ * @return Error code
+ **/
+
+RES_CODE X509Extensions::x509FormatExtensionRequest(uint8_t* output, size_t* written) const
+{
+	RES_CODE res;
+	size_t n;
+	size_t m;
+	size_t length;
+	uint8_t *p;
+	Asn1Tag tag;
+
+	//Point to the buffer where to write the ASN.1 structure
+	p = output;
+	//Length of the ASN.1 structure
+	length = 0;
+
+	//Format attribute identifier
+	tag.constructed = false;
+	tag.objClass = ASN1_CLASS_UNIVERSAL;
+	tag.objType = ASN1_TYPE_OBJECT_IDENTIFIER;
+	tag.length = sizeof(X509_EXTENSION_REQUEST_OID);
+	tag.value = X509_EXTENSION_REQUEST_OID;
+
+	//Write the corresponding ASN.1 tag
+	res = tag.asn1WriteTag(false, p, &m);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += m;
+
+	//Format NetscapeCertType extension
+	res = nsCertType.x509FormatNsCertType(p, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//Format BasicConstraints extension
+	res = basicConstraints.x509FormatBasicConstraints(p, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//Format KeyUsage extension
+	res = keyUsage.x509FormatKeyUsage(p, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//Format SubjectAltName extension
+	res = subjectAltName.x509FormatSubjectAltName(p, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//Format SubjectKeyIdentifier extension
+	res = subjectKeyId.x509FormatSubjectKeyId(p, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//Format AuthorityKeyIdentifier extension
+	res = authKeyId.x509FormatAuthorityKeyId(p, &n);
+	//Any error to report?
+	if (res != RES_OK)
+		return res;
+
+	//Advance data pointer
+	p += n;
+	length += n;
+
+	//Any extensions written?
+	if (length > 0)
+	{
+		//Point to the first certificate extension
+		p = output + m;
+
+		//Certificate extensions are encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = length;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &length);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//Attribute value is encapsulated within a set
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SET;
+		tag.length = length;
+		tag.value = p;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, p, &length);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+
+		//The attribute is encapsulated within a sequence
+		tag.constructed = true;
+		tag.objClass = ASN1_CLASS_UNIVERSAL;
+		tag.objType = ASN1_TYPE_SEQUENCE;
+		tag.length = length + m;
+		tag.value = output;
+
+		//Write the corresponding ASN.1 tag
+		res = tag.asn1WriteTag(false, output, &length);
+		//Any error to report?
+		if (res != RES_OK)
+			return res;
+	}
+
+	//Total number of bytes that have been written
+	*written = length;
+
+	//Successful processing
+	return RES_OK;
+}
+
+RES_CODE X509Extensions::x509ParseNsCertType(bool critical, const uint8_t *data, size_t length)
+{
+	RES_CODE res;
+	Asn1Tag tag;
+
+	//Debug message
+	TRACELN1_TLS("      Parsing NetscapeCertType...");
+
+   //An extension can be marked as critical
+	nsCertType.critical = critical;
+
+	//The NetscapeCertType extension limit the use of a certificate
+	res = tag.asn1ReadTag(data, length);
+	if (res != RES_OK)
+		return res;
+
+	//Enforce encoding, class and type
+	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL,	ASN1_TYPE_BIT_STRING);
+	if (res != RES_OK)
+		return res;
+
+	//The bit string shall contain an initial octet which encodes the number
+	//of unused bits in the final subsequent octet
+	if (tag.length < 1)
+		return RES_TLS_INVALID_SYNTAX;
+
+	//Sanity check
+	if (tag.value[0] >= 8)
+		return RES_TLS_INVALID_SYNTAX;
+
+	//Clear bit string
+	nsCertType.bitmap = 0;
+
+	//Read bits b0 to b7
+	if (tag.length >= 2)
+		nsCertType.bitmap |= __RBIT8(tag.value[1]);
+
+	return RES_OK;
+}
 
 RES_CODE X509CertificateInfo::x509ParseVersion(const uint8_t *data, size_t length, size_t *totalLength)
 {
@@ -1214,7 +2847,7 @@ RES_CODE X509CertificateInfo::x509ParseBasicConstraints(const uint8_t *data, siz
 				return RES_TLS_INVALID_LENGTH;
 
 			//Get boolean value
-			extensions.basicConstraints.ca = tag.value[0] ? true : false;
+			extensions.basicConstraints.cA = tag.value[0] ? true : false;
 
 			//Point to the next item
 			data += tag.totalLength;
@@ -1269,15 +2902,15 @@ RES_CODE X509CertificateInfo::x509ParseKeyUsage(const uint8_t *data, size_t leng
 		return RES_TLS_INVALID_SYNTAX;
 
 	//Clear bit string
-	extensions.keyUsage = 0;
+	extensions.keyUsage.bitmap = 0;
 
 	//Read bits b0 to b7
 	if (tag.length >= 2)
-		extensions.keyUsage |= __RBIT8(tag.value[1]);
+		extensions.keyUsage.bitmap |= __RBIT8(tag.value[1]);
 
 	//Read bits b8 to b15
 	if (tag.length >= 3)
-		extensions.keyUsage |= __RBIT8(tag.value[2]) << 8;
+		extensions.keyUsage.bitmap |= __RBIT8(tag.value[2]) << 8;
 
 	//Successful processing
 	return RES_OK;
@@ -1312,8 +2945,8 @@ RES_CODE X509CertificateInfo::x509ParseSubjectKeyId(const uint8_t *data, size_t 
 		return res;
 
 	//Save the subject key identifier
-	extensions.subjectKeyId = tag.value;
-	extensions.subjectKeyIdLen = tag.length;
+	extensions.subjectKeyId.value = tag.value;
+	extensions.subjectKeyId.length = tag.length;
 
 	return RES_OK;
 }
@@ -1361,8 +2994,8 @@ RES_CODE X509CertificateInfo::x509ParseAuthorityKeyId(const uint8_t *data, size_
 			if (tag.objType == 0)
 			{
 				//Save the authority key identifier
-				extensions.authorityKeyId = tag.value;
-				extensions.authorityKeyIdLen = tag.length;
+				extensions.authKeyId.keyId = tag.value;
+				extensions.authKeyId.keyIdLen = tag.length;
 			}
 
 		}
@@ -1370,43 +3003,6 @@ RES_CODE X509CertificateInfo::x509ParseAuthorityKeyId(const uint8_t *data, size_
 		data += tag.totalLength;
 		length -= tag.totalLength;
 	}
-
-	return RES_OK;
-}
-
-RES_CODE X509CertificateInfo::x509ParseNsCertType(const uint8_t *data, size_t length)
-{
-	RES_CODE res;
-	Asn1Tag tag;
-
-	//Debug message
-	TRACELN1_TLS("      Parsing NetscapeCertType...");
-
-	//The NetscapeCertType extension limit the use of a certificate
-	res = tag.asn1ReadTag(data, length);
-	if (res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(false, ASN1_CLASS_UNIVERSAL,	ASN1_TYPE_BIT_STRING);
-	if (res != RES_OK)
-		return res;
-
-	//The bit string shall contain an initial octet which encodes the number
-	//of unused bits in the final subsequent octet
-	if (tag.length < 1)
-		return RES_TLS_INVALID_SYNTAX;
-
-	//Sanity check
-	if (tag.value[0] >= 8)
-		return RES_TLS_INVALID_SYNTAX;
-
-	//Clear bit string
-	extensions.nsCertType = 0;
-
-	//Read bits b0 to b7
-	if (tag.length >= 2)
-		extensions.nsCertType |= __RBIT8(tag.value[1]);
 
 	return RES_OK;
 }
@@ -1453,12 +3049,7 @@ RES_CODE X509CertificateInfo::x509ParseExtensions(const uint8_t *data, size_t le
 		return RES_TLS_INVALID_VERSION;
 
 	//Read inner tag
-	res = tag.asn1ReadTag(tag.value, tag.length);
-	if (res != RES_OK)
-		return res;
-
-	//Enforce encoding, class and type
-	res = tag.asn1CheckTag(true, ASN1_CLASS_UNIVERSAL, ASN1_TYPE_SEQUENCE);
+	res = tag.asn1ReadSequence(tag.value, tag.length);
 	if (res != RES_OK)
 		return res;
 
@@ -1589,7 +3180,7 @@ RES_CODE X509CertificateInfo::x509ParseExtensions(const uint8_t *data, size_t le
 				sizeof(X509_NS_CERT_TYPE_OID)))
 		{
 			//Parse NetscapeCertType extension
-			res = x509ParseNsCertType(tag.value, tag.length);
+			res = extensions.x509ParseNsCertType(critical, tag.value, tag.length);
 		}
 		//The current extension is marked as critical?
 		else if (critical)
@@ -1947,7 +3538,7 @@ RES_CODE X509CertificateInfo::x509ValidateCertificate(const X509CertificateInfo 
 	if (issuerCertInfo->version >= X509_VERSION_3)
 	{
 		//Ensure that the issuer certificate is a CA certificate
-		if (!issuerCertInfo->extensions.basicConstraints.ca)
+		if (!issuerCertInfo->extensions.basicConstraints.cA)
 			return RES_TLS_BAD_CERTIFICATE;
 	}
 

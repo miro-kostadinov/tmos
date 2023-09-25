@@ -15,6 +15,7 @@
 #define SHA256_BLOCK_SIZE 64
 #define SHA256_DIGEST_SIZE 32
 
+extern const uint8_t SHA256_OID[9];
 extern const hash_info_t SHA256_HASH_ALGO[1];
 
 struct sha256_algo_t: public hash_algo_t

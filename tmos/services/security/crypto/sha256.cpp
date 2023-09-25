@@ -11,7 +11,7 @@
 #if SHA224_SUPPORT || SHA256_SUPPORT
 
 //SHA-256 object identifier (2.16.840.1.101.3.4.2.1)
-const uint8_t sha256Oid[] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01};
+const uint8_t SHA256_OID[] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01};
 
 const hash_info_t SHA256_HASH_ALGO[1] =
 {
@@ -19,8 +19,8 @@ const hash_info_t SHA256_HASH_ALGO[1] =
 	SHA256_BLOCK_SIZE,
 	SHA256_DIGEST_SIZE,
 	SHA256_BLOCK_SIZE + SHA256_DIGEST_SIZE,
-	sizeof(sha256Oid),
-	sha256Oid,
+	sizeof(SHA256_OID),
+	SHA256_OID,
 	new_sha256_hash
 };
 

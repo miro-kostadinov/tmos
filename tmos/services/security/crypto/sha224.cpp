@@ -10,7 +10,7 @@
 #if SHA224_SUPPORT
 
 //SHA-224 object identifier (2.16.840.1.101.3.4.2.4)
-const uint8_t sha224Oid[] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x04};
+const uint8_t SHA224_OID[] = {0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x04};
 
 const hash_info_t SHA224_HASH_ALGO[1] =
 {
@@ -18,8 +18,8 @@ const hash_info_t SHA224_HASH_ALGO[1] =
 	SHA224_BLOCK_SIZE,
 	SHA224_DIGEST_SIZE,
 	SHA224_BLOCK_SIZE + SHA256_DIGEST_SIZE,
-	sizeof(sha224Oid),
-	sha224Oid,
+	sizeof(SHA224_OID),
+	SHA224_OID,
 	new_sha224_hash
 };
 

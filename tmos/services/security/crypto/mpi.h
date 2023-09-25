@@ -104,6 +104,8 @@ struct Mpi
    RES_CODE tlsWriteMpi(uint8_t* data, size_t* length) const;
 
    RES_CODE mpiImport(const uint8_t *data, size_t length, MpiFormat format);
+
+   RES_CODE asn1WriteMpi(bool reverse, uint8_t* data, size_t* written) const;
 };
 
 void mpiDump(const char* prepend, const Mpi* a);
