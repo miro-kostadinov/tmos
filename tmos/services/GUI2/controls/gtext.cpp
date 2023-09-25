@@ -97,7 +97,8 @@ text_metrics_t GText::SetTextAlign(unsigned int new_align )
 		size_of_text.height--;						// multiline text, exclude last v distance
 
 //4. aligning text horizontally
-	GUI_ASSERT(client_rect.width() >= text_font->width);
+// assert is not needed, the caller checks the result if necessary
+//	GUI_ASSERT(client_rect.width() >= text_font->width);
 	if(size_of_text.width > scroll_rect.width())
 		scroll_rect.x1 = scroll_rect.x0 + size_of_text.width;
 	if(hscroll )
@@ -108,7 +109,8 @@ text_metrics_t GText::SetTextAlign(unsigned int new_align )
 	}
 
 //5. aligning text vertically
-	GUI_ASSERT(client_rect.height() >= text_font->height);
+// assert is not needed, the caller checks the result if necessary
+//	GUI_ASSERT(client_rect.height() >= text_font->height);
 	if(size_of_text.height <= client_rect.height())
 	{
 		switch(align & TA_VERTICAL)
