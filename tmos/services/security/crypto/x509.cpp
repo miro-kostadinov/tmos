@@ -296,7 +296,8 @@ RES_CODE X509Name::x509FormatName(uint8_t* output, size_t* written) const
 	if (rawData != nullptr && rawDataLen > 0)
 	{
 		//Copy raw ASN.1 sequence
-		memcpy(output, rawData, rawDataLen);
+		if(output)
+			memcpy(output, rawData, rawDataLen);
 		//Total number of bytes that have been written
 		*written = rawDataLen;
 	}
@@ -319,7 +320,8 @@ RES_CODE X509Name::x509FormatName(uint8_t* output, size_t* written) const
 				return res;
 
 			//Advance data pointer
-			p += n;
+			if(output)
+				p += n;
 			length += n;
 		}
 
@@ -336,7 +338,8 @@ RES_CODE X509Name::x509FormatName(uint8_t* output, size_t* written) const
 				return res;
 
 			//Advance data pointer
-			p += n;
+			if(output)
+				p += n;
 			length += n;
 		}
 
@@ -352,7 +355,8 @@ RES_CODE X509Name::x509FormatName(uint8_t* output, size_t* written) const
 				return res;
 
 			//Advance data pointer
-			p += n;
+			if(output)
+				p += n;
 			length += n;
 		}
 
@@ -369,7 +373,8 @@ RES_CODE X509Name::x509FormatName(uint8_t* output, size_t* written) const
 				return res;
 
 			//Advance data pointer
-			p += n;
+			if(output)
+				p += n;
 			length += n;
 		}
 
@@ -386,7 +391,8 @@ RES_CODE X509Name::x509FormatName(uint8_t* output, size_t* written) const
 				return res;
 
 			//Advance data pointer
-			p += n;
+			if(output)
+				p += n;
 			length += n;
 		}
 
@@ -402,7 +408,8 @@ RES_CODE X509Name::x509FormatName(uint8_t* output, size_t* written) const
 				return res;
 
 			//Advance data pointer
-			p += n;
+			if(output)
+				p += n;
 			length += n;
 		}
 
@@ -411,7 +418,7 @@ RES_CODE X509Name::x509FormatName(uint8_t* output, size_t* written) const
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = length;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &n);
@@ -480,7 +487,7 @@ RES_CODE X509RsaPublicKey::x509FormatRsaPublicKey(uint8_t *output, size_t *writt
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write RSAPublicKey structure
 	res = tag.asn1WriteTag(false, output, &nn);
@@ -564,7 +571,7 @@ RES_CODE X509DsaParameters::x509FormatDsaParameters(uint8_t* output, size_t* wri
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write DSAParameters structure
 	res = tag.asn1WriteTag(false, output, &n);
@@ -637,7 +644,8 @@ RES_CODE X509EcParameters::x509FormatEcParameters(uint8_t* output, size_t* writt
 RES_CODE X509EcPublicKey::x509FormatEcPublicKey(uint8_t* output, size_t* written) const
 {
 	//Copy the EC public key
-	memcpy(output, q, qLen);
+	if(output)
+		memcpy(output, q, qLen);
 
 	//Total number of bytes that have been written
 	*written = qLen;
@@ -1087,12 +1095,14 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* pu
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//The bit string shall contain an initial octet which encodes the number
 	//of unused bits in the final subsequent octet
-	p[0] = 0;
+	if(output)
+		p[0] = 0;
 
 #if (RSA_SUPPORT)
 	   //RSA or RSA-PSS algorithm identifier?
@@ -1103,12 +1113,12 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* pu
 	      if(publicKey != nullptr)
 	      {
 	         //Export the RSA public key to ASN.1 format
-	         res = ((RsaPublicKey*)publicKey)->x509ExportRsaPublicKey(p + 1, &n);
+	         res = ((RsaPublicKey*)publicKey)->x509ExportRsaPublicKey(p + (p?1:0), &n);
 	      }
 	      else
 	      {
 	         //Format RSAPublicKey structure
-	         res = rsaPublicKey.x509FormatRsaPublicKey(p + 1, &n);
+	         res = rsaPublicKey.x509FormatRsaPublicKey(p + (p?1:0), &n);
 	      }
 	   }
 	   else
@@ -1121,12 +1131,12 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* pu
 	      if(publicKey != nullptr)
 	      {
 	         //Export the DSA public key to ASN.1 format
-	         res = ((DsaPublicKey*)publicKey)->x509ExportDsaPublicKey(p + 1, &n);
+	         res = ((DsaPublicKey*)publicKey)->x509ExportDsaPublicKey(p + (p?1:0), &n);
 	      }
 	      else
 	      {
 	         //Format DSAPublicKey structure
-	         res = dsaPublicKey.x509FormatDsaPublicKey(p + 1, &n);
+	         res = dsaPublicKey.x509FormatDsaPublicKey(p + (p?1:0), &n);
 	      }
 	   }
 	   else
@@ -1139,12 +1149,12 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* pu
 	      if(publicKey != nullptr)
 	      {
 	         //Export the EC public key to ASN.1 format
-	         res = x509ExportEcPublicKey((EcPoint*)publicKey, p + 1, &n);
+	         res = x509ExportEcPublicKey((EcPoint*)publicKey, p + (p?1:0), &n);
 	      }
 	      else
 	      {
 	         //Format ECPublicKey structure
-	         res = ecPublicKey.x509FormatEcPublicKey(p + 1, &n);
+	         res = ecPublicKey.x509FormatEcPublicKey(p + (p?1:0), &n);
 	      }
 	   }
 	   else
@@ -1158,12 +1168,12 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* pu
 		{
 			//Export the EdDSA public key to ASN.1 format
 			res = x509ExportEddsaPublicKey(publicKey, ED25519_PUBLIC_KEY_LEN,
-					p + 1, &n);
+					p + (p?1:0), &n);
 		}
 		else
 		{
 			//The SubjectPublicKey contains the byte stream of the public key
-			res = ecPublicKey.x509FormatEcPublicKey(p + 1, &n);
+			res = ecPublicKey.x509FormatEcPublicKey(p + (p?1:0), &n);
 		}
 	}
 	else
@@ -1177,12 +1187,12 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* pu
 		{
 			//Export the EdDSA public key to ASN.1 format
 			res = x509ExportEddsaPublicKey(publicKey, ED448_PUBLIC_KEY_LEN,
-					p + 1, &n);
+					p + (p?1:0), &n);
 		}
 		else
 		{
 			//The SubjectPublicKey contains the byte stream of the public key
-			res = ecPublicKey.x509FormatEcPublicKey(p + 1, &n);
+			res = ecPublicKey.x509FormatEcPublicKey(p + (p?1:0), &n);
 		}
 	}
 	else
@@ -1198,7 +1208,7 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* pu
 		return res;
 
 	//The keyIdentifier parameter is optional
-	if (keyId != nullptr)
+	if (keyId != nullptr && output != nullptr)
 	{
 		auto_ptr<sha1_algo_t> sha1;
 
@@ -1225,7 +1235,7 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* pu
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_BIT_STRING;
 	tag.length = n + 1;
-	tag.value = p;
+	tag.value = p + (output?0:1);
 
 	//Write the corresponding ASN.1 tag
 	res = tag.asn1WriteTag(false, p, &n);
@@ -1234,7 +1244,8 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* pu
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//The SubjectPublicKeyInfo structure is encapsulated within a sequence
@@ -1242,7 +1253,7 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatSubjectPublicKeyInfo(const void* pu
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write the corresponding ASN.1 tag
 	res = tag.asn1WriteTag(false, output, &n);
@@ -1285,7 +1296,8 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatAlgorithmIdentifier(const void* par
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 #if RSA_SUPPORT
@@ -1372,7 +1384,8 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatAlgorithmIdentifier(const void* par
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//The AlgorithmIdentifier structure is encapsulated within a sequence
@@ -1380,7 +1393,7 @@ RES_CODE X509SubjectPublicKeyInfo::x509FormatAlgorithmIdentifier(const void* par
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write the corresponding ASN.1 tag
 	res = tag.asn1WriteTag(false, output, &n);
@@ -1465,7 +1478,8 @@ RES_CODE X509BasicConstraints::x509FormatBasicConstraints(uint8_t* output, size_
 			return res;
 
 		//Advance data pointer
-		p += n;
+		if(output)
+			p += n;
 		length += n;
 
 		//An extension includes the critical flag, with a default value of false
@@ -1488,7 +1502,8 @@ RES_CODE X509BasicConstraints::x509FormatBasicConstraints(uint8_t* output, size_
 				return res;
 
 			//Advance data pointer
-			p += n;
+			if(output)
+				p += n;
 			length += n;
 		}
 
@@ -1527,7 +1542,7 @@ RES_CODE X509BasicConstraints::x509FormatBasicConstraints(uint8_t* output, size_
 				value = pathLenConstraint;
 
 				//Encode pathLenConstraint value
-				res = asn1WriteInt32(value, false, p + length, &n);
+				res = asn1WriteInt32(value, false, p + (p?length:0), &n);
 
 				//Update the length of the extension value
 				length += n;
@@ -1539,7 +1554,7 @@ RES_CODE X509BasicConstraints::x509FormatBasicConstraints(uint8_t* output, size_
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = length;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &n);
@@ -1552,10 +1567,10 @@ RES_CODE X509BasicConstraints::x509FormatBasicConstraints(uint8_t* output, size_
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_OCTET_STRING;
 		tag.length = n;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
-		res = tag.asn1WriteTag(false, output + *written, &n);
+		res = tag.asn1WriteTag(false, output + (output?*written:0), &n);
 		//Any error to report?
 		if (res != RES_OK)
 			return res;
@@ -1568,7 +1583,7 @@ RES_CODE X509BasicConstraints::x509FormatBasicConstraints(uint8_t* output, size_
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = *written;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &length);
@@ -1620,7 +1635,8 @@ RES_CODE X509KeyUsage::x509FormatKeyUsage(uint8_t* output, size_t* written) cons
 			return res;
 
 		//Advance data pointer
-		p += n;
+		if(output)
+			p += n;
 		length += n;
 
 		//An extension includes the critical flag, with a default value of false
@@ -1643,7 +1659,8 @@ RES_CODE X509KeyUsage::x509FormatKeyUsage(uint8_t* output, size_t* written) cons
 				return res;
 
 			//Advance data pointer
-			p += n;
+			if(output)
+				p += n;
 			length += n;
 		}
 
@@ -1688,7 +1705,7 @@ RES_CODE X509KeyUsage::x509FormatKeyUsage(uint8_t* output, size_t* written) cons
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_OCTET_STRING;
 		tag.length = n;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &n);
@@ -1704,7 +1721,7 @@ RES_CODE X509KeyUsage::x509FormatKeyUsage(uint8_t* output, size_t* written) cons
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = length;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &length);
@@ -1853,7 +1870,8 @@ RES_CODE X509SubjectAltName::x509FormatSubjectAltName(uint8_t* output, size_t* w
 			return res;
 
 		//Advance data pointer
-		p += n;
+		if(output)
+			p += n;
 		//Total number of bytes that have been written
 		*written = n;
 
@@ -1874,19 +1892,21 @@ RES_CODE X509SubjectAltName::x509FormatSubjectAltName(uint8_t* output, size_t* w
 				return res;
 
 			//Advance data pointer
-			p += n;
+			if(output)
+				p += n;
 			length += n;
 		}
 
 		//Point to the first object
-		p = output + *written;
+		if(output)
+			p = output + *written;
 
 		//The names are encapsulated within a sequence
 		tag.constructed = true;
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = length;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &n);
@@ -1899,7 +1919,7 @@ RES_CODE X509SubjectAltName::x509FormatSubjectAltName(uint8_t* output, size_t* w
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_OCTET_STRING;
 		tag.length = n;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &n);
@@ -1915,7 +1935,7 @@ RES_CODE X509SubjectAltName::x509FormatSubjectAltName(uint8_t* output, size_t* w
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = *written;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &length);
@@ -1965,7 +1985,8 @@ RES_CODE X509SubjectKeyId::x509FormatSubjectKeyId(uint8_t* output, size_t* writt
 			return res;
 
 		//Advance data pointer
-		p += n;
+		if(output)
+			p += n;
 		len += n;
 
 		//Format the KeyIdentifier field
@@ -1986,7 +2007,7 @@ RES_CODE X509SubjectKeyId::x509FormatSubjectKeyId(uint8_t* output, size_t* writt
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_OCTET_STRING;
 		tag.length = n;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &n);
@@ -2002,7 +2023,7 @@ RES_CODE X509SubjectKeyId::x509FormatSubjectKeyId(uint8_t* output, size_t* writt
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = len;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &len);
@@ -2052,7 +2073,8 @@ RES_CODE X509AuthorityKeyId::x509FormatAuthorityKeyId(uint8_t* output, size_t* w
 			return res;
 
 		//Advance data pointer
-		p += n;
+		if(output)
+			p += n;
 		length += n;
 
 		//Explicit tagging shall be used to encode the keyIdentifier field
@@ -2073,7 +2095,7 @@ RES_CODE X509AuthorityKeyId::x509FormatAuthorityKeyId(uint8_t* output, size_t* w
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = n;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &n);
@@ -2086,7 +2108,7 @@ RES_CODE X509AuthorityKeyId::x509FormatAuthorityKeyId(uint8_t* output, size_t* w
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_OCTET_STRING;
 		tag.length = n;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &n);
@@ -2102,7 +2124,7 @@ RES_CODE X509AuthorityKeyId::x509FormatAuthorityKeyId(uint8_t* output, size_t* w
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = length;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &length);
@@ -2153,7 +2175,8 @@ RES_CODE X509NsCertType::x509FormatNsCertType(uint8_t* output, size_t* written) 
 			return res;
 
 		//Advance data pointer
-		p += n;
+		if(output)
+			p += n;
 		length += n;
 
 		//Calculate the length, in bits, of the NetscapeCertType value
@@ -2185,7 +2208,7 @@ RES_CODE X509NsCertType::x509FormatNsCertType(uint8_t* output, size_t* written) 
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_OCTET_STRING;
 		tag.length = n;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &n);
@@ -2201,7 +2224,7 @@ RES_CODE X509NsCertType::x509FormatNsCertType(uint8_t* output, size_t* written) 
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = length;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &length);
@@ -2253,7 +2276,8 @@ RES_CODE X509Extensions::x509FormatExtensionRequest(uint8_t* output, size_t* wri
 		return res;
 
 	//Advance data pointer
-	p += m;
+	if(output)
+		p += m;
 
 	//Format NetscapeCertType extension
 	res = nsCertType.x509FormatNsCertType(p, &n);
@@ -2262,7 +2286,8 @@ RES_CODE X509Extensions::x509FormatExtensionRequest(uint8_t* output, size_t* wri
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format BasicConstraints extension
@@ -2272,7 +2297,8 @@ RES_CODE X509Extensions::x509FormatExtensionRequest(uint8_t* output, size_t* wri
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format KeyUsage extension
@@ -2282,7 +2308,8 @@ RES_CODE X509Extensions::x509FormatExtensionRequest(uint8_t* output, size_t* wri
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format SubjectAltName extension
@@ -2292,7 +2319,8 @@ RES_CODE X509Extensions::x509FormatExtensionRequest(uint8_t* output, size_t* wri
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format SubjectKeyIdentifier extension
@@ -2302,7 +2330,8 @@ RES_CODE X509Extensions::x509FormatExtensionRequest(uint8_t* output, size_t* wri
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format AuthorityKeyIdentifier extension
@@ -2312,21 +2341,23 @@ RES_CODE X509Extensions::x509FormatExtensionRequest(uint8_t* output, size_t* wri
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Any extensions written?
 	if (length > 0)
 	{
 		//Point to the first certificate extension
-		p = output + m;
+		if(output)
+			p = output + m;
 
 		//Certificate extensions are encapsulated within a sequence
 		tag.constructed = true;
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = length;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &length);
@@ -2339,7 +2370,7 @@ RES_CODE X509Extensions::x509FormatExtensionRequest(uint8_t* output, size_t* wri
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SET;
 		tag.length = length;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &length);
@@ -2352,7 +2383,7 @@ RES_CODE X509Extensions::x509FormatExtensionRequest(uint8_t* output, size_t* wri
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = length + m;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &length);

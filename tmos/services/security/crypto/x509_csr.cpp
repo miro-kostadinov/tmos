@@ -11,6 +11,7 @@
 #include <hmac.h>
 #include <oid.h>
 #include <ecdsa.h>
+#include <pem.h>
 
 
 /**
@@ -51,7 +52,8 @@ RES_CODE X509ChallengePassword::x509FormatChallengePassword(uint8_t *output, siz
 			return res;
 
 		//Advance data pointer
-		p += n;
+		if(output)
+			p += n;
 		len += n;
 
 		//Format challenge password
@@ -72,7 +74,7 @@ RES_CODE X509ChallengePassword::x509FormatChallengePassword(uint8_t *output, siz
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SET;
 		tag.length = n;
-		tag.value = p;
+		tag.value = p + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, p, &n);
@@ -85,7 +87,7 @@ RES_CODE X509ChallengePassword::x509FormatChallengePassword(uint8_t *output, siz
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = len + n;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &len);
@@ -121,7 +123,8 @@ RES_CODE X509Attributes::x509FormatAttributes(uint8_t *output, size_t *written) 
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format PKCS#9 Extension Request attribute
@@ -131,7 +134,8 @@ RES_CODE X509Attributes::x509FormatAttributes(uint8_t *output, size_t *written) 
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Explicit tagging shall be used to encode the Extensions structure
@@ -139,7 +143,7 @@ RES_CODE X509Attributes::x509FormatAttributes(uint8_t *output, size_t *written) 
 	tag.objClass = ASN1_CLASS_CONTEXT_SPECIFIC;
 	tag.objType = (Asn1Type)0;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write the corresponding ASN.1 tag
 	res = tag.asn1WriteTag(false, output, &length);
@@ -174,7 +178,8 @@ RES_CODE X509RsaPssParameters::x509FormatRsaPssParameters(uint8_t* output, size_
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format maskGenAlgorithm parameter
@@ -184,7 +189,8 @@ RES_CODE X509RsaPssParameters::x509FormatRsaPssParameters(uint8_t* output, size_
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format saltLength parameter
@@ -194,7 +200,6 @@ RES_CODE X509RsaPssParameters::x509FormatRsaPssParameters(uint8_t* output, size_
 		return res;
 
 	//Advance data pointer
-	p += n;
 	length += n;
 
 	//The RSASSA-PSS parameters are encapsulated within a sequence
@@ -202,7 +207,7 @@ RES_CODE X509RsaPssParameters::x509FormatRsaPssParameters(uint8_t* output, size_
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write the corresponding ASN.1 tag
 	res = tag.asn1WriteTag(false, output, &n);
@@ -247,7 +252,7 @@ RES_CODE X509RsaPssParameters::x509FormatRsaPssHashAlgo(uint8_t* output, size_t*
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = n;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &n);
@@ -260,7 +265,7 @@ RES_CODE X509RsaPssParameters::x509FormatRsaPssHashAlgo(uint8_t* output, size_t*
 		tag.objClass = ASN1_CLASS_CONTEXT_SPECIFIC;
 		tag.objType = (Asn1Type)0;
 		tag.length = n;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &n);
@@ -325,7 +330,7 @@ RES_CODE X509RsaPssParameters::x509FormatRsaPssMaskGenAlgo(uint8_t* output, size
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = length;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &length);
@@ -338,7 +343,7 @@ RES_CODE X509RsaPssParameters::x509FormatRsaPssMaskGenAlgo(uint8_t* output, size
 		tag.objClass = ASN1_CLASS_CONTEXT_SPECIFIC;
 		tag.objType = (Asn1Type)1;
 		tag.length = length;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &length);
@@ -377,7 +382,7 @@ RES_CODE X509RsaPssParameters::x509FormatRsaPssSaltLength(uint8_t* output, size_
 		tag.objClass = ASN1_CLASS_CONTEXT_SPECIFIC;
 		tag.objType = (Asn1Type)2;
 		tag.length = n;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &n);
@@ -424,7 +429,7 @@ RES_CODE X509RsaPssParameters::x509FormatRsaPssMaskGenHashAlgo(uint8_t* output, 
 		tag.objClass = ASN1_CLASS_UNIVERSAL;
 		tag.objType = ASN1_TYPE_SEQUENCE;
 		tag.length = n;
-		tag.value = output;
+		tag.value = output + (output?0:1);
 
 		//Write the corresponding ASN.1 tag
 		res = tag.asn1WriteTag(false, output, &n);
@@ -477,7 +482,8 @@ RES_CODE X509SignatureAlgoId::x509FormatSignatureAlgo(uint8_t* output, size_t* w
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 #if (X509_RSA_SUPPORT && RSA_SUPPORT)
@@ -556,7 +562,6 @@ RES_CODE X509SignatureAlgoId::x509FormatSignatureAlgo(uint8_t* output, size_t* w
 		return res;
 
 	//Advance data pointer
-	p += n;
 	length += n;
 
 	//The Algorithm and Parameters fields are encapsulated within a sequence
@@ -564,7 +569,7 @@ RES_CODE X509SignatureAlgoId::x509FormatSignatureAlgo(uint8_t* output, size_t* w
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write the corresponding ASN.1 tag
 	res = tag.asn1WriteTag(false, output, &length);
@@ -590,12 +595,13 @@ RES_CODE X509SignatureAlgoId::x509FormatSignatureValue(prng_algo_t *prngAlgo,
 
 	//The bit string shall contain an initial octet which encodes the number
 	//of unused bits in the final subsequent octet
-	output[0] = 0;
+	if(output)
+		output[0] = 0;
 
 	//The ASN.1 DER-encoded tbsCertificate is used as the input to the signature
 	//function
 	res = x509GenerateSignature(prngAlgo, tbsCert, tbsCertLen, publicKeyInfo,
-			privateKey, output + 1, &n);
+			privateKey, output + (output?1:0), &n);
 	//Any error to report?
 	if(res != RES_OK)
 		return res;
@@ -605,7 +611,7 @@ RES_CODE X509SignatureAlgoId::x509FormatSignatureValue(prng_algo_t *prngAlgo,
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_BIT_STRING;
 	tag.length = n + 1;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write the corresponding ASN.1 tag
 	res = tag.asn1WriteTag(false, output, &n);
@@ -1072,16 +1078,19 @@ RES_CODE X509SignatureAlgoId::x509GenerateSignature(prng_algo_t *prngAlgo,
 	//Ed25519 and Ed448 are used in PureEdDSA mode, without pre-hashing
 	if (hashAlgo != NULL)
 	{
-		hash_algo_t* temp_hash;
+		if(tbsCert)
+		{
+			hash_algo_t* temp_hash;
 
-		temp_hash = hashAlgo->new_hash();
-		if (temp_hash == nullptr)
-			return RES_OUT_OF_MEMORY;
+			temp_hash = hashAlgo->new_hash();
+			if (temp_hash == nullptr)
+				return RES_OUT_OF_MEMORY;
 
-		//Digest the TBSCertificate structure using the specified hash algorithm
-		temp_hash->Input(tbsCert, tbsCertLen);
-		temp_hash->Result(digest);
-		delete temp_hash;
+			//Digest the TBSCertificate structure using the specified hash algorithm
+			temp_hash->Input(tbsCert, tbsCertLen);
+			temp_hash->Result(digest);
+			delete temp_hash;
+		}
 
 #if (X509_RSA_SUPPORT && RSA_SUPPORT)
 		//RSA signature algorithm?
@@ -1089,7 +1098,8 @@ RES_CODE X509SignatureAlgoId::x509GenerateSignature(prng_algo_t *prngAlgo,
 		{
 			//Generate RSA signature
 			*written = ((const RsaPrivateKey*) privateKey)->n.mpiGetByteLength();
-			res = ((const RsaPrivateKey*) privateKey)->rsassaPkcs1v15Sign(
+			if(output)
+				res = ((const RsaPrivateKey*) privateKey)->rsassaPkcs1v15Sign(
 					hashAlgo, digest, output, *written);
 		}
 		else
@@ -1198,7 +1208,7 @@ RES_CODE X509SignatureAlgoId::x509GenerateSignature(prng_algo_t *prngAlgo,
 						ED25519_PRIVATE_KEY_LEN, MPI_FORMAT_LITTLE_ENDIAN);
 
 				//Check status code
-				if (res == RES_OK)
+				if (res == RES_OK && tbsCert)
 				{
 					//Generate Ed25519 signature (PureEdDSA mode)
 					res = ed25519GenerateSignature(d, NULL, tbsCert,
@@ -1236,7 +1246,7 @@ RES_CODE X509SignatureAlgoId::x509GenerateSignature(prng_algo_t *prngAlgo,
 						MPI_FORMAT_LITTLE_ENDIAN);
 
 				//Check status code
-				if (res == RES_OK)
+				if (res == RES_OK && tbsCert)
 				{
 					//Generate Ed448 signature (PureEdDSA mode)
 					res = ed448GenerateSignature(d, NULL, tbsCert, tbsCertLen,
@@ -1265,9 +1275,8 @@ RES_CODE X509SignatureAlgoId::x509GenerateSignature(prng_algo_t *prngAlgo,
 	return res;
 }
 
-RES_CODE X509CertRequestInfo::x509CreateCsr(prng_algo_t* prngAlgo, const void* subjectPublicKey,
-		const X509SignatureAlgoId* signatureAlgo,
-		const void* signerPrivateKey, uint8_t* output, size_t* written) const
+RES_CODE X509CertRequestInfo::x509CreateCsr_der(prng_algo_t* prngAlgo, const void* subjectPublicKey,
+		const X509SignatureAlgoId* signatureAlgo, const void* signerPrivateKey)
 {
 	RES_CODE res;
 	size_t n;
@@ -1279,13 +1288,13 @@ RES_CODE X509CertRequestInfo::x509CreateCsr(prng_algo_t* prngAlgo, const void* s
 
 	//Check parameters
 	if (subjectPublicKey == nullptr || signatureAlgo == nullptr
-			|| signerPrivateKey == nullptr || written == nullptr)
+			|| signerPrivateKey == nullptr)
 	{
 		return RES_TLS_INVALID_PARAMETER;
 	}
 
 	//Point to the buffer where to write the CSR
-	p = output;
+	p = rawData;
 	//Length of the CSR
 	length = 0;
 
@@ -1301,7 +1310,8 @@ RES_CODE X509CertRequestInfo::x509CreateCsr(prng_algo_t* prngAlgo, const void* s
 	inputLen = n;
 
 	//Advance data pointer
-	p += n;
+	if(rawData)
+		p += n;
 	length += n;
 
 	//Format SignatureAlgorithm structure
@@ -1311,7 +1321,8 @@ RES_CODE X509CertRequestInfo::x509CreateCsr(prng_algo_t* prngAlgo, const void* s
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(rawData)
+		p += n;
 	length += n;
 
 	//Format Signature structure
@@ -1322,7 +1333,8 @@ RES_CODE X509CertRequestInfo::x509CreateCsr(prng_algo_t* prngAlgo, const void* s
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(rawData)
+		p += n;
 	length += n;
 
 	//The CSR is encapsulated within a sequence
@@ -1330,19 +1342,64 @@ RES_CODE X509CertRequestInfo::x509CreateCsr(prng_algo_t* prngAlgo, const void* s
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = rawData + (rawData?0:1);
 
 	//Write the corresponding ASN.1 tag
-	res = tag.asn1WriteTag(false, output, &n);
+	res = tag.asn1WriteTag(false, rawData, &n);
 	//Any error to report?
 	if (res != RES_OK)
 		return res;
 
 	//Total number of bytes that have been written
-	*written = n;
+	rawDataLen = n;
 
 	//Successful processing
 	return RES_OK;
+}
+
+RES_CODE X509CertRequestInfo::x509CreateCsr_pem(prng_algo_t* prngAlgo, const void* subjectPublicKey,
+		const X509SignatureAlgoId* signatureAlgo, const void* signerPrivateKey)
+{
+	RES_CODE res;
+
+	res = x509CreateCsr_der(prngAlgo, subjectPublicKey, signatureAlgo, signerPrivateKey);
+	TRACELN("CSR der res=%u size=%u", res, rawDataLen);
+	if(res == RES_OK)
+	{
+		if (rawDataLen)
+		{
+			res = pemEncodeFile(rawData, rawDataLen, "CERTIFICATE REQUEST", (char*)rawData, &rawDataLen);
+			TRACELN("CSR pem res=%u size=%u", res, rawDataLen);
+		} else
+			res = RES_ERROR;
+	}
+	return res;
+}
+
+RES_CODE X509CertRequestInfo::x509CreateCsr_data(prng_algo_t* prngAlgo, const void* subjectPublicKey,
+		const X509SignatureAlgoId* signatureAlgo, const void* signerPrivateKey)
+{
+	RES_CODE res;
+
+	if(rawData)
+		return RES_ERROR;
+	rawDataLen = 0;
+
+	res = x509CreateCsr_pem(prngAlgo, subjectPublicKey, signatureAlgo, signerPrivateKey);
+	if(res == RES_OK)
+	{
+		if (rawDataLen)
+		{
+			rawData = (uint8_t*)tsk_malloc(rawDataLen + 1);
+			if (rawData == nullptr)
+				res = RES_OUT_OF_MEMORY;
+		} else
+			res = RES_ERROR;
+	}
+	if(res == RES_OK)
+		res = x509CreateCsr_pem(prngAlgo, subjectPublicKey, signatureAlgo, signerPrivateKey);
+
+	return res;
 }
 
 RES_CODE X509CertRequestInfo::x509FormatCertRequestInfo(const void *publicKey,
@@ -1366,7 +1423,8 @@ RES_CODE X509CertRequestInfo::x509FormatCertRequestInfo(const void *publicKey,
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format Subject field
@@ -1376,7 +1434,8 @@ RES_CODE X509CertRequestInfo::x509FormatCertRequestInfo(const void *publicKey,
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format SubjectPublicKeyInfo field
@@ -1386,7 +1445,8 @@ RES_CODE X509CertRequestInfo::x509FormatCertRequestInfo(const void *publicKey,
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format Attributes field
@@ -1396,7 +1456,8 @@ RES_CODE X509CertRequestInfo::x509FormatCertRequestInfo(const void *publicKey,
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//The CertificationRequestInfo structure is encapsulated within a sequence
@@ -1404,7 +1465,7 @@ RES_CODE X509CertRequestInfo::x509FormatCertRequestInfo(const void *publicKey,
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write the corresponding ASN.1 tag
 	res = tag.asn1WriteTag(false, output, &n);

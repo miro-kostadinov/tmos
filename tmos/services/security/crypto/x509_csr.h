@@ -108,16 +108,19 @@ struct X509SignatureAlgoId
 
 struct X509CertRequestInfo
 {
-   const uint8_t* 	rawData;
+   uint8_t*		 	rawData;
    size_t 			rawDataLen;
    X509Version 		version;
    X509Name 		subject;
    X509SubjectPublicKeyInfo subjectPublicKeyInfo;
    X509Attributes 	attributes;
 
-	RES_CODE x509CreateCsr(prng_algo_t* prngAlgo, const void* subjectPublicKey,
-			const X509SignatureAlgoId* signatureAlgo,
-			const void* signerPrivateKey, uint8_t* output, size_t* written) const;
+	RES_CODE x509CreateCsr_der(prng_algo_t* prngAlgo, const void* subjectPublicKey,
+			const X509SignatureAlgoId* signatureAlgo, const void* signerPrivateKey);
+	RES_CODE x509CreateCsr_pem(prng_algo_t* prngAlgo, const void* subjectPublicKey,
+			const X509SignatureAlgoId* signatureAlgo, const void* signerPrivateKey);
+	RES_CODE x509CreateCsr_data(prng_algo_t* prngAlgo, const void* subjectPublicKey,
+			const X509SignatureAlgoId* signatureAlgo, const void* signerPrivateKey);
 
 	RES_CODE x509FormatCertRequestInfo(const void* publicKey, uint8_t* output,
 			size_t* written) const;
