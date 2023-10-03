@@ -54,7 +54,8 @@ RES_CODE DsaDomainParameters::x509ExportDsaParameters(uint8_t* output, size_t* w
 		return res;
 
 	//Advance data pointer
-	ptr += n;
+	if(output)
+		ptr += n;
 	length += n;
 
 	//Write parameter q
@@ -64,7 +65,8 @@ RES_CODE DsaDomainParameters::x509ExportDsaParameters(uint8_t* output, size_t* w
 		return res;
 
 	//Advance data pointer
-	ptr += n;
+	if(output)
+		ptr += n;
 	length += n;
 
 	//Write parameter g
@@ -74,7 +76,8 @@ RES_CODE DsaDomainParameters::x509ExportDsaParameters(uint8_t* output, size_t* w
 		return res;
 
 	//Advance data pointer
-	ptr += n;
+	if(output)
+		ptr += n;
 	length += n;
 
 	//The DSA domain parameters are encapsulated within a sequence
@@ -82,7 +85,7 @@ RES_CODE DsaDomainParameters::x509ExportDsaParameters(uint8_t* output, size_t* w
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write DSAParameters structure
 	res = tag.asn1WriteTag(false, output, &n);
@@ -307,7 +310,7 @@ RES_CODE DsaSignature::dsaWriteSignature(uint8_t* data, size_t* length) const
 	tag.length = n;
 	tag.value = nullptr;
 
-	res = tag.asn1WriteTag(false, data + k, &n);
+	res = tag.asn1WriteTag(false, data + (data?k:0), &n);
 	if (res != RES_OK)
 		return res;
 
@@ -322,7 +325,7 @@ RES_CODE DsaSignature::dsaWriteSignature(uint8_t* data, size_t* length) const
 	tag.value = nullptr;
 
 	//Write the corresponding ASN.1 tag
-	res = tag.asn1WriteTag(false, data + k, &n);
+	res = tag.asn1WriteTag(false, data + (data?k:0), &n);
 	if (res != RES_OK)
 		return res;
 
@@ -330,9 +333,12 @@ RES_CODE DsaSignature::dsaWriteSignature(uint8_t* data, size_t* length) const
 	k += n;
 
 	//Convert R to an octet string
-	res = r.mpiWriteRaw(data + k, rLen);
-	if (res != RES_OK)
-		return res;
+	if(data)
+	{
+		res = r.mpiWriteRaw(data + k, rLen);
+		if (res != RES_OK)
+			return res;
+	}
 
 	//Advance write pointer
 	k += rLen;
@@ -345,7 +351,7 @@ RES_CODE DsaSignature::dsaWriteSignature(uint8_t* data, size_t* length) const
 	tag.value = nullptr;
 
 	//Write the corresponding ASN.1 tag
-	res = tag.asn1WriteTag(false, data + k, &n);
+	res = tag.asn1WriteTag(false, data + (data?k:0), &n);
 	if (res != RES_OK)
 		return res;
 
@@ -353,16 +359,22 @@ RES_CODE DsaSignature::dsaWriteSignature(uint8_t* data, size_t* length) const
 	k += n;
 
 	//Convert S to an octet string
-	res = s.mpiWriteRaw(data + k, sLen);
-	if (res != RES_OK)
-		return res;
+	if(data)
+	{
+		res = s.mpiWriteRaw(data + (data?k:0), sLen);
+		if (res != RES_OK)
+			return res;
+	}
 
 	//Advance write pointer
 	k += sLen;
 
 	//Dump DSA signature
 	TRACE1_TLS("  signature:\r\n");
-	TRACE_TLS_ARRAY("    ", data, k);
+	if(data)
+	{
+		TRACE_TLS_ARRAY("    ", data, k);
+	}
 
 	//Total length of the ASN.1 structure
 	*length = k;

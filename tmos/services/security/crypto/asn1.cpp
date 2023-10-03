@@ -672,7 +672,8 @@ RES_CODE x509FormatNameAttribute(Asn1Type type, const uint8_t* oid, size_t oidLe
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//Format AttributeValue field
@@ -689,7 +690,8 @@ RES_CODE x509FormatNameAttribute(Asn1Type type, const uint8_t* oid, size_t oidLe
 		return res;
 
 	//Advance data pointer
-	p += n;
+	if(output)
+		p += n;
 	length += n;
 
 	//The attribute type and value are encapsulated within a sequence
@@ -697,7 +699,7 @@ RES_CODE x509FormatNameAttribute(Asn1Type type, const uint8_t* oid, size_t oidLe
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write the corresponding ASN.1 tag
 	res = tag.asn1WriteTag(false, output, &n);
@@ -710,7 +712,7 @@ RES_CODE x509FormatNameAttribute(Asn1Type type, const uint8_t* oid, size_t oidLe
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SET;
 	tag.length = n;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write the corresponding ASN.1 tag
 	res = tag.asn1WriteTag(false, output, &n);
