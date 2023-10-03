@@ -72,7 +72,23 @@ struct EcDomainParameters
 	RES_CODE ecAffinify(EcPoint* r, const EcPoint* s) const;
 
 	RES_CODE ecIsPointAffine(const EcPoint *s) const;
+
+	RES_CODE ecGeneratePrivateKey(prng_algo_t* prngAlgo, Mpi* privateKey) const;
+	RES_CODE ecGeneratePublicKey(const Mpi* privateKey, EcPoint* publicKey) const;
+	RES_CODE ecGenerateKeyPair(prng_algo_t* prngAlgo, Mpi* privateKey,
+			EcPoint* publicKey) const;
 };
+
+RES_CODE pkcs8FormatEcPrivateKey(const EcCurveInfo* curveInfo,
+   const Mpi* privateKey, const EcPoint* publicKey, uint8_t* output,
+   size_t* written);
+RES_CODE pkcs8FormatEcPublicKey(const EcCurveInfo* curveInfo,
+   const EcPoint* publicKey, uint8_t* output, size_t* written);
+RES_CODE pemExportEcPrivateKey(const EcCurveInfo* curveInfo,
+   const Mpi* privateKey, const EcPoint* publicKey, char *output,
+   size_t* written);
+
+
 
 
 #endif /* SERVICES_SECURITY_CRYPTO_EC_H_ */

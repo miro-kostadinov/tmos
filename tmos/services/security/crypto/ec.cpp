@@ -7,6 +7,9 @@
 
 #include <tmos.h>
 #include <ec.h>
+#include <asn1.h>
+#include <x509.h>
+#include <pem.h>
 
 #if EC_SUPPORT
 
@@ -974,18 +977,21 @@ RES_CODE EcDomainParameters::ecExport(const EcPoint* a, uint8_t* data, size_t* l
 	//Get the length in octets of the prime
 	k = p.mpiGetByteLength();
 
-	//Point compression is not used
-	data[0] = 0x04;
+	if(data)
+	{
+		//Point compression is not used
+		data[0] = 0x04;
 
-	//Convert the x-coordinate to an octet string
-	res = a->x.mpiWriteRaw(data + 1, k);
-	if (res != RES_OK)
-		return res;
+		//Convert the x-coordinate to an octet string
+		res = a->x.mpiWriteRaw(data + 1, k);
+		if (res != RES_OK)
+			return res;
 
-	//Convert the y-coordinate to an octet string
-	res = a->y.mpiWriteRaw(data + k + 1, k);
-	if (res != RES_OK)
-		return res;
+		//Convert the y-coordinate to an octet string
+		res = a->y.mpiWriteRaw(data + k + 1, k);
+		if (res != RES_OK)
+			return res;
+	}
 
 	//Return the total number of bytes that have been written
 	*length = k * 2 + 1;
@@ -1052,7 +1058,7 @@ end:
  * @brief Check whether the affine point S is on the curve
  * @param[in] params EC domain parameters
  * @param[in] s Affine representation of the point
- * @return TRUE if the affine point S is on the curve, else FALSE
+ * @return TRUE if the affine point S is on the curve, else false
  **/
 RES_CODE EcDomainParameters::ecIsPointAffine(const EcPoint *s) const
 {
@@ -1078,4 +1084,353 @@ end:
 	return res;
 }
 
+RES_CODE EcDomainParameters::ecGeneratePrivateKey(prng_algo_t* prngAlgo, Mpi *privateKey) const
+{
+	RES_CODE res;
+	uint32_t n;
+
+	//Check parameters
+	if (prngAlgo == nullptr ||  privateKey == nullptr)
+	{
+		return RES_TLS_INVALID_PARAMETER;
+	}
+
+	//Let N be the bit length of q
+	n = q.mpiGetBitLength();
+
+	//Generated a pseudorandom number
+	MPI_CHECK(privateKey->mpiRand(n, prngAlgo));
+
+	//Make sure that 0 < d < q
+	if (privateKey->mpiComp(&q) >= 0)
+	{
+		EC_CHECK(privateKey->mpiShiftRight(1));
+	}
+
+	//Debug message
+	TRACE1_TLS("  Private key:");
+	TRACE_MPI("    ", privateKey);
+
+end:
+	//Return status code
+	return res;
+}
+
+RES_CODE EcDomainParameters::ecGeneratePublicKey(const Mpi* privateKey, EcPoint* publicKey) const
+{
+	RES_CODE res;
+
+	//Check parameters
+	if (privateKey == nullptr || publicKey == nullptr)
+		return RES_TLS_INVALID_PARAMETER;
+
+	//Compute Q = d.G
+	EC_CHECK(ecMult(publicKey, privateKey, &g));
+
+	//Convert the public key to affine representation
+	EC_CHECK(ecAffinify(publicKey, publicKey));
+
+	//Debug message
+	TRACE1_TLS("  Public key X:");
+	TRACE_MPI("    ", &publicKey->x);
+	TRACE1_TLS("  Public key Y:");
+	TRACE_MPI("    ", &publicKey->y);
+
+end:
+	//Return status code
+	return res;
+}
+
+RES_CODE EcDomainParameters::ecGenerateKeyPair(prng_algo_t* prngAlgo, Mpi* privateKey,
+		EcPoint* publicKey) const
+{
+	RES_CODE res;
+
+	//Generate a private key
+	res = ecGeneratePrivateKey(prngAlgo, privateKey);
+
+	//Check status code
+	if (res == RES_OK)
+	{
+		//Derive the public key from the private key
+		res = ecGeneratePublicKey(privateKey, publicKey);
+	}
+
+	//Return status code
+	return res;
+}
+
+RES_CODE pkcs8FormatEcPrivateKey(const EcCurveInfo* curveInfo,
+   const Mpi* privateKey, const EcPoint* publicKey, uint8_t* output,
+   size_t* written)
+{
+   RES_CODE res;
+   size_t n;
+   size_t length;
+   uint8_t *p;
+   Asn1Tag tag;
+
+   //Point to the buffer where to write the ASN.1 structure
+   p = output;
+   //Length of the ASN.1 structure
+   length = 0;
+
+   //Format Version field (refer to RFC 5915, section 3)
+   res = asn1WriteInt32(1, false, p, &n);
+   //Any error to report?
+   if(res != RES_OK)
+      return res;
+
+   //Update the length of the ECPrivateKey structure
+   length += n;
+
+   //If the output parameter is NULL, then the function calculates the
+   //length of the resulting PEM file without copying any data
+   if(output != nullptr)
+   {
+      //Advance data pointer
+      p += n;
+
+      //Write the EC private key
+      res = privateKey->mpiWriteRaw(p, curveInfo->pLen);
+      //Any error to report?
+      if(res != RES_OK)
+         return res;
+   }
+
+   //Format PrivateKey field
+   tag.constructed = false;
+   tag.objClass = ASN1_CLASS_UNIVERSAL;
+   tag.objType = ASN1_TYPE_OCTET_STRING;
+   tag.length = curveInfo->pLen;
+   tag.value = p + (p?0:1);
+
+   //Write the corresponding ASN.1 tag
+   res = tag.asn1WriteTag(false, p, &n);
+   //Any error to report?
+   if(res != RES_OK)
+      return res;
+
+   //Update the length of the ECPrivateKey structure
+   n = tag.totalLength;
+   length += n;
+
+   //Advance data pointer
+   if(output != nullptr)
+      p += n;
+
+   //The public key is optional
+   if(publicKey != nullptr)
+   {
+      //Format PublicKey field
+      res = pkcs8FormatEcPublicKey(curveInfo, publicKey, p, &n);
+      //Any error to report?
+      if(res != RES_OK)
+         return res;
+
+      //Update the length of the ECPrivateKey structure
+      length += n;
+
+      //Advance data pointer
+      if(output != nullptr)
+         p += n;
+   }
+
+   //Format ECPrivateKey field
+   tag.constructed = true;
+   tag.objClass = ASN1_CLASS_UNIVERSAL;
+   tag.objType = ASN1_TYPE_SEQUENCE;
+   tag.length = length;
+   tag.value = output + (output?0:1);
+
+   //Write the corresponding ASN.1 tag
+   res = tag.asn1WriteTag(false, output, &n);
+   //Any error to report?
+   if(res != RES_OK)
+      return res;
+
+   //Get the length of the ECPrivateKey structure
+   n = tag.totalLength;
+
+   //The PrivateKey field is an octet string whose contents are the value
+   //of the private key
+   tag.constructed = false;
+   tag.objClass = ASN1_CLASS_UNIVERSAL;
+   tag.objType = ASN1_TYPE_OCTET_STRING;
+   tag.length = n;
+   tag.value = output + (output?0:1);
+
+   //Write the corresponding ASN.1 tag
+   res = tag.asn1WriteTag(false, output, &n);
+   //Any error to report?
+   if(res != RES_OK)
+      return res;
+
+   //Total number of bytes that have been written
+   *written = tag.totalLength;
+
+   //Successful processing
+   return RES_OK;
+}
+
 #endif
+
+RES_CODE pkcs8FormatEcPublicKey(const EcCurveInfo* curveInfo,
+   const EcPoint* publicKey, uint8_t* output, size_t* written)
+{
+#if EC_SUPPORT
+   RES_CODE res;
+   size_t n;
+   EcDomainParameters params;
+   Asn1Tag tag;
+
+
+   //The bit string shall contain an initial octet which encodes the number
+   //of unused bits in the final subsequent octet
+   if(output)
+	   output[0] = 0;
+
+   //Load EC domain parameters
+   res = params.ecLoadDomainParameters(curveInfo);
+
+   //Check status code
+   if(res == RES_OK)
+   {
+      //Format ECPublicKey structure
+      res = params.ecExport(publicKey, output + (output?1:0), &n);
+   }
+
+   //Check status code
+   if(res == RES_OK)
+   {
+      //The public key is encapsulated within a bit string
+      tag.constructed = false;
+      tag.objClass = ASN1_CLASS_UNIVERSAL;
+      tag.objType = ASN1_TYPE_BIT_STRING;
+      tag.length = n + 1;
+      tag.value = output + (output?0:1);
+
+      //Write the corresponding ASN.1 tag
+      res = tag.asn1WriteTag(false, output, &n);
+   }
+
+   //Check status code
+   if(res == RES_OK)
+   {
+      //Explicit tagging shall be used to encode the public key
+      tag.constructed = true;
+      tag.objClass = ASN1_CLASS_CONTEXT_SPECIFIC;
+      tag.objType = (Asn1Type)1;
+      tag.length = n;
+      tag.value = output + (output?0:1);
+
+      //Write the corresponding ASN.1 tag
+      res = tag.asn1WriteTag(false, output, written);
+   }
+
+   //Return status code
+   return res;
+#else
+   //Not implemented
+   return RES_TLS_NOT_IMPLEMENTED;
+#endif
+}
+
+RES_CODE pemExportEcPrivateKey(const EcCurveInfo* curveInfo,
+   const Mpi* privateKey, const EcPoint* publicKey, char *output,
+   size_t* written)
+{
+#if EC_SUPPORT
+   RES_CODE res;
+   size_t n;
+   size_t length;
+   uint8_t *p;
+   Asn1Tag tag;
+   X509SubjectPublicKeyInfo publicKeyInfo;
+
+   //Check parameters
+   if(curveInfo == nullptr || privateKey == nullptr || written == nullptr)
+      return RES_TLS_INVALID_PARAMETER;
+
+   //Clear the SubjectPublicKeyInfo structure
+   memclr(&publicKeyInfo, sizeof(X509SubjectPublicKeyInfo));
+
+   //Point to the buffer where to write the PrivateKeyInfo structure
+   p = (uint8_t *) output;
+   //Total length of the PrivateKeyInfo structure
+   length = 0;
+
+   //Format Version field (refer to RFC 5208, section 5)
+   res = asn1WriteInt32(0, false, p, &n);
+   //Any error to report?
+   if(res != RES_OK)
+      return res;
+
+   //Update the length of the PrivateKeyInfo structure
+   length += n;
+
+   //Advance data pointer
+   if(output != nullptr)
+      p += n;
+
+   //The PrivateKeyAlgorithm identifies the private-key algorithm
+   publicKeyInfo.oid = EC_PUBLIC_KEY_OID;
+   publicKeyInfo.oidLen = sizeof(EC_PUBLIC_KEY_OID);
+   publicKeyInfo.ecParams.namedCurve = curveInfo->oid;
+   publicKeyInfo.ecParams.namedCurveLen = curveInfo->oidSize;
+
+   //Format PrivateKeyAlgorithm field
+   res = publicKeyInfo.x509FormatAlgorithmIdentifier(nullptr, p, &n);
+   //Any error to report?
+   if(res != RES_OK)
+      return res;
+
+   //Update the length of the PrivateKeyInfo structure
+   length += n;
+
+   //Advance data pointer
+   if(output != nullptr)
+      p += n;
+
+   //Format PrivateKey field
+   res = pkcs8FormatEcPrivateKey(curveInfo, privateKey, publicKey, p, &n);
+   //Any error to report?
+   if(res != RES_OK)
+      return res;
+
+   //Update the length of the PrivateKeyInfo structure
+   length += n;
+
+   //The PrivateKeyInfo structure is encapsulated within a sequence
+   tag.constructed = true;
+   tag.objClass = ASN1_CLASS_UNIVERSAL;
+   tag.objType = ASN1_TYPE_SEQUENCE;
+   tag.length = length;
+   tag.value = (uint8_t *) output + (output?0:1);
+
+   //Write the corresponding ASN.1 tag
+   res = tag.asn1WriteTag(false, (uint8_t *) output, &n);
+   //Any error to report?
+   if(res != RES_OK)
+      return res;
+
+   //Get the length of the PrivateKeyInfo structure
+   n = tag.totalLength;
+
+   //PKCS#8 private keys are encoded using the "PRIVATE KEY" label
+   res = pemEncodeFile(output, n, "PRIVATE KEY", output, &n);
+   //Any error to report?
+   if(res != RES_OK)
+      return res;
+
+   //Total number of bytes that have been written
+   *written = n;
+
+   //Successful processing
+   return RES_OK;
+#else
+   //Not implemented
+   return RES_TLS_NOT_IMPLEMENTED;
+#endif
+}
+
