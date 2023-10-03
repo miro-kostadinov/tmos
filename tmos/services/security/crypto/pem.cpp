@@ -1058,7 +1058,7 @@ RES_CODE pemReadEcPrivateKey(const char* input, size_t length, Mpi* key)
 
 		//Allocate a memory buffer to hold the decoded data
 		buffer = (char*)tsk_malloc(length);
-		if (buffer == NULL)
+		if (buffer == nullptr)
 			return RES_OUT_OF_MEMORY;
 
 		//Copy the contents of the PEM structure
@@ -1205,5 +1205,57 @@ RES_CODE pemReadEcPrivateKey(const char* input, size_t length, Mpi* key)
 	return RES_TLS_NOT_IMPLEMENTED;
 #endif
 }
+
+RES_CODE pemEncodeFile(const void* input, size_t inputLen, const char* label,
+   char* output, size_t* outputLen)
+{
+   size_t n;
+   size_t labelLen;
+   char *p;
+
+   //Check parameters
+   if(label == nullptr || outputLen == nullptr)
+      return RES_TLS_INVALID_PARAMETER;
+
+   //Calculate the length of the label
+   labelLen = strlen(label);
+
+   //Encode the ASN.1 data using Base64
+   base64Encode(input, inputLen, output, &n);
+
+   //If the output parameter is NULL, then the function calculates the length
+   //of the resulting PEM file without copying any data
+   if(output != nullptr)
+   {
+      //A PEM file starts with a beginning tag
+      p = output + strlen("-----BEGIN -----\r\n") + labelLen;
+
+      //Make room for the beginning tag
+      memmove(p, output, n);
+
+      //The type of data encoded is labeled depending on the type label in
+      //the "-----BEGIN " line (refer to RFC 7468, section 2)
+      strcpy(output, "-----BEGIN ");
+      strcpy(output + 11, label);
+      memcpy(p - 7, "-----\r\n", 7);
+
+      //Generators must put the same label on the "-----END " line as the
+      //corresponding "-----BEGIN " line
+      strcpy(p + n, "\r\n-----END ");
+      strcpy(p + n + 11, label);
+      strcpy(p + n + labelLen + 11, "-----\r\n");
+   }
+
+   //Consider the length of the PEM tags
+   n += strlen("-----BEGIN -----\r\n") + labelLen;
+   n += strlen("\r\n-----END -----\r\n") + labelLen;
+
+   //Total number of bytes that have been written
+   *outputLen = n;
+
+   //Successful processing
+   return RES_OK;
+}
+
 
 #endif // PEM_SUPPORT

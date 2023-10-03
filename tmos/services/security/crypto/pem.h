@@ -23,5 +23,7 @@ RES_CODE pemReadDsaPrivateKey(const char* input, size_t length, DsaPrivateKey* k
 RES_CODE pemReadEcParameters(const char* input, size_t length, EcDomainParameters* params);
 RES_CODE pemReadEcPrivateKey(const char* input, size_t length, Mpi* key);
 
+RES_CODE pemEncodeFile(const void* input, size_t inputLen, const char* label,
+   char* output, size_t* outputLen);
 
 #endif /* SERVICES_SECURITY_CRYPTO_PEM_H_ */
