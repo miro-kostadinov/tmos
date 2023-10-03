@@ -106,6 +106,7 @@ struct Mpi
    RES_CODE mpiImport(const uint8_t *data, size_t length, MpiFormat format);
 
    RES_CODE asn1WriteMpi(bool reverse, uint8_t* data, size_t* written) const;
+   RES_CODE mpiCheckProbablePrime() const;
 };
 
 void mpiDump(const char* prepend, const Mpi* a);

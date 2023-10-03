@@ -1700,6 +1700,11 @@ RES_CODE Mpi::asn1WriteMpi(bool reverse, uint8_t* data, size_t* written) const
 	return RES_OK;
 }
 
+RES_CODE Mpi::mpiCheckProbablePrime() const
+{
+	return RES_TLS_NOT_IMPLEMENTED;
+}
+
 void mpiDump(const char* prepend, const Mpi* a)
 {
 	uint32_t i;

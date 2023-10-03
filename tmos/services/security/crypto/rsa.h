@@ -96,5 +96,12 @@ RES_CODE rsaesOaepDecrypt(const RsaPrivateKey *key,
 
 void mgf1(hash_algo_t* hash, const uint8_t *seed, size_t seedLen, uint8_t *data, size_t dataLen);
 
+RES_CODE rsaGeneratePrivateKey(prng_algo_t* prngAlgo, size_t k, uint32_t e,
+		RsaPrivateKey* privateKey);
+RES_CODE rsaGeneratePublicKey(const RsaPrivateKey* privateKey,
+		RsaPublicKey* publicKey);
+RES_CODE rsaGenerateKeyPair(prng_algo_t* prngAlgo, size_t k, uint32_t e,
+		RsaPrivateKey* privateKey, RsaPublicKey* publicKey);
+
 
 #endif /* SERVICES_SECURITY_CRYPTO_RSA_H_ */

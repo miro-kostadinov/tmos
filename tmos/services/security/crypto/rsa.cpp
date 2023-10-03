@@ -282,7 +282,8 @@ RES_CODE RsaPublicKey::x509ExportRsaPublicKey(uint8_t* output, size_t* written) 
 		return res;
 
 	//Advance data pointer
-	p += nn;
+	if(output)
+		p += nn;
 	length += nn;
 
 	//Write PublicExponent field
@@ -292,7 +293,8 @@ RES_CODE RsaPublicKey::x509ExportRsaPublicKey(uint8_t* output, size_t* written) 
 		return res;
 
 	//Advance data pointer
-	p += nn;
+	if(output)
+		p += nn;
 	length += nn;
 
 	//The public key is encapsulated within a sequence
@@ -300,7 +302,7 @@ RES_CODE RsaPublicKey::x509ExportRsaPublicKey(uint8_t* output, size_t* written) 
 	tag.objClass = ASN1_CLASS_UNIVERSAL;
 	tag.objType = ASN1_TYPE_SEQUENCE;
 	tag.length = length;
-	tag.value = output;
+	tag.value = output + (output?0:1);
 
 	//Write RSAPublicKey structure
 	res = tag.asn1WriteTag(false, output, &nn);
@@ -571,7 +573,7 @@ RES_CODE RsaPrivateKey::rsassaPssSign(prng_algo_t* prngAlgo, const hash_info_t* 
 		return RES_TLS_INVALID_PARAMETER;
 	if ( hash == nullptr || digest == nullptr)
 		return RES_TLS_INVALID_PARAMETER;
-	if (signature == nullptr || signatureLen == 0)
+	if (signatureLen == 0)
 		return RES_TLS_INVALID_PARAMETER;
 
 	//Debug message
@@ -604,6 +606,11 @@ RES_CODE RsaPrivateKey::rsassaPssSign(prng_algo_t* prngAlgo, const hash_info_t* 
 
 	//Calculate the length in octets of the modulus n
 	k = (modBits + 7) / 8;
+	if(!signature)
+	{
+		*signatureLen = k;
+		return RES_OK;
+	}
 
 	//Point to the buffer where the encoded message EM will be formatted
 	em = signature;
@@ -1418,6 +1425,187 @@ RES_CODE rsaesOaepDecrypt(const RsaPrivateKey *key,
 
    //Return status code
    return res;
+}
+
+RES_CODE rsaGeneratePrivateKey(prng_algo_t* prngAlgo, size_t k, uint32_t e,
+		RsaPrivateKey* privateKey)
+{
+	RES_CODE res;
+	Mpi t1;
+	Mpi t2;
+	Mpi phy;
+
+	//Check parameters
+	if (prngAlgo == nullptr || privateKey == nullptr)
+		return RES_TLS_INVALID_PARAMETER;
+
+	//Check the length of the modulus
+	if (k < 8)
+		return RES_TLS_INVALID_PARAMETER;
+
+	//Check the value of the public exponent
+	if (e != 3 && e != 5 && e != 17 && e != 257 && e != 65537)
+		return RES_TLS_INVALID_PARAMETER;
+
+	//Save public exponent
+	MPI_CHECK(privateKey->e.mpiSetValue(e));
+
+	//Generate a large random prime p
+	do
+	{
+		do
+		{
+			//Generate a random number of bit length k/2
+			MPI_CHECK(privateKey->p.mpiRand(k / 2, prngAlgo));
+			//Set the low bit (this ensures the number is odd)
+			MPI_CHECK(privateKey->p.mpiSetBitValue(0, 1));
+			//Set the two highest bits (this ensures that the high bit of n is also set)
+			MPI_CHECK(privateKey->p.mpiSetBitValue(k / 2 - 1, 1));
+			MPI_CHECK(privateKey->p.mpiSetBitValue(k / 2 - 2, 1));
+
+			//Test whether p is a probable prime
+			res = privateKey->p.mpiCheckProbablePrime();
+
+			//Repeat until an acceptable value is found
+		} while (res == RES_TLS_UNEXPECTED_VALUE);
+
+		//Check status code
+		MPI_CHECK(res);
+
+		//Compute p mod e
+		MPI_CHECK(t1.mpiMod(&privateKey->p, &privateKey->e));
+
+		//Repeat as long as p mod e = 1
+	} while (t1.mpiCompInt(1) == 0);
+
+	//Generate a large random prime q
+	do
+	{
+		do
+		{
+			//Generate random number of bit length k - k/2
+			MPI_CHECK(privateKey->q.mpiRand(k - (k / 2), prngAlgo));
+			//Set the low bit (this ensures the number is odd)
+			MPI_CHECK(privateKey->q.mpiSetBitValue(0, 1));
+			//Set the two highest bits (this ensures that the high bit of n is also set)
+			MPI_CHECK(privateKey->q.mpiSetBitValue(k - (k / 2) - 1, 1));
+			MPI_CHECK(privateKey->q.mpiSetBitValue(k - (k / 2) - 2, 1));
+
+			//Test whether q is a probable prime
+			res = privateKey->q.mpiCheckProbablePrime();
+
+			//Repeat until an acceptable value is found
+		} while (res == RES_TLS_UNEXPECTED_VALUE);
+
+		//Check status code
+		MPI_CHECK(res);
+
+		//Compute q mod e
+		MPI_CHECK(t2.mpiMod(&privateKey->q, &privateKey->e));
+
+		//Repeat as long as p mod e = 1
+	} while (t2.mpiCompInt(1) == 0);
+
+	//Make sure p an q are distinct
+	if (privateKey->p.mpiComp(&privateKey->q) == 0)
+	{
+		MPI_CHECK(RES_TLS_FAIL);
+	}
+
+	//If p < q, then swap p and q (this only matters if the CRT form of
+	//the private key is used)
+	if (privateKey->p.mpiComp(&privateKey->q) < 0)
+	{
+		//Swap primes
+		t1.mpiCopy(&privateKey->p);
+		privateKey->p.mpiCopy(&privateKey->q);
+		privateKey->q.mpiCopy(&t1);
+	}
+
+	//Compute the modulus n = pq
+	MPI_CHECK(privateKey->n.mpiMul(&privateKey->p, &privateKey->q));
+
+	//Compute phy = (p-1)(q-1)
+	MPI_CHECK(t1.mpiSubInt(&privateKey->p, 1));
+	MPI_CHECK(t2.mpiSubInt(&privateKey->q, 1));
+	MPI_CHECK(phy.mpiMul(&t1, &t2));
+
+	//Compute d = e^-1 mod phy
+	MPI_CHECK(privateKey->d.mpiInvMod(&privateKey->e, &phy));
+	//Compute dP = d mod (p-1)
+	MPI_CHECK(privateKey->d.mpiMod(&privateKey->d, &t1));
+	//Compute dQ = d mod (q-1)
+	MPI_CHECK(privateKey->d.mpiMod(&privateKey->d, &t2));
+	//Compute qInv = q^-1 mod p
+	MPI_CHECK(privateKey->qinv.mpiInvMod(&privateKey->q, &privateKey->p));
+
+	//Debug message
+	TRACE1_TLS("RSA private key:"); TRACE1_TLS("  Modulus:");
+	TRACE_MPI("    ", &privateKey->n);
+	TRACE1_TLS("  Public exponent:");
+	TRACE_MPI("    ", &privateKey->e);
+	TRACE1_TLS("  Private exponent:");
+	TRACE_MPI("    ", &privateKey->d);
+	TRACE1_TLS("  Prime 1:");
+	TRACE_MPI("    ", &privateKey->p);
+	TRACE1_TLS("  Prime 2:");
+	TRACE_MPI("    ", &privateKey->q);
+	TRACE1_TLS("  Prime exponent 1:");
+	TRACE_MPI("    ", &privateKey->dp);
+	TRACE1_TLS("  Prime exponent 2:");
+	TRACE_MPI("    ", &privateKey->dq);
+	TRACE1_TLS("  Coefficient:");
+	TRACE_MPI("    ", &privateKey->qinv);
+
+end:
+
+	//Return status code
+	return res;
+}
+
+RES_CODE rsaGeneratePublicKey(const RsaPrivateKey* privateKey,
+		RsaPublicKey* publicKey)
+{
+	RES_CODE res;
+
+	//Check parameters
+	if (privateKey == nullptr || publicKey == nullptr)
+		return RES_TLS_INVALID_PARAMETER;
+
+	//The public key is (n, e)
+	MPI_CHECK(publicKey->n.mpiCopy(&privateKey->n));
+	MPI_CHECK(publicKey->e.mpiCopy(&privateKey->e));
+
+	//Debug message
+	TRACE1_TLS("RSA public key:");
+	TRACE1_TLS("  Modulus:");
+	TRACE_MPI("    ", &publicKey->n);
+	TRACE1_TLS("  Public exponent:");
+	TRACE_MPI("    ", &publicKey->e);
+
+end:
+
+	//Return status code
+	return res;
+}
+
+RES_CODE rsaGenerateKeyPair(prng_algo_t* prngAlgo, size_t k, uint32_t e,
+		RsaPrivateKey* privateKey, RsaPublicKey* publicKey)
+{
+	RES_CODE res;
+
+	//Generate a private key
+	res = rsaGeneratePrivateKey(prngAlgo, k, e, privateKey);
+
+	//Check status code
+	if (res == RES_OK)
+	{
+		//Derive the public key from the private key
+		res = rsaGeneratePublicKey(privateKey, publicKey);
+	}
+
+	//Return status code
+	return res;
 }
 
 #endif // RSA_SUPPORT
