@@ -92,6 +92,7 @@ private:
 	unsigned int move_pos(datetime_move_e move);
 	unsigned int update_time(char ch);
 	unsigned int inc_dec_time(bool inc);
+	void increment_txt_pos();
 };
 
 

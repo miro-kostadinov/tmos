@@ -109,6 +109,8 @@ void GDateTime::show_cursor()
 	invalidate (this, datetime_rect);
 }
 
+void weak_gui_message_beep(int code);
+
 unsigned int GDateTime::update_time(char ch)
 {
 	char old_ch, old_ch2;
@@ -124,15 +126,10 @@ unsigned int GDateTime::update_time(char ch)
 			if(t.is_valid())
 			{
 				*time = t;
-				while (pos < txt.length())
-				{
-					pos_change(+1, false);
-					if(IS_DIGIT(txt[pos]))
-						break;
-				}
-
+				increment_txt_pos();
 			} else
 			{
+				//invalid date/time, try to fix by replacing next char
 				old_ch2 = txt[pos+1];
 
 				if (IS_DIGIT(old_ch2))
@@ -141,13 +138,39 @@ unsigned int GDateTime::update_time(char ch)
 					t.sscanf(txt.c_str(), time_format);
 					if(t.is_valid())
 					{
+						//fix success, set new time and change positions
 						*time = t;
+						increment_txt_pos();
 						return 1;
 					}
-					txt[pos+1] = old_ch2;
+					else if(pos + 4 < txt.length() && IS_DIGIT(txt[pos+3]) && IS_DIGIT(txt[pos+4]))
+					{
+						//try to change the next field to 01 instead
+						char old_ch3 = txt[pos+3];
+						char old_ch4 = txt[pos+4];
 
+						txt[pos+3] = '0';
+						txt[pos+4] = '1';
+						t.sscanf(txt.c_str(), time_format);
+						if(t.is_valid())
+						{
+							*time = t;
+							increment_txt_pos();
+							return 1;
+						}
+						else
+						{
+							txt[pos+3] = old_ch3;
+							txt[pos+4] = old_ch4;
+						}
+					}
+					//could not fix date, revert to old value and don't change
+					txt[pos+1] = old_ch2;
 				}
+				//revert char, set position to 0 and beep to signal invalid values
 				txt[pos] = old_ch;
+				pos_change(-pos, false);
+				weak_gui_message_beep(2);
 			}
 		}
 		return 1;
@@ -362,3 +385,12 @@ unsigned int GDateTime::process_key (GMessage& msg)
 	return 0;
 }
 
+void GDateTime::increment_txt_pos()
+{
+	while (pos < txt.length())
+	{
+		pos_change(+1, true);
+		if(IS_DIGIT(txt[pos]))
+			break;
+	}
+}
