@@ -1390,7 +1390,7 @@ RES_CODE X509CertRequestInfo::x509CreateCsr_data(prng_algo_t* prngAlgo, const vo
 	{
 		if (rawDataLen)
 		{
-			rawData = (uint8_t*)tsk_malloc(rawDataLen + 1);
+			rawData = (uint8_t*)tsk_malloc(rawDataLen + 10);
 			if (rawData == nullptr)
 				res = RES_OUT_OF_MEMORY;
 		} else
