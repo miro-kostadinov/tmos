@@ -6,7 +6,7 @@
  * ES_USE_VIRTUAL_KEYBOARD align flag.
  *
  * GEditVKB is a virtual keyboard with on-screen buttons, where the arrow keys
- * are used to traverse them and OK to add them to the text
+ * are used to traverse them and OK to add them to the text.
  *
  *  Created on: Mar 22, 2023
  *      Author: bratkov
