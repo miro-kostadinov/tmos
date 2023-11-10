@@ -1221,13 +1221,13 @@ RES_CODE tls_context_t::tlsGenerateEcdsaSignature(const uint8_t* digest,
 		Mpi privateKey;
 
 		//Decode the PEM structure that holds the EC domain parameters
-		res = pemReadEcParameters(cert->privateKey, cert->privateKeyLength, &params);
+		res = pemReadEcParameters(cert->privateKey.c_str(), cert->privateKeyLength, &params);
 
 		//Check status code
 		if(res == RES_OK)
 		{
 			//Decode the PEM structure that holds the EC private key
-			res = pemReadEcPrivateKey(cert->privateKey, cert->privateKeyLength,
+			res = pemReadEcPrivateKey(cert->privateKey.c_str(), cert->privateKeyLength,
 					&privateKey);
 		}
 

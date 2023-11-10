@@ -620,7 +620,7 @@ enum tls_client_auth_mode_t : char
 struct TlsCertDesc
 {
    CSTRING certChain;      		//!< End entity certificate chain (PEM format)
-   const char* privateKey;     		//!< Private key (PEM format)
+   CSTRING privateKey;     		//!< Private key (PEM format)
    size_t privateKeyLength;    		//!< Length of the private key
    size_t privateKeyAvailable;		//!< Size of the private key modulus. Not 0 when private key is not available (e.g. stored in TPM)
    TlsCertificateType type;    		//!< End entity certificate type

@@ -2282,7 +2282,7 @@ RES_CODE tls_context_t::tls_make_Certificate_verify(tls_certificate_verify_t** m
 					RsaPrivateKey privateKey;
 
 					//Decode the PEM structure that holds the RSA private key
-					res = pemReadRsaPrivateKey(cert->privateKey,
+					res = pemReadRsaPrivateKey(cert->privateKey.c_str(),
 							cert->privateKeyLength, &privateKey);
 
 					//Check status code
@@ -2409,7 +2409,7 @@ RES_CODE tls_context_t::tls_make_Certificate_verify(tls_certificate_verify_t** m
 
 
 					//Decode the PEM structure that holds the RSA private key
-					res = pemReadRsaPrivateKey(cert->privateKey,
+					res = pemReadRsaPrivateKey(cert->privateKey.c_str(),
 							cert->privateKeyLength, &privateKey);
 
 					//Check status code
