@@ -344,7 +344,7 @@ void TLS_DCR(TLS_DRIVER_INFO * drv_info, unsigned int reason, HANDLE param)
 	    			if(drv_data->tls_task[i] == nullptr)
 	    			{
 	    	    		drv_data->tls_task[i] = usr_task_create_dynamic("TLST", (TASK_FUNCTION)tls_thread,
-	    						40,	500+TRACE_SIZE);
+	    						40,	550+TRACE_SIZE);
 	    				if(drv_data->tls_task[i])
 	    				{
 	    					svc_task_schedule(drv_data->tls_task[i]);
